@@ -10,16 +10,14 @@ on:
         # Run every week on Monday at 2 AM UTC (3 AM EST)
         - cron: '0 2 * * 1'
 
-permissions:
-    contents: read
-    security-events: write
-    actions: read
-
 jobs:
     # Check GitHub Advanced Security availability
     check-advanced-security:
         name: Check Advanced Security
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+
         outputs:
             ghas-enabled: ${{ steps.check-ghas.outputs.enabled }}
 
@@ -47,6 +45,9 @@ jobs:
         name: Essential Security Checks
         runs-on: ubuntu-latest
         needs: check-advanced-security
+        permissions:
+            contents: read
+
         outputs:
             secrets-clean: ${{ steps.secrets-check.outputs.clean }}
             env-files-clean: ${{ steps.env-check.outputs.clean }}
@@ -173,7 +174,7 @@ jobs:
               if: matrix.language == 'javascript'
               uses: actions/setup-node@v4
               with:
-                  node-version: '22'
+                  node-version: '24'
                   cache: 'npm'
 
             - name: Install Node Dependencies
@@ -212,6 +213,9 @@ jobs:
         needs: essential-security
         if: needs.essential-security.outputs.secrets-clean == 'true'
 
+        permissions:
+            contents: read
+
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
@@ -225,7 +229,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: '22'
+                  node-version: '24'
                   cache: 'npm'
 
             - name: Copy Environment File
@@ -285,6 +289,9 @@ jobs:
         needs: essential-security
         if: needs.essential-security.outputs.secrets-clean == 'true'
 
+        permissions:
+            contents: read
+
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
@@ -292,7 +299,7 @@ jobs:
             - name: Run OWASP Dependency Check
               uses: dependency-check/Dependency-Check_Action@main
               with:
-                  project: 'price-updater'
+                  project: 'annotation-management-system'
                   path: '.'
                   format: 'HTML'
                   out: 'dependency-check-report'
@@ -316,6 +323,9 @@ jobs:
         needs: [essential-security, license-compliance]
         if: needs.essential-security.outputs.secrets-clean == 'true'
 
+        permissions:
+            contents: read
+
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
@@ -329,7 +339,7 @@ jobs:
             - name: Setup Node
               uses: actions/setup-node@v4
               with:
-                  node-version: '22'
+                  node-version: '24'
                   cache: 'npm'
 
             - name: Copy Environment File
@@ -352,6 +362,9 @@ jobs:
         runs-on: ubuntu-latest
         needs: [essential-security, dependency-scan]
         if: needs.essential-security.outputs.secrets-clean == 'true'
+
+        permissions:
+            contents: read
 
         steps:
             - name: Checkout Repository
@@ -381,6 +394,9 @@ jobs:
         needs: [essential-security, code-quality]
         if: github.event_name == 'pull_request' && needs.essential-security.outputs.secrets-clean == 'true'
 
+        permissions:
+            contents: read
+
         steps:
             - name: Checkout Repository
               uses: actions/checkout@v4
@@ -402,6 +418,7 @@ jobs:
                   else
                     echo "⚠️ Consider configuring HTTPS for production"
                   fi
+
             - name: Check Content Security Policy (CSP)
               run: |
                   if grep -q "Content-Security-Policy" app/Http/Middleware/AddSecurityHeaders.php; then
@@ -409,6 +426,7 @@ jobs:
                   else
                     echo "⚠️ Consider adding a Content Security Policy (CSP) for enhanced security"
                   fi
+
             - name: Check Secure Cookies
               run: |
                   if grep -q "'secure' => env('SESSION_SECURE_COOKIE', true)" config/session.php; then
@@ -416,6 +434,7 @@ jobs:
                   else
                     echo "⚠️ Consider enabling secure cookies in config/session.php"
                   fi
+
             - name: Check HSTS Configuration
               run: |
                   if grep -q "Strict-Transport-Security" app/Http/Middleware/AddSecurityHeaders.php; then
@@ -423,6 +442,7 @@ jobs:
                   else
                     echo "⚠️ Consider adding HSTS for enhanced security"
                   fi
+
             - name: Check Referrer Policy
               run: |
                   if grep -q "Referrer-Policy" app/Http/Middleware/AddSecurityHeaders.php; then
@@ -430,6 +450,7 @@ jobs:
                   else
                     echo "⚠️ Consider adding a Referrer Policy for enhanced privacy"
                   fi
+
             - name: Check X-Content-Type-Options
               run: |
                   if grep -q "X-Content-Type-Options" app/Http/Middleware/AddSecurityHeaders.php; then
@@ -437,6 +458,7 @@ jobs:
                   else
                     echo "⚠️ Consider adding X-Content-Type-Options to prevent MIME type sniffing"
                   fi
+
             - name: Check X-Frame-Options
               run: |
                   if grep -q "X-Frame-Options" app/Http/Middleware/AddSecurityHeaders.php; then
@@ -444,6 +466,7 @@ jobs:
                   else
                     echo "⚠️ Consider adding X-Frame-Options to prevent clickjacking"
                   fi
+
             - name: Check X-XSS-Protection
               run: |
                   if grep -q "X-XSS-Protection" app/Http/Middleware/AddSecurityHeaders.php; then
