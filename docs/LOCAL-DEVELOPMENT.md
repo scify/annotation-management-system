@@ -25,7 +25,7 @@
 
 ## 1. Clone the Repository
 
-```sh
+```shell
 git clone git@github.com:scify/annotation-management-system.git
 
 cd annotation-management-system
@@ -37,7 +37,7 @@ The pre-commit hook scans staged files for secrets (API keys, passwords, tokens)
 
 Download the binary for your platform:
 
-```sh
+```shell
 # Linux (x64)
 curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz | tar -xz gitleaks
 
@@ -50,7 +50,7 @@ curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleak
 
 Make it executable and verify:
 
-```sh
+```shell
 chmod +x gitleaks
 ./gitleaks version
 ```
@@ -68,7 +68,7 @@ environment variable.
 The default `.env` file contains the general configuration, and is used by both **DDEV** and **Native**.
 Copy the `.env.example` file to create a new `.env` file, and edit as needed:
 
-```sh
+```shell
 cp .env.example .env
 
 # then edit the APP_DEVELOPMENT_ENV variable to either 'ddev' or 'native'
@@ -92,7 +92,7 @@ VITE_DEV_PORT = "5179"
 
 You can copy the `.env.ddev.example` file to create a new `.env.ddev` file:
 
-```sh
+```shell
 cp .env.ddev.example .env.ddev
 ```
 
@@ -115,7 +115,7 @@ VITE_DEV_PORT = "5173"
 
 You can copy the `.env.native.example` file to create a new `.env.native` file:
 
-```sh
+```shell
 cp .env.native.example .env.native
 ```
 
@@ -125,7 +125,7 @@ If you want to switch between **DDEV** and **Native** for development, you can s
 environment variable to either `ddev` or `native`.
 **Note:** After switching environments, you will need to clear the config cache (both DDEV and Native):
 
-```sh
+```shell
 ddev restart # If using DDEV
 
 ./clear-cache.sh
@@ -135,25 +135,31 @@ ddev restart # If using DDEV
 
 First generate an application key:
 
-```sh
+```shell
 ddev artisan key:generate
 ```
 
 To start the development environment using **DDEV**:
 
-```sh
+```shell
 ddev start
 ```
 
 Run migrations:
 
-```sh
+```shell
 ddev artisan migrate
+```
+
+Run the database seeder:
+
+```shell
+ddev artisan db:seed
 ```
 
 Start the frontend development server:
 
-```sh
+```shell
 ddev npm run dev
 ```
 
@@ -161,25 +167,31 @@ ddev npm run dev
 
 First generate an application key:
 
-```sh
+```shell
 php artisan key:generate
 ```
 
 To switch back to using Native for local development:
 
-```sh
+```shell
 composer install
 ```
 
 Run migrations:
 
-```sh
+```shell
 php artisan migrate
+```
+
+Run the database seeder:
+
+```shell
+php artisan db:seed
 ```
 
 Start the frontend development server:
 
-```sh
+```shell
 npm run dev
 ```
 
@@ -209,7 +221,6 @@ Use tools like [ncu](https://www.npmjs.com/package/npm-check-updates) to check f
 
 ## 7. Where to Go From Here
 
-- Watch [this video](https://www.youtube.com/watch?v=phaBzRIioAw) to learn more about the Vue/Inertia setup.
 - Take a look at `app/Providers/AppServiceProvider.php` to check the configuration.
 
 ## 8. Troubleshooting
