@@ -10,7 +10,7 @@ You are working with a team of senior software engineers who are well-versed in 
 
 ## Project Overview
 
-**AMEA Annotators** is a Laravel-based annotation management system. The application manages annotators (users), their roles, and permissions via an Inertia/React SPA.
+**Annotation Management System** is a Laravel-based annotation management system. The application manages annotators (users), their roles, and permissions via an Inertia/React SPA.
 
 ### Architecture
 
@@ -86,70 +86,80 @@ resources/js/
 
 | `.env` value | How to run commands |
 |---|---|
-| `"ddev"` | Prefix with `ddev`: `ddev composer ...`, `ddev npm ...`, `ddev artisan ...`, `ddev exec vendor/bin/...` |
 | `"native"` | Run directly: `composer ...`, `npm ...`, `php artisan ...`, `vendor/bin/...` |
+| `"ddev"` | Prefix with `ddev`: `ddev composer ...`, `ddev npm ...`, `ddev artisan ...`, `ddev exec vendor/bin/...` |
 
-Commands in this document are shown in **DDEV form**. Strip the `ddev` prefix (and replace `ddev exec vendor/bin/` → `vendor/bin/`, `ddev artisan` → `php artisan`) when running natively.
+Commands in this document are shown in **native form**. DDEV users: add the `ddev` prefix — `composer` → `ddev composer`, `npm` → `ddev npm`, `php artisan` → `ddev artisan`, `vendor/bin/` → `ddev exec vendor/bin/`.
 
 ## Version Management
 
 Version must be updated in two places:
+
 - `package.json` — `"version": "x.x.x"`
 - `config/app.php` — `'version' => env('APP_VERSION', 'x.x.x')`
 
 ## Local Development
 
-- `ddev composer dev` — Start dev server (auto-detects DDEV vs local)
-- `ddev composer format` — Format ALL code (Rector + Pint + Prettier)
-- `ddev composer test` — Run full test suite (lint + types + Pest)
+- `composer dev` — Start dev server (auto-detects DDEV vs local)
+- `composer lint` — Format ALL code (Rector + Pint + ESLint + Prettier)
+- `composer test` — Run full test suite (lint + types + Pest)
 
 Usual workflow after making changes:
+
 1. Make changes
-2. `ddev composer format` — format everything
-3. `ddev composer test` — verify nothing broke
+2. `composer lint` — format everything
+3. `composer test` — verify nothing broke
 
 **Individual additional commands:**
-- `ddev composer test:lint` — Dry-run lint checks only (CI-safe, no modifications)
-- `ddev composer test:types` — Type analysis only (PHPStan + tsc)
+
+- `composer test:lint` — Dry-run lint checks only (CI-safe, no modifications)
+- `composer test:types` — Type analysis only (PHPStan + tsc)
 
 ## Build & Development
 
-**Recommended (via DDEV + Composer):**
-- `ddev composer dev` — Start dev server (auto-detects DDEV; runs queue + logs + Vite)
+**Recommended (via Composer):**
+
+- `composer dev` — Start dev server (auto-detects environment; runs queue + logs + Vite)
 
 **Individual commands (if needed):**
-- `ddev npm run dev` — Start Vite development server only
-- `ddev npm run build` — Build frontend assets for production
-- `ddev npm run build:ssr` — Build both client and SSR bundles
+
+- `npm run dev` — Start Vite development server only
+- `npm run build` — Build frontend assets for production
+- `npm run build:ssr` — Build both client and SSR bundles
 
 **SSR development:**
-- `ddev composer dev:ssr` — Start dev server + SSR Node.js server
+
+- `composer dev:ssr` — Start dev server + SSR Node.js server
 - SSR is **enabled** in this project. The SSR Node server listens on `http://127.0.0.1:13714`
 
 ## Linting & Formatting
 
-**Recommended (via DDEV + Composer):**
-- `ddev composer format` — Format ALL code (Rector + Pint + Prettier) — **fix mode**
-- `ddev composer test:lint` — Dry-run checks without modifying files (CI-friendly)
-- `ddev composer test:types` — Type analysis (PHPStan + tsc)
+**Recommended (via Composer):**
+
+- `composer lint` — Format ALL code (Rector + Pint + ESLint + Prettier) — **fix mode**
+- `composer test:lint` — Dry-run checks without modifying files (CI-friendly)
+- `composer test:types` — Type analysis (PHPStan + tsc)
 
 **Individual tools (if you need just one):**
 
 *PHP:*
-- `ddev exec vendor/bin/pint` — Format PHP code
-- `ddev exec vendor/bin/pint --test` — Dry-run Pint (check only)
-- `ddev exec vendor/bin/phpstan analyse` — Static analysis
-- `ddev exec vendor/bin/rector --dry-run` — Preview Rector changes
-- `ddev exec vendor/bin/rector` — Apply Rector changes
+
+- `vendor/bin/pint` — Format PHP code
+- `vendor/bin/pint --test` — Dry-run Pint (check only)
+- `vendor/bin/phpstan analyse` — Static analysis
+- `vendor/bin/rector --dry-run` — Preview Rector changes
+- `vendor/bin/rector` — Apply Rector changes
 
 *JavaScript/TypeScript:*
-- `ddev npm run lint` — ESLint check
-- `ddev npm run lint:fix` — ESLint auto-fix
-- `ddev npm run format` — Prettier formatting
-- `ddev npm run format:check` — Prettier dry-run
-- `ddev npm run types` — TypeScript type-check (tsc --noEmit)
 
-*DDEV shortcuts:*
+- `npm run lint` — ESLint check
+- `npm run lint:fix` — ESLint auto-fix
+- `npm run format` — Prettier formatting
+- `npm run format:check` — Prettier dry-run
+- `npm run types` — TypeScript type-check (tsc --noEmit)
+
+*DDEV shortcuts (when using DDEV):*
+
 - `ddev pint` — shorthand for `ddev exec vendor/bin/pint`
 - `ddev analyse` — shorthand for `ddev exec vendor/bin/phpstan analyse`
 - `ddev format` — shorthand for pint + npm format
@@ -157,29 +167,33 @@ Usual workflow after making changes:
 
 ## Testing
 
-**Recommended (via DDEV + Composer):**
-- `ddev composer test` — Full suite (lint + types + Pest)
-- `ddev composer test:coverage` — Pest with coverage
+**Recommended (via Composer):**
+
+- `composer test` — Full suite (lint + types + Pest)
+- `composer test:coverage` — Pest with coverage
 
 **Individual commands:**
-- `ddev exec vendor/bin/pest` — Run all PHP tests
-- `ddev exec vendor/bin/pest --filter TestName` — Run specific test
-- `ddev exec vendor/bin/pest --testsuite=Feature` — Run specific suite
-- `ddev npm test` — Run Jest component tests
-- `ddev npm run test:watch` — Jest in watch mode
+
+- `vendor/bin/pest` — Run all PHP tests
+- `vendor/bin/pest --filter TestName` — Run specific test
+- `vendor/bin/pest --testsuite=Feature` — Run specific suite
+- `npm run test` — Run Jest component tests
+- `npm run test:watch` — Jest in watch mode
 
 **Coverage (requires Xdebug):**
 
+Native (Xdebug must already be installed and configured in `php.ini`):
+
+```bash
+XDEBUG_MODE=coverage vendor/bin/pest --coverage --coverage-filter=app/Path/To/Class.php
+```
+
 DDEV:
+
 ```bash
 ddev xdebug on
 ddev exec "XDEBUG_MODE=coverage vendor/bin/pest --coverage --coverage-filter=app/Path/To/Class.php"
 ddev xdebug off
-```
-
-Native (Xdebug must already be installed and configured in `php.ini`):
-```bash
-XDEBUG_MODE=coverage vendor/bin/pest --coverage --coverage-filter=app/Path/To/Class.php
 ```
 
 **MANDATORY: Before touching, altering, editing, or adding ANY tests, you MUST read `tests/README.md` first.** No exceptions.
@@ -287,6 +301,7 @@ describe('UserController', function () {
 ### Frontend Permissions Pattern
 
 **Global permissions** (route-level, from `HandleInertiaRequests` middleware):
+
 ```tsx
 // On authenticated pages using PageProps
 const { auth } = usePage<PageProps>().props;
@@ -298,6 +313,7 @@ const { can } = auth.user;
 ```
 
 **Row-level abilities** (per-record, from controller):
+
 ```tsx
 // Controller passes abilities map keyed by record ID
 interface Props {
@@ -313,6 +329,7 @@ export default function UsersIndex({ users, abilities }: Props) {
 ```
 
 **Key points:**
+
 - Global permissions come from `HandleInertiaRequests` via `auth.user.can`
 - Row-level abilities are computed in the controller using Laravel policies
 - Never duplicate policy logic in the frontend — backend is the single source of truth
@@ -351,6 +368,7 @@ const AppLayout = ({ children }) => {
 ```
 
 In controllers, set flash before redirecting:
+
 ```php
 return redirect()->route('users.index')->with('success', 'User created.');
 return redirect()->back()->with('error', 'Something went wrong.');
@@ -417,6 +435,7 @@ export default function AppLogo() {
 **Why:** Mixing controller props into `SharedData` would require tests to provide all shared props. Keep them separate — controller props in the function signature, global props via `usePage()`.
 
 **`PageProps<T>` utility type** for authenticated pages (user is non-nullable):
+
 ```tsx
 type PageProps<T = Record<string, unknown>> = T & {
     auth: { user: User };   // non-nullable — safe on auth-protected routes
@@ -449,6 +468,7 @@ pages/
 ```
 
 Use `AppLayout` for authenticated pages:
+
 ```tsx
 import AppLayout from '@/layouts/app-layout';
 
@@ -478,18 +498,21 @@ This project uses **[shadcn/ui](https://ui.shadcn.com/)** (React).
 **Installed components**: Alert, Avatar, Badge, Breadcrumb, Button, Card, Checkbox, Collapsible, Dialog, Dropdown Menu, Input, Label, Navigation Menu, Select, Separator, Sheet, Sidebar, Skeleton, Sonner, Table, Toggle, Toggle Group, Tooltip
 
 **Key rules:**
+
 - **ALWAYS use shadcn components** instead of native HTML elements for interactive UI. Use `<Button>` not `<button>`, `<Input>` not `<input>`, etc.
 - Components are **copied into `resources/js/components/ui/`** — you own the code, customize freely
 - Use `cn()` from `@/lib/utils` for class merging: `cn('base-classes', condition && 'conditional')`
 - Built on **Radix UI** primitives (accessibility + keyboard navigation included)
 
 **Installing new components:**
+
 - **Do NOT install directly** — shadcn's CLI prompts for y/n will hang in Claude Code
 - Ask the developer to run: `npx shadcn@latest add [component-name]`
 
 ### Lucide Icons
 
 Import from `lucide-react`:
+
 ```tsx
 import { UserIcon, PlusIcon, TrashIcon } from 'lucide-react';
 
@@ -508,6 +531,7 @@ Installed automatically via `composer install`. See `tools/git-hooks/` for hook 
 ## General Laravel/PHP Best Practices
 
 ### Key Principles
+
 - Write concise, technical responses with accurate PHP examples
 - Follow Laravel best practices and conventions
 - Use object-oriented programming with a focus on SOLID principles
@@ -517,6 +541,7 @@ Installed automatically via `composer install`. See `tools/git-hooks/` for hook 
 - Favor dependency injection and service containers
 
 ### PHP/Laravel Standards
+
 - Use PHP 8.4 features where appropriate (typed properties, match expressions, enums, property hooks)
 - Follow PSR-12 coding standards
 - Use strict typing: `declare(strict_types=1)` in all files
@@ -525,6 +550,7 @@ Installed automatically via `composer install`. See `tools/git-hooks/` for hook 
 - Use Form Requests for validation — keep controllers clean
 
 ### Laravel Best Practices
+
 - Eloquent ORM over raw SQL; query builder for complex queries
 - Service layer pattern for domain logic — controllers stay thin
 - Use `Password::defaults()` for password rules (configured in `AppServiceProvider`)
@@ -538,16 +564,19 @@ Installed automatically via `composer install`. See `tools/git-hooks/` for hook 
 ## Accessible, Fast, Delightful UIs
 
 ### Keyboard
+
 - MUST: Full keyboard support per [WAI-ARIA APG](https://www.w3.org/WAI/ARIA/apg/patterns/)
 - MUST: Visible focus rings (`:focus-visible`)
 - MUST: Manage focus (trap, move, return) per APG patterns
 
 ### Targets & Input
+
 - MUST: Hit target ≥ 24px (mobile ≥ 44px)
 - NEVER: Disable browser zoom
 - MUST: `touch-action: manipulation` to prevent double-tap zoom
 
 ### Forms
+
 - MUST: Loading buttons show spinner and keep original label
 - MUST: Enter submits focused text input; in `<textarea>`, ⌘/Ctrl+Enter submits
 - MUST: Keep submit enabled until request starts; then disable, show spinner
@@ -558,15 +587,18 @@ Installed automatically via `composer install`. See `tools/git-hooks/` for hook 
 - SHOULD: Disable spellcheck for emails/codes/usernames
 
 ### State & Navigation
+
 - MUST: Links are links — use `<Link>` from `@inertiajs/react` for navigation (supports Cmd/Ctrl/middle-click)
 
 ### Feedback
+
 - SHOULD: Optimistic UI; reconcile on response; on failure show error and rollback
 - MUST: Confirm destructive actions or provide Undo window
 - MUST: Use polite `aria-live` for toasts/inline validation
 - SHOULD: Ellipsis (`…`) for actions that open dialogs (e.g., "Delete…") and loading states
 
 ### Accessibility
+
 - MUST: Redundant status cues (not colour-only)
 - MUST: `aria-label` on icon-only buttons
 - MUST: Prefer native semantics (`button`, `a`, `label`, `table`) over ARIA
@@ -575,17 +607,20 @@ Installed automatically via `composer install`. See `tools/git-hooks/` for hook 
 - MUST: Resilient to user-generated content (short / avg / very long strings)
 
 ### Animation
+
 - MUST: Honor `prefers-reduced-motion` — use `motion-safe:` Tailwind variant
 - SHOULD: Prefer CSS animations over JS
 - MUST: Animate compositor-friendly props (`transform`, `opacity`) — avoid `top/left/width/height`
 - MUST: Animations are interruptible
 
 ### Performance
+
 - MUST: Mutations (`POST/PATCH/DELETE`) target < 500 ms
 - MUST: Preload only above-the-fold images; lazy-load the rest
 - MUST: Prevent CLS from images (explicit dimensions or reserved space)
 
 ### Layout & Design
+
 - MUST: Verify mobile, laptop, and ultra-wide (simulate at 50% zoom)
 - MUST: Avoid unwanted scrollbars; fix overflows
 - MUST: Accessible charts (colour-blind-friendly palettes)

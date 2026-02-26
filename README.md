@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# Laradev-React - Development Setup
+# Annotation Management System - Development Setup
 
 [![Tests](https://github.com/scify/laradev-react/actions/workflows/tests.yml/badge.svg)](https://github.com/scify/laradev-react/actions/workflows/tests.yml)
 [![Linter](https://github.com/scify/laradev-react/actions/workflows/lint.yml/badge.svg)](https://github.com/scify/laradev-react/actions/workflows/lint.yml)
@@ -8,10 +8,11 @@
 <!-- omit in toc -->
 ## Table of Contents
 
-- [About Laradev-React](#about-laradev-react)
+- [About Annotation Management System](#about-amea-annotators)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Installation - Local Development](#installation---local-development)
+- [Development Environment](#development-environment)
 - [Changelog](#changelog)
 - [Contributing](#contributing)
   - [PHP code style - Laravel Pint](#php-code-style---laravel-pint)
@@ -21,29 +22,32 @@
   - [Code Scanning](#code-scanning)
   - [Git Hooks](#git-hooks)
 - [Available Scripts](#available-scripts)
-- [Available Scripts - DDEV](#available-scripts---ddev)
+  - [Composer scripts](#composer-scripts)
+  - [npm scripts](#npm-scripts)
+  - [Database commands](#database-commands)
+  - [DDEV convenience shortcuts](#ddev-convenience-shortcuts)
 - [Releasing a new version](#releasing-a-new-version)
 - [Security](#security)
 - [License](#license)
 - [Credits](#credits)
 
-## About Laradev-React
+## About Annotation Management System
 
-**Laradev-React** is a sample Laravel app that can be used as a skeleton for your next Laravel project.
+**Annotation Management System** is a Laravel-based annotation management system. The application manages annotators (users), their roles, and permissions via an Inertia/React SPA.
 
-It includes a basic setup for both the backend and frontend, with support for both **DDEV** and **Native** (PHP, Composer, etc running locally) development environments.
+It includes a complete setup for both the backend and frontend, with support for both **DDEV** and **Native** (PHP, Composer, etc. running locally) development environments.
 
 ## Features
 
 1. Support for both **DDEV** and **Native** development environments
-2. React.js/Inertia frontend with Vite for faster development
-3. Tailwind CSS with shadcn/ui components
+2. React 19 / Inertia.js 2 frontend with Vite for faster development
+3. Tailwind CSS v4 with React Aria Components for accessible, keyboard-navigable UI
 4. SCSS support with PostCSS
-5. TypeScript support
+5. TypeScript (strict mode)
 6. Automated code formatting (PHP, JS/TS, SCSS)
 7. Git hooks for code quality
-8. Comprehensive test suite using Pest
-9. Role-based authentication using Spatie Permissions
+8. Comprehensive test suite using Pest (backend) and Jest (frontend)
+9. Role-based access control using Spatie Laravel Permission
 10. Dark mode support
 11. Responsive design
 12. GitHub Actions for CI/CD
@@ -52,24 +56,39 @@ It includes a basic setup for both the backend and frontend, with support for bo
 
 - **Backend:**
   - Laravel 12.x
-  - PHP 8.2+
+  - PHP 8.4
   - MySQL/SQLite
   - Laravel Pint (Code Styling)
-  - PHPStan (Static Analysis)
+  - PHPStan / Larastan (Static Analysis at level 8)
   - Pest (Testing)
 
 - **Frontend:**
-  - React 19
-  - TypeScript
-  - Tailwind CSS
-  - shadcn/ui Components
+  - React 19 with Inertia.js 2
+  - TypeScript (strict mode)
+  - Tailwind CSS v4
+  - React Aria Components (accessibility-first UI primitives)
+  - Lucide React (icons)
+  - Sonner (toast notifications)
   - Vite
-  - ESLint + Prettier
+  - ESLint + Prettier + Stylelint
 
 ## Installation - Local Development
 
-In order to start developing with **Laradev-React**, you will need to read the guide in
+In order to start developing with **Annotation Management System**, you will need to read the guide in
 the [LOCAL-DEVELOPMENT.md](LOCAL-DEVELOPMENT.md) file.
+
+## Development Environment
+
+The application supports two development environments, controlled by `APP_DEVELOPMENT_ENV` in your `.env` file:
+
+| `APP_DEVELOPMENT_ENV` | How to run commands |
+| --- | --- |
+| `native` | Run directly: `composer …`, `npm …`, `php artisan …`, `vendor/bin/…` |
+| `ddev` | Prefix with `ddev`: `ddev composer …`, `ddev npm …`, `ddev artisan …`, `ddev exec vendor/bin/…` |
+
+> **All commands in this document are shown in native form.**
+> DDEV users: add the `ddev` prefix to every command — e.g. `composer test` becomes `ddev composer test`,
+> `npm run dev` becomes `ddev npm run dev`, and `php artisan migrate` becomes `ddev artisan migrate`.
 
 ## Changelog
 
@@ -86,93 +105,68 @@ To contribute to the application, follow these steps:
 5. Push to the original branch: `git push origin <project_name>/<location>`
 6. Create the pull request
 
-### PHP code style - Laravel Pint
-
-This application uses [Laravel Pint](https://laravel.com/docs/12.x/pint) in order to perform code-styling checks and fixes.
-
-In order to run the styler, run :
+After making changes, follow this workflow:
 
 ```shell
-./vendor/bin/pint --test -v # the --test will not do any changes, it will just output the changes needed
+composer lint   # format everything (Rector + Pint + ESLint + Prettier)
+composer test   # verify nothing broke (lint + types + Pest)
+```
 
-./vendor/bin/pint -v # this command will actually perform the code style changes
+### PHP code style - Laravel Pint
+
+This application uses [Laravel Pint](https://laravel.com/docs/12.x/pint) for PHP code styling,
+managed via Composer scripts.
+
+```shell
+composer lint       # format all code — fix mode (Rector + Pint + ESLint + Prettier)
+composer test:lint  # dry-run checks only — no modifications (CI-friendly)
 ```
 
 ### Running tests
 
 #### Backend tests
 
-To run the tests, run the following command:
+Run the full test suite (lint + static analysis + Pest) via:
 
 ```shell
-./vendor/bin/pest
+composer test
 ```
 
-To run with type coverage, run the following command:
+To run or filter Pest tests directly:
 
 ```shell
-./vendor/bin/pest --type-coverage
+vendor/bin/pest                        # all tests
+vendor/bin/pest --filter TestName      # filter by name
+vendor/bin/pest --testsuite=Feature    # specific suite
 ```
 
-**Note:** depending nonyour environment, you may have to export the XDEBUG_MODE environment variable to enable code coverage:
+To run with code coverage (requires Xdebug):
 
 ```shell
-XDEBUG_MODE=coverage ./vendor/bin/pest --coverage --parallel
-```
-
-To run against the `arch` presets (defined in `tests/Unit/ArchTest.php`), run the following command:
-
-```shell
-./vendor/bin/pest --arch
-```
-
-Or, under DDEV:
-
-```shell
-ddev test
-```
-
-To run the tests with coverage, run the following command:
-
-```shell
-XDEBUG_MODE=coverage ./vendor/bin/pest --coverage
-```
-
-To filter tests, use the `--filter` flag. For example:
-
-```shell
-./vendor/bin/pest --filter testName
+composer test:coverage
 ```
 
 #### Frontend tests
 
 We use Jest for frontend tests.
 
-To run the tests, run the following command:
-
 ```shell
-npm run test
-```
-
-To run the tests with coverage, run the following command:
-
-```shell
-npm run test:coverage
+npm run test           # run all Jest tests
+npm run test:watch     # Jest in watch mode
+npm run test:coverage  # with coverage report
 ```
 
 ### Code Scanning
 
-This application uses [PHPStan](https://phpstan.org/) in order to perform code-scanning checks.
-
-In order to run the code-scanner, run the following command:
+Static analysis runs as part of `composer test:types`:
 
 ```shell
-./vendor/bin/phpstan analyse
+composer test:types  # PHPStan (level 8) + TypeScript tsc --noEmit
 ```
 
 ### Git Hooks
 
-The project includes pre-commit hooks that automatically format code. They're installed automatically with:
+The project includes pre-commit hooks that automatically format code. They are installed automatically via:
 
 ```shell
 composer install
@@ -180,32 +174,66 @@ composer install
 
 ## Available Scripts
 
-- `npm run dev` - Start Vite development server
-- `npm run build` - Build for production
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
-- `npm run types` - Check TypeScript types
-- `composer format` - Format PHP code
-- `composer analyse` - Run static analysis
+### Composer scripts
 
-## Available Scripts - DDEV
+| Script | Description |
+| --- | --- |
+| `composer dev` | Start dev server (auto-detects environment) |
+| `composer dev:ssr` | Start dev server + SSR Node.js server |
+| `composer lint` | Format all code — fix mode (Rector + Pint + ESLint + Prettier) |
+| `composer test:lint` | Dry-run lint checks without modifying files |
+| `composer test:types` | Type analysis (PHPStan level 8 + TypeScript tsc) |
+| `composer test` | Full test suite (lint + types + Pest) |
+| `composer test:coverage` | Pest with code coverage (requires Xdebug) |
+| `composer update:requirements` | Bump Composer + npm dependencies to latest |
 
-- `ddev artisan migrate` - Migrate the database
-- `ddev artisan db:seed` - Seed the database
-- `ddev artisan db:refresh` - Refresh the database
-- `ddev artisan db:reset` - Reset the database
-- `ddev artisan key:generate` - Generate the application key
-- `ddev artisan migrate:fresh` - Refresh the database and migrate
-- `ddev artisan migrate:fresh --seed` - Refresh the database and seed
-- `ddev artisan migrate:fresh --seed --seeder=DatabaseSeeder` - Refresh the database and seed with the DatabaseSeeder
-- `ddev pint` - Format PHP code
-- `ddev test` - Run tests
-- `ddev analyse` - Run static analysis
-- `ddev format` - Format all code
+### npm scripts
+
+| Script | Description |
+| --- | --- |
+| `npm run dev` | Start Vite development server |
+| `npm run build` | Build frontend assets for production |
+| `npm run build:ssr` | Build both client and SSR bundles |
+| `npm run lint` | ESLint check |
+| `npm run lint:fix` | ESLint auto-fix |
+| `npm run lint:styles` | Stylelint check |
+| `npm run lint:styles:fix` | Stylelint auto-fix |
+| `npm run format` | Prettier formatting (fix mode) |
+| `npm run format:check` | Prettier dry-run |
+| `npm run types` | TypeScript type-check (`tsc --noEmit`) |
+| `npm run test` | Run Jest component tests |
+| `npm run test:watch` | Jest in watch mode |
+| `npm run test:coverage` | Jest with coverage report |
+
+### Database commands
+
+```shell
+php artisan migrate                       # migrate the database
+php artisan db:seed                       # seed the database
+php artisan migrate:fresh                 # drop all tables and re-run migrations
+php artisan migrate:fresh --seed          # fresh migrate + seed
+php artisan key:generate                  # generate application key
+```
+
+### DDEV convenience shortcuts
+
+When using DDEV, the following project-specific shorthand commands are available in addition to the standard `ddev` prefix rules:
+
+```shell
+ddev pint     # shorthand for ddev exec vendor/bin/pint
+ddev analyse  # shorthand for ddev exec vendor/bin/phpstan analyse
+ddev format   # shorthand for pint + npm format
+ddev test     # shorthand for ddev exec vendor/bin/pest
+```
 
 ## Releasing a new version
 
-After you have committed your changes, create a new git tag:
+Version must be updated in two places before tagging:
+
+- `package.json` — `"version": "x.x.x"`
+- `config/app.php` — `'version' => env('APP_VERSION', 'x.x.x')`
+
+After committing your changes, create a new git tag:
 
 ```shell
 git tag -a vx.y.z -m "This is a nice tag name"
@@ -219,8 +247,8 @@ Then, push the tag:
 git push origin vx.y.z
 ```
 
-Then, in the [GitHub Releases page](https://github.com/scify/laradev-react/releases), create a new Release *
-*and correlate it with the tag that you just created.**
+Then, in the [GitHub Releases page](https://github.com/scify/laradev-react/releases), create a new Release
+**and correlate it with the tag that you just created.**
 
 Also, don't forget to update the `CHANGELOG.md` file with the new version name, release date, and release notes.
 
