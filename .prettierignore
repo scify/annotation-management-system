@@ -6,6 +6,7 @@ vendor/
 storage/
 bootstrap/
 .git/
+.ddev/
 *.d.ts
 *.html
 *.md
