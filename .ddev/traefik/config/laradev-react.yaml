@@ -1,0 +1,111 @@
+#ddev-generated
+# If you remove the ddev-generated line above you
+# are responsible for maintaining this file. DDEV will not then
+# update it, for example if you add `additional_hostnames`, etc.
+
+http:
+    routers:
+        laradev-react-xhgui-80-http:
+            entrypoints:
+                - http-8143
+            rule: HostRegexp(`^laradev-react\.ddev\.site$`)
+
+            service: 'laradev-react-xhgui-80'
+            tls: false
+            # middlewares:
+            #   - "laradev-react-redirectHttps"
+        laradev-react-web-80-http:
+            entrypoints:
+                - http-8080
+            rule: HostRegexp(`^laradev-react\.ddev\.site$`)
+
+            service: 'laradev-react-web-80'
+            tls: false
+            # middlewares:
+            #   - "laradev-react-redirectHttps"
+        laradev-react-web-8025-http:
+            entrypoints:
+                - http-8025
+            rule: HostRegexp(`^laradev-react\.ddev\.site$`)
+
+            service: 'laradev-react-web-8025'
+            tls: false
+            # middlewares:
+            #   - "laradev-react-redirectHttps"
+        laradev-react-web-5179-http:
+            entrypoints:
+                - http-5178
+            rule: HostRegexp(`^laradev-react\.ddev\.site$`)
+
+            service: 'laradev-react-web-5179'
+            tls: false
+            # middlewares:
+            #   - "laradev-react-redirectHttps"
+
+        laradev-react-xhgui-80-https:
+            entrypoints:
+                - http-8142
+            rule: HostRegexp(`^laradev-react\.ddev\.site$`)
+
+            service: 'laradev-react-xhgui-80'
+
+            tls: true
+
+        laradev-react-web-80-https:
+            entrypoints:
+                - http-8443
+            rule: HostRegexp(`^laradev-react\.ddev\.site$`)
+
+            service: 'laradev-react-web-80'
+
+            tls: true
+
+        laradev-react-web-8025-https:
+            entrypoints:
+                - http-8026
+            rule: HostRegexp(`^laradev-react\.ddev\.site$`)
+
+            service: 'laradev-react-web-8025'
+
+            tls: true
+
+        laradev-react-web-5179-https:
+            entrypoints:
+                - http-5179
+            rule: HostRegexp(`^laradev-react\.ddev\.site$`)
+
+            service: 'laradev-react-web-5179'
+
+            tls: true
+
+    middlewares:
+        laradev-react-redirectHttps:
+            redirectScheme:
+                scheme: https
+                permanent: true
+
+    services:
+        laradev-react-xhgui-80:
+            loadbalancer:
+                servers:
+                    - url: http://ddev-laradev-react-xhgui:80
+
+        laradev-react-web-80:
+            loadbalancer:
+                servers:
+                    - url: http://ddev-laradev-react-web:80
+
+        laradev-react-web-8025:
+            loadbalancer:
+                servers:
+                    - url: http://ddev-laradev-react-web:8025
+
+        laradev-react-web-5179:
+            loadbalancer:
+                servers:
+                    - url: http://ddev-laradev-react-web:5179
+
+tls:
+    certificates:
+        - certFile: /mnt/ddev-global-cache/traefik/certs/laradev-react.crt
+          keyFile: /mnt/ddev-global-cache/traefik/certs/laradev-react.key
