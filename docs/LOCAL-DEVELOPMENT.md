@@ -1,30 +1,26 @@
 <!-- omit in toc -->
-
 # Local Development
 
 <!-- omit in toc -->
-
 ## Table of Contents
 
-- [Local Development](#local-development)
-  - [Table of Contents](#table-of-contents)
-  - [1. Clone the Repository](#1-clone-the-repository)
-  - [2. Environment Configuration](#2-environment-configuration)
-    - [2.1 Base Environment (.env)](#21-base-environment-env)
-    - [2.2 DDEV Environment (.env.ddev)](#22-ddev-environment-envddev)
-    - [2.3 Native Environment (.env.native)](#23-native-environment-envnative)
-  - [3. Switching Between DDEV and Native](#3-switching-between-ddev-and-native)
-    - [3.1 Using DDEV](#31-using-ddev)
-    - [3.2 Using Native](#32-using-native)
-  - [4. Email Viewing](#4-email-viewing)
-    - [4.1 DDEV](#41-ddev)
-    - [4.2 Native](#42-native)
-  - [5. Tips - General Guidelines](#5-tips---general-guidelines)
-    - [5.1 Keeping the dependencies up-to-date](#51-keeping-the-dependencies-up-to-date)
-      - [5.1.1 Backend](#511-backend)
-      - [5.1.2 Frontend](#512-frontend)
-  - [6. Where to Go From Here](#6-where-to-go-from-here)
-  - [7. Troubleshooting](#7-troubleshooting)
+- [1. Clone the Repository](#1-clone-the-repository)
+- [2. Environment Configuration](#2-environment-configuration)
+  - [2.1 Base Environment (.env)](#21-base-environment-env)
+  - [2.2 DDEV Environment (.env.ddev)](#22-ddev-environment-envddev)
+  - [2.3 Native Environment (.env.native)](#23-native-environment-envnative)
+- [3. Switching Between DDEV and Native](#3-switching-between-ddev-and-native)
+  - [3.1 Using DDEV](#31-using-ddev)
+  - [3.2 Using Native](#32-using-native)
+- [4. Email Viewing](#4-email-viewing)
+  - [4.1 DDEV](#41-ddev)
+  - [4.2 Native](#42-native)
+- [5. Tips - General Guidelines](#5-tips---general-guidelines)
+  - [5.1 Keeping the dependencies up-to-date](#51-keeping-the-dependencies-up-to-date)
+    - [5.1.1 Backend](#511-backend)
+    - [5.1.2 Frontend](#512-frontend)
+- [6. Where to Go From Here](#6-where-to-go-from-here)
+- [7. Troubleshooting](#7-troubleshooting)
 
 ## 1. Clone the Repository
 

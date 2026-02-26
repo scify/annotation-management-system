@@ -157,18 +157,18 @@ keywords = ["token", "secret"]
 description = "Allowlisted files and patterns for Laravel"
 files = [
     ".env.example",
-    ".env.ddev.example", 
+    ".env.ddev.example",
     ".env.native.example",
     ".env.testing",
     ".env.dusk.local",
-    "LOCAL-DEVELOPMENT.md",
+    "docs/LOCAL-DEVELOPMENT.md",
     "azure/deploy-laravel-to-azure.sh",
 ]
 
 paths = [
     # Exclude vendor directories and compiled assets
     "vendor",
-    "node_modules", 
+    "node_modules",
     "public/build",
     "storage/framework/cache",
     "storage/framework/sessions",

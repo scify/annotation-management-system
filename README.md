@@ -8,7 +8,7 @@
 <!-- omit in toc -->
 ## Table of Contents
 
-- [About Annotation Management System](#about-amea-annotators)
+- [About Annotation Management System](#about-annotation-management-system)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Installation - Local Development](#installation---local-development)
@@ -75,7 +75,7 @@ It includes a complete setup for both the backend and frontend, with support for
 ## Installation - Local Development
 
 In order to start developing with **Annotation Management System**, you will need to read the guide in
-the [LOCAL-DEVELOPMENT.md](LOCAL-DEVELOPMENT.md) file.
+the [LOCAL-DEVELOPMENT.md](docs/LOCAL-DEVELOPMENT.md) file.
 
 ## Development Environment
 
@@ -256,7 +256,7 @@ Also, don't forget to update the `CHANGELOG.md` file with the new version name, 
 
 This project implements several security measures:
 
-- **Secret Scanning**: [Gitleaks](https://gitleaks.io/) integration prevents accidental exposure of sensitive information like API keys, passwords, and tokens. See [GITLEAKS-SECURITY.md](GITLEAKS-SECURITY.md) for detailed configuration and usage.
+- **Secret Scanning**: [Gitleaks](https://gitleaks.io/) integration prevents accidental exposure of sensitive information like API keys, passwords, and tokens. See [GITLEAKS-SECURITY.md](docs/GITLEAKS-SECURITY.md) for detailed configuration and usage.
 - **Security Headers**: Custom middleware adds security headers (CSP, HSTS, etc.)
 - **CSRF Protection**: Laravel's built-in CSRF protection
 - **Role-based Access Control**: Using Spatie Laravel Permission package

@@ -29,7 +29,7 @@ The configuration includes intelligent allowlisting for:
 
 - Example configuration files (`.env.example`, `.env.ddev.example`, etc.)
 - Testing environments (`.env.testing`)
-- Documentation files (`LOCAL-DEVELOPMENT.md`)
+- Documentation files (`docs/LOCAL-DEVELOPMENT.md`)
 - Template files (`.github/templates/.env.j2`)
 - Deployment scripts (`azure/deploy-laravel-to-azure.sh`)
 - Common development values (`db`, `test`, `localhost`, etc.)
