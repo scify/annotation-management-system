@@ -5,22 +5,23 @@
 ## Table of Contents
 
 - [1. Clone the Repository](#1-clone-the-repository)
-- [2. Environment Configuration](#2-environment-configuration)
-  - [2.1 Base Environment (.env)](#21-base-environment-env)
-  - [2.2 DDEV Environment (.env.ddev)](#22-ddev-environment-envddev)
-  - [2.3 Native Environment (.env.native)](#23-native-environment-envnative)
-- [3. Switching Between DDEV and Native](#3-switching-between-ddev-and-native)
-  - [3.1 Using DDEV](#31-using-ddev)
-  - [3.2 Using Native](#32-using-native)
-- [4. Email Viewing](#4-email-viewing)
-  - [4.1 DDEV](#41-ddev)
-  - [4.2 Native](#42-native)
-- [5. Tips - General Guidelines](#5-tips---general-guidelines)
-  - [5.1 Keeping the dependencies up-to-date](#51-keeping-the-dependencies-up-to-date)
-    - [5.1.1 Backend](#511-backend)
-    - [5.1.2 Frontend](#512-frontend)
-- [6. Where to Go From Here](#6-where-to-go-from-here)
-- [7. Troubleshooting](#7-troubleshooting)
+- [2. Gitleaks Setup (Secret Scanning)](#2-gitleaks-setup-secret-scanning)
+- [3. Environment Configuration](#3-environment-configuration)
+  - [3.1 Base Environment (.env)](#31-base-environment-env)
+  - [3.2 DDEV Environment (.env.ddev)](#32-ddev-environment-envddev)
+  - [3.3 Native Environment (.env.native)](#33-native-environment-envnative)
+- [4. Switching Between DDEV and Native](#4-switching-between-ddev-and-native)
+  - [4.1 Using DDEV](#41-using-ddev)
+  - [4.2 Using Native](#42-using-native)
+- [5. Email Viewing](#5-email-viewing)
+  - [5.1 DDEV](#51-ddev)
+  - [5.2 Native](#52-native)
+- [6. Tips - General Guidelines](#6-tips---general-guidelines)
+  - [6.1 Keeping the dependencies up-to-date](#61-keeping-the-dependencies-up-to-date)
+    - [6.1.1 Backend](#611-backend)
+    - [6.1.2 Frontend](#612-frontend)
+- [7. Where to Go From Here](#7-where-to-go-from-here)
+- [8. Troubleshooting](#8-troubleshooting)
 
 ## 1. Clone the Repository
 
@@ -30,13 +31,39 @@ git clone git@github.com:scify/annotation-management-system.git
 cd annotation-management-system
 ```
 
-## 2. Environment Configuration
+## 2. Gitleaks Setup (Secret Scanning)
+
+The pre-commit hook scans staged files for secrets (API keys, passwords, tokens) before each commit. It requires a `./gitleaks` binary in the project root. The binary is gitignored, so **each developer must install it once**.
+
+Download the binary for your platform:
+
+```sh
+# Linux (x64)
+curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_linux_x64.tar.gz | tar -xz
+
+# macOS (Apple Silicon)
+curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_darwin_arm64.tar.gz | tar -xz
+
+# macOS (Intel)
+curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.28.0/gitleaks_8.28.0_darwin_x64.tar.gz | tar -xz
+```
+
+Make it executable and verify:
+
+```sh
+chmod +x gitleaks
+./gitleaks version
+```
+
+The hook runs automatically on every `git commit`. If it finds a potential secret, the commit is blocked with a clear error message. For false positives, see [docs/GITLEAKS-SECURITY.md](GITLEAKS-SECURITY.md).
+
+## 3. Environment Configuration
 
 Annotation Management System uses different environment configurations based on whether you are running with **DDEV** or **Native**.
 The application automatically loads the appropriate environment variables, based on the `APP_DEVELOPMENT_ENV`
 environment variable.
 
-### 2.1 Base Environment (.env)
+### 3.1 Base Environment (.env)
 
 The default `.env` file contains the general configuration, and is used by both **DDEV** and **Native**.
 Copy the `.env.example` file to create a new `.env` file, and edit as needed:
@@ -48,7 +75,7 @@ cp .env.example .env
 APP_DEVELOPMENT_ENV=native # or 'ddev'
 ```
 
-### 2.2 DDEV Environment (.env.ddev)
+### 3.2 DDEV Environment (.env.ddev)
 
 If you are using **DDEV**, you need a `.env.ddev` file with the following:
 
@@ -69,7 +96,7 @@ You can copy the `.env.ddev.example` file to create a new `.env.ddev` file:
 cp .env.ddev.example .env.ddev
 ```
 
-### 2.3 Native Environment (.env.native)
+### 3.3 Native Environment (.env.native)
 
 First you will need to set up a local database (MySQL, SQLite, etc) and create a new database for the application. Then, you can create a `.env.native` file with the appropriate database credentials.
 
@@ -92,7 +119,7 @@ You can copy the `.env.native.example` file to create a new `.env.native` file:
 cp .env.native.example .env.native
 ```
 
-## 3. Switching Between DDEV and Native
+## 4. Switching Between DDEV and Native
 
 If you want to switch between **DDEV** and **Native** for development, you can set the `APP_DEVELOPMENT_ENV`
 environment variable to either `ddev` or `native`.
@@ -104,7 +131,7 @@ ddev restart # If using DDEV
 ./clear-cache.sh
 ```
 
-### 3.1 Using DDEV
+### 4.1 Using DDEV
 
 First generate an application key:
 
@@ -130,7 +157,7 @@ Start the frontend development server:
 ddev npm run dev
 ```
 
-### 3.2 Using Native
+### 4.2 Using Native
 
 First generate an application key:
 
@@ -156,36 +183,36 @@ Start the frontend development server:
 npm run dev
 ```
 
-## 4. Email Viewing
+## 5. Email Viewing
 
-### 4.1 DDEV
+### 5.1 DDEV
 
 When using **DDEV**, you can view emails sent by the application using [Mailpit](https://github.com/axllent/mailpit). [Read
 more here](https://ddev.readthedocs.io/en/stable/users/usage/developer-tools/#email-capture-and-review-mailpit).
 
-### 4.2 Native
+### 5.2 Native
 
 When using **Native**, you can view emails sent by the application using one of the [methods
 described here](https://laravel.com/docs/12.x/mail#mail-and-local-development).
 
-## 5. Tips - General Guidelines
+## 6. Tips - General Guidelines
 
-### 5.1 Keeping the dependencies up-to-date
+### 6.1 Keeping the dependencies up-to-date
 
-#### 5.1.1 Backend
+#### 6.1.1 Backend
 
 Run `composer outdated --direct` to check for outdated Composer dependencies, and update them as needed.
 
-#### 5.1.2 Frontend
+#### 6.1.2 Frontend
 
 Use tools like [ncu](https://www.npmjs.com/package/npm-check-updates) to check for outdated NPM dependencies.
 
-## 6. Where to Go From Here
+## 7. Where to Go From Here
 
 - Watch [this video](https://www.youtube.com/watch?v=phaBzRIioAw) to learn more about the Vue/Inertia setup.
 - Take a look at `app/Providers/AppServiceProvider.php` to check the configuration.
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 - Ensure the correct environment file is loaded using `env('DB_HOST')` in Tinker.
   - For DDEV, run `ddev exec php artisan tinker`, and then run `env('DB_HOST')`.

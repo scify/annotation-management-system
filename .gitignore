@@ -38,3 +38,6 @@ coverage/
 gitleaks
 
 .claude/
+
+# Gitleaks licence
+LICENSE

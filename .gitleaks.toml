@@ -163,6 +163,7 @@ files = [
     ".env.dusk.local",
     "docs/LOCAL-DEVELOPMENT.md",
     "azure/deploy-laravel-to-azure.sh",
+    "README.md"
 ]
 
 paths = [
