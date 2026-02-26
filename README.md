@@ -1,8 +1,8 @@
 <!-- omit in toc -->
 # Annotation Management System - Development Setup
 
-[![Tests](https://github.com/scify/laradev-react/actions/workflows/tests.yml/badge.svg)](https://github.com/scify/laradev-react/actions/workflows/tests.yml)
-[![Linter](https://github.com/scify/laradev-react/actions/workflows/lint.yml/badge.svg)](https://github.com/scify/laradev-react/actions/workflows/lint.yml)
+[![Tests](https://github.com/scify/annotation-management-system/actions/workflows/tests.yml/badge.svg)](https://github.com/scify/annotation-management-system/actions/workflows/tests.yml)
+[![Linter](https://github.com/scify/annotation-management-system/actions/workflows/lint.yml/badge.svg)](https://github.com/scify/annotation-management-system/actions/workflows/lint.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 <!-- omit in toc -->
@@ -247,7 +247,7 @@ Then, push the tag:
 git push origin vx.y.z
 ```
 
-Then, in the [GitHub Releases page](https://github.com/scify/laradev-react/releases), create a new Release
+Then, in the [GitHub Releases page](https://github.com/scify/annotation-management-system/releases), create a new Release
 **and correlate it with the tag that you just created.**
 
 Also, don't forget to update the `CHANGELOG.md` file with the new version name, release date, and release notes.

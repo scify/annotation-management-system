@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `laradev-react` will be documented in this file.
+All notable changes to `annotation-management-system` will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).

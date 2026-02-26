@@ -25,14 +25,14 @@
 ## 1. Clone the Repository
 
 ```sh
-git clone https://github.com/scify/laradev-react.git
+git clone git@github.com:scify/annotation-management-system.git
 
-cd laradev-react
+cd annotation-management-system
 ```
 
 ## 2. Environment Configuration
 
-Laradev-React uses different environment configurations based on whether you are running with **DDEV** or **Native**.
+Annotation Management System uses different environment configurations based on whether you are running with **DDEV** or **Native**.
 The application automatically loads the appropriate environment variables, based on the `APP_DEVELOPMENT_ENV`
 environment variable.
 
@@ -43,19 +43,22 @@ Copy the `.env.example` file to create a new `.env` file, and edit as needed:
 
 ```sh
 cp .env.example .env
+
+# then edit the APP_DEVELOPMENT_ENV variable to either 'ddev' or 'native'
+APP_DEVELOPMENT_ENV=native # or 'ddev'
 ```
 
 ### 2.2 DDEV Environment (.env.ddev)
 
-If you are using **DDEV**, create a `.env.ddev` file with the following:
+If you are using **DDEV**, you need a `.env.ddev` file with the following:
 
 ```ini
-APP_URL = "https://laradev-react.ddev.site:8443"
+APP_URL = "https://annotation-management-system.ddev.site:8443"
 DB_HOST = "db"
 DB_DATABASE = "db"
 DB_USERNAME = "db"
 DB_PASSWORD = "db"
-VITE_DEV_URL = "https://laradev-react.ddev.site"
+VITE_DEV_URL = "https://annotation-management-system.ddev.site"
 VITE_APP_PORT = "8443"
 VITE_DEV_PORT = "5179"
 ```
@@ -155,13 +158,13 @@ npm run dev
 
 ### 4.1 DDEV
 
-When using **DDEV**, you can view emails sent by the application using [Mailpit](https://github.com/axllent/mailpit). Read
-more [here](https://ddev.readthedocs.io/en/stable/users/usage/developer-tools/#email-capture-and-review-mailpit).
+When using **DDEV**, you can view emails sent by the application using [Mailpit](https://github.com/axllent/mailpit). [Read
+more here](https://ddev.readthedocs.io/en/stable/users/usage/developer-tools/#email-capture-and-review-mailpit).
 
 ### 4.2 Native
 
-When using **Native**, you can view emails sent by the application using one of the methods
-described [here](https://laravel.com/docs/12.x/mail#mail-and-local-development).
+When using **Native**, you can view emails sent by the application using one of the [methods
+described here](https://laravel.com/docs/12.x/mail#mail-and-local-development).
 
 ## 5. Tips - General Guidelines
 
@@ -191,4 +194,4 @@ Use tools like [ncu](https://www.npmjs.com/package/npm-check-updates) to check f
 - If Vite fails due to port conflicts, restart it using `pkill -f node`.
 - Run `ddev restart` if database issues persist.
 
-Enjoy developing with Laradev! 🚀
+Enjoy developing! 🚀

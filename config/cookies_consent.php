@@ -18,7 +18,7 @@ return [
      *   }
      * }
      */
-    'cookie_prefix' => 'scify_laradev_react_',
+    'cookie_prefix' => 'scify_annotation_management_system_',
     'display_floating_button' => true, // Set to false to display the footer link instead
     'hide_floating_button_on_mobile' => false, // Set to true to hide the floating button on mobile
     'use_separate_page' => false, // Set to true to use a separate page for cookies explanation
@@ -39,7 +39,7 @@ return [
         'strictly_necessary' => [
             [
                 // you need to change this in order to reflect the cookie_prefix from above
-                'name' => 'scify_laradev_react__cookies_consent',
+                'name' => 'scify_annotation_management_system__cookies_consent',
                 'description' => 'cookies_consent::messages.cookie_cookies_consent_description',
                 'duration' => 'cookies_consent::messages.years',
                 'duration_count' => 1,
@@ -53,7 +53,7 @@ return [
                 'policy_external_link' => null,
             ],
             [
-                'name' => 'scify_laradev_react__session',
+                'name' => 'scify_annotation_management_system__session',
                 'description' => 'cookies_consent::messages.cookie_laravel_session_description',
                 'duration' => 'cookies_consent::messages.hours',
                 'duration_count' => 2,

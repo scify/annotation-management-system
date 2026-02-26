@@ -15,7 +15,7 @@ return [
     |
     */
     'login' => [
-        'title' => 'Συνδεθείτε στο Laradev-React',
+        'title' => 'Συνδεθείτε στο Annotation Management System',
         'description' => 'Εισάγετε το email και τον κωδικό σας παρακάτω για να συνδεθείτε',
         'email' => 'Διεύθυνση email',
         'password' => 'Κωδικός',

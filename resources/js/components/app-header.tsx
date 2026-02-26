@@ -30,7 +30,7 @@ const mainNavItems: NavItem[] = [
 const rightNavItems: NavItem[] = [
 	{
 		title: 'Repository',
-		href: 'https://github.com/scify/laradev-react',
+		href: 'https://github.com/scify/annotation-management-system',
 		icon: Folder,
 	},
 	{
