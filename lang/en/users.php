@@ -3,18 +3,18 @@
 declare(strict_types=1);
 
 return [
-    'title' => 'Backoffice Users',
-    'index_page_title' => 'All Backoffice Users',
+    'title' => 'Users',
+    'index_page_title' => 'All Users',
     'actions' => [
-        'new' => 'New Backoffice User',
-        'new_big_button' => 'Create Backoffice User',
-        'create' => 'Create Backoffice User',
-        'edit' => 'Edit Backoffice User',
-        'edit_big_button' => 'Edit Backoffice User',
-        'update' => 'Update Backoffice User',
-        'delete' => 'Delete Backoffice User',
-        'show' => 'Show Backoffice User',
-        'restore' => 'Restore Backoffice User',
+        'new' => 'New User',
+        'new_big_button' => 'Create User',
+        'create' => 'Create User',
+        'edit' => 'Edit User',
+        'edit_big_button' => 'Edit User',
+        'update' => 'Update User',
+        'delete' => 'Delete User',
+        'show' => 'Show User',
+        'restore' => 'Restore User',
     ],
     'labels' => [
         'name' => 'Name',

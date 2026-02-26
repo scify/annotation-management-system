@@ -3,18 +3,18 @@
 declare(strict_types=1);
 
 return [
-    'title' => 'Χρήστες Backoffice',
+    'title' => 'Χρήστες',
     'index_page_title' => 'Όλοι οι Χρήστες',
     'actions' => [
         'new' => 'Νέος Χρήστης',
-        'new_big_button' => 'Δημιουργία Χρήστη Backoffice',
-        'edit_big_button' => 'Επεξεργασία Χρήστη Backoffice',
-        'create' => 'Δημιουργία Χρήστη Backoffice',
-        'edit' => 'Επεξεργασία Χρήστη Backoffice',
-        'update' => 'Ενημέρωση Χρήστη Backoffice',
-        'delete' => 'Διαγραφή Χρήστη Backoffice',
-        'show' => 'Προβολή Χρήστη Backoffice',
-        'restore' => 'Επαναφορά Χρήστη Backoffice',
+        'new_big_button' => 'Δημιουργία Χρήστη',
+        'edit_big_button' => 'Επεξεργασία Χρήστη',
+        'create' => 'Δημιουργία Χρήστη',
+        'edit' => 'Επεξεργασία Χρήστη',
+        'update' => 'Ενημέρωση Χρήστη',
+        'delete' => 'Διαγραφή Χρήστη',
+        'show' => 'Προβολή Χρήστη',
+        'restore' => 'Επαναφορά Χρήστη',
     ],
     'labels' => [
         'name' => 'Όνομα',
