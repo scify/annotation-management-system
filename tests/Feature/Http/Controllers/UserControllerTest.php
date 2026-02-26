@@ -9,129 +9,124 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function (): void {
-    // Run the role seeder first
-    $this->seed(RolesAndPermissionsSeeder::class);
+describe('UserController', function (): void {
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
 
-    // Create admin user
-    $this->admin = User::factory()->create([
-        'email' => 'admin@example.com',
-        'name' => 'Admin User',
-    ])->assignRole(RolesEnum::ADMINISTRATOR->value)->load('roles');
+        $this->admin = User::factory()->create([
+            'email' => 'admin@example.com',
+            'name' => 'Admin User',
+        ])->assignRole(RolesEnum::ADMIN->value)->load('roles');
 
-    // Create user manager
-    $this->userManager = User::factory()->create([
-        'email' => 'user_manager@example.com',
-        'name' => 'User Manager',
-    ])->assignRole(RolesEnum::USER_MANAGER->value)->load('roles');
+        $this->annotationManager = User::factory()->create([
+            'email' => 'annotation_manager@example.com',
+            'name' => 'Annotation Manager',
+        ])->assignRole(RolesEnum::ANNOTATION_MANAGER->value)->load('roles');
 
-    // Create registered user
-    $this->regularUser = User::factory()->create([
-        'email' => 'registered_user@example.com',
-        'name' => 'Registered User',
-    ])->assignRole(RolesEnum::REGISTERED_USER->value)->load('roles');
-});
+        $this->annotator = User::factory()->create([
+            'email' => 'annotator@example.com',
+            'name' => 'Annotator',
+        ])->assignRole(RolesEnum::ANNOTATOR->value)->load('roles');
+    });
 
-test('index shows users list to authorized users', function (): void {
-    // Admin can view users
-    $response = test()->actingAs($this->admin)->get(route('users.index'));
-    $response->assertStatus(200)
-        ->assertInertia(
-            fn ($page) => $page
-                ->component('users/index')
-                ->has('users')
-        );
+    it('shows users list to admins and annotation managers', function (): void {
+        // Admin can view users
+        $this->actingAs($this->admin)
+            ->get(route('users.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('users/index')->has('users'));
 
-    // User manager can view users
-    test()->actingAs($this->userManager)
-        ->get(route('users.index'))
-        ->assertStatus(200);
+        // Annotation manager can view users
+        $this->actingAs($this->annotationManager)
+            ->get(route('users.index'))
+            ->assertOk();
 
-    // Regular user cannot view users
-    test()->actingAs($this->regularUser)
-        ->get(route('users.index'))
-        ->assertStatus(403);
-});
+        // Annotator cannot view users
+        $this->actingAs($this->annotator)
+            ->get(route('users.index'))
+            ->assertForbidden();
+    });
 
-test('create shows form to authorized users', function (): void {
-    // Admin can view create form
-    $response = test()->actingAs($this->admin)->get(route('users.create'));
-    $response->assertStatus(200)
-        ->assertInertia(
-            fn ($page) => $page
-                ->component('users/create')
-                ->has('roles')
-        );
+    it('shows create form to admins and annotation managers', function (): void {
+        // Admin can view create form
+        $this->actingAs($this->admin)
+            ->get(route('users.create'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('users/create')->has('roles'));
 
-    // User manager can view create form
-    test()->actingAs($this->userManager)
-        ->get(route('users.create'))
-        ->assertStatus(200);
+        // Annotation manager can view create form
+        $this->actingAs($this->annotationManager)
+            ->get(route('users.create'))
+            ->assertOk();
 
-    // Regular user cannot view create form
-    test()->actingAs($this->regularUser)
-        ->get(route('users.create'))
-        ->assertStatus(403);
-});
+        // Annotator cannot view create form
+        $this->actingAs($this->annotator)
+            ->get(route('users.create'))
+            ->assertForbidden();
+    });
 
-test('store creates new user', function (): void {
-    test()->actingAs($this->admin)->get(route('users.create'));
+    it('creates a new user', function (): void {
+        // Arrange
+        $this->actingAs($this->admin)->get(route('users.create'));
 
-    $userData = [
-        'name' => 'Test User',
-        'email' => 'test@example.com',
-        'password' => 'password123',
-        'password_confirmation' => 'password123',
-        'role' => RolesEnum::REGISTERED_USER->value,
-        '_token' => session('_token'),
-    ];
+        // Act
+        $response = $this->post(route('users.store'), [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'role' => RolesEnum::ANNOTATOR->value,
+            '_token' => session('_token'),
+        ]);
 
-    $response = test()->post(route('users.store'), $userData);
+        // Assert
+        $response->assertRedirect(route('users.index'));
 
-    $response->assertRedirect(route('users.index'));
+        $user = User::query()->where('email', 'test@example.com')->first();
 
-    $user = User::query()->where('email', 'test@example.com')->first();
+        expect($user)
+            ->name->toBe('Test User')
+            ->and($user->hasRole(RolesEnum::ANNOTATOR->value))->toBeTrue();
+    });
 
-    expect($user)
-        ->name->toBe('Test User')
-        ->and($user->hasRole(RolesEnum::REGISTERED_USER->value))->toBeTrue();
-});
+    it('prevents annotation managers from modifying admins', function (): void {
+        // Arrange
+        $adminToModify = User::factory()->create()->syncRoles([RolesEnum::ADMIN->value]);
 
-test('user manager cannot modify admin', function (): void {
-    // Create an admin user to be modified
-    $adminToModify = User::factory()->create();
-    $adminToModify->syncRoles([RolesEnum::ADMINISTRATOR->value]);
+        $this->actingAs($this->annotationManager)->get(route('users.edit', $adminToModify));
 
-    test()->actingAs($this->userManager)
-        ->get(route('users.edit', $adminToModify));
+        // Act
+        $response = $this->put(route('users.update', $adminToModify), [
+            'name' => 'Updated Name',
+            'email' => $adminToModify->email,
+            'role' => RolesEnum::ADMIN->value,
+            '_token' => session('_token'),
+        ]);
 
-    $response = test()->put(route('users.update', $adminToModify), [
-        'name' => 'Updated Name',
-        'email' => $adminToModify->email,
-        'role' => RolesEnum::ADMINISTRATOR->value,
-        '_token' => session('_token'),
-    ]);
+        // Assert
+        $response->assertForbidden();
 
-    $response->assertStatus(403);
+        expect(User::query()->find($adminToModify->id))
+            ->name->not->toBe('Updated Name');
+    });
 
-    expect(User::query()->find($adminToModify->id))
-        ->name->not->toBe('Updated Name');
-});
+    it('soft deletes a user', function (): void {
+        // Arrange
+        $user = User::factory()->create();
 
-test('soft deletes user', function (): void {
-    $user = User::factory()->create();
+        $this->actingAs($this->admin)->get(route('users.index'));
 
-    test()->actingAs($this->admin)
-        ->get(route('users.index'));
+        // Act
+        $response = $this->delete(route('users.destroy', $user), [
+            '_token' => session('_token'),
+        ]);
 
-    $response = test()->delete(route('users.destroy', $user), [
-        '_token' => session('_token'),
-    ]);
+        // Assert
+        $response->assertRedirect();
 
-    $response->assertStatus(302);
+        $this->assertSoftDeleted('users', ['id' => $user->id]);
 
-    test()->assertSoftDeleted('users', ['id' => $user->id]);
-
-    expect(User::withTrashed()->find($user->id))->not->toBeNull()
-        ->and(User::query()->find($user->id))->toBeNull();
+        expect(User::withTrashed()->find($user->id))->not->toBeNull()
+            ->and(User::query()->find($user->id))->toBeNull();
+    });
 });

@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider {
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()
         // NOSONAR
-        Gate::before(fn ($user, $ability): ?true => $user->hasRole(RolesEnum::ADMINISTRATOR) ? true : null);
+        Gate::before(fn ($user, $ability): ?true => $user->hasRole(RolesEnum::ADMIN) ? true : null);
 
         // Uncomment the following line to enable strict mode for Eloquent models
         /**

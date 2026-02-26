@@ -21,7 +21,7 @@ class DashboardController extends Controller {
         /** @var User $user */
         $user = Auth::user();
 
-        if ($user->hasRole(RolesEnum::REGISTERED_USER->value)) {
+        if ($user->hasRole(RolesEnum::ANNOTATOR->value)) {
             return Inertia::render('dashboard-simple');
         }
 

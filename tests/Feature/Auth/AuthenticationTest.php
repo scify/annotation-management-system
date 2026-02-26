@@ -24,7 +24,7 @@ test('login screen can be rendered', function (): void {
 });
 
 test('users can authenticate using the login screen', function (): void {
-    $user = User::factory()->create()->assignRole(RolesEnum::REGISTERED_USER->value);
+    $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
 
     // First get the login page to obtain CSRF token
     $this->get($this->loginRoute);

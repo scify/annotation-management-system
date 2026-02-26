@@ -16,7 +16,7 @@ beforeEach(function (): void {
 });
 
 test('password can be updated', function (): void {
-    $user = User::factory()->create()->assignRole(RolesEnum::ADMINISTRATOR->value);
+    $user = User::factory()->create()->assignRole(RolesEnum::ADMIN->value);
 
     $url = 'settings/password';
     // Get the password update page first to establish session
@@ -38,7 +38,7 @@ test('password can be updated', function (): void {
 });
 
 test('correct password must be provided to update password', function (): void {
-    $user = User::factory()->create()->assignRole(RolesEnum::ADMINISTRATOR->value);
+    $user = User::factory()->create()->assignRole(RolesEnum::ADMIN->value);
 
     $url = 'settings/password';
     $this->actingAs($user)->get($url);

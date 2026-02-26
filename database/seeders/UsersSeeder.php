@@ -21,20 +21,20 @@ class UsersSeeder extends Seeder {
             'name' => 'Admin User',
             'password' => Hash::make($password),
         ]);
-        $admin->assignRole(RolesEnum::ADMINISTRATOR->value);
+        $admin->syncRoles([RolesEnum::ADMIN->value]);
 
-        // Create or update the user manager
-        $userManager = User::query()->updateOrCreate(['email' => 'user_manager@scify.org'], [
-            'name' => 'User Manager',
+        // Create or update the annotation manager
+        $annotationManager = User::query()->updateOrCreate(['email' => 'annotation_manager@scify.org'], [
+            'name' => 'Annotation Manager',
             'password' => Hash::make($password),
         ]);
-        $userManager->assignRole(RolesEnum::USER_MANAGER->value);
+        $annotationManager->syncRoles([RolesEnum::ANNOTATION_MANAGER->value]);
 
-        // Create or update the registered user
-        $registeredUser = User::query()->updateOrCreate(['email' => 'registered_user@scify.org'], [
-            'name' => 'Registered User',
+        // Create or update the annotator
+        $annotator = User::query()->updateOrCreate(['email' => 'annotator@scify.org'], [
+            'name' => 'Annotator User',
             'password' => Hash::make($password),
         ]);
-        $registeredUser->assignRole(RolesEnum::REGISTERED_USER->value);
+        $annotator->syncRoles([RolesEnum::ANNOTATOR->value]);
     }
 }

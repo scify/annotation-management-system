@@ -43,8 +43,8 @@ const mockStats = {
 		deleted: 10,
 		by_role: {
 			admin: 5,
-			'user-manager': 15,
-			'registered-user': 80,
+			'annotation-manager': 15,
+			annotator: 80,
 		},
 		recent: {
 			week: 5,
@@ -57,7 +57,7 @@ const mockStats = {
 			name: 'Test User',
 			email: 'test@example.com',
 			created_at: '2025-04-01T00:00:00.000Z',
-			role: RolesEnum.ADMINISTRATOR,
+			role: RolesEnum.ADMIN,
 		},
 	],
 };
@@ -92,10 +92,10 @@ describe('Dashboard Component', () => {
 		expect(screen.getByText('roles.admin')).toBeInTheDocument();
 		expect(screen.getByText('5 dashboard.users')).toBeInTheDocument();
 
-		expect(screen.getByText('roles.user-manager')).toBeInTheDocument();
+		expect(screen.getByText('roles.annotation-manager')).toBeInTheDocument();
 		expect(screen.getByText('15 dashboard.users')).toBeInTheDocument();
 
-		expect(screen.getByText('roles.registered-user')).toBeInTheDocument();
+		expect(screen.getByText('roles.annotator')).toBeInTheDocument();
 		expect(screen.getByText('80 dashboard.users')).toBeInTheDocument();
 	});
 

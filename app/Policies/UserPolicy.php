@@ -23,12 +23,12 @@ class UserPolicy {
 
     public function update(User $user, User $model): bool {
         // Admin can update anyone
-        if ($user->hasRole(RolesEnum::ADMINISTRATOR->value)) {
+        if ($user->hasRole(RolesEnum::ADMIN->value)) {
             return true;
         }
 
-        // User managers can't update admins
-        if ($model->hasRole(RolesEnum::ADMINISTRATOR->value)) {
+        // Annotation managers can't update admins
+        if ($model->hasRole(RolesEnum::ADMIN->value)) {
             return false;
         }
 
@@ -37,12 +37,12 @@ class UserPolicy {
 
     public function delete(User $user, User $model): bool {
         // Admin can delete anyone
-        if ($user->hasRole(RolesEnum::ADMINISTRATOR->value)) {
+        if ($user->hasRole(RolesEnum::ADMIN->value)) {
             return true;
         }
 
-        // User managers can't delete admins
-        if ($model->hasRole(RolesEnum::ADMINISTRATOR->value)) {
+        // Annotation managers can't delete admins
+        if ($model->hasRole(RolesEnum::ADMIN->value)) {
             return false;
         }
 

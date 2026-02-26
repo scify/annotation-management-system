@@ -14,8 +14,8 @@ interface DashboardProps {
 
 const ROLE_COLORS = {
 	admin: 'bg-blue-500',
-	'user-manager': 'bg-green-500',
-	'registered-user': 'bg-neutral-500',
+	'annotation-manager': 'bg-green-500',
+	annotator: 'bg-neutral-500',
 } as const satisfies Record<RolesEnum, string>;
 
 interface DashboardStats {

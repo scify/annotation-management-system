@@ -31,18 +31,16 @@ class RolesAndPermissionsSeeder extends Seeder {
         $permissions = collect(PermissionsEnum::cases())
             ->map(fn ($permission) => Permission::query()->firstOrCreate(['name' => $permission->value]));
 
-        // Create roles and assign permissions
-        // Role::query()->upsert(['name' => RolesEnum::ADMINISTRATOR->value, 'guard_name' => 'web'], uniqueBy: 'name', update: ['name']);
-
         // create roles using RolesEnum
-        $admin_role = Role::query()->firstOrCreate(['name' => RolesEnum::ADMINISTRATOR->value, 'guard_name' => 'web']);
-        $user_manager_role = Role::query()->firstOrCreate(['name' => RolesEnum::USER_MANAGER->value, 'guard_name' => 'web']);
-        Role::query()->firstOrCreate(['name' => RolesEnum::REGISTERED_USER->value, 'guard_name' => 'web']);
+        $adminRole = Role::query()->firstOrCreate(['name' => RolesEnum::ADMIN->value, 'guard_name' => 'web']);
+        $annotationManagerRole = Role::query()->firstOrCreate(['name' => RolesEnum::ANNOTATION_MANAGER->value, 'guard_name' => 'web']);
+        Role::query()->firstOrCreate(['name' => RolesEnum::ANNOTATOR->value, 'guard_name' => 'web']);
+
         // flush cache after creating roles and permissions
         app()->make(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        // assign permissions to roles
-        $user_manager_role->givePermissionTo([
+        // Annotation managers can manage users
+        $annotationManagerRole->givePermissionTo([
             PermissionsEnum::VIEW_USERS->value,
             PermissionsEnum::CREATE_USERS->value,
             PermissionsEnum::UPDATE_USERS->value,
@@ -50,7 +48,7 @@ class RolesAndPermissionsSeeder extends Seeder {
             PermissionsEnum::RESTORE_USERS->value,
         ]);
 
-        $admin_role->givePermissionTo(Permission::all());
-        $admin_role->givePermissionTo($permissions);
+        // Admin gets all permissions
+        $adminRole->givePermissionTo($permissions);
     }
 }

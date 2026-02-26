@@ -13,7 +13,7 @@ class UserService {
      * @param  array<string, mixed>  $data
      */
     public function create(array $data): User {
-        $role = $data['role'] ?? RolesEnum::REGISTERED_USER->value;
+        $role = $data['role'] ?? RolesEnum::ANNOTATOR->value;
         unset($data['role']);
 
         $user = User::query()->create($data);
@@ -77,18 +77,15 @@ class UserService {
      * @phpstan-return Collection<int, array{name: string, label: string}>
      */
     public function getRolesForForm(): Collection {
-        $roles = collect(RolesEnum::cases());
         /** @var User $user */
         $user = auth()->user();
 
-        // If user is not admin, further filter available roles
-        if (! $user->hasRole(RolesEnum::ADMINISTRATOR->value)) {
-            $roles = $roles->filter(
-                fn (RolesEnum $rolesEnum): bool => $rolesEnum->value === RolesEnum::USER_MANAGER->value
-            );
-        }
+        // Annotation managers can assign annotators and other annotation managers, but not admins
+        $cases = $user->hasRole(RolesEnum::ADMIN->value)
+            ? RolesEnum::cases()
+            : [RolesEnum::ANNOTATION_MANAGER, RolesEnum::ANNOTATOR];
 
-        return $roles->map(fn (RolesEnum $rolesEnum): array => [
+        return collect($cases)->map(fn (RolesEnum $rolesEnum): array => [
             'name' => $rolesEnum->value,
             'label' => 'roles.' . $rolesEnum->value,
         ])->values();

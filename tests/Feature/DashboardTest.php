@@ -6,32 +6,45 @@ use App\Enums\RolesEnum;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
-beforeEach(function (): void {
-    $this->seed(RolesAndPermissionsSeeder::class);
-});
+describe('DashboardController', function (): void {
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
+    });
 
-test('guests are redirected to the login page', function (): void {
-    $this->get('/dashboard')->assertRedirect('/login');
-});
+    it('redirects guests to the login page', function (): void {
+        $this->get('/dashboard')->assertRedirect('/login');
+    });
 
-test('admin users can visit the dashboard', function (): void {
-    $user = User::factory()->create([
-        'email' => 'admin@example.com',
-        'name' => 'Admin User',
-    ])->assignRole(RolesEnum::ADMINISTRATOR->value);
+    it('renders the full dashboard for admins', function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ADMIN->value);
 
-    $this->actingAs($user);
+        // Act & Assert
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('dashboard'));
+    });
 
-    $this->get('/dashboard')->assertOk();
-});
+    it('renders the full dashboard for annotation managers', function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATION_MANAGER->value);
 
-test('registered users are redirected to the dashboard page', function (): void {
-    $user = User::factory()->create([
-        'email' => 'user@example.com',
-        'name' => 'Regular User',
-    ])->assignRole(RolesEnum::REGISTERED_USER->value);
+        // Act & Assert
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('dashboard'));
+    });
 
-    $this->actingAs($user);
+    it('renders the simple dashboard for annotators', function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
 
-    $this->get('/dashboard')->assertOk();
+        // Act & Assert
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('dashboard-simple'));
+    });
 });

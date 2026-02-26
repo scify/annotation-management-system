@@ -72,7 +72,7 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
 };
 
 export enum RolesEnum {
-	ADMINISTRATOR = 'admin',
-	USER_MANAGER = 'user-manager',
-	REGISTERED_USER = 'registered-user',
+	ADMIN = 'admin',
+	ANNOTATION_MANAGER = 'annotation-manager',
+	ANNOTATOR = 'annotator',
 }

@@ -43,7 +43,7 @@ describe('UserController', function (): void {
     it('grants dashboard permission to admins', function (): void {
         // Arrange
         $user = User::factory()->create(['name' => 'Admin User'])
-            ->assignRole(RolesEnum::ADMINISTRATOR->value);
+            ->assignRole(RolesEnum::ADMIN->value);
 
         // Act
         $response = $this->actingAs($user)->getJson('/api/v1/user/info');
@@ -53,7 +53,7 @@ describe('UserController', function (): void {
             ->assertJson([
                 'user' => [
                     'name' => 'Admin User',
-                    'role' => RolesEnum::ADMINISTRATOR->value,
+                    'role' => RolesEnum::ADMIN->value,
                 ],
                 'permissions' => ['dashboard' => true],
             ]);
@@ -62,7 +62,7 @@ describe('UserController', function (): void {
     it('grants dashboard permission to user managers', function (): void {
         // Arrange
         $user = User::factory()->create(['name' => 'Manager User'])
-            ->assignRole(RolesEnum::USER_MANAGER->value);
+            ->assignRole(RolesEnum::ANNOTATION_MANAGER->value);
 
         // Act
         $response = $this->actingAs($user)->getJson('/api/v1/user/info');
@@ -72,7 +72,7 @@ describe('UserController', function (): void {
             ->assertJson([
                 'user' => [
                     'name' => 'Manager User',
-                    'role' => RolesEnum::USER_MANAGER->value,
+                    'role' => RolesEnum::ANNOTATION_MANAGER->value,
                 ],
                 'permissions' => ['dashboard' => true],
             ]);
@@ -81,7 +81,7 @@ describe('UserController', function (): void {
     it('denies dashboard permission to regular users', function (): void {
         // Arrange
         $user = User::factory()->create(['name' => 'Regular User'])
-            ->assignRole(RolesEnum::REGISTERED_USER->value);
+            ->assignRole(RolesEnum::ANNOTATOR->value);
 
         // Act
         $response = $this->actingAs($user)->getJson('/api/v1/user/info');
@@ -91,7 +91,7 @@ describe('UserController', function (): void {
             ->assertJson([
                 'user' => [
                     'name' => 'Regular User',
-                    'role' => RolesEnum::REGISTERED_USER->value,
+                    'role' => RolesEnum::ANNOTATOR->value,
                 ],
             ])
             ->assertJsonPath('permissions', []);

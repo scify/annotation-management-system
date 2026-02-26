@@ -29,7 +29,7 @@ class UserInfoResource extends JsonResource {
 
         $permissions = [];
 
-        if ($user->hasRole([RolesEnum::ADMINISTRATOR->value, RolesEnum::USER_MANAGER->value])) {
+        if ($user->hasRole([RolesEnum::ADMIN->value, RolesEnum::ANNOTATION_MANAGER->value])) {
             $permissions['dashboard'] = true;
         }
 
