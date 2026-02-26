@@ -8,6 +8,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import { RolesEnum } from '@/types';
 import { useForm } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { useTranslations } from '@/hooks/use-translations';
@@ -17,7 +18,7 @@ interface UserFormProps {
 		id: number;
 		name: string;
 		email: string;
-		role?: string;
+		role?: RolesEnum | null;
 	};
 	action: string;
 	roles: {

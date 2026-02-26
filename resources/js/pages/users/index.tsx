@@ -1,5 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
-import { PageProps, User, Auth } from '@/types/index';
+import { User } from '@/types/index';
 import { Head, usePage, useForm, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/components/ui/link';
@@ -26,16 +26,19 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { useDebouncedCallback } from 'use-debounce';
 import { formatDate } from '@/utils/format';
-interface UsersIndexProps extends PageProps {
+import { PageProps } from '@/types';
+
+interface Props {
 	users: User[];
 	filters: {
-		search: string;
+		search: string | null;
 	};
+	abilities: Record<number, { update: boolean; delete: boolean; restore: boolean }>;
 }
 
-export default function UsersIndex({ users, filters }: UsersIndexProps) {
+export default function UsersIndex({ users, filters, abilities }: Props) {
 	const { t } = useTranslations();
-	const { auth } = usePage().props as unknown as { auth: Auth };
+	const { auth } = usePage<PageProps>().props;
 	const [userToDelete, setUserToDelete] = useState<User | null>(null);
 	const [userToRestore, setUserToRestore] = useState<User | null>(null);
 
@@ -55,20 +58,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
 		);
 	}, 300);
 
-	const canUpdateUser = (user: User) => {
-		return (
-			auth.user?.can.update_users &&
-			(!user.role || user.role !== 'admin' || auth.user.role === 'admin')
-		);
-	};
-
-	const canDeleteUser = (user: User) => {
-		return (
-			auth.user?.can.delete_users &&
-			auth.user.id !== user.id &&
-			(!user.role || user.role !== 'admin' || auth.user.role === 'admin')
-		);
-	};
+	const hasActions = auth.user.can.update_users || auth.user.can.delete_users;
 
 	return (
 		<AppLayout
@@ -83,7 +73,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
 			<div className="p-6">
 				<div className="mb-6 flex items-center justify-between">
 					<h1 className="text-2xl font-semibold">{t('users.title')}</h1>
-					{auth.user?.can.create_users && (
+					{auth.user.can.create_users && (
 						<Link href={route('users.create')} variant="default">
 							<Plus className="mr-2 h-4 w-4" />
 							{t('users.actions.new_big_button')}
@@ -112,7 +102,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
 							<TableHead>{t('users.labels.role')}</TableHead>
 							<TableHead>{t('users.labels.created_at')}</TableHead>
 							<TableHead>{t('users.labels.status')}</TableHead>
-							{(auth.user?.can.update_users || auth.user?.can.delete_users) && (
+							{hasActions && (
 								<TableHead className="w-[100px]">
 									{t('users.labels.actions')}
 								</TableHead>
@@ -124,7 +114,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
 							<TableRow key={user.id}>
 								<TableCell>{user.name}</TableCell>
 								<TableCell>{user.email}</TableCell>
-								<TableCell>{t(`roles.${user.role}`)}</TableCell>
+								<TableCell>{user.role ? t(`roles.${user.role}`) : '—'}</TableCell>
 								<TableCell>{formatDate(user.created_at)}</TableCell>
 								<TableCell>
 									<span
@@ -140,7 +130,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
 											: t('users.status.active')}
 									</span>
 								</TableCell>
-								{(auth.user?.can.update_users || auth.user?.can.delete_users) && (
+								{hasActions && (
 									<TableCell>
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
@@ -160,7 +150,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
 													<Eye className="mr-2 h-4 w-4" />
 													{t('users.actions.show')}
 												</DropdownMenuItem>
-												{canUpdateUser(user) && (
+												{abilities[user.id]?.update && (
 													<DropdownMenuItem
 														onAction={() =>
 															router.visit(
@@ -172,7 +162,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
 														{t('users.actions.edit')}
 													</DropdownMenuItem>
 												)}
-												{canDeleteUser(user) && !user.deleted_at && (
+												{abilities[user.id]?.delete && !user.deleted_at && (
 													<DropdownMenuItem
 														onAction={() => setUserToDelete(user)}
 													>
@@ -180,7 +170,7 @@ export default function UsersIndex({ users, filters }: UsersIndexProps) {
 														{t('users.actions.delete')}
 													</DropdownMenuItem>
 												)}
-												{canUpdateUser(user) && user.deleted_at && (
+												{abilities[user.id]?.restore && user.deleted_at && (
 													<DropdownMenuItem
 														onAction={() => setUserToRestore(user)}
 													>

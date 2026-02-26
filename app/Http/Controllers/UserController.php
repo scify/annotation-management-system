@@ -27,17 +27,27 @@ class UserController extends Controller {
     public function index(Request $request): Response {
         $this->authorize('viewAny', User::class);
 
+        /** @var User $currentUser */
+        $currentUser = $request->user();
+
         $search = $request->query('search');
 
-        $users = $this->userService->getUsers(
-            search: $search
-        );
+        $users = $this->userService->getUsers(search: $search);
+
+        $canRestore = $currentUser->can('restore', User::class);
 
         return Inertia::render('users/index', [
             'users' => $users,
             'filters' => [
                 'search' => $search,
             ],
+            'abilities' => $users->mapWithKeys(fn (User $listedUser): array => [
+                $listedUser->id => [
+                    'update' => $currentUser->can('update', $listedUser),
+                    'delete' => $currentUser->can('delete', $listedUser),
+                    'restore' => $canRestore,
+                ],
+            ]),
         ]);
     }
 

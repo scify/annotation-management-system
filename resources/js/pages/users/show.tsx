@@ -1,13 +1,13 @@
 import AppLayout from '@/layouts/app-layout';
-import { PageProps, User } from '@/types';
+import { User } from '@/types';
 import { Head } from '@inertiajs/react';
 import { useTranslations } from '@/hooks/use-translations';
 
-interface ShowUserProps extends PageProps {
+interface Props {
 	user: User;
 }
 
-export default function Show({ user }: Readonly<ShowUserProps>) {
+export default function Show({ user }: Readonly<Props>) {
 	const { t } = useTranslations();
 
 	return (
@@ -31,7 +31,7 @@ export default function Show({ user }: Readonly<ShowUserProps>) {
 						<p className="text-muted-foreground text-sm font-medium">
 							{t('users.labels.role')}
 						</p>
-						<p>{t(`roles.${user.role.replace('-', '_')}`)}</p>
+						<p>{user.role ? t(`roles.${user.role}`) : '—'}</p>
 					</div>
 				</div>
 			</div>

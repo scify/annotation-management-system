@@ -15,7 +15,7 @@ import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { BookOpen, Folder, LayoutGrid, Menu, Search, Users } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
@@ -50,6 +50,13 @@ export function AppHeader({ breadcrumbs = [] }: Readonly<AppHeaderProps>) {
 	const getInitials = useInitials();
 	const { t } = useTranslations();
 
+	const navItems: NavItem[] = [
+		...mainNavItems,
+		...(auth?.user?.can.view_users
+			? [{ title: t('navbar.users'), href: route('users.index'), icon: Users }]
+			: []),
+	];
+
 	return (
 		<>
 			<div className="border-sidebar-border/80 border-b">
@@ -80,7 +87,7 @@ export function AppHeader({ breadcrumbs = [] }: Readonly<AppHeaderProps>) {
 								<div className="flex h-full flex-1 flex-col space-y-4 p-4">
 									<div className="flex h-full flex-col justify-between text-sm">
 										<div className="flex flex-col space-y-4">
-											{mainNavItems.map((item) => (
+											{navItems.map((item) => (
 												<Link
 													key={item.title}
 													href={item.href as string}
@@ -131,7 +138,7 @@ export function AppHeader({ breadcrumbs = [] }: Readonly<AppHeaderProps>) {
 						className="ml-6 hidden h-full items-center space-x-2 lg:flex"
 						aria-label="Main navigation"
 					>
-						{mainNavItems.map((item) => (
+						{navItems.map((item) => (
 							<div
 								key={item.href || item.title}
 								className="relative flex h-full items-center"

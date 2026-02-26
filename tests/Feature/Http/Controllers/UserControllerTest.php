@@ -34,7 +34,7 @@ describe('UserController', function (): void {
         $this->actingAs($this->admin)
             ->get(route('users.index'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('users/index')->has('users'));
+            ->assertInertia(fn ($page) => $page->component('users/index')->has('users')->has('abilities'));
 
         // Annotation manager can view users
         $this->actingAs($this->annotationManager)
@@ -45,6 +45,30 @@ describe('UserController', function (): void {
         $this->actingAs($this->annotator)
             ->get(route('users.index'))
             ->assertForbidden();
+    });
+
+    it('returns correct per-user abilities based on policy', function (): void {
+        // Admin can update/delete any user
+        $this->actingAs($this->admin)
+            ->get(route('users.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where(sprintf('abilities.%s.update', $this->annotationManager->id), true)
+                ->where(sprintf('abilities.%s.delete', $this->annotationManager->id), true)
+                ->where(sprintf('abilities.%s.update', $this->annotator->id), true)
+                ->where(sprintf('abilities.%s.delete', $this->annotator->id), true)
+            );
+
+        // Annotation manager cannot update or delete admins
+        $this->actingAs($this->annotationManager)
+            ->get(route('users.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where(sprintf('abilities.%s.update', $this->admin->id), false)
+                ->where(sprintf('abilities.%s.delete', $this->admin->id), false)
+                ->where(sprintf('abilities.%s.update', $this->annotator->id), true)
+                ->where(sprintf('abilities.%s.delete', $this->annotator->id), true)
+            );
     });
 
     it('shows create form to admins and annotation managers', function (): void {

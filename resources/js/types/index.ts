@@ -2,7 +2,7 @@ import type { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
 import type { MouseEventHandler } from 'react';
 
-type PermissionAction = 'view' | 'create' | 'update' | 'delete';
+type PermissionAction = 'view' | 'create' | 'update' | 'delete' | 'restore';
 type PermissionResource = 'users' /* | 'posts' | 'comments' etc */;
 type Permission = `${PermissionAction}_${PermissionResource}`;
 
@@ -10,17 +10,20 @@ export interface User {
 	id: number;
 	name: string;
 	email: string;
-	role: string;
+	role: RolesEnum | null;
 	created_at: string | null;
 	updated_at: string | null;
 	deleted_at: string | null;
 	email_verified_at: string | null;
 	avatar: string | null;
-	can: Record<Permission, boolean>;
 }
 
+export type AuthUser = User & {
+	can: Record<Permission, boolean>;
+};
+
 export interface Auth {
-	user: User | null;
+	user: AuthUser | null;
 }
 
 export interface BreadcrumbItem {
@@ -66,7 +69,7 @@ export interface SharedData {
 
 export type PageProps<T extends Record<string, unknown> = Record<string, unknown>> = T & {
 	auth: {
-		user: User;
+		user: AuthUser;
 	};
 	ziggy: Config & { location: string };
 };
