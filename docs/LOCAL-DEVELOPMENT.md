@@ -71,7 +71,9 @@ cp .env.ddev.example .env.ddev
 
 ### 2.3 Native Environment (.env.native)
 
-If you are using a Native environment (Composer, PHP, etc running locally), create a `.env.native` file with the following:
+First you will need to set up a local database (MySQL, SQLite, etc) and create a new database for the application. Then, you can create a `.env.native` file with the appropriate database credentials.
+
+If you are using a Native environment (Composer, PHP, SQL etc running locally), create a `.env.native` file with the following:
 
 ```ini
 APP_URL = http://localhost:8000
