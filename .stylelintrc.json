@@ -1,0 +1,14 @@
+{
+	"extends": [
+		"stylelint-config-standard",
+		"stylelint-config-tailwindcss",
+		"stylelint-prettier/recommended"
+	],
+	"rules": {
+		"property-no-vendor-prefix": [
+			true,
+			{ "ignoreProperties": ["/backdrop-filter$/", "/text-size-adjust$/"] }
+		]
+	},
+	"ignoreFiles": ["**/*", "!resources/css/**/*.css"]
+}
