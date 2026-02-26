@@ -32,7 +32,7 @@ class RolesAndPermissionsSeeder extends Seeder {
             ->map(fn ($permission) => Permission::query()->firstOrCreate(['name' => $permission->value]));
 
         // Create roles and assign permissions
-        Role::upsert(['name' => RolesEnum::ADMINISTRATOR->value, 'guard_name' => 'web'], uniqueBy: 'name', update: ['name']);
+        Role::query()->upsert(['name' => RolesEnum::ADMINISTRATOR->value, 'guard_name' => 'web'], uniqueBy: 'name', update: ['name']);
 
         // create roles using RolesEnum
         $admin_role = Role::query()->firstOrCreate(['name' => RolesEnum::ADMINISTRATOR->value, 'guard_name' => 'web']);
