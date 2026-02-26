@@ -189,10 +189,10 @@ Run the database seeder:
 php artisan db:seed
 ```
 
-Start the frontend development server:
+Start the development server:
 
 ```shell
-npm run dev
+composer run dev
 ```
 
 ## 5. Email Viewing
