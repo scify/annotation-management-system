@@ -6,88 +6,94 @@ use App\Enums\RolesEnum;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
-beforeEach(function (): void {
-    $this->seed(RolesAndPermissionsSeeder::class);
-});
+describe('UserController', function (): void {
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
+    });
 
-test('unauthenticated users cannot access user info', function (): void {
-    $this->getJson('/api/v1/user/info')
-        ->assertStatus(401)
-        ->assertJson(['error' => 'Unauthenticated.']);
-});
+    it('rejects unauthenticated requests', function (): void {
+        // Act
+        $response = $this->getJson('/api/v1/user/info');
 
-test('authenticated users can access their info', function (): void {
-    $user = User::factory()->create([
-        'name' => 'Test User',
-    ]);
+        // Assert
+        $response->assertUnauthorized()
+            ->assertJson(['error' => 'Unauthenticated.']);
+    });
 
-    $this->actingAs($user)
-        ->getJson('/api/v1/user/info')
-        ->assertSuccessful()
-        ->assertJson([
+    it('returns user info and empty permissions for a user with no role', function (): void {
+        // Arrange
+        $user = User::factory()->create(['name' => 'Test User']);
 
-            'user' => [
-                'name' => 'Test User',
-            ],
-            'permissions' => [],
+        // Act
+        $response = $this->actingAs($user)->getJson('/api/v1/user/info');
 
-        ]);
-});
+        // Assert
+        $response->assertSuccessful()
+            ->assertJson([
+                'user' => [
+                    'id' => $user->id,
+                    'name' => 'Test User',
+                    'email' => $user->email,
+                    'role' => null,
+                ],
+            ])
+            ->assertJsonPath('permissions', []);
+    });
 
-test('admin users have dashboard permission', function (): void {
-    $user = User::factory()->create([
-        'name' => 'Admin User',
-    ])->assignRole(RolesEnum::ADMINISTRATOR->value);
+    it('grants dashboard permission to admins', function (): void {
+        // Arrange
+        $user = User::factory()->create(['name' => 'Admin User'])
+            ->assignRole(RolesEnum::ADMINISTRATOR->value);
 
-    $this->actingAs($user)
-        ->getJson('/api/v1/user/info')
-        ->assertSuccessful()
-        ->assertJson([
+        // Act
+        $response = $this->actingAs($user)->getJson('/api/v1/user/info');
 
-            'user' => [
-                'name' => 'Admin User',
-            ],
-            'permissions' => [
-                'dashboard' => true,
-            ],
+        // Assert
+        $response->assertSuccessful()
+            ->assertJson([
+                'user' => [
+                    'name' => 'Admin User',
+                    'role' => RolesEnum::ADMINISTRATOR->value,
+                ],
+                'permissions' => ['dashboard' => true],
+            ]);
+    });
 
-        ]);
-});
+    it('grants dashboard permission to user managers', function (): void {
+        // Arrange
+        $user = User::factory()->create(['name' => 'Manager User'])
+            ->assignRole(RolesEnum::USER_MANAGER->value);
 
-test('user managers have dashboard permission', function (): void {
-    $user = User::factory()->create([
-        'name' => 'Manager User',
-    ])->assignRole(RolesEnum::USER_MANAGER->value);
+        // Act
+        $response = $this->actingAs($user)->getJson('/api/v1/user/info');
 
-    $this->actingAs($user)
-        ->getJson('/api/v1/user/info')
-        ->assertSuccessful()
-        ->assertJson([
+        // Assert
+        $response->assertSuccessful()
+            ->assertJson([
+                'user' => [
+                    'name' => 'Manager User',
+                    'role' => RolesEnum::USER_MANAGER->value,
+                ],
+                'permissions' => ['dashboard' => true],
+            ]);
+    });
 
-            'user' => [
-                'name' => 'Manager User',
-            ],
-            'permissions' => [
-                'dashboard' => true,
-            ],
+    it('denies dashboard permission to regular users', function (): void {
+        // Arrange
+        $user = User::factory()->create(['name' => 'Regular User'])
+            ->assignRole(RolesEnum::REGISTERED_USER->value);
 
-        ]);
-});
+        // Act
+        $response = $this->actingAs($user)->getJson('/api/v1/user/info');
 
-test('regular users do not have dashboard permission', function (): void {
-    $user = User::factory()->create([
-        'name' => 'Regular User',
-    ])->assignRole(RolesEnum::REGISTERED_USER->value);
-
-    $this->actingAs($user)
-        ->getJson('/api/v1/user/info')
-        ->assertSuccessful()
-        ->assertJson([
-
-            'user' => [
-                'name' => 'Regular User',
-            ],
-            'permissions' => [],
-
-        ]);
+        // Assert
+        $response->assertSuccessful()
+            ->assertJson([
+                'user' => [
+                    'name' => 'Regular User',
+                    'role' => RolesEnum::REGISTERED_USER->value,
+                ],
+            ])
+            ->assertJsonPath('permissions', []);
+    });
 });
