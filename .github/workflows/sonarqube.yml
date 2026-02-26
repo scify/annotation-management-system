@@ -1,4 +1,6 @@
 name: SonarQube Analysis
+permissions:
+    contents: read
 on:
     push:
         branches: ['main']
