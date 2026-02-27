@@ -59,7 +59,7 @@ app/
 
 resources/js/
 ├── components/             # App shell (app-sidebar, app-header, breadcrumbs, etc.)
-│   └── ui/                # shadcn/ui components (copied — you own the code)
+│   └── ui/                # front-end components (copied — you own the code)
 ├── hooks/                  # Custom React hooks
 │   ├── use-appearance.tsx  # Dark/light/system mode + SSR cookie
 │   ├── use-flash-messages.ts  # Sonner toast integration
@@ -491,18 +491,14 @@ This project uses **Tailwind CSS v4** (NOT v3):
 
 Common utilities still work (`flex`, `bg-primary`, `dark:bg-zinc-900`, etc.), but theme setup is entirely different from v3.
 
-### shadcn/ui Components
+### React-Aria Components
 
-This project uses **[shadcn/ui](https://ui.shadcn.com/)** (React).
-
-**Installed components**: Alert, Avatar, Badge, Breadcrumb, Button, Card, Checkbox, Collapsible, Dialog, Dropdown Menu, Input, Label, Navigation Menu, Select, Separator, Sheet, Sidebar, Skeleton, Sonner, Table, Toggle, Toggle Group, Tooltip
+This project uses **[React-Aria](https://react-spectrum.adobe.com/react-aria/index.html)** for accessibility.
 
 **Key rules:**
 
-- **ALWAYS use shadcn components** instead of native HTML elements for interactive UI. Use `<Button>` not `<button>`, `<Input>` not `<input>`, etc.
 - Components are **copied into `resources/js/components/ui/`** — you own the code, customize freely
 - Use `cn()` from `@/lib/utils` for class merging: `cn('base-classes', condition && 'conditional')`
-- Built on **Radix UI** primitives (accessibility + keyboard navigation included)
 
 **Installing new components:**
 
@@ -568,6 +564,8 @@ Installed automatically via `composer install`. See `tools/git-hooks/` for hook 
 - MUST: Full keyboard support per [WAI-ARIA APG](https://www.w3.org/WAI/ARIA/apg/patterns/)
 - MUST: Visible focus rings (`:focus-visible`)
 - MUST: Manage focus (trap, move, return) per APG patterns
+- MUST: Ensure that HTML elements have the "role" attribute
+- MUST: Use <hgroup> for headings that have <p> tags as subheadings
 
 ### Targets & Input
 
