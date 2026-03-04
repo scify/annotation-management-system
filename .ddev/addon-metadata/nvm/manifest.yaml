@@ -1,7 +1,6 @@
 name: nvm
 repository: ddev/ddev-nvm
 version: v1.0.1
-install_date: "2026-03-05T12:25:45+02:00"
 project_files:
     - commands/web/nvm
     - commands/web/autocomplete/nvm
