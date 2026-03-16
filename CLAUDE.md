@@ -395,19 +395,7 @@ pages/
 └── dashboard.tsx
 ```
 
-Use `AppLayout` for authenticated pages:
-
-```tsx
-import AppLayout from '@/layouts/app-layout';
-
-export default function UsersIndex({ users }: Props) {
-    return (
-        <AppLayout breadcrumbs={[{ title: 'Users', href: route('users.index') }]}>
-            {/* page content */}
-        </AppLayout>
-    );
-}
-```
+Use `AppLayout` for authenticated pages, `AuthLayout` for auth pages. For custom layouts, compose with these base layouts.
 
 ### TailwindCSS v4
 
@@ -444,11 +432,6 @@ import { UserIcon, PlusIcon, TrashIcon } from 'lucide-react';
 ```
 
 NEVER use emoji as icons — always use Lucide.
-
-### Git Hooks
-
-Pre-commit hooks auto-format code (PHP + JS + styles).
-Installed automatically via `composer install`. See `tools/git-hooks/` for hook scripts.
 
 ---
 
@@ -531,6 +514,9 @@ Installed automatically via `composer install`. See `tools/git-hooks/` for hook 
 - MUST: `scroll-margin-top` on headings; include "Skip to content" link; hierarchical `<h1–h6>`
 - MUST: Use the ellipsis character `…` (not `...`)
 - MUST: Resilient to user-generated content (short / avg / very long strings)
+- MUST: Use native HTML elements where possible (e.g., `<button>`, `<a>`, `<label>`, `<table>`, `<details>`) instead of ARIA roles where possible.
+- MUST: Use `aria-current` on active links
+- MUST: When using custom components, make sure to add the appropriate ARIA attributes.
 
 ### Animation
 
@@ -538,12 +524,6 @@ Installed automatically via `composer install`. See `tools/git-hooks/` for hook 
 - SHOULD: Prefer CSS animations over JS
 - MUST: Animate compositor-friendly props (`transform`, `opacity`) — avoid `top/left/width/height`
 - MUST: Animations are interruptible
-
-### Performance
-
-- MUST: Mutations (`POST/PATCH/DELETE`) target < 500 ms
-- MUST: Preload only above-the-fold images; lazy-load the rest
-- MUST: Prevent CLS from images (explicit dimensions or reserved space)
 
 ### Layout & Design
 
