@@ -91,30 +91,6 @@ resources/js/
 
 Commands in this document are shown in **native form**. DDEV users: add the `ddev` prefix — `composer` → `ddev composer`, `npm` → `ddev npm`, `php artisan` → `ddev artisan`, `vendor/bin/` → `ddev exec vendor/bin/`.
 
-## Version Management
-
-Version must be updated in two places:
-
-- `package.json` — `"version": "x.x.x"`
-- `config/app.php` — `'version' => env('APP_VERSION', 'x.x.x')`
-
-## Local Development
-
-- `composer dev` — Start dev server (auto-detects DDEV vs local)
-- `composer lint` — Format ALL code (Rector + Pint + ESLint + Prettier)
-- `composer test` — Run full test suite (lint + types + Pest)
-
-Usual workflow after making changes:
-
-1. Make changes
-2. `composer lint` — format everything
-3. `composer test` — verify nothing broke
-
-**Individual additional commands:**
-
-- `composer test:lint` — Dry-run lint checks only (CI-safe, no modifications)
-- `composer test:types` — Type analysis only (PHPStan + tsc)
-
 ## Build & Development
 
 **Recommended (via Composer):**
@@ -132,53 +108,12 @@ Usual workflow after making changes:
 - `composer dev:ssr` — Start dev server + SSR Node.js server
 - SSR is **enabled** in this project. The SSR Node server listens on `http://127.0.0.1:13714`
 
-## Linting & Formatting
-
-**Recommended (via Composer):**
-
-- `composer lint` — Format ALL code (Rector + Pint + ESLint + Prettier) — **fix mode**
-- `composer test:lint` — Dry-run checks without modifying files (CI-friendly)
-- `composer test:types` — Type analysis (PHPStan + tsc)
-
-**Individual tools (if you need just one):**
-
-*PHP:*
-
-- `vendor/bin/pint` — Format PHP code
-- `vendor/bin/pint --test` — Dry-run Pint (check only)
-- `vendor/bin/phpstan analyse` — Static analysis
-- `vendor/bin/rector --dry-run` — Preview Rector changes
-- `vendor/bin/rector` — Apply Rector changes
-
-*JavaScript/TypeScript:*
-
-- `npm run lint` — ESLint check
-- `npm run lint:fix` — ESLint auto-fix
-- `npm run format` — Prettier formatting
-- `npm run format:check` — Prettier dry-run
-- `npm run types` — TypeScript type-check (tsc --noEmit)
-
-*DDEV shortcuts (when using DDEV):*
-
-- `ddev pint` — shorthand for `ddev exec vendor/bin/pint`
-- `ddev analyse` — shorthand for `ddev exec vendor/bin/phpstan analyse`
-- `ddev format` — shorthand for pint + npm format
-- `ddev test` — shorthand for `ddev exec vendor/bin/pest`
-
 ## Testing
 
 **Recommended (via Composer):**
 
 - `composer test` — Full suite (lint + types + Pest)
 - `composer test:coverage` — Pest with coverage
-
-**Individual commands:**
-
-- `vendor/bin/pest` — Run all PHP tests
-- `vendor/bin/pest --filter TestName` — Run specific test
-- `vendor/bin/pest --testsuite=Feature` — Run specific suite
-- `npm run test` — Run Jest component tests
-- `npm run test:watch` — Jest in watch mode
 
 **Coverage (requires Xdebug):**
 
@@ -347,13 +282,6 @@ export default function UsersIndex({ users, abilities }: Props) {
 - `PresentableError` interface (`app/Exceptions/PresentableError.php`) marks exceptions safe to display to users
 - Controllers can `catch (PresentableError $e)` broadly to surface `$e->getUserMessage()` in flash messages
 - `ExternalAPIException` implements `PresentableError` — shows generic message in production, actual message in development
-
-### Middleware
-
-- `AddSecurityHeaders` — CSP, HSTS, X-Frame-Options, etc.
-- `HandleAppearance` — reads `appearance` cookie, sets dark mode class for SSR
-- `HandleInertiaRequests` — shared Inertia props (app, quote, flash, auth, ziggy, translations)
-- `RestrictApiAccess` — restricts internal API access in production
 
 ### Flash Messages
 
