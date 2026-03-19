@@ -61,7 +61,8 @@ class UserService {
             ->when($search, function ($query, $search): void {
                 $query->where(function ($query) use ($search): void {
                     $query->where('name', 'like', sprintf('%%%s%%', $search))
-                        ->orWhere('email', 'like', sprintf('%%%s%%', $search));
+                        ->orWhere('email', 'like', sprintf('%%%s%%', $search))
+                        ->orWhere('username', 'like', sprintf('%%%s%%', $search));
                 });
             })
             ->withTrashed()

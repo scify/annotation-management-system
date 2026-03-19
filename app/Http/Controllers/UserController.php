@@ -78,6 +78,7 @@ class UserController extends Controller {
      * Display the specified user.
      */
     public function show(User $user): Response {
+
         $this->authorize('view', $user);
 
         return Inertia::render('users/show', [

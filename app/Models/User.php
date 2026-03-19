@@ -18,9 +18,10 @@ use Spatie\Permission\Traits\HasRoles;
 /**
  * @property-read int $id
  * @property-read string $name
+ * @property-read string $username
  * @property-read string $email
- * @property-write string|null $email_verified_at
  * @property-read string $password
+ * @property-read string $is_active
  * @property-read string|null $remember_token
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
@@ -45,8 +46,10 @@ class User extends Authenticatable {
      */
     protected $fillable = [
         'name',
+        'username',
         'email',
         'password',
+        'is_active',
         'deleted_at',
     ];
 
@@ -75,7 +78,6 @@ class User extends Authenticatable {
      */
     protected function casts(): array {
         return [
-            'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'deleted_at' => 'datetime',
         ];

@@ -9,10 +9,6 @@ use App\Enums\RolesEnum;
 use App\Models\User;
 
 class UserPolicy {
-    public function viewAny(User $user): bool {
-        return $user->can(PermissionsEnum::VIEW_USERS->value);
-    }
-
     public function view(User $user): bool {
         return $user->can(PermissionsEnum::VIEW_USERS->value);
     }

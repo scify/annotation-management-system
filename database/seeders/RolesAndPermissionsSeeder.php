@@ -41,11 +41,14 @@ class RolesAndPermissionsSeeder extends Seeder {
 
         // Annotation managers can manage users
         $annotationManagerRole->givePermissionTo([
-            PermissionsEnum::VIEW_USERS->value,
-            PermissionsEnum::CREATE_USERS->value,
-            PermissionsEnum::UPDATE_USERS->value,
-            PermissionsEnum::DELETE_USERS->value,
-            PermissionsEnum::RESTORE_USERS->value,
+            PermissionsEnum::CREATE_ANNOTATORS->value,
+            PermissionsEnum::MANAGE_ANNOTATORS->value,
+            PermissionsEnum::CREATE_PROJECT_MANAGERS->value,
+            PermissionsEnum::CREATE_PROJECTS->value,
+            PermissionsEnum::MANAGE_PROJECTS->value,
+            PermissionsEnum::CONNECT_PROJECT_MANAGERS_TO_PROJECTS->value,
+            PermissionsEnum::ASSIGN_ANNOTATORS_TO_PROJECTS->value,
+            PermissionsEnum::CONNECT_ANNOTATORS_TO_PROJECT_MANAGERS->value,
         ]);
 
         // Admin gets all permissions
