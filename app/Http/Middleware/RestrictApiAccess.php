@@ -14,6 +14,11 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class RestrictApiAccess {
     public function handle(Request $request, Closure $next): Response {
+        // Stateless Bearer token requests bypass origin check — Sanctum validates the token downstream
+        if ($request->bearerToken() !== null) {
+            return $next($request);
+        }
+
         $origin = $request->header('origin');
         $referer = $request->header('referer');
 

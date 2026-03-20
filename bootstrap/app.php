@@ -15,6 +15,7 @@ use Illuminate\Http\Middleware\TrustProxies;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Env;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 // Only load .env if APP_ENV isn't already set
@@ -73,6 +74,10 @@ $app = Application::configure(basePath: dirname(__DIR__))
         }
 
         $middleware->alias($aliases);
+
+        $middleware->api(prepend: [
+            EnsureFrontendRequestsAreStateful::class,
+        ]);
 
         $middleware->api([
             ThrottleRequests::class . ':api',
