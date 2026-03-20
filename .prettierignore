@@ -13,3 +13,4 @@ bootstrap/
 resources/js/components/ui/*
 resources/js/ziggy.js
 resources/views/mail/*
+docs/Annotation_Management_System.postman_collection.json
