@@ -8,6 +8,8 @@ use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -70,6 +72,40 @@ class User extends Authenticatable {
     protected $with = [
         'roles',
     ];
+
+    public function annotationTasks(): HasMany {
+        return $this->hasMany(AnnotationTask::class);
+    }
+
+    public function projects(): HasMany {
+        return $this->hasMany(Project::class);
+    }
+
+    public function relations(): HasMany {
+        return $this->hasMany(UserRelation::class, 'user_id');
+    }
+
+    public function relatedToMe(): HasMany {
+        return $this->hasMany(UserRelation::class, 'related_user_id');
+    }
+
+    public function relatedUsers(): BelongsToMany {
+        return $this->belongsToMany(
+            self::class,
+            'user_relations',
+            'user_id',
+            'related_user_id'
+        )->withPivot('relation_type');
+    }
+
+    public function relatedByUsers(): BelongsToMany {
+        return $this->belongsToMany(
+            self::class,
+            'user_relations',
+            'related_user_id',
+            'user_id'
+        )->withPivot('relation_type');
+    }
 
     /**
      * Get the attributes that should be cast.

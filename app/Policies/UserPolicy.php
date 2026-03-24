@@ -6,11 +6,19 @@ namespace App\Policies;
 
 use App\Enums\PermissionsEnum;
 use App\Enums\RolesEnum;
+use App\Enums\UserRelationsEnum;
 use App\Models\User;
 
 class UserPolicy {
-    public function view(User $user): bool {
-        return $user->can(PermissionsEnum::VIEW_USERS->value);
+    public function view(User $user, User $model): bool {
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+        if ($user->hasRole(RolesEnum::ANNOTATOR)) {
+            return false;
+        }
+
+        return $user->relatedUsers()->where('id', $model->id)->wherePivot('relation_type', UserRelationsEnum::ANNOTATOR_OF_ANNOTATION_POOL)->exists();
     }
 
     public function create(User $user): bool {
