@@ -60,9 +60,11 @@
 	"dependencies": {
 		"@fontsource-utils/scss": "^0.2.2",
 		"@fontsource-variable/fira-code": "^5.2.7",
+		"@fontsource-variable/inter": "^5.2.8",
 		"@fontsource-variable/montserrat": "^5.2.8",
 		"@fontsource-variable/quicksand": "^5.2.10",
 		"@fontsource-variable/source-sans-3": "^5.2.9",
+		"@fontsource/ubuntu": "^5.2.8",
 		"@inertiajs/react": "^2.3.18",
 		"@types/react-google-recaptcha": "^2.1.9",
 		"altcha": "^2.3.0",

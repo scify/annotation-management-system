@@ -1,0 +1,200 @@
+import { AppContent } from '@/components/app-content';
+import AppLogoIcon from '@/components/app-logo-icon';
+import { AppSidebar } from '@/components/app-sidebar';
+import { Breadcrumbs } from '@/components/breadcrumbs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { UserMenuContent } from '@/components/user-menu-content';
+import { useInitials } from '@/hooks/use-initials';
+import { useTranslations } from '@/hooks/use-translations';
+import { cn } from '@/lib/utils';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
+import {
+	BellRing,
+	ClipboardList,
+	FolderOpen,
+	LayoutGrid,
+	Menu,
+	PanelRightOpen,
+	ScrollText,
+	Users,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { useState } from 'react';
+import type { PropsWithChildren } from 'react';
+
+interface MobileNavItem {
+	title: string;
+	href: string;
+	icon: LucideIcon;
+	placeholder?: boolean;
+}
+
+function isMobileItemActive(href: string, currentUrl: string): boolean {
+	if (href === '#') return false;
+	if (href === '/dashboard') return currentUrl === href;
+	return currentUrl.startsWith(href);
+}
+
+export default function AppSidebarLayout({
+	children,
+	breadcrumbs = [],
+}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
+	const page = usePage<SharedData>();
+	const { auth } = page.props;
+	const getInitials = useInitials();
+	const { t } = useTranslations();
+	const [isCollapsed, setIsCollapsed] = useState(false);
+
+	const toggleSidebar = () => setIsCollapsed((prev) => !prev);
+
+	const mobileNavItems: MobileNavItem[] = [
+		{ title: 'Dashboard', icon: LayoutGrid, href: '/dashboard' },
+		{ title: 'Projects', icon: FolderOpen, href: '#', placeholder: true },
+		{ title: 'Assignments', icon: ClipboardList, href: '#', placeholder: true },
+		...(auth?.user?.can.view_users
+			? [{ title: t('navbar.users'), icon: Users, href: route('users.index') }]
+			: []),
+		{ title: 'Notifications', icon: BellRing, href: '#', placeholder: true },
+		{ title: 'Audit Log', icon: ScrollText, href: '#', placeholder: true },
+	];
+
+	return (
+		<div className="flex min-h-screen w-full">
+			<AppSidebar isCollapsed={isCollapsed} onToggle={toggleSidebar} />
+
+			{/* Expand button — appears at bottom-left when sidebar is collapsed (desktop only) */}
+			<button
+				type="button"
+				onClick={toggleSidebar}
+				aria-label="Expand sidebar"
+				className={cn(
+					'fixed bottom-4 left-3 z-10 hidden size-[30px] items-center justify-center rounded-lg bg-[#3d5bb3] text-white transition-[opacity,transform] duration-300 ease-in-out hover:bg-[#4d6fbe] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white motion-reduce:transition-none lg:flex',
+					isCollapsed
+						? 'translate-x-0 opacity-100'
+						: 'pointer-events-none -translate-x-2 opacity-0'
+				)}
+			>
+				<PanelRightOpen className="h-4 w-4" aria-hidden="true" />
+			</button>
+
+			<div className="flex min-w-0 flex-1 flex-col">
+				{/* Mobile top bar — hidden on desktop */}
+				<div className="border-sidebar-border/80 flex h-14 items-center border-b px-4 lg:hidden">
+					<Sheet>
+						<SheetTrigger asChild>
+							<Button
+								variant="ghost"
+								size="icon"
+								className="mr-2 h-[34px] w-[34px]"
+								aria-label={t('common.navigation_menu_label')}
+							>
+								<Menu className="h-5 w-5" />
+							</Button>
+						</SheetTrigger>
+						<SheetContent
+							side="left"
+							className="flex h-full w-[152px] flex-col rounded-tr-[20px] rounded-br-[20px] bg-gradient-to-t from-[#4d6fd1] to-[#27396b] p-0"
+						>
+							<SheetTitle className="sr-only">
+								{t('common.navigation_menu_label')}
+							</SheetTitle>
+							<SheetHeader className="px-4 py-5">
+								<AppLogoIcon className="h-9 w-auto" />
+							</SheetHeader>
+							<nav
+								className="flex flex-1 flex-col gap-1 px-2 py-2"
+								aria-label="Mobile navigation"
+							>
+								{mobileNavItems.map((item) => {
+									const active = isMobileItemActive(item.href, page.url);
+									const itemClass = cn(
+										'flex items-center gap-1.5 rounded-lg px-1 py-2 text-sm font-medium text-white transition-colors',
+										active ? 'bg-[#1e293b]' : 'hover:bg-white/10',
+										item.placeholder && 'cursor-not-allowed opacity-60'
+									);
+
+									if (item.placeholder) {
+										return (
+											<span
+												key={item.title}
+												className={itemClass}
+												aria-disabled="true"
+											>
+												<item.icon
+													className="size-[18px] shrink-0"
+													aria-hidden="true"
+												/>
+												{item.title}
+											</span>
+										);
+									}
+
+									return (
+										<Link
+											key={item.title}
+											href={item.href}
+											prefetch
+											className={itemClass}
+											aria-current={active ? 'page' : undefined}
+										>
+											<item.icon
+												className="size-[18px] shrink-0"
+												aria-hidden="true"
+											/>
+											{item.title}
+										</Link>
+									);
+								})}
+							</nav>
+						</SheetContent>
+					</Sheet>
+
+					<Link href="/dashboard" prefetch aria-label="Home">
+						<AppLogoIcon className="h-7 w-auto" />
+					</Link>
+
+					<div className="ml-auto">
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button variant="ghost" className="size-10 rounded-full p-1">
+									<Avatar className="size-8 overflow-hidden rounded-full">
+										<AvatarImage
+											src={auth?.user?.avatar ?? ''}
+											alt={auth?.user?.name ?? ''}
+										/>
+										<AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+											{getInitials(auth?.user?.name ?? '')}
+										</AvatarFallback>
+									</Avatar>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className="w-56" align="end">
+								{auth?.user && <UserMenuContent user={auth.user} />}
+							</DropdownMenuContent>
+						</DropdownMenu>
+					</div>
+				</div>
+
+				{/* Breadcrumbs */}
+				{breadcrumbs.length > 1 && (
+					<div className="border-sidebar-border/70 flex w-full border-b">
+						<div className="flex h-12 w-full items-center px-6 text-neutral-500">
+							<Breadcrumbs breadcrumbs={breadcrumbs} />
+						</div>
+					</div>
+				)}
+
+				{/* Page content */}
+				<AppContent>{children}</AppContent>
+			</div>
+		</div>
+	);
+}
