@@ -1,4 +1,4 @@
-import AppLogoIcon from '@/components/app-logo-icon';
+import AppLogoIconMinimal from '@/components/app-logo-icon-minimal';
 import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
@@ -75,7 +75,7 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
 				{/* Logo */}
 				<div className="flex items-center px-4 py-5">
 					<Link href="/dashboard" prefetch aria-label="Home">
-						<AppLogoIcon className="h-9 w-auto" />
+						<AppLogoIconMinimal className="h-9 w-auto" />
 					</Link>
 				</div>
 
