@@ -179,6 +179,25 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+
+	h1 {
+		font-family: var(--font-heading);
+        color: var(--slate-800, #1E293B);
+        font-size: var(--font-size-3xl, 30px);
+        font-style: normal;
+        font-weight: 300;
+        line-height: 36px; /* 120% */
+	}
+
+    .page-subtitle {
+        color: var(--slate-800, #1E293B);
+
+        font-size: var(--font-size-xl, 20px);
+        font-style: normal;
+        font-weight: var(--font-weight-medium, 500);
+        line-height: var(--font-leading-9, 36px); /* 180% */
+        letter-spacing: var(--font-tracking-normal, 0);
+    }
 }
 /* stylelint-enable at-rule-no-deprecated */
 

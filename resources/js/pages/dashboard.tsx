@@ -254,10 +254,10 @@ export default function Dashboard({ token }: DashboardProps) {
 		<AppLayout breadcrumbs={breadcrumbs}>
 			<Head title="Dashboard" />
 			<div className="flex flex-col gap-8 px-6 py-6">
-				<h1 className="text-2xl font-semibold text-[#1e293b]">Dashboard Overview</h1>
+				<h1 className="mb-5 text-[#1e293b]">Dashboard Overview</h1>
 
 				<section aria-labelledby="projects-heading">
-					<h2 id="projects-heading" className="mb-4 text-sm font-medium text-[#475569]">
+					<h2 id="projects-heading" className="page-subtitle mb-5">
 						Active Annotation Projects
 					</h2>
 					<div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
