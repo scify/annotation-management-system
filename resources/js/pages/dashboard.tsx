@@ -1,26 +1,11 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
+import { ProjectCard, type ProjectCardData } from '@/components/project-card';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { BellRing, FolderOpen, Folders, Users } from 'lucide-react';
 import { useEffect } from 'react';
 
 interface DashboardProps {
 	token?: string;
-}
-
-interface ProjectCardData {
-	id: number;
-	name: string;
-	dateRange: string;
-	tags: [string, string];
-	subprojects: number;
-	annotators: number;
-	notifications: number;
-	progress: number;
-	owner: { initials: string; username: string };
-	coManagers: Array<{ initials: string; username: string }>;
 }
 
 const MOCK_PROJECTS: ProjectCardData[] = [
@@ -98,144 +83,6 @@ const MOCK_PROJECTS: ProjectCardData[] = [
 	},
 ];
 
-function UserAvatar({ initials }: { initials: string }) {
-	return (
-		<Avatar className="size-[22px] shrink-0">
-			<AvatarFallback className="rounded-full bg-[#a8baed] text-[10px] font-semibold text-white">
-				{initials}
-			</AvatarFallback>
-		</Avatar>
-	);
-}
-
-function ProjectCard({ project }: { project: ProjectCardData }) {
-	const visibleCoManagers = project.coManagers.slice(0, 2);
-	const extraCount = project.coManagers.length - 2;
-
-	return (
-		<article className="flex flex-col gap-7 rounded-[16px] border border-[#e2e8f0] bg-white p-5">
-			{/* Top section */}
-			<div className="flex flex-col gap-4">
-				{/* Icon + name + date */}
-				<div className="flex flex-col gap-3">
-					<div className="flex size-[42px] items-center justify-center rounded-lg bg-[#f2f5fd]">
-						<FolderOpen className="size-6 text-[#4d6fd1]" aria-hidden="true" />
-					</div>
-					<div>
-						<p className="text-xl leading-9 font-medium text-[#1e293b]">
-							{project.name}
-						</p>
-						<p className="text-sm text-[#475569]">{project.dateRange}</p>
-					</div>
-				</div>
-
-				{/* Tag chips */}
-				<div className="flex gap-2.5">
-					<span className="flex h-8 min-w-0 flex-1 items-center truncate rounded-md bg-[#d9e1f8] px-[10px] text-sm font-medium text-[#1e293b]">
-						{project.tags[0]}
-					</span>
-					<span className="flex h-8 shrink-0 items-center rounded-md bg-[#d9e1f8] px-[10px] text-sm font-medium whitespace-nowrap text-[#1e293b]">
-						{project.tags[1]}
-					</span>
-				</div>
-
-				{/* Indicator chips: subprojects / annotators / notifications */}
-				<div className="flex gap-3">
-					<div
-						className="flex h-8 flex-1 items-center justify-center gap-4 rounded-lg bg-[#f2f5fd] px-[10px]"
-						title="Subprojects"
-					>
-						<Folders
-							className="size-[18px] shrink-0 text-[#475569]"
-							aria-hidden="true"
-						/>
-						<span className="text-base font-medium text-[#1e293b]">
-							{project.subprojects}
-						</span>
-					</div>
-					<div
-						className="flex h-8 flex-1 items-center justify-center gap-4 rounded-lg bg-[#f2f5fd] px-[10px]"
-						title="Annotators"
-					>
-						<Users className="size-[18px] shrink-0 text-[#475569]" aria-hidden="true" />
-						<span className="text-base font-medium text-[#1e293b]">
-							{project.annotators}
-						</span>
-					</div>
-					<div
-						className="flex h-8 flex-1 items-center justify-center gap-4 rounded-lg bg-[#f2f5fd] px-[10px]"
-						title="Notifications"
-					>
-						<BellRing
-							className="size-[18px] shrink-0 text-[#475569]"
-							aria-hidden="true"
-						/>
-						<span className="text-base font-medium text-[#1e293b]">
-							{project.notifications}
-						</span>
-					</div>
-				</div>
-			</div>
-
-			{/* Bottom section */}
-			<div className="flex flex-col gap-4">
-				{/* Progress bar */}
-				<div className="flex flex-col gap-2">
-					<span className="text-sm font-semibold text-[#1e293b]">
-						Overall Progress {project.progress}%
-					</span>
-					<div className="h-3 w-full overflow-hidden rounded-full bg-[#d9e1f8]">
-						<div
-							className="h-full rounded-full bg-[#3d5bb3] motion-safe:transition-[width] motion-safe:duration-500 motion-safe:ease-out"
-							style={{ width: `${project.progress}%` }}
-							role="progressbar"
-							aria-valuenow={project.progress}
-							aria-valuemin={0}
-							aria-valuemax={100}
-							aria-label={`Project progress: ${project.progress}%`}
-						/>
-					</div>
-				</div>
-
-				{/* Owner + Co-managers */}
-				<div className="flex gap-7">
-					<div className="flex flex-col gap-2">
-						<span className="text-xs font-semibold text-[#475569]">Owner:</span>
-						<div className="flex items-center gap-1">
-							<UserAvatar initials={project.owner.initials} />
-							<span className="text-[0.75rem] text-[#475569]">
-								{project.owner.username}
-							</span>
-						</div>
-					</div>
-
-					<div className="flex flex-col gap-2">
-						<span className="text-xs font-semibold text-[#475569]">Co-managers:</span>
-						<div className="flex flex-wrap items-center gap-1">
-							{visibleCoManagers.map((cm) => (
-								<div key={cm.username} className="flex items-center gap-1">
-									<UserAvatar initials={cm.initials} />
-									<span className="text-[0.75rem] text-[#475569]">
-										{cm.username}
-									</span>
-								</div>
-							))}
-							{extraCount > 0 && (
-								<span className="text-[0.75rem] text-[#475569]">+{extraCount}</span>
-							)}
-						</div>
-					</div>
-				</div>
-
-				{/* View Project */}
-				<Button className="h-10 w-full bg-[#4d6fd1] font-semibold text-white hover:bg-[#3d5bb3]">
-					View Project
-				</Button>
-			</div>
-		</article>
-	);
-}
-
 export default function Dashboard({ token }: DashboardProps) {
 	useEffect(() => {
 		if (token && token !== '') {
@@ -254,7 +101,7 @@ export default function Dashboard({ token }: DashboardProps) {
 		<AppLayout breadcrumbs={breadcrumbs}>
 			<Head title="Dashboard" />
 			<div className="flex flex-col gap-8 px-6 py-6">
-				<h1 className="mb-5 text-[#1e293b]">Dashboard Overview</h1>
+				<h1 className="mb-5 text-slate-800">Dashboard Overview</h1>
 
 				<section aria-labelledby="projects-heading">
 					<h2 id="projects-heading" className="page-subtitle mb-5">

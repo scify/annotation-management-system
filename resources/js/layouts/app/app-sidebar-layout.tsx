@@ -77,7 +77,7 @@ export default function AppSidebarLayout({
 				onClick={toggleSidebar}
 				aria-label="Expand sidebar"
 				className={cn(
-					'fixed bottom-4 left-3 z-10 hidden size-[30px] items-center justify-center rounded-lg bg-[#3d5bb3] text-white transition-[opacity,transform] duration-300 ease-in-out hover:bg-[#4d6fbe] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white motion-reduce:transition-none lg:flex',
+					'bg-brand-blue-800 hover:bg-brand-blue-600 fixed bottom-4 left-3 z-10 hidden size-[30px] items-center justify-center rounded-lg text-white transition-[opacity,transform] duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-white motion-reduce:transition-none lg:flex',
 					isCollapsed
 						? 'translate-x-0 opacity-100'
 						: 'pointer-events-none -translate-x-2 opacity-0'
@@ -102,7 +102,7 @@ export default function AppSidebarLayout({
 						</SheetTrigger>
 						<SheetContent
 							side="left"
-							className="flex h-full w-[152px] flex-col rounded-tr-[20px] rounded-br-[20px] bg-gradient-to-t from-[#4d6fd1] to-[#27396b] p-0"
+							className="from-brand-blue-700 to-brand-blue-950 flex h-full w-[152px] flex-col rounded-tr-[20px] rounded-br-[20px] bg-gradient-to-t p-0"
 						>
 							<SheetTitle className="sr-only">
 								{t('common.navigation_menu_label')}
@@ -118,7 +118,7 @@ export default function AppSidebarLayout({
 									const active = isMobileItemActive(item.href, page.url);
 									const itemClass = cn(
 										'flex items-center gap-1.5 rounded-lg px-1 py-2 text-sm font-medium text-white transition-colors',
-										active ? 'bg-[#1e293b]' : 'hover:bg-white/10',
+										active ? 'bg-slate-800' : 'hover:bg-white/10',
 										item.placeholder && 'cursor-not-allowed opacity-60'
 									);
 
@@ -192,14 +192,14 @@ export default function AppSidebarLayout({
 							<DropdownMenuTrigger asChild>
 								<Button
 									variant="ghost"
-									className="flex h-auto items-center gap-1 rounded-lg px-2 py-1.5 text-[#475569] hover:bg-[#f2f5fd] hover:text-[#334155]"
+									className="hover:bg-brand-blue-50 flex h-auto items-center gap-1 rounded-lg px-2 py-1.5 text-slate-600 hover:text-slate-700"
 								>
 									<Avatar className="size-[29px] shrink-0">
 										<AvatarImage
 											src={auth?.user?.avatar ?? ''}
 											alt={auth?.user?.name ?? ''}
 										/>
-										<AvatarFallback className="rounded-full bg-[#a8baed] text-sm font-semibold text-white">
+										<AvatarFallback className="bg-brand-blue-300 rounded-full text-sm font-semibold text-white">
 											{getInitials(auth?.user?.name ?? '')}
 										</AvatarFallback>
 									</Avatar>
@@ -217,7 +217,7 @@ export default function AppSidebarLayout({
 						<div className="relative">
 							<button
 								type="button"
-								className="rounded-lg bg-[#f2f5fd] p-[10px] text-[#475569] transition-colors hover:bg-[#e8eef9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4d6fd1]"
+								className="bg-brand-blue-50 hover:bg-brand-blue-75 focus-visible:outline-brand-blue-700 rounded-lg p-[10px] text-slate-600 transition-colors focus-visible:outline focus-visible:outline-2"
 								aria-label={
 									notificationCount > 0
 										? `Notifications — ${notificationCount} unread`
@@ -229,7 +229,7 @@ export default function AppSidebarLayout({
 							{notificationCount > 0 && (
 								<span
 									aria-hidden="true"
-									className="absolute -top-0.5 -right-1 flex min-w-[17px] items-center justify-center rounded-full bg-[#c10007] px-[4.5px] text-xs leading-[18px] font-semibold text-white"
+									className="bg-brand-red-700 absolute -top-0.5 -right-1 flex min-w-[17px] items-center justify-center rounded-full px-[4.5px] text-xs leading-[18px] font-semibold text-white"
 								>
 									{notificationCount}
 								</span>

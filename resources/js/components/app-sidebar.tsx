@@ -66,7 +66,7 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
 			aria-label="Main navigation"
 			aria-hidden={isCollapsed || undefined}
 			className={cn(
-				'sticky top-0 hidden h-screen shrink-0 flex-col overflow-hidden rounded-tr-[20px] rounded-br-[20px] bg-gradient-to-t from-[#4d6fd1] to-[#27396b] transition-[width] duration-300 ease-in-out motion-reduce:transition-none lg:flex',
+				'from-brand-blue-700 to-brand-blue-950 sticky top-0 hidden h-screen shrink-0 flex-col overflow-hidden rounded-tr-[20px] rounded-br-[20px] bg-gradient-to-t transition-[width] duration-300 ease-in-out motion-reduce:transition-none lg:flex',
 				isCollapsed ? 'w-0' : 'w-[152px]'
 			)}
 		>
@@ -85,7 +85,7 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
 						const active = isActive(item.href, page.url);
 						const itemClass = cn(
 							'flex items-center gap-1.5 rounded-lg px-1 py-2 text-sm font-medium text-white transition-colors',
-							active ? 'bg-[#1e293b]' : 'hover:bg-white/10',
+							active ? 'bg-slate-800' : 'hover:bg-white/10',
 							item.placeholder && 'cursor-not-allowed opacity-60'
 						);
 
@@ -121,7 +121,7 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
 					<button
 						type="button"
 						onClick={onToggle}
-						className="flex size-[30px] items-center justify-center rounded-lg bg-[#3d5bb3] text-white transition-colors hover:bg-[#4d6fbe] focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
+						className="bg-brand-blue-800 hover:bg-brand-blue-600 flex size-[30px] items-center justify-center rounded-lg text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-white"
 						aria-label="Collapse sidebar"
 					>
 						<PanelLeftClose className="h-4 w-4" aria-hidden="true" />

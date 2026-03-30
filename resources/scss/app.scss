@@ -48,16 +48,19 @@
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
 
-	/* Brand blue palette (Figma: brand blue/50–900) */
+	/* Brand blue palette (Figma: brand blue/50–950) */
 	--color-brand-blue-50: #f2f5fd;
+	--color-brand-blue-75: #e8eef9;
 	--color-brand-blue-100: #d9e1f8;
 	--color-brand-blue-200: #c0cdf3;
 	--color-brand-blue-300: #a8baed;
 	--color-brand-blue-400: #91a7e7;
 	--color-brand-blue-500: #7a94e0;
+	--color-brand-blue-600: #4d6fbe;
 	--color-brand-blue-700: #4d6fd1;
 	--color-brand-blue-800: #3d5bb3;
 	--color-brand-blue-900: #2e4894;
+	--color-brand-blue-950: #27396b;
 
 	/* Brand yellow (Figma: Yellow/50–600 — used for secondary button & tags) */
 	--color-brand-yellow-50: #fffbeb;
@@ -197,6 +200,14 @@
 		font-weight: var(--font-weight-medium, 500);
 		line-height: var(--font-leading-9, 36px); /* 180% */
 		letter-spacing: var(--font-tracking-normal, 0);
+	}
+
+	.project-icon {
+		svg {
+			stroke-width: 1px;
+			width: 100%;
+			height: 100%;
+		}
 	}
 }
 /* stylelint-enable at-rule-no-deprecated */
