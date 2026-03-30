@@ -46,7 +46,8 @@ function isMobileItemActive(href: string, currentUrl: string): boolean {
 export default function AppSidebarLayout({
 	children,
 	breadcrumbs = [],
-}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
+	notificationCount = 0,
+}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[]; notificationCount?: number }>) {
 	const page = usePage<SharedData>();
 	const { auth } = page.props;
 	const getInitials = useInitials();
@@ -180,6 +181,60 @@ export default function AppSidebarLayout({
 								{auth?.user && <UserMenuContent user={auth.user} />}
 							</DropdownMenuContent>
 						</DropdownMenu>
+					</div>
+				</div>
+
+				{/* Desktop top bar — user info + notifications, hidden on mobile */}
+				<div className="hidden items-center justify-end px-6 py-4 lg:flex">
+					<div className="flex items-center gap-1.5">
+						{/* Avatar + name — opens settings/logout dropdown */}
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									className="flex h-auto items-center gap-1 rounded-lg px-2 py-1.5 text-[#475569] hover:bg-[#f2f5fd] hover:text-[#334155]"
+								>
+									<Avatar className="size-[29px] shrink-0">
+										<AvatarImage
+											src={auth?.user?.avatar ?? ''}
+											alt={auth?.user?.name ?? ''}
+										/>
+										<AvatarFallback className="rounded-full bg-[#a8baed] text-sm font-semibold text-white">
+											{getInitials(auth?.user?.name ?? '')}
+										</AvatarFallback>
+									</Avatar>
+									<span className="text-base font-medium">
+										@{auth?.user?.name}
+									</span>
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent className="w-56" align="end">
+								{auth?.user && <UserMenuContent user={auth.user} />}
+							</DropdownMenuContent>
+						</DropdownMenu>
+
+						{/* Notifications button */}
+						<div className="relative">
+							<button
+								type="button"
+								className="rounded-lg bg-[#f2f5fd] p-[10px] text-[#475569] transition-colors hover:bg-[#e8eef9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#4d6fd1]"
+								aria-label={
+									notificationCount > 0
+										? `Notifications — ${notificationCount} unread`
+										: 'Notifications'
+								}
+							>
+								<BellRing className="size-6" />
+							</button>
+							{notificationCount > 0 && (
+								<span
+									aria-hidden="true"
+									className="absolute -top-0.5 -right-1 flex min-w-[17px] items-center justify-center rounded-full bg-[#c10007] px-[4.5px] text-xs leading-[18px] font-semibold text-white"
+								>
+									{notificationCount}
+								</span>
+							)}
+						</div>
 					</div>
 				</div>
 
