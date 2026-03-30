@@ -1,11 +1,30 @@
 import AppLayout from '@/layouts/app-layout';
 import { ProjectCard, type ProjectCardData } from '@/components/project-card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@/components/ui/table';
+import { WorkloadGauge } from '@/components/workload-gauge';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
 
 interface DashboardProps {
 	token?: string;
+}
+
+interface AnnotatorRowData {
+	id: number;
+	initials: string;
+	username: string;
+	activeProjects: number;
+	workload: number;
+	progress: number;
 }
 
 const MOCK_PROJECTS: ProjectCardData[] = [
@@ -83,6 +102,53 @@ const MOCK_PROJECTS: ProjectCardData[] = [
 	},
 ];
 
+const MOCK_ANNOTATORS: AnnotatorRowData[] = [
+	{ id: 1, initials: 'A', username: '@akosmo', activeProjects: 23, workload: 85, progress: 75 },
+	{ id: 2, initials: 'N', username: '@nellysav', activeProjects: 12, workload: 55, progress: 55 },
+	{
+		id: 3,
+		initials: 'N',
+		username: '@nazpapadaki',
+		activeProjects: 8,
+		workload: 20,
+		progress: 30,
+	},
+	{ id: 4, initials: 'M', username: '@mgiannis', activeProjects: 19, workload: 70, progress: 82 },
+	{ id: 5, initials: 'P', username: '@ppetros', activeProjects: 15, workload: 45, progress: 60 },
+	{
+		id: 6,
+		initials: 'E',
+		username: '@ekonstantinidis',
+		activeProjects: 5,
+		workload: 15,
+		progress: 20,
+	},
+	{
+		id: 7,
+		initials: 'S',
+		username: '@sspyridakis',
+		activeProjects: 21,
+		workload: 92,
+		progress: 90,
+	},
+	{
+		id: 8,
+		initials: 'D',
+		username: '@dpapadopoulos',
+		activeProjects: 10,
+		workload: 60,
+		progress: 45,
+	},
+	{
+		id: 9,
+		initials: 'K',
+		username: '@kpapadimitriou',
+		activeProjects: 3,
+		workload: 25,
+		progress: 15,
+	},
+];
+
 export default function Dashboard({ token }: DashboardProps) {
 	useEffect(() => {
 		if (token && token !== '') {
@@ -111,6 +177,81 @@ export default function Dashboard({ token }: DashboardProps) {
 						{MOCK_PROJECTS.map((project) => (
 							<ProjectCard key={project.id} project={project} />
 						))}
+					</div>
+				</section>
+
+				<section aria-labelledby="annotators-heading">
+					<h2 id="annotators-heading" className="page-subtitle mb-5">
+						Annotators Overview
+					</h2>
+					<div className="overflow-hidden rounded-xl">
+						<Table>
+							<TableHeader>
+								<TableRow className="bg-brand-blue-100 hover:bg-brand-blue-100 border-b border-slate-300">
+									<TableHead className="pl-12 text-sm font-semibold text-slate-800">
+										Username
+									</TableHead>
+									<TableHead className="text-right text-sm font-semibold text-slate-800">
+										Active Projects
+									</TableHead>
+									<TableHead className="text-center text-sm font-semibold text-slate-800">
+										Remaining Workload
+									</TableHead>
+									<TableHead className="text-center text-sm font-semibold text-slate-800">
+										Progress
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{MOCK_ANNOTATORS.map((annotator) => (
+									<TableRow
+										key={annotator.id}
+										className="hover:bg-brand-blue-50 h-14 border-b border-slate-300 bg-white"
+									>
+										<TableCell className="pl-4">
+											<div className="flex items-center gap-3">
+												<Avatar className="size-[29px] shrink-0">
+													<AvatarFallback className="bg-brand-blue-300 rounded-full text-sm font-semibold text-white">
+														{annotator.initials}
+													</AvatarFallback>
+												</Avatar>
+												<span className="text-base font-medium text-slate-800">
+													{annotator.username}
+												</span>
+											</div>
+										</TableCell>
+										<TableCell className="text-right">
+											<span className="text-base font-medium text-slate-800">
+												{annotator.activeProjects}
+											</span>
+										</TableCell>
+										<TableCell className="text-center">
+											<div className="flex justify-center">
+												<WorkloadGauge value={annotator.workload} />
+											</div>
+										</TableCell>
+										<TableCell>
+											<div className="flex flex-col items-end gap-1.5">
+												<span className="text-base font-medium text-slate-800">
+													{annotator.progress}%
+												</span>
+												<div className="bg-brand-blue-100 h-[5px] w-full overflow-hidden rounded-full">
+													<div
+														className="bg-brand-blue-800 h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500 motion-safe:ease-out"
+														style={{ width: `${annotator.progress}%` }}
+														role="progressbar"
+														aria-valuenow={annotator.progress}
+														aria-valuemin={0}
+														aria-valuemax={100}
+														aria-label={`Progress: ${annotator.progress}%`}
+													/>
+												</div>
+											</div>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
 					</div>
 				</section>
 			</div>

@@ -1,6 +1,6 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { BellRing, FolderDot, FolderOpenDot, Users } from 'lucide-react';
+import { BellRing, FolderDot, FolderOpenDot, UserRound } from 'lucide-react';
 
 export interface ProjectCardData {
 	id: number;
@@ -74,7 +74,10 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
 						className="bg-brand-blue-50 flex h-8 flex-1 items-center justify-center gap-4 rounded-lg px-[10px]"
 						title="Annotators"
 					>
-						<Users className="size-[18px] shrink-0 text-slate-400" aria-hidden="true" />
+						<UserRound
+							className="size-[18px] shrink-0 text-slate-400"
+							aria-hidden="true"
+						/>
 						<span className="text-base font-medium text-slate-800">
 							{project.annotators}
 						</span>
