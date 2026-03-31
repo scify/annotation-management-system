@@ -54,8 +54,12 @@ class UserController extends Controller {
     /**
      * Show the form for creating a new user.
      */
-    public function create(): Response {
+    public function create(Request $request): Response {
         $this->authorize('create', User::class);
+
+        $currentUser = $request->user();
+
+        $canCreate = $currentUser->can('create', User::class);
 
         return Inertia::render('users/create', [
             'roles' => $this->userService->getRolesForForm(),

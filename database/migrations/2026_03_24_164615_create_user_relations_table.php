@@ -16,7 +16,7 @@ return new class() extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('related_user_id')->constrained('users')->cascadeOnDelete();
-            $table->enum('related_type', array_column(UserRelationsEnum::cases(), 'value'));
+            $table->enum('relation_type', array_column(UserRelationsEnum::cases(), 'value'));
             $table->timestamps();
         });
     }
