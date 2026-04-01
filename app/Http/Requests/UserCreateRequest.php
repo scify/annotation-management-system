@@ -20,7 +20,8 @@ class UserCreateRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            'type' => [Rule::enum(RolesEnum::class)],
+            // 'type' => [Rule::enum(RolesEnum::class)],
+            'type' => 'exists:roles,name',
         ];
     }
 
