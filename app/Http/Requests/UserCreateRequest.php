@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class UserCreateRequest extends FormRequest {
+    protected $redirectRoute = 'users.index';
+
     public function authorize(): bool {
         return Gate::allows('create', User::class);
     }
@@ -20,8 +22,7 @@ class UserCreateRequest extends FormRequest {
      */
     public function rules(): array {
         return [
-            // 'type' => [Rule::enum(RolesEnum::class)],
-            'type' => 'exists:roles,name',
+            'type' => ['required', Rule::enum(RolesEnum::class)],
         ];
     }
 

@@ -104,6 +104,10 @@
 			"npm run lint:styles:fix",
 			"npm run format"
 		],
+        "lint:backend": [
+			"rector",
+			"pint --parallel"
+		],
 		"test:lint": [
 			"pint --parallel --test",
 			"rector --dry-run",
