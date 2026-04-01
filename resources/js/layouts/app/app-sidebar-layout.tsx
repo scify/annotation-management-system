@@ -22,7 +22,6 @@ import {
 	FolderOpen,
 	LayoutGrid,
 	Menu,
-	PanelRightOpen,
 	ScrollText,
 	Users,
 } from 'lucide-react';
@@ -70,21 +69,6 @@ export default function AppSidebarLayout({
 	return (
 		<div className="flex min-h-screen w-full">
 			<AppSidebar isCollapsed={isCollapsed} onToggle={toggleSidebar} />
-
-			{/* Expand button — appears at bottom-left when sidebar is collapsed (desktop only) */}
-			<button
-				type="button"
-				onClick={toggleSidebar}
-				aria-label="Expand sidebar"
-				className={cn(
-					'bg-brand-blue-800 hover:bg-brand-blue-600 fixed bottom-4 left-3 z-10 hidden size-[30px] items-center justify-center rounded-lg text-white transition-[opacity,transform] duration-300 ease-in-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-white motion-reduce:transition-none lg:flex',
-					isCollapsed
-						? 'translate-x-0 opacity-100'
-						: 'pointer-events-none -translate-x-2 opacity-0'
-				)}
-			>
-				<PanelRightOpen className="h-4 w-4" aria-hidden="true" />
-			</button>
 
 			<div className="flex min-w-0 flex-1 flex-col">
 				{/* Mobile top bar — hidden on desktop */}
