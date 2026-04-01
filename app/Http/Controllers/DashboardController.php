@@ -26,6 +26,7 @@ class DashboardController extends Controller {
         }
 
         return Inertia::render('dashboard', [
+            // add components to render
             'stats' => $this->dashboardService->getStats(),
         ]);
     }
