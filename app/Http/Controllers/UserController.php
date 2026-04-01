@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UserCreateRequest;
 use App\Http\Requests\UserStoreRequest;
 use App\Http\Requests\UserUpdateRequest;
 use App\Models\User;
@@ -54,12 +55,10 @@ class UserController extends Controller {
     /**
      * Show the form for creating a new user.
      */
-    public function create(Request $request): Response {
+    public function create(UserCreateRequest $request): Response {
         $this->authorize('create', User::class);
 
         $currentUser = $request->user();
-
-        $canCreate = $currentUser->can('create', User::class);
 
         return Inertia::render('users/create', [
             'roles' => $this->userService->getRolesForForm(),
