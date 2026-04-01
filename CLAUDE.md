@@ -407,6 +407,16 @@ This project uses **Tailwind CSS v4** (NOT v3):
 
 Common utilities still work (`flex`, `bg-primary`, `dark:bg-zinc-900`, etc.), but theme setup is entirely different from v3.
 
+### Color Usage — Never Use Raw Hex Values
+
+**NEVER write arbitrary hex colors like `text-[#475569]` or `bg-[#f2f5fd]` directly in TSX/CSS.** Always resolve to a named token first:
+
+1. **Check `@theme` in `resources/scss/app.scss`** — brand tokens are defined there (e.g. `--color-brand-blue-50: #f2f5fd` → `bg-brand-blue-50`, `--color-brand-blue-500: #7a94e0` → `text-brand-blue-500`).
+2. **Check Tailwind's built-in palette** — most grays/slates from Figma map directly (e.g. `#475569` → `text-slate-500`, `#1e293b` → `text-slate-800`, `#94a3b8` → `text-slate-400`).
+3. **If no token exists** — add one to `@theme` in `app.scss` before using it, then reference the generated utility.
+
+Arbitrary values (`text-[#hex]`) are a last resort and must never be used for colors already in the palette or `@theme`.
+
 ### React-Aria Components
 
 This project uses **[React-Aria](https://react-spectrum.adobe.com/react-aria/index.html)** for accessibility.
@@ -430,8 +440,6 @@ import { UserIcon, PlusIcon, TrashIcon } from 'lucide-react';
 
 <UserIcon className="h-4 w-4" />
 ```
-
-NEVER use emoji as icons — always use Lucide.
 
 ---
 

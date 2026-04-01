@@ -25,8 +25,8 @@
 	"devDependencies": {
 		"@eslint/js": "^9.39.3",
 		"@tailwindcss/forms": "^0.5.11",
-		"@tailwindcss/postcss": "^4.2.1",
-		"@tailwindcss/vite": "^4.2.1",
+		"@tailwindcss/postcss": "^4.2.2",
+		"@tailwindcss/vite": "^4.2.2",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/react": "^16.3.2",
 		"@types/jest": "^30.0.0",
@@ -46,23 +46,25 @@
 		"prettier-plugin-organize-imports": "^4.3.0",
 		"prettier-plugin-tailwindcss": "^0.7.2",
 		"sass-embedded": "^1.98.0",
-		"stylelint": "^17.4",
+		"stylelint": "^17.6",
 		"stylelint-config-standard-scss": "^17.0",
 		"stylelint-config-tailwindcss": "^1.0.1",
 		"stylelint-prettier": "^5.0",
 		"ts-jest": "^29.4.6",
 		"ts-node": "^10.9.2",
-		"typescript": "^5.9.3",
-		"typescript-eslint": "^8.57.0",
+		"typescript": "^6.0.2",
+		"typescript-eslint": "^8.58.0",
 		"vite": "^7.3",
 		"vite-plugin-manifest-sri": "^0.2.0"
 	},
 	"dependencies": {
 		"@fontsource-utils/scss": "^0.2.2",
 		"@fontsource-variable/fira-code": "^5.2.7",
+		"@fontsource-variable/inter": "^5.2.8",
 		"@fontsource-variable/montserrat": "^5.2.8",
 		"@fontsource-variable/quicksand": "^5.2.10",
 		"@fontsource-variable/source-sans-3": "^5.2.9",
+		"@fontsource/ubuntu": "^5.2.8",
 		"@inertiajs/react": "^2.3.18",
 		"@types/react-google-recaptcha": "^2.1.9",
 		"altcha": "^2.3.0",
@@ -71,7 +73,7 @@
 		"dotenv": "^17.3.1",
 		"globals": "^17.4.0",
 		"laravel-vite-plugin": "^2.1",
-		"lucide-react": "^0.577.0",
+		"lucide-react": "^1.7.0",
 		"next-themes": "^0.4.6",
 		"react": "^19.2.4",
 		"react-aria-components": "^1.16.0",
@@ -79,16 +81,16 @@
 		"react-google-recaptcha": "^3.1.0",
 		"sonner": "^2.0.7",
 		"tailwind-merge": "^3.5.0",
-		"tailwindcss": "^4.2.1",
+		"tailwindcss": "^4.2.2",
 		"tailwindcss-animate": "^1.0.7",
-		"use-debounce": "^10.1.0"
+		"use-debounce": "^10.1.1"
 	},
 	"optionalDependencies": {
-		"@rollup/rollup-linux-x64-gnu": "4.59.0",
-		"@tailwindcss/oxide-linux-x64-gnu": "^4.2.1",
+		"@rollup/rollup-linux-x64-gnu": "4.60.1",
+		"@tailwindcss/oxide-linux-x64-gnu": "^4.2.2",
 		"lightningcss-linux-x64-gnu": "^1.32.0"
 	},
-	"packageManager": "npm@11.11.1",
+	"packageManager": "npm@11.12.1",
 	"engines": {
 		"node": ">=24"
 	}

@@ -1,5 +1,6 @@
 /* Font uses */
 @use 'pkg:@fontsource-utils/scss' as Fontsource;
+@use 'pkg:@fontsource-variable/inter/scss/metadata' as Inter;
 @use 'pkg:@fontsource-variable/source-sans-3/scss/metadata' as SourceSans;
 @use 'pkg:@fontsource-variable/quicksand/scss/metadata' as Quicksand;
 @use 'pkg:@fontsource-variable/montserrat/scss/metadata' as Montserrat;
@@ -14,10 +15,25 @@
 // @import '@fontsource-variable/open-sans';
 
 // Use the SCSS of each font which is required by the theme:
+@import '@fontsource-variable/inter/index';
+@import '@fontsource/ubuntu/300.css';
 @import '@fontsource-variable/source-sans-3/index';
 @import '@fontsource-variable/quicksand/index';
 @import '@fontsource-variable/montserrat/index';
 @import '@fontsource-variable/fira-code/index';
+
+// Inter (Variable, supports weights 100-900). Latin, Latin-extended and
+// Greek character sets included (Greek needed for the application's locale).
+@include Fontsource.faces(
+	$metadata: Inter.$metadata,
+	$family: 'Inter Variable',
+	$directory: '@fontsource-variable/inter/files',
+	$subsets: (
+		latin,
+		latin-ext,
+		greek,
+	)
+);
 
 // Open Sans (Variable, supports weights 300-800). By default, Latin,
 // Latin-extended, Greek, Greek-extended, Hebrew, Vietnamese, Symbols, Cyrillic
