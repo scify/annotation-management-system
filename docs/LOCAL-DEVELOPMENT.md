@@ -223,7 +223,11 @@ Use tools like [ncu](https://www.npmjs.com/package/npm-check-updates) to check f
 
 - Take a look at `app/Providers/AppServiceProvider.php` to check the configuration.
 
-## 8. Troubleshooting
+## 8. Run specific Backend tests with ddev
+
+`ddev php artisan test --filter UserPolicy`
+
+## 9. Troubleshooting
 
 - Ensure the correct environment file is loaded using `env('DB_HOST')` in Tinker.
   - For DDEV, run `ddev exec php artisan tinker`, and then run `env('DB_HOST')`.
