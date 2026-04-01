@@ -57,6 +57,8 @@ class UserController extends Controller {
      */
     public function create(UserCreateRequest $request): Response {
         $this->authorize('create', User::class);
+        $type = $request->input('type');
+        dd($type);
         $currentUser = $request->user();
 
         return Inertia::render('users/create', [
