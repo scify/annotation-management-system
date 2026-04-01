@@ -18,6 +18,7 @@ return [
     ],
     'labels' => [
         'name' => 'Όνομα',
+        'username' => 'Όνομα Χρήστη',
         'email' => 'Email',
         'password' => 'Κωδικός',
         'password_confirmation' => 'Επιβεβαίωση Κωδικού',

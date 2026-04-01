@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\User;
 
-use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
-class UserStoreRequest extends FormRequest {
+class UserUpdateRequest extends FormRequest {
     public function authorize(): bool {
-        return Gate::allows('create', User::class);
+        return true;
     }
 
     /**
@@ -20,8 +19,8 @@ class UserStoreRequest extends FormRequest {
     public function rules(): array {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'email' => ['required', 'email', Rule::unique('users')->ignore($this->user)],
+            'password' => ['sometimes', 'confirmed', Password::defaults()],
             'role' => ['required', 'string', 'exists:roles,name'],
         ];
     }
@@ -37,5 +36,11 @@ class UserStoreRequest extends FormRequest {
             'password_confirmation' => __('users.labels.password_confirmation'),
             'role' => __('users.labels.role'),
         ];
+    }
+
+    protected function passedValidation(): void {
+        if (empty($this->input('password'))) {
+            $this->request->remove('password');
+        }
     }
 }

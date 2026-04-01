@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\User;
 
+use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rules\Password;
 
-class UserUpdateRequest extends FormRequest {
+class UserStoreRequest extends FormRequest {
     public function authorize(): bool {
-        return true;
+        return Gate::allows('create', User::class);
     }
 
     /**
@@ -19,8 +20,9 @@ class UserUpdateRequest extends FormRequest {
     public function rules(): array {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email', Rule::unique('users')->ignore($this->user)],
-            'password' => ['sometimes', 'confirmed', Password::defaults()],
+            'username' => ['required', 'string', 'max:255', 'unique:users'],
+            'email' => ['required', 'email', 'unique:users'],
+            'password' => ['required', 'confirmed', Password::defaults()],
             'role' => ['required', 'string', 'exists:roles,name'],
         ];
     }
@@ -31,16 +33,11 @@ class UserUpdateRequest extends FormRequest {
     public function attributes(): array {
         return [
             'name' => __('users.labels.name'),
+            'username' => __('users.labels.username'),
             'email' => __('users.labels.email'),
             'password' => __('users.labels.password'),
             'password_confirmation' => __('users.labels.password_confirmation'),
             'role' => __('users.labels.role'),
         ];
-    }
-
-    protected function passedValidation(): void {
-        if (empty($this->input('password'))) {
-            $this->request->remove('password');
-        }
     }
 }

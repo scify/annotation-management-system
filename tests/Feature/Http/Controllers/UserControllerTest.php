@@ -12,6 +12,7 @@ uses(RefreshDatabase::class);
 describe('UserController', function (): void {
     beforeEach(function (): void {
         $this->seed(RolesAndPermissionsSeeder::class);
+        $this->faker = Faker\Factory::create();
 
         $this->admin = User::factory()->create([
             'email' => 'admin@example.com',
@@ -71,32 +72,42 @@ describe('UserController', function (): void {
             );
     });
 
-    it('shows create form to admins and annotation managers', function (): void {
+    it('shows create form to admins', function (): void {
+        $url = route('users.create', ['type' => RolesEnum::ANNOTATOR->value]);
+
         // Admin can view create form
         $this->actingAs($this->admin)
-            ->get(route('users.create'))
+            ->get($url)
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('users/create')->has('roles'));
 
-        // Annotation manager can view create form
+        // Annotation manager cannot view create form
         $this->actingAs($this->annotationManager)
-            ->get(route('users.create'))
-            ->assertOk();
+            ->get($url)
+            ->assertForbidden();
 
         // Annotator cannot view create form
         $this->actingAs($this->annotator)
-            ->get(route('users.create'))
+            ->get($url)
             ->assertForbidden();
+    });
+
+    it('redirects to users index when create is accessed with an invalid type', function (): void {
+        $this->actingAs($this->admin)
+            ->get(route('users.create', ['type' => 'invalid-role']))
+            ->assertRedirect(route('users.index'));
     });
 
     it('creates a new user', function (): void {
         // Arrange
         $this->actingAs($this->admin)->get(route('users.create'));
+        $email = $this->faker->unique()->safeEmail();
 
         // Act
         $response = $this->post(route('users.store'), [
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'username' => $this->faker->unique()->userName(),
+            'email' => $email,
             'password' => 'password123',
             'password_confirmation' => 'password123',
             'role' => RolesEnum::ANNOTATOR->value,
@@ -106,7 +117,7 @@ describe('UserController', function (): void {
         // Assert
         $response->assertRedirect(route('users.index'));
 
-        $user = User::query()->where('email', 'test@example.com')->first();
+        $user = User::query()->where('email', $email)->first();
 
         expect($user)
             ->name->toBe('Test User')

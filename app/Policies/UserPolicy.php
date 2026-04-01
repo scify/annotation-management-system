@@ -9,6 +9,10 @@ use App\Enums\UserRelationsEnum;
 use App\Models\User;
 
 class UserPolicy {
+    public function viewAny(User $user): bool {
+        return $user->hasRole(RolesEnum::ADMIN) || $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
+    }
+
     public function view(User $user, User $model): bool {
         if ($user->id === $model->id) {
             return true;
@@ -29,18 +33,12 @@ class UserPolicy {
         return $user->relatedUsers()->where('related_user_id', $model->id)->wherePivot('relation_type', UserRelationsEnum::ANNOTATOR_OF_MANAGER)->exists();
     }
 
-    public function create(User $user, User $model): bool {
+    public function create(User $user): bool {
         if ($user->hasRole(RolesEnum::ADMIN)) {
             return true;
         }
-        if ($user->hasRole(RolesEnum::ANNOTATOR)) {
-            return false;
-        }
-        if ($model->hasRole(RolesEnum::ADMIN)) {
-            return false;
-        }
 
-        return true;
+        return false;
     }
 
     public function update(User $user, User $model): bool {
