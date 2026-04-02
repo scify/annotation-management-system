@@ -91,5 +91,5 @@ it('connects to the external API', function () {
 - Use the `integration` group so they can be run selectively:
   
   ```shell
-  ddev exec vendor/bin/pest --group=integration
+  ddev composer test:backend -- --group=integration
   ```
