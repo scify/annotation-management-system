@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\RolesEnum;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Faker\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -12,7 +13,7 @@ uses(RefreshDatabase::class);
 describe('UserController', function (): void {
     beforeEach(function (): void {
         $this->seed(RolesAndPermissionsSeeder::class);
-        $this->faker = Faker\Factory::create();
+        $this->faker = Factory::create();
 
         $this->admin = User::factory()->create([
             'email' => 'admin@example.com',

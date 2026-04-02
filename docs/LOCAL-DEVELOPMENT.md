@@ -225,7 +225,7 @@ Use tools like [ncu](https://www.npmjs.com/package/npm-check-updates) to check f
 
 ## 8. Run specific Backend tests with ddev
 
-`ddev php artisan test --filter UserPolicy`
+`ddev composer test -- --filter UserPolicytest`
 
 ## 9. Troubleshooting
 

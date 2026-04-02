@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\RolesEnum;
 use App\Enums\UserRelationsEnum;
 use App\Models\User;
+use App\Policies\UserPolicy;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
 describe('userpolicy', function (): void {
@@ -19,10 +20,10 @@ describe('userpolicy', function (): void {
         $this->other_annotator = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR);
         $this->manager->relatedUsers()->attach($this->annotator->id, ['relation_type' => UserRelationsEnum::ANNOTATOR_OF_MANAGER->value]);
         $this->manager->relatedUsers()->attach($this->manager_collaborator->id, ['relation_type' => UserRelationsEnum::COLLABORATOR_OF_USER->value]);
-        $this->policy = new App\Policies\UserPolicy();
+        $this->policy = new UserPolicy();
     });
 
-    it('view', function () {
+    it('view', function (): void {
         // Admin can view all
         expect($this->policy->view($this->admin, $this->manager))->toBeTrue();
         expect($this->policy->view($this->admin, $this->annotator))->toBeTrue();
@@ -43,24 +44,24 @@ describe('userpolicy', function (): void {
 
     });
 
-    it('create', function () {
+    it('create', function (): void {
         // Admin can create all
-        expect($this->policy->create($this->admin, $this->manager))->toBeTrue();
-        expect($this->policy->create($this->admin, $this->annotator))->toBeTrue();
-        expect($this->policy->create($this->admin, $this->admin))->toBeTrue();
+        expect($this->policy->create($this->admin, RolesEnum::ADMIN->value))->toBeTrue();
+        expect($this->policy->create($this->admin, RolesEnum::ANNOTATION_MANAGER->value))->toBeTrue();
+        expect($this->policy->create($this->admin, RolesEnum::ANNOTATOR->value))->toBeTrue();
         // Manager cannot create admins
-        expect($this->policy->create($this->manager, $this->admin))->toBeFalse();
+        expect($this->policy->create($this->manager, RolesEnum::ADMIN->value))->toBeFalse();
         // Manager can create annotators and managers
-        expect($this->policy->create($this->manager, $this->annotator))->toBeTrue();
-        expect($this->policy->create($this->manager, $this->manager_non_collaborator))->toBeTrue();
+        expect($this->policy->create($this->manager, RolesEnum::ANNOTATION_MANAGER->value))->toBeTrue();
+        expect($this->policy->create($this->manager, RolesEnum::ANNOTATOR->value))->toBeTrue();
         // annotator cannot create
-        expect($this->policy->view($this->annotator, $this->other_annotator))->toBeFalse();
-        expect($this->policy->view($this->annotator, $this->manager))->toBeFalse();
-        expect($this->policy->view($this->annotator, $this->admin))->toBeFalse();
+        expect($this->policy->create($this->annotator, RolesEnum::ADMIN->value))->toBeFalse();
+        expect($this->policy->create($this->annotator, RolesEnum::ANNOTATION_MANAGER->value))->toBeFalse();
+        expect($this->policy->create($this->annotator, RolesEnum::ANNOTATOR->value))->toBeFalse();
 
     });
 
-    it('update', function () {
+    it('update', function (): void {
         // Admin can update all
         expect($this->policy->update($this->admin, $this->manager))->toBeTrue();
         expect($this->policy->update($this->admin, $this->annotator))->toBeTrue();
@@ -81,7 +82,7 @@ describe('userpolicy', function (): void {
         expect($this->policy->view($this->annotator, $this->admin))->toBeFalse();
     });
 
-    it('delete', function () {
+    it('delete', function (): void {
         // Admin can delete all except self
         expect($this->policy->delete($this->admin, $this->manager))->toBeTrue();
         expect($this->policy->delete($this->admin, $this->annotator))->toBeTrue();
@@ -101,7 +102,7 @@ describe('userpolicy', function (): void {
         expect($this->policy->delete($this->annotator, $this->admin))->toBeFalse();
     });
 
-    it('restore', function () {
+    it('restore', function (): void {
         // Admin can restore all
         expect($this->policy->restore($this->admin, $this->manager))->toBeTrue();
         expect($this->policy->restore($this->admin, $this->annotator))->toBeTrue();

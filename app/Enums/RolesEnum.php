@@ -7,7 +7,7 @@ namespace App\Enums;
 enum RolesEnum: string {
     case ADMIN = 'admin';
 
-    case ANNOTATION_MANAGER = 'annotation manager';
+    case ANNOTATION_MANAGER = 'annotation-manager';
 
     case ANNOTATOR = 'annotator';
 
@@ -15,7 +15,7 @@ enum RolesEnum: string {
     public function label(): string {
         return match ($this) {
             self::ADMIN => 'admin',
-            self::ANNOTATION_MANAGER => 'annotation manager',
+            self::ANNOTATION_MANAGER => 'annotation-manager',
             self::ANNOTATOR => 'annotator',
         };
     }
