@@ -15,7 +15,7 @@ use_dns_when_possible: true
 timezone: Europe/Berlin
 composer_version: '2'
 web_environment: []
-nodejs_version: '24'
+nodejs_version: '24.14.0'
 corepack_enable: false
 web_extra_exposed_ports:
     - name: vite
@@ -25,7 +25,7 @@ web_extra_exposed_ports:
 # Enforcing the use of the proper version of nvm:
 hooks:
     post-start:
-        - exec: 'nvm alias default system > /dev/null'
+        - exec: "bash -lc 'NODE_VERSION=\"$(cat /var/www/html/.nvmrc)\" && nvm install \"$NODE_VERSION\" >/dev/null && nvm use \"$NODE_VERSION\" >/dev/null && npm install -g npm@11.12.1 >/dev/null && nvm alias default \"$NODE_VERSION\" >/dev/null'"
 # Key features of DDEV's config.yaml:
 
 # name: <projectname> # Name of the project, automatically provides
