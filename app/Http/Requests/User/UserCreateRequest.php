@@ -11,10 +11,15 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 class UserCreateRequest extends FormRequest {
-    protected $redirectRoute = 'users.index';
+    protected $redirectRoute;
+
+    public function __construct(protected RolesEnum $userType) {
+        $this->redirectRoute = 'users.index';
+        parent::__construct();
+    }
 
     public function authorize(): bool {
-        return Gate::allows('create', User::class);
+        return Gate::allows('create', [User::class, $this->userType->value]);
     }
 
     /**

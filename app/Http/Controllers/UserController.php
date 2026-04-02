@@ -56,17 +56,12 @@ class UserController extends Controller {
      * Show the form for creating a new user.
      */
     public function create(UserCreateRequest $request): Response {
-        $this->authorize('create', User::class);
-
-        $request->user();
-
+        // $this->authorize('create', [User::class, $type]);
+        $request->authorize();
         // $inputData is an array of key-value pairs that has been validated by UserCreateRequest, so we can safely use it here.
         // we should use ->validated() instead of ->all() to ensure we only get the validated data.
         // for example, if an attacker tries to inject additional fields via HTML or JS, they won't be included in $inputData.
         $request->validated();
-
-        // first way to get the type:
-        $request->input('type');
 
         return Inertia::render('users/create', [
             'roles' => $this->userService->getRolesForForm(),
