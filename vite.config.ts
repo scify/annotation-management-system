@@ -107,10 +107,10 @@ export default defineConfig(({ mode, command }) => {
 				scss: {
 					api: 'modern-compiler',
 					silenceDeprecations: [
-						'mixed-decls',
 						'color-functions',
 						'import',
 						'global-builtin',
+						'if-function',
 					],
 					importers: [new NodePackageImporter()],
 				},
