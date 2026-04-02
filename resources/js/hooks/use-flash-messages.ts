@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { type SharedData } from '@/types';
 
 export function useFlashMessages() {
-	const { flash } = usePage<SharedData>().props;
+	const { errors, flash } = usePage<SharedData>().props;
 
 	useEffect(() => {
 		if (flash.success) {
@@ -20,4 +20,11 @@ export function useFlashMessages() {
 			toast.info(flash.info);
 		}
 	}, [flash]);
+
+	useEffect(() => {
+		const errorMessages = Object.values(errors).filter(
+			(value) => typeof value === 'string'
+		) as string[];
+		errorMessages.forEach((message) => toast.error(message));
+	}, [errors]);
 }

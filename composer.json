@@ -125,9 +125,9 @@
 			"@test:lint",
 			"@test:types",
 			"@test:backend",
-            "@test:frontend"
+			"@test:frontend"
 		],
-        "test": "pest",
+		"test": "pest",
 		"test:backend": "pest",
 		"test:frontend": "npm run test",
 		"test:coverage": "pest --coverage --parallel"
