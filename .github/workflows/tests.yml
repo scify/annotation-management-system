@@ -52,4 +52,4 @@ jobs:
 
             - name: Tests
               run: |
-                  composer test
+                  composer test:all

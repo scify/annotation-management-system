@@ -89,27 +89,7 @@ it('connects to the external API', function () {
 ```
 
 - Use the `integration` group so they can be run selectively:
-  ```bash
+  
+  ```shell
   ddev exec vendor/bin/pest --group=integration
   ```
-
-## Running Tests
-
-```bash
-# All suites
-ddev composer test
-
-# Just Pest (no lint)
-ddev exec vendor/bin/pest
-
-# Specific suite
-ddev exec vendor/bin/pest --testsuite=Feature
-
-# Specific test
-ddev exec vendor/bin/pest --filter="stores a new user"
-
-# With coverage
-ddev xdebug on
-ddev exec "XDEBUG_MODE=coverage vendor/bin/pest --coverage"
-ddev xdebug off
-```

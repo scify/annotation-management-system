@@ -18,6 +18,9 @@
   - [PHP code style - Laravel Pint](#php-code-style---laravel-pint)
   - [Running tests](#running-tests)
     - [Backend tests](#backend-tests)
+      - [Run all backend tests](#run-all-backend-tests)
+      - [Filter by test name or class](#filter-by-test-name-or-class)
+      - [Combine flags](#combine-flags)
     - [Frontend tests](#frontend-tests)
   - [Code Scanning](#code-scanning)
   - [Git Hooks](#git-hooks)
@@ -129,16 +132,36 @@ composer test:lint  # dry-run checks only — no modifications (CI-friendly)
 Run the full test suite (lint + static analysis + Pest) via:
 
 ```shell
-composer test
+composer test:backend
 ```
 
 To run or filter Pest tests directly:
 
 ```shell
-vendor/bin/pest                        # all tests
-vendor/bin/pest --filter TestName      # filter by name
-vendor/bin/pest --testsuite=Feature    # specific suite
+composer test:backend                        # all tests
+composer test:backend -- --filter TestName      # filter by name
+composer test:backend -- --testsuite=Feature    # specific suite
 ```
+
+##### Run all backend tests
+
+```shell
+ddev composer test:backend
+```
+
+##### Filter by test name or class
+
+```shell
+  ddev composer test:backend -- --filter UserControllerTest
+  ddev composer test:backend -- --filter "it creates a user"
+```
+
+##### Combine flags
+
+```shell
+  ddev composer test:backend -- --filter UserControllerTest --coverage
+```
+
 
 To run with code coverage (requires Xdebug):
 

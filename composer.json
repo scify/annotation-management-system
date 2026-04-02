@@ -121,11 +121,15 @@
 			"phpstan analyse --memory-limit=2G",
 			"npm run types"
 		],
-		"test": [
+		"test:all": [
 			"@test:lint",
 			"@test:types",
-			"pest"
+			"@test:backend",
+            "@test:frontend"
 		],
+        "test": "pest",
+		"test:backend": "pest",
+		"test:frontend": "npm run test",
 		"test:coverage": "pest --coverage"
 	},
 	"extra": {

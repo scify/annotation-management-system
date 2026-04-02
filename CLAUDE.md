@@ -112,7 +112,7 @@ Commands in this document are shown in **native form**. DDEV users: add the `dde
 
 **Recommended (via Composer):**
 
-- `composer test` — Full suite (lint + types + Pest)
+- `composer test:all` — Full suite (lint + types + Pest)
 - `composer test:coverage` — Pest with coverage
 
 **Coverage (requires Xdebug):**
