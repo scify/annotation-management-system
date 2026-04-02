@@ -164,11 +164,10 @@ ddev composer test:backend
   ddev composer test:backend -- --filter UserControllerTest --coverage
 ```
 
-
 To run with code coverage (requires Xdebug):
 
 ```shell
-composer test:coverage
+XDEBUG_MODE=coverage ddev composer test:coverage
 ```
 
 #### Frontend tests

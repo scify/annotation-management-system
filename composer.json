@@ -130,7 +130,7 @@
         "test": "pest",
 		"test:backend": "pest",
 		"test:frontend": "npm run test",
-		"test:coverage": "pest --coverage"
+		"test:coverage": "pest --coverage --parallel"
 	},
 	"extra": {
 		"laravel": {
