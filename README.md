@@ -133,6 +133,8 @@ Run the full test suite (lint + static analysis + Pest) via:
 
 ```shell
 composer test:backend
+
+# or composer test
 ```
 
 To run or filter Pest tests directly:
