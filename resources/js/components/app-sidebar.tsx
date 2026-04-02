@@ -4,12 +4,12 @@ import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
 	BellRing,
-	ClipboardList,
-	FolderOpen,
-	LayoutGrid,
+	Briefcase,
+	FolderDot,
+	LayoutDashboard,
 	PanelLeftClose,
 	PanelLeftOpen,
-	ScrollText,
+	Captions,
 	Users,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -39,14 +39,14 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
 	const { t } = useTranslations();
 
 	const navItems: SidebarItem[] = [
-		{ title: 'Dashboard', icon: LayoutGrid, href: '/dashboard' },
-		{ title: 'Projects', icon: FolderOpen, href: '#', placeholder: true },
-		{ title: 'Assignments', icon: ClipboardList, href: '#', placeholder: true },
+		{ title: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
+		{ title: 'Projects', icon: FolderDot, href: '#', placeholder: true },
+		{ title: 'Assignments', icon: Briefcase, href: '#', placeholder: true },
 		...(auth?.user?.can.view_users
 			? [{ title: t('navbar.users'), icon: Users, href: route('users.index') }]
 			: []),
 		{ title: 'Notifications', icon: BellRing, href: '#', placeholder: true },
-		{ title: 'Audit Log', icon: ScrollText, href: '#', placeholder: true },
+		{ title: 'Audit Log', icon: Captions, href: '#', placeholder: true },
 	];
 
 	return (
@@ -75,7 +75,7 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
 					{navItems.map((item) => {
 						const active = isActive(item.href, page.url);
 						const itemClass = cn(
-							'flex items-center rounded-lg px-1 py-2 text-sm font-medium text-white transition-colors',
+							'flex items-center rounded-lg px-1 py-2 text-sm font-medium text-white transition-colors mb-2',
 							isCollapsed ? 'justify-center' : 'gap-1.5',
 							active ? 'bg-slate-800' : 'hover:bg-white/10',
 							item.placeholder && 'cursor-not-allowed opacity-60'

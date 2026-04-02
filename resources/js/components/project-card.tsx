@@ -1,11 +1,21 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Tag } from '@/components/ui/tag';
+import { type VariantProps } from 'class-variance-authority';
 import { BellRing, FolderDot, FolderOpenDot, UserRound } from 'lucide-react';
+
+type StatusVariant = Extract<
+	NonNullable<VariantProps<typeof badgeVariants>['variant']>,
+	'yellow' | 'lime' | 'slate' | 'pink'
+>;
 
 export interface ProjectCardData {
 	id: number;
 	name: string;
 	dateRange: string;
+	status: StatusVariant;
+	statusLabel: string;
 	tags: [string, string];
 	subprojects: number;
 	annotators: number;
@@ -35,8 +45,11 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
 			<div className="flex flex-col gap-4">
 				{/* Icon + name + date */}
 				<div className="flex flex-col gap-3">
-					<div className="project-icon flex size-[42px] items-center justify-start rounded-lg bg-transparent">
-						<FolderDot className="text-brand-blue-500" aria-hidden="true" />
+					<div className="flex items-start justify-between">
+						<div className="project-icon flex size-[42px] items-center justify-start rounded-lg bg-transparent">
+							<FolderDot className="text-brand-blue-500" aria-hidden="true" />
+						</div>
+						<Badge variant={project.status}>{project.statusLabel}</Badge>
 					</div>
 					<div>
 						<p className="text-xl leading-9 font-medium text-slate-800">
@@ -48,12 +61,8 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
 
 				{/* Tag chips */}
 				<div className="flex gap-2.5">
-					<span className="bg-brand-blue-100 flex h-8 min-w-0 flex-1 items-center truncate rounded-md px-[10px] text-sm font-medium text-slate-800">
-						{project.tags[0]}
-					</span>
-					<span className="bg-brand-blue-100 flex h-8 shrink-0 items-center rounded-md px-[10px] text-sm font-medium whitespace-nowrap text-slate-800">
-						{project.tags[1]}
-					</span>
+					<Tag className="min-w-0 flex-1 truncate">{project.tags[0]}</Tag>
+					<Tag className="shrink-0 whitespace-nowrap">{project.tags[1]}</Tag>
 				</div>
 
 				{/* Indicator chips: subprojects / annotators / notifications */}
