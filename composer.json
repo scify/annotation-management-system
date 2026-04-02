@@ -98,15 +98,17 @@
 			"npx npm-check-updates -u"
 		],
 		"lint": [
+			"lint:backend",
+			"lint:frontend"
+		],
+		"lint:backend": [
 			"rector",
-			"pint --parallel",
+			"pint --parallel"
+		],
+		"lint:frontend": [
 			"npm run lint:fix",
 			"npm run lint:styles:fix",
 			"npm run format"
-		],
-        "lint:backend": [
-			"rector",
-			"pint --parallel"
 		],
 		"test:lint": [
 			"pint --parallel --test",

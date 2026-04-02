@@ -349,7 +349,7 @@ jobs:
               run: composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
 
             - name: Install Node Dependencies
-              run: npm ci --production
+              run: npm ci --omit=dev
 
             - name: Run PHP Security Audit
               run: composer audit --format=table
