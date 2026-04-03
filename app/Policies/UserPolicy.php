@@ -9,14 +9,6 @@ use App\Enums\UserRelationsEnum;
 use App\Models\User;
 
 class UserPolicy {
-    public function viewAny(User $user): bool {
-        if ($user->hasRole(RolesEnum::ADMIN)) {
-            return true;
-        }
-
-        return $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
-    }
-
     public function view(User $user, User $model): bool {
         if ($user->id === $model->id) {
             return true;
