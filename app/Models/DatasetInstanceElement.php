@@ -7,10 +7,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Project extends Model {
+class DatasetInstanceElement extends Model {
+    /** @use HasFactory<\Database\Factories\DatasetInstanceElementFactory> */
     use HasFactory;
 
     protected $fillable = [
-        'owner_user_id',
+        'index',
+        'key',
+        'value',
+        'dataset_instance_id',
     ];
 }

@@ -7,11 +7,11 @@ namespace App\Http\Controllers;
 use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserStoreRequest;
 use App\Http\Requests\User\UserUpdateRequest;
+use App\Http\Requests\User\UserViewRequest;
 use App\Models\User;
 use App\Services\User\UserService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,8 +25,8 @@ class UserController extends Controller {
     /**
      * Display a listing of users.
      */
-    public function index(Request $request): Response {
-        $this->authorize('viewAny', User::class);
+    public function index(UserViewRequest $request): Response {
+        $this->authorize('view', User::class);
 
         /** @var User $currentUser */
         $currentUser = $request->user();
