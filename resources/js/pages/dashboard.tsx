@@ -1,5 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
-import { ProjectCard, type ProjectCardData } from '@/components/project-card';
+import { ProjectCard, type ProjectCardData } from '@/components/project/project-card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
 	Table,

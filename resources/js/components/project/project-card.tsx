@@ -25,7 +25,7 @@ export interface ProjectCardData {
 	coManagers: Array<{ initials: string; username: string }>;
 }
 
-function UserAvatar({ initials }: { initials: string }) {
+export function UserAvatar({ initials }: { initials: string }) {
 	return (
 		<Avatar className="size-[22px] shrink-0">
 			<AvatarFallback className="bg-brand-blue-300 rounded-full text-[10px] font-semibold text-white">
