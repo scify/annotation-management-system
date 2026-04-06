@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tag } from '@/components/ui/tag';
+import { Link } from '@inertiajs/react';
 import { BellRing, FolderDot, FolderOpenDot, UserRound } from 'lucide-react';
 import { type ProjectCardData, UserAvatar } from './project-card';
 
@@ -131,9 +132,11 @@ export function ProjectListItem({ project }: { project: ProjectCardData }) {
 					</div>
 				</div>
 
-				<Button className="hover:bg-brand-blue-800 h-10 w-[200px] shrink-0 font-semibold text-white">
-					View Project
-				</Button>
+				<Link href={route('projects.show', project.id)}>
+					<Button className="hover:bg-brand-blue-800 h-10 w-[200px] shrink-0 font-semibold text-white">
+						View Project
+					</Button>
+				</Link>
 			</div>
 		</article>
 	);

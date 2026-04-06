@@ -11,5 +11,6 @@ return [
         'altcha-challenge', 'register', 'password.request', 'password.email',
         'password.reset', 'password.store', 'verification.notice', 'verification.verify',
         'verification.send', 'password.confirm', 'password.confirmation', 'projects.index',
+        'projects.show',
     ],
 ];

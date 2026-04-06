@@ -11,4 +11,8 @@ class ProjectController extends Controller {
     public function index(): Response {
         return Inertia::render('projects/index');
     }
+
+    public function show(int $id): Response {
+        return Inertia::render('projects/show');
+    }
 }

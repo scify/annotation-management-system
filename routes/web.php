@@ -18,6 +18,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
+    Route::get('projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
 
     Route::resource('users', UserController::class);
 
