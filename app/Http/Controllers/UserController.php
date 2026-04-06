@@ -56,7 +56,7 @@ class UserController extends Controller {
      * Show the form for creating a new user.
      */
     public function create(UserCreateRequest $request): Response {
-        // $this->authorize('create', [User::class, $type]);
+        // $this->authorize(gt'create', [User::class, $type]);
         $request->authorize();
         // $inputData is an array of key-value pairs that has been validated by UserCreateRequest, so we can safely use it here.
         // we should use ->validated() instead of ->all() to ensure we only get the validated data.
