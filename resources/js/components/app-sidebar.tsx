@@ -40,7 +40,7 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
 
 	const navItems: SidebarItem[] = [
 		{ title: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-		{ title: 'Projects', icon: FolderDot, href: '#', placeholder: true },
+		{ title: 'Projects', icon: FolderDot, href: route('projects.index') },
 		{ title: 'Assignments', icon: Briefcase, href: '#', placeholder: true },
 		...(auth?.user?.can.view_users
 			? [{ title: t('navbar.users'), icon: Users, href: route('users.index') }]

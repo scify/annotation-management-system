@@ -2,10 +2,11 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tag } from '@/components/ui/tag';
+import { Link } from '@inertiajs/react';
 import { type VariantProps } from 'class-variance-authority';
 import { BellRing, FolderDot, FolderOpenDot, UserRound } from 'lucide-react';
 
-type StatusVariant = Extract<
+export type StatusVariant = Extract<
 	NonNullable<VariantProps<typeof badgeVariants>['variant']>,
 	'yellow' | 'lime' | 'slate' | 'pink'
 >;
@@ -25,7 +26,7 @@ export interface ProjectCardData {
 	coManagers: Array<{ initials: string; username: string }>;
 }
 
-function UserAvatar({ initials }: { initials: string }) {
+export function UserAvatar({ initials }: { initials: string }) {
 	return (
 		<Avatar className="size-[22px] shrink-0">
 			<AvatarFallback className="bg-brand-blue-300 rounded-full text-[10px] font-semibold text-white">
@@ -157,9 +158,11 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
 				</div>
 
 				{/* View Project */}
-				<Button className="hover:bg-brand-blue-800 h-10 w-full font-semibold text-white">
-					View Project
-				</Button>
+				<Link href={route('projects.show', project.id)}>
+					<Button className="hover:bg-brand-blue-800 h-10 w-full font-semibold text-white">
+						View Project
+					</Button>
+				</Link>
 			</div>
 		</article>
 	);
