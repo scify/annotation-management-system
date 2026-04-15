@@ -29,8 +29,9 @@ interface SidebarItem {
 
 function isActive(href: string, currentUrl: string): boolean {
 	if (href === '#') return false;
-	if (href === '/dashboard') return currentUrl === href;
-	return currentUrl.startsWith(href);
+	// route() returns absolute URLs; page.url is a pathname — normalise to pathname before comparing
+	const path = href.startsWith('http') ? new URL(href).pathname : href;
+	return currentUrl === path || currentUrl.startsWith(path + '/');
 }
 
 export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
@@ -39,7 +40,7 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
 	const { t } = useTranslations();
 
 	const navItems: SidebarItem[] = [
-		{ title: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
+		{ title: 'Dashboard', icon: LayoutDashboard, href: route('dashboard') },
 		{ title: 'Projects', icon: FolderDot, href: route('projects.index') },
 		{ title: 'Assignments', icon: Briefcase, href: '#', placeholder: true },
 		...(auth?.user?.can.view_users
