@@ -9,6 +9,10 @@ use App\Enums\UserRelationsEnum;
 use App\Models\User;
 
 class UserPolicy {
+    public function viewAny(User $user): bool {
+        return $user->hasRole(RolesEnum::ADMIN) || $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
+    }
+
     public function view(User $user, User $model): bool {
         if ($user->id === $model->id) {
             return true;
@@ -38,6 +42,7 @@ class UserPolicy {
             return true;
         }
 
+        // annotation managers can create other annotation managers and annotators (they cannot create admins)
         return $user->hasRole(RolesEnum::ANNOTATION_MANAGER) && ($targetRole === RolesEnum::ANNOTATOR->value || $targetRole === RolesEnum::ANNOTATION_MANAGER->value);
     }
 

@@ -12,7 +12,7 @@
 		"php": "^8.4",
 		"anhskohbo/no-captcha": "^3.7",
 		"grantholle/laravel-altcha": "^1.2",
-		"inertiajs/inertia-laravel": "^2.0",
+		"inertiajs/inertia-laravel": "^3.0",
 		"laravel/framework": "^12.7",
 		"laravel/sanctum": "^4.0",
 		"laravel/socialite": "^5.19",
@@ -23,6 +23,7 @@
 		"tightenco/ziggy": "^2.4"
 	},
 	"require-dev": {
+		"driftingly/rector-laravel": "^2.1",
 		"fakerphp/faker": "^1.23",
 		"larastan/larastan": "^3.3",
 		"laravel/pail": "^1.2.2",
@@ -31,9 +32,9 @@
 		"mockery/mockery": "^1.6",
 		"nunomaduro/collision": "^8.8",
 		"pestphp/pest": "^4.0",
+		"pestphp/pest-plugin-browser": "^4.3",
 		"pestphp/pest-plugin-laravel": "^4.0",
 		"pestphp/pest-plugin-type-coverage": "^4.0",
-		"driftingly/rector-laravel": "^2.1",
 		"rector/rector": "^2.0"
 	},
 	"autoload": {
@@ -76,20 +77,6 @@
 			"Composer\\Config::disableProcessTimeout",
 			"npx concurrently -c \"#c4b5fd,#fb7185,#fdba74\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=queue,logs,vite --kill-others"
 		],
-		"dev:ssr": [
-			"Composer\\Config::disableProcessTimeout",
-			"@php -r \"passthru('composer ' . (getenv('IS_DDEV_PROJECT') === 'true' ? 'dev:ddev:ssr' : 'dev:serve:ssr') . ' --ansi');\""
-		],
-		"dev:serve:ssr": [
-			"npm run build:ssr",
-			"Composer\\Config::disableProcessTimeout",
-			"npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=server,queue,logs,ssr --kill-others"
-		],
-		"dev:ddev:ssr": [
-			"npm run build:ssr",
-			"Composer\\Config::disableProcessTimeout",
-			"npx concurrently -c \"#c4b5fd,#fb7185,#fdba74\" \"php artisan queue:listen --tries=1\" \"php artisan pail --timeout=0\" \"php artisan inertia:start-ssr\" --names=queue,logs,ssr --kill-others"
-		],
 		"post-install-cmd": [
 			"bash tools/git-hooks/install.sh"
 		],
@@ -124,13 +111,12 @@
 		"test:all": [
 			"@test:lint",
 			"@test:types",
-			"@test:backend",
-			"@test:frontend"
+			"@test:backend"
 		],
 		"test": "pest",
-		"test:backend": "pest",
-		"test:frontend": "npm run test",
-		"test:coverage": "pest --coverage --parallel"
+		"test:backend": "pest --exclude-testsuite=Browser",
+		"test:browser": "pest --testsuite=Browser",
+		"test:coverage": "pest --coverage --parallel --exclude-testsuite=Browser"
 	},
 	"extra": {
 		"laravel": {

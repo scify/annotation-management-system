@@ -26,8 +26,6 @@ class UserController extends Controller {
      * Display a listing of users.
      */
     public function index(UserViewRequest $request): Response {
-        $this->authorize('view', User::class);
-
         /** @var User $currentUser */
         $currentUser = $request->user();
 

@@ -14,7 +14,6 @@ export interface User {
 	created_at: string | null;
 	updated_at: string | null;
 	deleted_at: string | null;
-	email_verified_at: string | null;
 	avatar: string | null;
 }
 

@@ -35,12 +35,14 @@ declare(strict_types=1);
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title data-inertia>{{ config('app.name', 'Laravel') }}</title>
 
         @routes
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
-        <x-laravel-cookie-guard-scripts></x-laravel-cookie-guard-scripts>
+        @unless(app()->environment('testing'))
+            <x-laravel-cookie-guard-scripts></x-laravel-cookie-guard-scripts>
+        @endunless
         @inertiaHead
 
         <!-- Favicon and app icons -->
@@ -55,7 +57,9 @@ declare(strict_types=1);
     </head>
     <body class="font-sans antialiased">
         @inertia
-        <x-laravel-cookie-guard></x-laravel-cookie-guard>
+        @unless(app()->environment('testing'))
+            <x-laravel-cookie-guard></x-laravel-cookie-guard>
+        @endunless
     </body>
 </html>
 <?php

@@ -1,12 +1,12 @@
 import path from 'path';
 import fs from 'fs';
 import react from '@vitejs/plugin-react';
+import inertia from '@inertiajs/vite';
 import laravel from 'laravel-vite-plugin';
 import dotenv from 'dotenv';
 import { defineConfig, loadEnv } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
 import { NodePackageImporter } from 'sass-embedded';
-import manifestSRI from 'vite-plugin-manifest-sri';
 
 interface ImportMetaEnv {
 	readonly VITE_DEV_URL: string;
@@ -77,12 +77,11 @@ export default defineConfig(({ mode, command }) => {
 		plugins: [
 			laravel({
 				input: 'resources/js/app.tsx',
-				ssr: 'resources/js/ssr.tsx',
 				refresh: true,
 			}),
+			inertia({ ssr: { entry: 'resources/js/ssr.tsx' } }),
 			react(),
 			tailwindcss(),
-			manifestSRI(),
 		],
 		server: {
 			host: '0.0.0.0',

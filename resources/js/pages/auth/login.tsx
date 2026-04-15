@@ -25,6 +25,7 @@ interface LoginProps {
 	canResetPassword: boolean;
 	token?: string;
 	redirectTo?: string;
+	skipCaptcha?: boolean;
 }
 
 export default function Login({
@@ -32,6 +33,7 @@ export default function Login({
 	canResetPassword,
 	token,
 	redirectTo,
+	skipCaptcha = false,
 }: Readonly<LoginProps>) {
 	const form = useForm<Required<LoginForm>>({
 		email: '',
@@ -103,7 +105,7 @@ export default function Login({
 
 	const submit: FormEventHandler = (e) => {
 		e.preventDefault();
-		if (!data.captcha) {
+		if (!data.captcha && !skipCaptcha) {
 			setAltchaError(t('auth.login.captcha'));
 			return;
 		}
@@ -199,17 +201,19 @@ export default function Login({
 								<Label htmlFor="remember">{t('auth.login.remember')}</Label>
 							</div>
 
-							<div className="mt-2 mb-1 flex justify-start">
-								<altcha-widget
-									id="altcha-widget"
-									hidelogo
-									hidefooter
-									challengeurl="/altcha-challenge"
-									ref={
-										setAltchaRef as unknown as AltchaWidgetReactRefObject<HTMLElement>
-									}
-								/>
-							</div>
+							{!skipCaptcha && (
+								<div className="mt-2 mb-1 flex justify-start">
+									<altcha-widget
+										id="altcha-widget"
+										hidelogo
+										hidefooter
+										challengeurl="/altcha-challenge"
+										ref={
+											setAltchaRef as unknown as AltchaWidgetReactRefObject<HTMLElement>
+										}
+									/>
+								</div>
+							)}
 							{pageErrors.captcha && <InputError message={pageErrors.captcha} />}
 							{altchaError && <InputError message={altchaError} />}
 							<Button

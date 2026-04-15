@@ -62,14 +62,15 @@ describe('UserController', function (): void {
             );
 
         // Annotation manager cannot update or delete admins
+        // Annotation manager cannot update or delete annotators that are not related to him
         $this->actingAs($this->annotationManager)
             ->get(route('users.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->where(sprintf('abilities.%s.update', $this->admin->id), false)
                 ->where(sprintf('abilities.%s.delete', $this->admin->id), false)
-                ->where(sprintf('abilities.%s.update', $this->annotator->id), true)
-                ->where(sprintf('abilities.%s.delete', $this->annotator->id), true)
+                ->where(sprintf('abilities.%s.update', $this->annotator->id), false)
+                ->where(sprintf('abilities.%s.delete', $this->annotator->id), false)
             );
     });
 
@@ -82,10 +83,11 @@ describe('UserController', function (): void {
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('users/create')->has('roles'));
 
-        // Annotation manager cannot view create form
+        // Annotation manager can view create form for an annotator-type target user
         $this->actingAs($this->annotationManager)
             ->get($url)
-            ->assertForbidden();
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('users/create')->has('roles'));
 
         // Annotator cannot view create form
         $this->actingAs($this->annotator)

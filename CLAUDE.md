@@ -17,12 +17,12 @@ You are working with a team of senior software engineers who are well-versed in 
 - **Frontend**: React 19 + TypeScript via Inertia.js (server-driven SPA)
 - **Internal API**: Versioned REST API (`/api/v1/`) with Sanctum authentication
 - **Authentication**: Role-based access control via Spatie Laravel Permission with enum-based roles
-- **SSR**: Enabled — Node.js SSR server on port 13714 via `php artisan inertia:start-ssr`
+- **SSR**: Enabled — `@inertiajs/vite` plugin handles SSR automatically in development; production uses `php artisan inertia:start-ssr`
 
 ### Technology Stack
 
 - **Laravel**: 12 (latest stable)
-- **React**: 19 with Inertia.js 2
+- **React**: 19 with Inertia.js 3
 - **PHP**: 8.4
 - **Node**: 24
 - **TypeScript**: Strict mode
@@ -101,12 +101,7 @@ Commands in this document are shown in **native form**. DDEV users: add the `dde
 
 - `npm run dev` — Start Vite development server only
 - `npm run build` — Build frontend assets for production
-- `npm run build:ssr` — Build both client and SSR bundles
-
-**SSR development:**
-
-- `composer dev:ssr` — Start dev server + SSR Node.js server
-- SSR is **enabled** in this project. The SSR Node server listens on `http://127.0.0.1:13714`
+- `npm run build:ssr` — Build both client and SSR bundles (required before production deployment)
 
 ## Testing
 

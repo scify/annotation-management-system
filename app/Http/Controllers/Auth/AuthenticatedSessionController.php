@@ -25,6 +25,7 @@ class AuthenticatedSessionController extends Controller {
         return Inertia::render('auth/login', [
             'canResetPassword' => true,
             'status' => $request->session()->get('status'),
+            'skipCaptcha' => app()->environment('testing'),
         ]);
     }
 

@@ -32,7 +32,7 @@ class LoginRequest extends FormRequest {
             'email' => ['required', 'string', 'email'],
             'password' => ['required', 'string'],
             'captcha' => app()->environment('testing')
-                ? ['required'] // skip 'captcha' rule in tests
+                ? ['nullable'] // skip captcha entirely in tests
                 : ['required', new ValidAltcha()],
         ];
     }

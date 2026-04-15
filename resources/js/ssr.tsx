@@ -1,6 +1,6 @@
 import { createInertiaApp } from '@inertiajs/react';
 import createServer from '@inertiajs/react/server';
-import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
+import type { ComponentType } from 'react';
 import { RouterProvider } from 'react-aria-components';
 import ReactDOMServer from 'react-dom/server';
 import { useRoute } from 'ziggy-js';
@@ -18,8 +18,10 @@ createServer((page) =>
 		page,
 		render: ReactDOMServer.renderToString,
 		title: (title) => `${title} - ${appName}`,
-		resolve: (name) =>
-			resolvePageComponent(`./pages/${name}.tsx`, import.meta.glob('./pages/**/*.tsx')),
+		resolve: (name) => {
+			const pages = import.meta.glob<{ default: ComponentType }>('./pages/**/*.tsx');
+			return pages[`./pages/${name}.tsx`]().then((m) => m.default);
+		},
 		setup: ({ App, props }) => {
 			// page.props is SharedData at runtime. Inertia types it as Record<string,unknown>
 			// so a double cast via unknown is required — this is TypeScript's own recommended
@@ -32,7 +34,10 @@ createServer((page) =>
 
 			// createBoundRoute returns a fully-typed typeof route bound to the given config,
 			// which is assigned to global.route for use by components during SSR rendering.
-			global.route = createBoundRoute({ ...ziggyConfig, location: new URL(locationString) });
+			globalThis.route = createBoundRoute({
+				...ziggyConfig,
+				location: new URL(locationString),
+			});
 
 			// RouterProvider navigate is a no-op during SSR; client-side routing handles
 			// actual navigation after hydration.

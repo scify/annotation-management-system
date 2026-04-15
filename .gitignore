@@ -43,3 +43,6 @@ gitleaks
 LICENSE
 
 user_stories.md
+
+# Screenshots from failed browser tests
+tests/Browser/Screenshots
