@@ -40,7 +40,8 @@ export default tseslint.config(
 		},
 		settings: {
 			react: {
-				version: 'detect',
+				// hardcoding the React version here to avoid 'react/display-name': contextOrFilename.getFilename is not a function error
+				version: '19',
 			},
 		},
 	},

@@ -1,12 +1,13 @@
-import { SubProjectList } from '@/components/sub-project/sub-project-list';
 import { type SubProjectListItemData } from '@/components/sub-project/sub-project-list-item';
-import { Button } from '@/components/ui/button';
 import { Tag } from '@/components/ui/tag';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
+import { AnnotatorsTab } from '@/components/project/annotators-tab';
+import { ExportTab } from '@/components/project/export-tab';
+import { ManagersTab } from '@/components/project/managers-tab';
+import { SubprojectsTab } from '@/components/project/subprojects-tab';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { cn } from '@/lib/utils';
-import { Plus } from 'lucide-react';
 import { useState } from 'react';
 
 interface ProjectShowData {
@@ -147,55 +148,12 @@ export default function ProjectShow({ project }: Props) {
 				</div>
 
 				{/* Tab panels */}
-				<div
-					id="tabpanel-subprojects"
-					role="tabpanel"
-					aria-labelledby="tab-subprojects"
-					hidden={activeTab !== 'subprojects'}
-					className="flex flex-col gap-6"
-				>
-					<div className="flex items-center justify-between">
-						<h2 className="page-subtitle">Subprojects</h2>
-						<Button className="hover:bg-brand-blue-800 h-10 font-semibold text-white">
-							<Plus className="size-4" aria-hidden="true" />
-							Create Subproject
-						</Button>
-					</div>
-					<SubProjectList subProjects={displayProject.subProjects} />
-				</div>
-
-				{activeTab === 'annotators' && (
-					<div
-						id="tabpanel-annotators"
-						role="tabpanel"
-						aria-labelledby="tab-annotators"
-						className="text-slate-500"
-					>
-						Annotators — coming soon
-					</div>
+				{activeTab === 'subprojects' && (
+					<SubprojectsTab subProjects={displayProject.subProjects} />
 				)}
-
-				{activeTab === 'managers' && (
-					<div
-						id="tabpanel-managers"
-						role="tabpanel"
-						aria-labelledby="tab-managers"
-						className="text-slate-500"
-					>
-						Managers — coming soon
-					</div>
-				)}
-
-				{activeTab === 'export' && (
-					<div
-						id="tabpanel-export"
-						role="tabpanel"
-						aria-labelledby="tab-export"
-						className="text-slate-500"
-					>
-						Export — coming soon
-					</div>
-				)}
+				{activeTab === 'annotators' && <AnnotatorsTab />}
+				{activeTab === 'managers' && <ManagersTab />}
+				{activeTab === 'export' && <ExportTab subProjects={displayProject.subProjects} />}
 			</div>
 		</AppLayout>
 	);

@@ -31,7 +31,7 @@ function Checkbox({
     };
 
     return (
-        <span className="relative inline-flex size-4 shrink-0">
+        <span className="relative inline-flex size-4 shrink-0 cursor-pointer">
             <input
                 type="checkbox"
                 data-slot="checkbox"
@@ -48,7 +48,7 @@ function Checkbox({
             <span
                 aria-hidden="true"
                 className={cn(
-                    'pointer-events-none flex size-4 items-center justify-center rounded-[4px] border border-input shadow-xs transition-shadow',
+                    'pointer-events-none flex size-4 items-center justify-center rounded-[4px] border border-slate-400 shadow-xs transition-shadow',
                     'peer-checked:bg-primary peer-checked:text-primary-foreground peer-checked:border-primary',
                     'peer-checked:[&_svg]:opacity-100',
                     'peer-focus-visible:border-ring peer-focus-visible:ring-ring/50 peer-focus-visible:ring-[3px]',
