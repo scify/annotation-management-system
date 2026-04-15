@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tag } from '@/components/ui/tag';
 import { type StatusVariant } from '@/components/project/project-card';
+import { cn } from '@/lib/utils';
 import { BellRing, FolderOpenDot, MoreVertical, UserRound } from 'lucide-react';
 
 export interface SubProjectListItemData {
@@ -22,9 +23,24 @@ export interface SubProjectListItemData {
 	notifications: number;
 }
 
-export function SubProjectListItem({ subProject }: { subProject: SubProjectListItemData }) {
+interface SubProjectListItemProps {
+	subProject: SubProjectListItemData;
+	className?: string;
+	showActions?: boolean;
+}
+
+export function SubProjectListItem({
+	subProject,
+	className,
+	showActions = true,
+}: SubProjectListItemProps) {
 	return (
-		<article className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-5 pt-4 pb-5">
+		<article
+			className={cn(
+				'flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-5 pt-4 pb-5',
+				className
+			)}
+		>
 			{/* Row 1: icon + name/instances/date | status badge | 3-dot menu */}
 			<div className="flex items-start justify-between pr-2">
 				<div className="flex min-w-0 flex-1 gap-[14px]">
@@ -47,24 +63,26 @@ export function SubProjectListItem({ subProject }: { subProject: SubProjectListI
 				<div className="flex shrink-0 items-center gap-3 pl-14">
 					<Badge variant={subProject.status}>{subProject.statusLabel}</Badge>
 
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button
-								variant="ghost"
-								size="icon"
-								className="size-[44px] shrink-0"
-								aria-label="Subproject actions"
-							>
-								<MoreVertical className="size-5" aria-hidden="true" />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" className="w-44">
-							<DropdownMenuItem>View / Edit</DropdownMenuItem>
-							<DropdownMenuItem>Test</DropdownMenuItem>
-							<DropdownMenuItem>Clone</DropdownMenuItem>
-							<DropdownMenuItem>Set as In Progress</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
+					{showActions && (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									variant="ghost"
+									size="icon"
+									className="size-[44px] shrink-0"
+									aria-label="Subproject actions"
+								>
+									<MoreVertical className="size-5" aria-hidden="true" />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent align="end" className="w-44">
+								<DropdownMenuItem>View / Edit</DropdownMenuItem>
+								<DropdownMenuItem>Test</DropdownMenuItem>
+								<DropdownMenuItem>Clone</DropdownMenuItem>
+								<DropdownMenuItem>Set as In Progress</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					)}
 				</div>
 			</div>
 

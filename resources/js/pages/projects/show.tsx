@@ -3,6 +3,7 @@ import { Tag } from '@/components/ui/tag';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { AnnotatorsTab } from '@/components/project/annotators-tab';
+import { ExportTab } from '@/components/project/export-tab';
 import { ManagersTab } from '@/components/project/managers-tab';
 import { SubprojectsTab } from '@/components/project/subprojects-tab';
 import { type BreadcrumbItem } from '@/types';
@@ -152,16 +153,7 @@ export default function ProjectShow({ project }: Props) {
 				)}
 				{activeTab === 'annotators' && <AnnotatorsTab />}
 				{activeTab === 'managers' && <ManagersTab />}
-				{activeTab === 'export' && (
-					<div
-						id="tabpanel-export"
-						role="tabpanel"
-						aria-labelledby="tab-export"
-						className="text-slate-500"
-					>
-						Export — coming soon
-					</div>
-				)}
+				{activeTab === 'export' && <ExportTab subProjects={displayProject.subProjects} />}
 			</div>
 		</AppLayout>
 	);
