@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Enums\RolesEnum;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Hash;
 
 /**
@@ -34,12 +33,8 @@ function loginViaForm(string $email, string $password = 'password'): mixed {
     return $page->wait(0.1)->press('Log in');
 }
 
-function seedRolesAndPermissions(): void {
-    Artisan::call('db:seed', ['--class' => RolesAndPermissionsSeeder::class]);
-}
-
 describe('Dashboard', function (): void {
-    beforeEach(fn () => seedRolesAndPermissions());
+    beforeEach(fn () => $this->seed(RolesAndPermissionsSeeder::class));
 
     it('shows the dashboard to an authenticated admin', function (): void {
         $admin = User::factory()->create([
