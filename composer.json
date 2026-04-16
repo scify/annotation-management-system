@@ -109,14 +109,14 @@
 			"npm run types"
 		],
 		"test:all": [
-			"@test:lint",
 			"@test:types",
-			"@test:backend"
+			"@test:backend",
+			"@test:browser"
 		],
 		"test": "pest",
 		"test:backend": "pest --exclude-testsuite=Browser",
 		"test:browser": "pest --testsuite=Browser",
-		"test:coverage": "pest --coverage --parallel --exclude-testsuite=Browser"
+		"test:coverage": "pest --coverage --parallel"
 	},
 	"extra": {
 		"laravel": {
