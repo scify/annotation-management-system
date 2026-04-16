@@ -36,6 +36,9 @@ jobs:
             - name: Copy Environment File
               run: cp .env.testing .env
 
+            - name: Install latest npm version
+              run: npm install npm@latest -g
+
             - name: Install Node Dependencies
               run: npm ci
 
