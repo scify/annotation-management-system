@@ -1,5 +1,5 @@
 import { type BreadcrumbItem, type SharedData } from '@/types';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { FormEventHandler } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -19,6 +19,7 @@ interface ProfileForm {
 }
 
 export default function Profile({
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	status,
 }: Readonly<{
 	status?: string;

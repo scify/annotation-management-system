@@ -7,7 +7,7 @@ import { ExportTab } from '@/components/project/export-tab';
 import { ManagersTab } from '@/components/project/managers-tab';
 import { SubprojectsTab } from '@/components/project/subprojects-tab';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 interface ProjectShowData {
@@ -149,7 +149,12 @@ export default function ProjectShow({ project }: Props) {
 
 				{/* Tab panels */}
 				{activeTab === 'subprojects' && (
-					<SubprojectsTab subProjects={displayProject.subProjects} />
+					<SubprojectsTab
+						subProjects={displayProject.subProjects}
+						onSubprojectCreated={() =>
+							router.visit(route('projects.subprojects.create', displayProject.id))
+						}
+					/>
 				)}
 				{activeTab === 'annotators' && <AnnotatorsTab />}
 				{activeTab === 'managers' && <ManagersTab />}

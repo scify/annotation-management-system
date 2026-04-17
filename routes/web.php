@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\SubProjectController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserRestoreController;
 use Illuminate\Support\Facades\Route;
@@ -19,6 +20,7 @@ Route::middleware(['auth'])->group(function (): void {
 
     Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
     Route::get('projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
+    Route::get('projects/{id}/subprojects/create', [SubProjectController::class, 'create'])->name('projects.subprojects.create');
 
     Route::resource('users', UserController::class);
 

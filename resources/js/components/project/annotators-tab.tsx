@@ -1,25 +1,7 @@
+import { AnnotatorsTable } from '@/components/annotator/annotators-table';
+import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
 import { Button } from '@/components/ui/button';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table';
-import { WorkloadGauge } from '@/components/workload-gauge';
-import { UserTableCell } from '@/components/project/user-table-cell';
-import { CircleMinus, Plus } from 'lucide-react';
-
-export interface ProjectAnnotatorRowData {
-	id: number;
-	initials: string;
-	username: string;
-	projects: number;
-	subprojects: number;
-	workload: number;
-	progress: number;
-}
+import { Plus } from 'lucide-react';
 
 const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
 	{
@@ -75,91 +57,11 @@ export function AnnotatorsTab({
 					Add Annotator
 				</Button>
 			</div>
-			<div className="overflow-hidden rounded-xl">
-				<Table>
-					<TableHeader>
-						<TableRow className="bg-brand-blue-100 hover:bg-brand-blue-100 border-b border-slate-300">
-							<TableHead className="pl-4 text-sm font-semibold text-slate-800">
-								Username
-							</TableHead>
-							<TableHead className="text-right text-sm font-semibold text-slate-800">
-								Projects
-							</TableHead>
-							<TableHead className="text-right text-sm font-semibold text-slate-800">
-								Subprojects
-							</TableHead>
-							<TableHead className="text-center text-sm font-semibold text-slate-800">
-								Remain.Workload
-							</TableHead>
-							<TableHead className="text-center text-sm font-semibold text-slate-800">
-								Progress
-							</TableHead>
-							<TableHead className="text-center text-sm font-semibold text-slate-800">
-								Action
-							</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{annotators.map((annotator) => (
-							<TableRow
-								key={annotator.id}
-								className="hover:bg-brand-blue-50 h-14 border-b border-slate-300 bg-white"
-							>
-								<TableCell className="pl-4">
-									<UserTableCell
-										initials={annotator.initials}
-										username={annotator.username}
-									/>
-								</TableCell>
-								<TableCell className="text-right">
-									<span className="text-base font-medium text-slate-800">
-										{annotator.projects}
-									</span>
-								</TableCell>
-								<TableCell className="text-right">
-									<span className="text-base font-medium text-slate-800">
-										{annotator.subprojects}
-									</span>
-								</TableCell>
-								<TableCell className="text-center">
-									<div className="flex justify-center">
-										<WorkloadGauge value={annotator.workload} />
-									</div>
-								</TableCell>
-								<TableCell>
-									<div className="flex flex-col items-end gap-1.5">
-										<span className="text-base font-medium text-slate-800">
-											{annotator.progress}%
-										</span>
-										<div className="bg-brand-blue-100 h-[5px] w-full overflow-hidden rounded-full">
-											<div
-												className="bg-brand-blue-800 h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500 motion-safe:ease-out"
-												style={{ width: `${annotator.progress}%` }}
-												role="progressbar"
-												aria-valuenow={annotator.progress}
-												aria-valuemin={0}
-												aria-valuemax={100}
-												aria-label={`Progress: ${annotator.progress}%`}
-											/>
-										</div>
-									</div>
-								</TableCell>
-								<TableCell className="text-center">
-									<Button
-										variant="ghost"
-										size="icon"
-										className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 rounded-lg"
-										aria-label={`Remove ${annotator.username} from project`}
-										onClick={() => onAnnotatorRemoved?.(annotator.id)}
-									>
-										<CircleMinus className="size-6" aria-hidden="true" />
-									</Button>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</div>
+			<AnnotatorsTable
+				mode="remove"
+				annotators={annotators}
+				onAnnotatorRemoved={onAnnotatorRemoved}
+			/>
 		</div>
 	);
 }

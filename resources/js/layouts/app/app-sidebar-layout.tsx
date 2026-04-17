@@ -70,7 +70,7 @@ export default function AppSidebarLayout({
 		<div className="flex min-h-screen w-full">
 			<AppSidebar isCollapsed={isCollapsed} onToggle={toggleSidebar} />
 
-			<div className="flex min-w-0 flex-1 flex-col">
+			<div className="flex min-w-0 flex-1 flex-col bg-slate-50">
 				{/* Mobile top bar — hidden on desktop */}
 				<div className="border-sidebar-border/80 flex h-14 items-center border-b px-4 lg:hidden">
 					<Sheet>
