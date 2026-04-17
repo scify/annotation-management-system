@@ -94,6 +94,7 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
 								<UserTableCell
 									initials={annotator.initials}
 									username={annotator.username}
+									showMessageButton={mode === 'remove'}
 								/>
 							</TableCell>
 							<TableCell className="text-right">

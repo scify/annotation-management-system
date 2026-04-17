@@ -9,9 +9,17 @@ export interface UserTableCellProps {
 	email?: string;
 	/** Called when the mail icon button is clicked. Omit to render the button without an action. */
 	onMessage?: () => void;
+	/** Set to false to hide the message icon button entirely */
+	showMessageButton?: boolean;
 }
 
-export function UserTableCell({ initials, username, email, onMessage }: UserTableCellProps) {
+export function UserTableCell({
+	initials,
+	username,
+	email,
+	onMessage,
+	showMessageButton = true,
+}: UserTableCellProps) {
 	return (
 		<div className="flex items-center gap-3">
 			<Avatar className="size-[29px] shrink-0">
@@ -23,15 +31,17 @@ export function UserTableCell({ initials, username, email, onMessage }: UserTabl
 				<span className="text-base font-medium text-slate-800">{username}</span>
 				{email && <span className="text-sm text-slate-400">{email}</span>}
 			</div>
-			<Button
-				variant="ghost"
-				size="icon"
-				className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 shrink-0 rounded-lg"
-				aria-label={`Send message to ${username}`}
-				onClick={onMessage}
-			>
-				<Mail className="size-6" aria-hidden="true" />
-			</Button>
+			{showMessageButton && (
+				<Button
+					variant="ghost"
+					size="icon"
+					className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 shrink-0 rounded-lg"
+					aria-label={`Send message to ${username}`}
+					onClick={onMessage}
+				>
+					<Mail className="size-6" aria-hidden="true" />
+				</Button>
+			)}
 		</div>
 	);
 }

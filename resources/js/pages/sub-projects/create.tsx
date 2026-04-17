@@ -1,21 +1,13 @@
-import { AnnotatorsTable } from '@/components/annotator/annotators-table';
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
 import { CreateSubprojectStepper } from '@/components/sub-project/create-subproject-stepper';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
+import { SelectAnnotatorsStep } from '@/components/sub-project/select-annotators-step';
+import { SelectDatasetSubsetStep } from '@/components/sub-project/select-dataset-subset-step';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
 
 const STEPS = [
 	{ label: 'Select Annotators' },
@@ -24,6 +16,8 @@ const STEPS = [
 ];
 
 const MOCK_PROJECT = { id: 1, name: 'Project New Nov_26' };
+
+const MOCK_DATASET = { name: 'Text Dataset B', totalInstances: 10_000, previousEndInstance: 56 };
 
 const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
 	{
@@ -77,17 +71,21 @@ interface Props {
 	project?: { id: number; name: string };
 	/** Available annotators — falls back to mock data */
 	annotators?: ProjectAnnotatorRowData[];
+	dataset?: { name: string; totalInstances: number; previousEndInstance?: number };
 }
 
-export default function CreateSubproject({ project, annotators }: Props) {
+export default function CreateSubproject({ project, annotators, dataset }: Props) {
 	const displayProject = project ?? MOCK_PROJECT;
 	const displayAnnotators = annotators ?? MOCK_ANNOTATORS;
+	const displayDataset = dataset ?? MOCK_DATASET;
 
 	const [currentStep, setCurrentStep] = useState(0);
 	const [selectedAnnotatorIds, setSelectedAnnotatorIds] = useState<Set<number>>(new Set());
-	const [sortByName, setSortByName] = useState('');
-	const [sortByWorkload, setSortByWorkload] = useState('');
-	const [search, setSearch] = useState('');
+	const [fromInstance, setFromInstance] = useState(
+		() => (displayDataset.previousEndInstance ?? 0) + 1
+	);
+	const [toInstance, setToInstance] = useState(displayDataset.totalInstances);
+	const [shuffle, setShuffle] = useState(true);
 
 	const breadcrumbs: BreadcrumbItem[] = [
 		{ title: 'Projects', href: route('projects.index') },
@@ -98,30 +96,10 @@ export default function CreateSubproject({ project, annotators }: Props) {
 		},
 	];
 
-	const filteredAnnotators = useMemo(() => {
-		let result = [...displayAnnotators];
-
-		if (search.trim()) {
-			const query = search.toLowerCase();
-			result = result.filter((a) => a.username.toLowerCase().includes(query));
-		}
-
-		if (sortByName === 'asc') result.sort((a, b) => a.username.localeCompare(b.username));
-		if (sortByName === 'desc') result.sort((a, b) => b.username.localeCompare(a.username));
-		if (sortByWorkload === 'asc') result.sort((a, b) => a.workload - b.workload);
-		if (sortByWorkload === 'desc') result.sort((a, b) => b.workload - a.workload);
-
-		return result;
-	}, [displayAnnotators, search, sortByName, sortByWorkload]);
-
-	const allFilteredSelected =
-		filteredAnnotators.length > 0 &&
-		filteredAnnotators.every((a) => selectedAnnotatorIds.has(a.id));
-
-	function handleSelectAll(checked: boolean) {
+	function handleSelectAllChange(ids: number[], checked: boolean) {
 		setSelectedAnnotatorIds((prev) => {
 			const next = new Set(prev);
-			filteredAnnotators.forEach((a) => (checked ? next.add(a.id) : next.delete(a.id)));
+			ids.forEach((id) => (checked ? next.add(id) : next.delete(id)));
 			return next;
 		});
 	}
@@ -155,90 +133,24 @@ export default function CreateSubproject({ project, annotators }: Props) {
 
 				{/* Step content */}
 				{currentStep === 0 && (
-					<section aria-labelledby="step-heading" className="flex flex-col gap-5">
-						<hgroup>
-							<h2 id="step-heading" className="page-subtitle">
-								Select Annotators
-							</h2>
-							<p className="text-sm font-semibold text-slate-800">
-								{selectedAnnotatorIds.size} selected
-							</p>
-						</hgroup>
-
-						{/* Filters row */}
-						<div className="flex items-end gap-4">
-							<div className="flex flex-col gap-1">
-								<span className="text-sm font-medium text-slate-700">
-									Sort by Name
-								</span>
-								<Select value={sortByName} onValueChange={setSortByName}>
-									<SelectTrigger className="h-10 w-[180px] bg-white px-4">
-										<SelectValue placeholder="Sort by Name" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="asc">A → Z</SelectItem>
-										<SelectItem value="desc">Z → A</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
-
-							<div className="flex flex-col gap-1">
-								<span className="text-sm font-medium text-slate-700">
-									Sort by Workload
-								</span>
-								<Select value={sortByWorkload} onValueChange={setSortByWorkload}>
-									<SelectTrigger className="h-10 w-[180px] bg-white px-4">
-										<SelectValue placeholder="Sort by Workload" />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="asc">Low → High</SelectItem>
-										<SelectItem value="desc">High → Low</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
-
-							<div className="relative ml-auto">
-								<Search
-									className="pointer-events-none absolute top-1/2 right-3 size-4 -translate-y-1/2 text-slate-400"
-									aria-hidden="true"
-								/>
-								<Input
-									type="search"
-									placeholder="Search Annotators…"
-									value={search}
-									onChange={(e) => setSearch(e.target.value)}
-									className="w-[220px] pr-9 pl-4"
-									aria-label="Search annotators"
-								/>
-							</div>
-						</div>
-
-						{/* Select all */}
-						<label className="flex cursor-pointer items-center gap-2">
-							<Checkbox
-								checked={allFilteredSelected}
-								onCheckedChange={handleSelectAll}
-								aria-label="Select all annotators"
-							/>
-							<span className="text-sm text-slate-700">Select all</span>
-						</label>
-
-						<AnnotatorsTable
-							mode="selectable"
-							annotators={filteredAnnotators}
-							selectedIds={selectedAnnotatorIds}
-							onSelectionChange={handleSelectionChange}
-						/>
-					</section>
+					<SelectAnnotatorsStep
+						annotators={displayAnnotators}
+						selectedIds={selectedAnnotatorIds}
+						onSelectionChange={handleSelectionChange}
+						onSelectAllChange={handleSelectAllChange}
+					/>
 				)}
 
 				{currentStep === 1 && (
-					<section aria-labelledby="step-heading" className="flex flex-col gap-4">
-						<h2 id="step-heading" className="page-subtitle">
-							Select Dataset Subset
-						</h2>
-						<p className="text-slate-500">Dataset subset selection coming soon…</p>
-					</section>
+					<SelectDatasetSubsetStep
+						dataset={displayDataset}
+						fromInstance={fromInstance}
+						toInstance={toInstance}
+						shuffle={shuffle}
+						onFromInstanceChange={setFromInstance}
+						onToInstanceChange={setToInstance}
+						onShuffleChange={setShuffle}
+					/>
 				)}
 
 				{currentStep === 2 && (
