@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tag } from '@/components/ui/tag';
+import { useTranslations } from '@/hooks/use-translations';
 import { Link } from '@inertiajs/react';
 import { type VariantProps } from 'class-variance-authority';
 import { BellRing, FolderDot, FolderOpenDot, UserRound } from 'lucide-react';
@@ -37,6 +38,7 @@ export function UserAvatar({ initials }: { initials: string }) {
 }
 
 export function ProjectCard({ project }: { project: ProjectCardData }) {
+	const { t } = useTranslations();
 	const visibleCoManagers = project.coManagers.slice(0, 2);
 	const extraCount = project.coManagers.length - 2;
 
@@ -112,7 +114,7 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
 				{/* Progress bar */}
 				<div className="flex flex-col gap-2">
 					<span className="text-sm font-semibold text-slate-800">
-						Overall Progress {project.progress}%
+						{t('projects.card.overall_progress')} {project.progress}%
 					</span>
 					<div className="bg-brand-blue-100 h-3 w-full overflow-hidden rounded-full">
 						<div
@@ -130,7 +132,9 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
 				{/* Owner + Co-managers */}
 				<div className="flex gap-7">
 					<div className="flex flex-col gap-2">
-						<span className="text-xs font-semibold text-slate-600">Owner:</span>
+						<span className="text-xs font-semibold text-slate-600">
+							{t('projects.card.owner')}
+						</span>
 						<div className="flex items-center gap-1">
 							<UserAvatar initials={project.owner.initials} />
 							<span className="text-[0.75rem] text-slate-600">
@@ -140,7 +144,9 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
 					</div>
 
 					<div className="flex flex-col gap-2">
-						<span className="text-xs font-semibold text-slate-600">Co-managers:</span>
+						<span className="text-xs font-semibold text-slate-600">
+							{t('projects.card.co_managers')}
+						</span>
 						<div className="flex flex-wrap items-center gap-1">
 							{visibleCoManagers.map((cm) => (
 								<div key={cm.username} className="flex items-center gap-1">
@@ -160,7 +166,7 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
 				{/* View Project */}
 				<Link href={route('projects.show', project.id)}>
 					<Button className="hover:bg-brand-blue-800 h-10 w-full font-semibold text-white">
-						View Project
+						{t('projects.card.view_project')}
 					</Button>
 				</Link>
 			</div>

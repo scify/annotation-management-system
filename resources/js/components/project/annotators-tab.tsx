@@ -1,6 +1,7 @@
 import { AnnotatorsTable } from '@/components/annotator/annotators-table';
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from '@/hooks/use-translations';
 import { Plus } from 'lucide-react';
 
 const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
@@ -43,6 +44,7 @@ export function AnnotatorsTab({
 	annotators = MOCK_ANNOTATORS,
 	onAnnotatorRemoved,
 }: AnnotatorsTabProps) {
+	const { t } = useTranslations();
 	return (
 		<div
 			id="tabpanel-annotators"
@@ -51,10 +53,10 @@ export function AnnotatorsTab({
 			className="flex flex-col gap-6"
 		>
 			<div className="flex items-center justify-between">
-				<h2 className="page-subtitle">Annotators</h2>
+				<h2 className="page-subtitle">{t('projects.annotators_tab.title')}</h2>
 				<Button className="hover:bg-brand-blue-800 h-10 font-semibold text-white">
 					<Plus className="size-4" aria-hidden="true" />
-					Add Annotator
+					{t('projects.annotators_tab.add_annotator')}
 				</Button>
 			</div>
 			<AnnotatorsTable

@@ -7,4 +7,8 @@ return [
     'logout' => 'Αποσύνδεση',
     'dashboard' => 'Πίνακας Ελέγχου',
     'users' => 'Χρήστες',
+    'projects' => 'Έργα',
+    'assignments' => 'Αναθέσεις',
+    'notifications' => 'Ειδοποιήσεις',
+    'audit_log' => 'Αρχείο Ελέγχου',
 ];

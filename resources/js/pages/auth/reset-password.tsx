@@ -5,6 +5,7 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslations } from '@/hooks/use-translations';
 import AuthLayout from '@/layouts/auth-layout';
 
 interface ResetPasswordProps {
@@ -20,6 +21,7 @@ type ResetPasswordForm = {
 };
 
 export default function ResetPassword({ token, email }: Readonly<ResetPasswordProps>) {
+	const { t } = useTranslations();
 	const form = useForm<Required<ResetPasswordForm>>({
 		token: token,
 		email: email,
@@ -38,13 +40,16 @@ export default function ResetPassword({ token, email }: Readonly<ResetPasswordPr
 	};
 
 	return (
-		<AuthLayout title="Reset password" description="Please enter your new password below">
-			<Head title="Reset password" />
+		<AuthLayout
+			title={t('auth.reset_password.title')}
+			description={t('auth.reset_password.description')}
+		>
+			<Head title={t('auth.reset_password.title')} />
 
 			<form onSubmit={submit}>
 				<div className="grid gap-6">
 					<div className="grid gap-2">
-						<Label htmlFor="email">Email</Label>
+						<Label htmlFor="email">{t('auth.reset_password.email_label')}</Label>
 						<Input
 							id="email"
 							type="email"
@@ -59,7 +64,7 @@ export default function ResetPassword({ token, email }: Readonly<ResetPasswordPr
 					</div>
 
 					<div className="grid gap-2">
-						<Label htmlFor="password">Password</Label>
+						<Label htmlFor="password">{t('auth.reset_password.password_label')}</Label>
 						<Input
 							id="password"
 							type="password"
@@ -69,13 +74,15 @@ export default function ResetPassword({ token, email }: Readonly<ResetPasswordPr
 							className="mt-1 block w-full"
 							autoFocus
 							onChange={(e) => setData('password', e.target.value)}
-							placeholder="Password"
+							placeholder={t('auth.reset_password.password_placeholder')}
 						/>
 						<InputError message={errors.password} />
 					</div>
 
 					<div className="grid gap-2">
-						<Label htmlFor="password_confirmation">Confirm password</Label>
+						<Label htmlFor="password_confirmation">
+							{t('auth.reset_password.confirm_label')}
+						</Label>
 						<Input
 							id="password_confirmation"
 							type="password"
@@ -84,14 +91,14 @@ export default function ResetPassword({ token, email }: Readonly<ResetPasswordPr
 							value={data.password_confirmation}
 							className="mt-1 block w-full"
 							onChange={(e) => setData('password_confirmation', e.target.value)}
-							placeholder="Confirm password"
+							placeholder={t('auth.reset_password.confirm_placeholder')}
 						/>
 						<InputError message={errors.password_confirmation} className="mt-2" />
 					</div>
 
 					<Button type="submit" className="mt-4 w-full" disabled={processing}>
 						{processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-						Reset password
+						{t('auth.reset_password.submit_button')}
 					</Button>
 				</div>
 			</form>

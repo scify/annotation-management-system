@@ -7,4 +7,8 @@ return [
     'logout' => 'Logout',
     'dashboard' => 'Dashboard',
     'users' => 'Users',
+    'projects' => 'Projects',
+    'assignments' => 'Assignments',
+    'notifications' => 'Notifications',
+    'audit_log' => 'Audit Log',
 ];

@@ -3,11 +3,14 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SubProjectController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserRestoreController;
 use Illuminate\Support\Facades\Route;
+
+Route::put('locale', [LocaleController::class, 'update'])->name('locale.update');
 
 Route::get('/', fn () => redirect()->to(route('dashboard'))->withHeaders([
     'Cache-Control' => 'no-cache, no-store, must-revalidate',

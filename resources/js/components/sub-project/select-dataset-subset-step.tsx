@@ -1,5 +1,6 @@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
+import { useTranslations } from '@/hooks/use-translations';
 import { Database, Info } from 'lucide-react';
 
 export interface DatasetInfo {
@@ -28,45 +29,55 @@ export function SelectDatasetSubsetStep({
 	onToInstanceChange,
 	onShuffleChange,
 }: SelectDatasetSubsetStepProps) {
+	const { t, trans } = useTranslations();
 	const instanceCount = Math.max(0, toInstance - fromInstance);
 
 	return (
 		<section aria-labelledby="step-heading" className="flex flex-col gap-5">
 			<h2 id="step-heading" className="sr-only">
-				Select Dataset Subset
+				{t('sub-projects.select_dataset.select_subset_heading')}
 			</h2>
 
 			<div className="flex gap-x-32">
 				{/* Left — Project Dataset */}
 				<div className="flex w-72 shrink-0 flex-col gap-3">
-					<h3 className="text-xl font-medium text-slate-800">Project Dataset</h3>
+					<h3 className="text-xl font-medium text-slate-800">
+						{t('sub-projects.select_dataset.project_dataset_heading')}
+					</h3>
 
 					<div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-100 p-6">
 						<Database className="size-12 text-slate-600" aria-hidden="true" />
 
 						<div className="flex flex-col gap-0.5">
-							<p className="text-xl font-bold text-slate-900">Dataset:</p>
+							<p className="text-xl font-bold text-slate-900">
+								{t('sub-projects.select_dataset.dataset_label')}
+							</p>
 							<p className="text-xl text-slate-900">{dataset.name}</p>
 						</div>
 
 						<span className="bg-brand-blue-100 self-start rounded-lg px-2.5 py-1 text-sm font-medium text-slate-800">
-							Total Instances: {dataset.totalInstances.toLocaleString()}
+							{t('sub-projects.select_dataset.total_instances')}{' '}
+							{dataset.totalInstances.toLocaleString()}
 						</span>
 
 						<label className="flex cursor-pointer items-center gap-2">
 							<Checkbox
 								checked={shuffle}
 								onCheckedChange={onShuffleChange}
-								aria-label="Shuffle on"
+								aria-label={t('sub-projects.select_dataset.shuffle_on')}
 							/>
-							<span className="text-sm font-medium text-slate-900">Shuffle on</span>
+							<span className="text-sm font-medium text-slate-900">
+								{t('sub-projects.select_dataset.shuffle_on')}
+							</span>
 						</label>
 					</div>
 				</div>
 
 				{/* Right — Select Subset */}
 				<div className="flex flex-1 flex-col gap-4">
-					<h3 className="text-xl font-medium text-slate-800">Select Subset</h3>
+					<h3 className="text-xl font-medium text-slate-800">
+						{t('sub-projects.select_dataset.select_subset_heading')}
+					</h3>
 
 					{/* Info banner */}
 					{dataset.previousEndInstance !== undefined && (
@@ -77,8 +88,10 @@ export function SelectDatasetSubsetStep({
 									aria-hidden="true"
 								/>
 								<p className="text-brand-blue-800 text-base font-medium">
-									Previous subproject on dataset &ldquo;{dataset.name}&rdquo;
-									ended at Instance #{dataset.previousEndInstance}
+									{trans('sub-projects.select_dataset.previous_ended_at', {
+										name: dataset.name,
+										instance: dataset.previousEndInstance,
+									})}
 								</p>
 							</div>
 							<div className="pl-8">
@@ -86,10 +99,12 @@ export function SelectDatasetSubsetStep({
 									type="button"
 									className="text-sm font-semibold text-slate-800 underline"
 									onClick={() =>
-										onFromInstanceChange(dataset.previousEndInstance! + 1)
+										onFromInstanceChange(dataset.previousEndInstance + 1)
 									}
 								>
-									Start from #{dataset.previousEndInstance + 1}
+									{trans('sub-projects.select_dataset.start_from', {
+										instance: dataset.previousEndInstance + 1,
+									})}
 								</button>
 							</div>
 						</div>
@@ -102,7 +117,7 @@ export function SelectDatasetSubsetStep({
 								htmlFor="from-instance"
 								className="px-2.5 text-sm font-semibold text-slate-800"
 							>
-								From instance#
+								{t('sub-projects.select_dataset.from_instance')}
 							</label>
 							<Input
 								id="from-instance"
@@ -120,7 +135,7 @@ export function SelectDatasetSubsetStep({
 								htmlFor="to-instance"
 								className="px-2.5 text-sm font-semibold text-slate-800"
 							>
-								To instance#
+								{t('sub-projects.select_dataset.to_instance')}
 							</label>
 							<Input
 								id="to-instance"
@@ -138,7 +153,9 @@ export function SelectDatasetSubsetStep({
 					{/* Instance count banner */}
 					<div className="bg-brand-blue-700 flex h-12 items-center justify-center rounded-2xl">
 						<span className="text-lg font-medium text-white">
-							{instanceCount.toLocaleString()} instances selected
+							{trans('sub-projects.select_dataset.instances_selected', {
+								count: instanceCount.toLocaleString(),
+							})}
 						</span>
 					</div>
 				</div>

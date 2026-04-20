@@ -1,19 +1,27 @@
 import { usePage } from '@inertiajs/react';
-
-// Define the translations type as a nested record of strings
-type TranslationType = Record<string, Record<string, string> | string>;
+import type { TranslationMap } from '@/types';
 
 export function useTranslations() {
-	// Type the translations from page props
-	const { translations } = usePage().props as unknown as { translations: TranslationType };
+	const { translations } = usePage().props as unknown as { translations: TranslationMap };
 
 	const t = (key: string): string => {
 		const keys = key.split('.');
-		return keys.reduce((acc: TranslationType | string, current) => {
-			if (typeof acc === 'string') return acc;
-			return acc[current] ?? key;
-		}, translations) as string;
+		return keys.reduce(
+			(acc: Record<string, unknown> | string, current) => {
+				if (typeof acc === 'string') return acc;
+				return (acc[current] ?? key) as Record<string, unknown> | string;
+			},
+			translations as unknown as Record<string, unknown>
+		) as string;
 	};
 
-	return { t };
+	const trans = (key: string, params: Record<string, string | number> = {}): string => {
+		let result = t(key);
+		for (const [k, v] of Object.entries(params)) {
+			result = result.replace(`:${k}`, String(v));
+		}
+		return result;
+	};
+
+	return { t, trans };
 }

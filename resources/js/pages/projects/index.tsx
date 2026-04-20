@@ -1,6 +1,7 @@
 import { ProjectList } from '@/components/project/project-list';
 import { type ProjectCardData } from '@/components/project/project-card';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -103,23 +104,24 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ProjectsIndex({ projects }: Props) {
+	const { t } = useTranslations();
 	const displayProjects = projects ?? MOCK_PROJECTS;
 
 	return (
 		<AppLayout breadcrumbs={breadcrumbs}>
-			<Head title="Projects" />
+			<Head title={t('projects.title')} />
 			<div className="flex flex-col gap-8 px-6 py-6">
 				{/* Page header */}
 				<div className="flex items-center justify-between">
-					<h1 className="text-slate-800">Projects</h1>
+					<h1 className="text-slate-800">{t('projects.title')}</h1>
 					<Button className="hover:bg-brand-blue-800 h-10 font-semibold text-white">
 						<Plus className="size-4" aria-hidden="true" />
-						Create Project
+						{t('projects.create_button')}
 					</Button>
 				</div>
 
 				{/* Filter placeholder */}
-				<p className="font-medium text-slate-800">Filter</p>
+				<p className="font-medium text-slate-800">{t('projects.filter')}</p>
 
 				{/* Project list */}
 				<ProjectList projects={displayProjects} />

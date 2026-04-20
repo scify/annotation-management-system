@@ -10,6 +10,7 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 import { WorkloadGauge } from '@/components/workload-gauge';
+import { useTranslations } from '@/hooks/use-translations';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import { useEffect } from 'react';
@@ -160,6 +161,8 @@ const MOCK_ANNOTATORS: AnnotatorRowData[] = [
 ];
 
 export default function Dashboard({ token }: DashboardProps) {
+	const { t } = useTranslations();
+
 	useEffect(() => {
 		if (token && token !== '') {
 			localStorage.setItem('auth_token', token);
@@ -168,7 +171,7 @@ export default function Dashboard({ token }: DashboardProps) {
 
 	const breadcrumbs: BreadcrumbItem[] = [
 		{
-			title: 'Dashboard',
+			title: t('navbar.dashboard'),
 			href: '/dashboard',
 		},
 	];
@@ -177,11 +180,11 @@ export default function Dashboard({ token }: DashboardProps) {
 		<AppLayout breadcrumbs={breadcrumbs}>
 			<Head title="Dashboard" />
 			<div className="flex flex-col gap-8 px-6 py-6">
-				<h1 className="mb-5 text-slate-800">Dashboard Overview</h1>
+				<h1 className="mb-5 text-slate-800">{t('projects.dashboard.overview_title')}</h1>
 
 				<section aria-labelledby="projects-heading">
 					<h2 id="projects-heading" className="page-subtitle mb-5">
-						Active Annotation Projects
+						{t('projects.dashboard.active_projects_heading')}
 					</h2>
 					<div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
 						{MOCK_PROJECTS.map((project) => (
@@ -192,23 +195,23 @@ export default function Dashboard({ token }: DashboardProps) {
 
 				<section aria-labelledby="annotators-heading">
 					<h2 id="annotators-heading" className="page-subtitle mb-5">
-						Annotators Overview
+						{t('projects.dashboard.annotators_overview_heading')}
 					</h2>
 					<div className="overflow-hidden rounded-xl">
 						<Table>
 							<TableHeader>
 								<TableRow className="bg-brand-blue-100 hover:bg-brand-blue-100 border-b border-slate-300">
 									<TableHead className="pl-12 text-sm font-semibold text-slate-800">
-										Username
+										{t('projects.dashboard.table_username')}
 									</TableHead>
 									<TableHead className="text-right text-sm font-semibold text-slate-800">
-										Active Projects
+										{t('projects.dashboard.table_active_projects')}
 									</TableHead>
 									<TableHead className="text-center text-sm font-semibold text-slate-800">
-										Remaining Workload
+										{t('projects.dashboard.table_remaining_workload')}
 									</TableHead>
 									<TableHead className="text-center text-sm font-semibold text-slate-800">
-										Progress
+										{t('projects.dashboard.table_progress')}
 									</TableHead>
 								</TableRow>
 							</TableHeader>

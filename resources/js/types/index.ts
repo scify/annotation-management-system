@@ -52,6 +52,24 @@ export interface AppData {
 	locale: string;
 }
 
+export type TranslationRecord = Record<string, string | Record<string, string>>;
+
+export interface TranslationMap {
+	auth: TranslationRecord;
+	'client-applications': TranslationRecord;
+	common: TranslationRecord;
+	dashboard: TranslationRecord;
+	navbar: TranslationRecord;
+	pagination: TranslationRecord;
+	passwords: TranslationRecord;
+	projects: TranslationRecord;
+	roles: TranslationRecord;
+	settings: TranslationRecord;
+	'sub-projects': TranslationRecord;
+	users: TranslationRecord;
+	validation: TranslationRecord;
+}
+
 export interface SharedData {
 	app: AppData;
 	quote: { message: string; author: string };
@@ -63,6 +81,7 @@ export interface SharedData {
 	};
 	auth: Auth;
 	ziggy: Config & { location: string };
+	translations: TranslationMap;
 	[key: string]: unknown;
 }
 

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RestrictApiAccess;
+use App\Http\Middleware\SetLocale;
 use Dotenv\Dotenv;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Foundation\Application;
@@ -54,6 +55,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
 
         // Web middleware
         $middleware->web(append: [
+            SetLocale::class,
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
         ]);

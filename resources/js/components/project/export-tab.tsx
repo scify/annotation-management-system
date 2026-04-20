@@ -4,6 +4,7 @@ import {
 } from '@/components/sub-project/sub-project-list-item';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useTranslations } from '@/hooks/use-translations';
 import { Download } from 'lucide-react';
 import { useState } from 'react';
 
@@ -12,6 +13,7 @@ interface ExportTabProps {
 }
 
 export function ExportTab({ subProjects }: ExportTabProps) {
+	const { trans } = useTranslations();
 	const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
 	const allSelected = subProjects.length > 0 && selectedIds.size === subProjects.length;
@@ -43,15 +45,19 @@ export function ExportTab({ subProjects }: ExportTabProps) {
 			{/* Header */}
 			<div className="flex items-start justify-between">
 				<div className="flex flex-col gap-1">
-					<h2 className="text-xl font-medium text-slate-800">Export</h2>
-					<p className="text-sm font-bold text-slate-800">{selectedCount} selected</p>
+					<h2 className="text-xl font-medium text-slate-800">
+						{trans('projects.export_tab.title')}
+					</h2>
+					<p className="text-sm font-bold text-slate-800">
+						{trans('projects.export_tab.selected', { count: selectedCount })}
+					</p>
 				</div>
 				<Button
 					disabled={selectedCount === 0}
 					className="bg-brand-blue-700 hover:bg-brand-blue-800 h-10 font-semibold text-white disabled:opacity-50"
 				>
 					<Download className="size-4" aria-hidden="true" />
-					Export Results (CSV)
+					{trans('projects.export_tab.export_button')}
 				</Button>
 			</div>
 
@@ -62,7 +68,9 @@ export function ExportTab({ subProjects }: ExportTabProps) {
 					onCheckedChange={handleSelectAll}
 					aria-label="Select all subprojects"
 				/>
-				<span className="text-sm text-slate-700">Select all</span>
+				<span className="text-sm text-slate-700">
+					{trans('projects.export_tab.select_all')}
+				</span>
 			</label>
 
 			{/* Subproject list */}

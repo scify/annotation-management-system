@@ -21,7 +21,7 @@
       - [Run all backend tests](#run-all-backend-tests)
       - [Filter by test name or class](#filter-by-test-name-or-class)
       - [Combine flags](#combine-flags)
-    - [Frontend tests](#frontend-tests)
+    - [Frontend / Browser tests](#frontend--browser-tests)
   - [Code Scanning](#code-scanning)
   - [Git Hooks](#git-hooks)
 - [Available Scripts](#available-scripts)
@@ -170,15 +170,31 @@ To run with code coverage (requires Xdebug):
 XDEBUG_MODE=coverage ddev composer test:coverage
 ```
 
-#### Frontend tests
+#### Frontend / Browser tests
 
-We use Jest for frontend tests.
+We use Laravel with Pest for end-to-end browser testing via Playwright. This replaces Jest component tests with real Chromium testing.
+
+**Prerequisites:**
 
 ```shell
-npm run test           # run all Jest tests
-npm run test:watch     # Jest in watch mode
-npm run test:coverage  # with coverage report
+# 1. Kill any running dev servers (to avoid port conflicts)
+pkill -f "vite" || pkill -f "composer run dev" || true
+
+# 2. Build frontend assets (required)
+npm run build
 ```
+
+**Run tests:**
+
+```shell
+# Headless mode (CI-friendly)
+composer test:browser
+
+# Headed mode — watch the browser (debugging)
+BROWSER_HEADLESS=false composer test:browser
+```
+
+The in-process server serves compiled assets from `public/build/`. Without them, Inertia pages fail to load and tests will fail.
 
 ### Code Scanning
 
@@ -223,9 +239,6 @@ composer install
 | `npm run format` | Prettier formatting (fix mode) |
 | `npm run format:check` | Prettier dry-run |
 | `npm run types` | TypeScript type-check (`tsc --noEmit`) |
-| `npm run test` | Run Jest component tests |
-| `npm run test:watch` | Jest in watch mode |
-| `npm run test:coverage` | Jest with coverage report |
 
 ### Database commands
 

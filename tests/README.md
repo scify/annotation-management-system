@@ -106,20 +106,29 @@ Browser tests use **Pest v4 Browser** (Playwright-based) and run real Chromium a
 - Database state (`RefreshDatabase`) is shared between test code and server requests, so factory-created users are immediately visible to the browser
 - Session state persists across browser requests within the same test (array session driver, shared in-process)
 
-**Before running browser tests** — compile frontend assets:
+**Before running browser tests** — compile frontend assets and ensure no dev server is running:
 
 ```shell
+# Kill any running dev servers (critical — Vite on localhost conflicts with
+# the Playwright browser origin at 127.0.0.1, causing CORS errors)
+pkill -f "vite" || pkill -f "composer run dev" || true
+
+# Build production assets (required for browser tests)
 npm run build
 # or: ddev npm run build
 ```
 
-The in-process server serves compiled assets from `public/build/`. Without them, Inertia pages fail to load JS and tests will fail.
+The in-process server serves compiled assets from `public/build/`. Without them, Inertia pages fail to load JS and tests will fail. A running Vite dev server causes CORS errors because the Playwright browser (`127.0.0.1`) cannot load scripts from `localhost:5173`.
 
 **Run browser tests:**
 
 ```shell
+# Headless mode (CI-friendly default)
 composer test:browser
 # or: ddev composer test:browser
+
+# Headed mode — opens a visible Chromium window (useful for debugging)
+BROWSER_HEADLESS=false composer test:browser
 ```
 
 **Writing browser tests:**

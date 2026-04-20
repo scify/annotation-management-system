@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tag } from '@/components/ui/tag';
 import { type StatusVariant } from '@/components/project/project-card';
+import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { BellRing, FolderOpenDot, MoreVertical, UserRound } from 'lucide-react';
 
@@ -34,6 +35,7 @@ export function SubProjectListItem({
 	className,
 	showActions = true,
 }: SubProjectListItemProps) {
+	const { t, trans } = useTranslations();
 	return (
 		<article
 			className={cn(
@@ -53,7 +55,7 @@ export function SubProjectListItem({
 								{subProject.name}
 							</p>
 							<Tag className="shrink-0 self-center">
-								Instances: {subProject.instancesRange}
+								{t('sub-projects.list_item.instances')} {subProject.instancesRange}
 							</Tag>
 						</div>
 						<p className="text-sm text-slate-600">{subProject.dateRange}</p>
@@ -70,16 +72,24 @@ export function SubProjectListItem({
 									variant="ghost"
 									size="icon"
 									className="size-[44px] shrink-0"
-									aria-label="Subproject actions"
+									aria-label={t('sub-projects.list_item.actions_label')}
 								>
 									<MoreVertical className="size-5" aria-hidden="true" />
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="w-44">
-								<DropdownMenuItem>View / Edit</DropdownMenuItem>
-								<DropdownMenuItem>Test</DropdownMenuItem>
-								<DropdownMenuItem>Clone</DropdownMenuItem>
-								<DropdownMenuItem>Set as In Progress</DropdownMenuItem>
+								<DropdownMenuItem>
+									{t('sub-projects.list_item.action_view_edit')}
+								</DropdownMenuItem>
+								<DropdownMenuItem>
+									{t('sub-projects.list_item.action_test')}
+								</DropdownMenuItem>
+								<DropdownMenuItem>
+									{t('sub-projects.list_item.action_clone')}
+								</DropdownMenuItem>
+								<DropdownMenuItem>
+									{t('sub-projects.list_item.action_set_in_progress')}
+								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 					)}
@@ -90,7 +100,7 @@ export function SubProjectListItem({
 			<div className="flex items-end gap-4 pl-[56px]">
 				<div className="flex min-w-0 flex-1 flex-col gap-2">
 					<span className="text-sm font-semibold text-slate-800">
-						Progress {subProject.progress}%
+						{trans('sub-projects.list_item.progress')} {subProject.progress}%
 					</span>
 					<div className="bg-brand-blue-100 h-2 w-full overflow-hidden rounded-full">
 						<div
