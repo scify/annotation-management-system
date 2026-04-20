@@ -1,8 +1,6 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler, useEffect, useState, useCallback } from 'react';
-import { usePage } from '@inertiajs/react';
-import 'altcha';
 
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
@@ -35,6 +33,10 @@ export default function Login({
 	redirectTo,
 	skipCaptcha = false,
 }: Readonly<LoginProps>) {
+	useEffect(() => {
+		void import('altcha');
+	}, []);
+
 	const form = useForm<Required<LoginForm>>({
 		email: '',
 		password: '',
