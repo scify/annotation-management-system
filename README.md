@@ -202,8 +202,7 @@ composer install
 
 | Script | Description |
 | --- | --- |
-| `composer dev` | Start dev server (auto-detects environment) |
-| `composer dev:ssr` | Start dev server + SSR Node.js server |
+| `composer run dev` | Start dev server (auto-detects environment) |
 | `composer lint` | Format all code — fix mode (Rector + Pint + ESLint + Prettier) |
 | `composer test:lint` | Dry-run lint checks without modifying files |
 | `composer test:types` | Type analysis (PHPStan level 8 + TypeScript tsc) |
@@ -217,7 +216,6 @@ composer install
 | --- | --- |
 | `npm run dev` | Start Vite development server |
 | `npm run build` | Build frontend assets for production |
-| `npm run build:ssr` | Build both client and SSR bundles |
 | `npm run lint` | ESLint check |
 | `npm run lint:fix` | ESLint auto-fix |
 | `npm run lint:styles` | Stylelint check |
