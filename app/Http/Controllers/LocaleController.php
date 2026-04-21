@@ -19,7 +19,7 @@ class LocaleController extends Controller {
         /** @var string $locale */
         $locale = $validated['locale'];
 
-        return redirect()->back()->withCookie(
+        return back()->withCookie(
             cookie('locale', $locale, 60 * 24 * 365, secure: $request->secure(), sameSite: 'Lax')
         );
     }
