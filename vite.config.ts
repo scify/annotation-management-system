@@ -19,7 +19,7 @@ interface ImportMetaEnv {
 /**
  * Check if the additional environment file should be loaded.
  */
-function shouldLoadAdditionalEnv(mainEnv): boolean {
+function shouldLoadAdditionalEnv(mainEnv: Record<string, string>): boolean {
 	const isLocalEnv = mainEnv.APP_ENV === 'local';
 	return (
 		(mainEnv.APP_DEVELOPMENT_ENV && mainEnv.APP_DEVELOPMENT_ENV.length > 1 && isLocalEnv) ||
@@ -35,7 +35,7 @@ export default defineConfig(({ mode, command }) => {
 	// Determine which additional .env file to load
 	const developmentEnv = mainEnv.APP_DEVELOPMENT_ENV ?? 'native'; // Default to .env.native
 
-	let additionalEnv = {};
+	let additionalEnv: Record<string, string> = {};
 	if (shouldLoadAdditionalEnv(mainEnv)) {
 		const additionalEnvFile = path.resolve(process.cwd(), `.env.${developmentEnv}`);
 		if (fs.existsSync(additionalEnvFile)) {
@@ -52,7 +52,7 @@ export default defineConfig(({ mode, command }) => {
 	}
 
 	// Merge environment variables (additionalEnv **overrides** mainEnv)
-	const env: ImportMetaEnv = { ...mainEnv, ...additionalEnv } as ImportMetaEnv;
+	const env: ImportMetaEnv = { ...mainEnv, ...additionalEnv } as unknown as ImportMetaEnv;
 
 	const DEV_URL = env.VITE_DEV_URL ?? 'http://localhost';
 	const APP_PORT = env.VITE_APP_PORT ?? '8000';
