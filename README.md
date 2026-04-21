@@ -206,11 +206,39 @@ composer test:types  # PHPStan (level 8) + TypeScript tsc --noEmit
 
 ### Git Hooks
 
-The project includes pre-commit hooks that automatically format code. They are installed automatically via:
+A pre-commit hook runs automatically on every commit. It:
+
+1. Scans staged files for secrets with **Gitleaks** (blocks commit if secrets detected)
+2. Runs **Rector** on staged `.php` files (automated refactors)
+3. Runs **Pint** on staged `.php` files (code style formatting)
+4. Runs **Prettier / ESLint** on staged `.js/.ts/.tsx` files
+5. Runs **Prettier** on staged `.scss/.css` files
+
+Modified files are re-staged automatically, so the committed code always matches the formatted output.
+
+#### Setup
+
+The hook is installed automatically when you run:
 
 ```shell
 composer install
 ```
+
+For Gitleaks, you will need also to install the executable. See [GITLEAKS-SECURITY.md](docs/GITLEAKS-SECURITY.md) for details.
+
+If you need to reinstall it manually (e.g. after cloning without running `composer install`):
+
+```shell
+bash tools/git-hooks/install.sh
+```
+
+> **DDEV users:** Git hooks run on the **host machine**, not inside the container. 
+> 
+> Run `ddev composer install` to install dependencies inside the container, but the hook script itself executes on the host using `vendor/bin/rector`, `vendor/bin/pint`, and `npm` from the project root. 
+> 
+> Make sure PHP and Node are available in your host shell, or run `ddev composer install` first to populate `vendor/bin/`.
+
+> **Bypassing the hook:** If you genuinely need to skip it (e.g. a work-in-progress commit), use `git commit --no-verify`. This should be rare.
 
 ## Available Scripts
 
