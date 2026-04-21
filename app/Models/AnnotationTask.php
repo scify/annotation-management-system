@@ -18,10 +18,9 @@ class AnnotationTask extends Model {
         'description',
         'guidelines_url',
         'weight',
-        'deleted_at',
     ];
 
     protected function connectedUsers(): BelongsToMany {
-        return $this->belongsToMany(User::class, 'annotation_tasks_users', 'annotation_task_id', 'user_id');
+        return $this->belongsToMany(User::class, 'annotation_task_user', 'annotation_task_id', 'user_id');
     }
 }

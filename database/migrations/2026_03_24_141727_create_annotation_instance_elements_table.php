@@ -11,8 +11,13 @@ return new class() extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('annotation_instance_elements', function (Blueprint $table) {
+        Schema::create('annotation_instance_elements', function (Blueprint $table): void {
             $table->id();
+            $table->unsignedMediumInteger('index');
+            $table->string('key');
+            $table->string('value');
+            $table->foreignId('annotation_instance_id')->constrained();
+            $table->unique(['index', 'annotation_instance_id']);
             $table->timestamps();
         });
     }

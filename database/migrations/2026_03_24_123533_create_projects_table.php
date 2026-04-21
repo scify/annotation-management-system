@@ -12,15 +12,15 @@ return new class() extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('projects', function (Blueprint $table): void {
             $table->id();
             $table->string('name');
             $table->text('description');
             $table->foreignId('owner_user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('annotation_task_id')->constrained('annotation_tasks')->cascadeOnDelete();
             $table->foreignId('dataset_id')->constrained('datasets')->cascadeOnDelete();
-            $table->string('status')->default(ProjectStatusEnum::NOT_STARTED->value);
-            $table->date('started_at')->nullable();
+            $table->string('status')->default(ProjectStatusEnum::PENDING->value);
+            $table->date('scheduled_at')->nullable();
             $table->date('deadline_at')->nullable();
             $table->timestamps();
             $table->softDeletes();

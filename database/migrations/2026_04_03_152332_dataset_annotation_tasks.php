@@ -11,10 +11,11 @@ return new class() extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('dataset_annotation_tasks', function (Blueprint $table) {
+        Schema::create('dataset_annotation_tasks', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('dataset_id')->constrained()->cascadeOnDelete();
             $table->foreignId('annotation_task_id')->constrained()->cascadeOnDelete();
+            $table->unique(['dataset_id', 'annotation_task_id']);
             $table->timestamps();
         });
     }

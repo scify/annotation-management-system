@@ -11,9 +11,14 @@ return new class() extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('annotation_tasks', function (Blueprint $table) {
+        Schema::create('annotation_tasks', function (Blueprint $table): void {
             $table->id();
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->string('guidelines_url')->nullable();
+            $table->unsignedTinyInteger('weight');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

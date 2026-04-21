@@ -11,10 +11,11 @@ return new class() extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('dataset_instances', function (Blueprint $table) {
+        Schema::create('dataset_instances', function (Blueprint $table): void {
             $table->id();
             $table->unsignedMediumInteger('index');
             $table->foreignId('dataset_id')->constrained();
+            $table->unique(['index', 'dataset_id']);
             $table->timestamps();
         });
     }

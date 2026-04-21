@@ -11,4 +11,11 @@ use Illuminate\Database\Eloquent\Model;
 class AnnotationInstanceElement extends Model {
     /** @use HasFactory<AnnotationInstanceElementFactory> */
     use HasFactory;
+
+    protected $fillable = [
+        'index',
+        'key',
+        'value',
+        'anotation_instance_id',
+    ];
 }
