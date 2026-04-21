@@ -234,7 +234,7 @@ import { useTranslations } from '@/hooks/use-translations';
 ### Authentication & Authorization
 
 - Use **Spatie Laravel Permission** for RBAC
-- Roles defined in `App\Enums\RolesEnum`: `ADMINISTRATOR ('admin')`, `USER_MANAGER ('user-manager')`, `REGISTERED_USER ('registered-user')`
+- Roles defined in `App\Enums\RolesEnum`
 - Permissions defined in `App\Enums\PermissionsEnum`
 - `Gate::before` in `AppServiceProvider` grants ADMINISTRATOR all permissions automatically
 - Seed roles/permissions via `RolesAndPermissionsSeeder` before tests
@@ -281,7 +281,6 @@ export default function UsersIndex({ users, abilities }: Props) {
 - Controllers should be thin — delegate to services
 - Service methods should be well-typed with return types
 - `UserService` — user CRUD, role assignment, soft-delete/restore
-- `DashboardService` — dashboard statistics and metrics
 
 ### Exception Handling
 
