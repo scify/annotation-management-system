@@ -37,6 +37,7 @@ return [
         'sort_desc_workload' => 'Υψηλός → Χαμηλός',
         'search_placeholder' => 'Αναζήτηση Επισημειωτών…',
         'select_all' => 'Επιλογή όλων',
+        'min_one_required' => 'Επιλέξτε τουλάχιστον 1 επισημειωτή για να συνεχίσετε.',
     ],
 
     'configuration' => [
@@ -51,6 +52,7 @@ return [
         'requirements_label' => 'Απαιτήσεις',
         'min_annotations_label' => 'Ελάχιστες Επισημειώσεις',
         'min_annotations_description' => 'Ορισμός ελάχιστων επισημειώσεων ανά παράδειγμα',
+        'priority_and_timeframe_required' => 'Επιλέξτε προτεραιότητα και χρονικό πλαίσιο για να συνεχίσετε.',
         'min_annotations_inactive' => 'Ανενεργό',
         'min_annotations_placeholder' => 'Ορίστε αριθμό από 1 έως :max',
         'browsing_label' => 'Περιήγηση και Υποβολή',

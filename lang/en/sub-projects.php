@@ -37,6 +37,7 @@ return [
         'sort_desc_workload' => 'High → Low',
         'search_placeholder' => 'Search Annotators…',
         'select_all' => 'Select all',
+        'min_one_required' => 'Select at least 1 annotator to continue.',
     ],
 
     'configuration' => [
@@ -51,6 +52,7 @@ return [
         'requirements_label' => 'Requirements',
         'min_annotations_label' => 'Minimum Annotations',
         'min_annotations_description' => 'Set minimum annotations per instance',
+        'priority_and_timeframe_required' => 'Select a priority and a timeframe to continue.',
         'min_annotations_inactive' => 'Not active',
         'min_annotations_placeholder' => 'Set a number from 1 to :max',
         'browsing_label' => 'Browsing and Submission',

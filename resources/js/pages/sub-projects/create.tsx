@@ -197,6 +197,16 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 
 				{/* Action bar */}
 				<div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
+					{currentStep === 0 && selectedAnnotatorIds.size === 0 && (
+						<p role="alert" className="mr-auto text-sm text-slate-500">
+							{t('sub-projects.select_annotators.min_one_required')}
+						</p>
+					)}
+					{currentStep === 2 && (!priority || !dateRange) && (
+						<p role="alert" className="mr-auto text-sm text-slate-500">
+							{t('sub-projects.configuration.priority_and_timeframe_required')}
+						</p>
+					)}
 					<Button
 						variant="outline"
 						onClick={() => router.visit(route('projects.show', displayProject.id))}
@@ -214,6 +224,10 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 					</Button>
 					<Button
 						className="hover:bg-brand-blue-800 bg-brand-blue-700 text-white"
+						isDisabled={
+							(currentStep === 0 && selectedAnnotatorIds.size === 0) ||
+							(currentStep === 2 && (!priority || !dateRange))
+						}
 						onClick={handleNext}
 					>
 						{currentStep === STEPS.length - 1
