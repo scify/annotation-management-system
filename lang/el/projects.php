@@ -77,7 +77,7 @@ return [
 
     'dashboard' => [
         'overview_title' => 'Επισκόπηση Πίνακα Ελέγχου',
-        'active_projects_heading' => 'Ενεργά Έργα Επισημείωσηςσμού',
+        'active_projects_heading' => 'Ενεργά Έργα Επισημείωσης',
         'annotators_overview_heading' => 'Επισκόπηση Επισημειωτών',
         'table_username' => 'Όνομα χρήστη',
         'table_active_projects' => 'Ενεργά Έργα',
