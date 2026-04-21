@@ -14,4 +14,6 @@ return [
     'sidebar' => [
         'title' => 'Backoffice',
     ],
+    'switch_to_english' => 'Εναλλαγή σε Αγγλικά',
+    'switch_to_greek' => 'Εναλλαγή σε Ελληνικά',
 ];

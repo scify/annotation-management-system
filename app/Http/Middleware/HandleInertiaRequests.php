@@ -51,7 +51,8 @@ class HandleInertiaRequests extends Middleware {
                 'client-applications' => trans('client-applications'),
                 'navbar' => trans('navbar'),
                 'settings' => trans('settings'),
-                // add other translation files as needed
+                'projects' => trans('projects'),
+                'sub-projects' => trans('sub-projects'),
             ],
             'auth' => [
                 'user' => $request->user() ? [

@@ -2,6 +2,7 @@ import { AppContent } from '@/components/app-content';
 import AppLogoIcon from '@/components/app-logo-icon';
 import { AppSidebar } from '@/components/app-sidebar';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { LocaleToggle } from '@/components/locale-toggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -56,14 +57,14 @@ export default function AppSidebarLayout({
 	const toggleSidebar = () => setIsCollapsed((prev) => !prev);
 
 	const mobileNavItems: MobileNavItem[] = [
-		{ title: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-		{ title: 'Projects', icon: FolderDot, href: route('projects.index') },
-		{ title: 'Assignments', icon: Briefcase, href: '#', placeholder: true },
+		{ title: t('navbar.dashboard'), icon: LayoutDashboard, href: '/dashboard' },
+		{ title: t('navbar.projects'), icon: FolderDot, href: route('projects.index') },
+		{ title: t('navbar.assignments'), icon: Briefcase, href: '#', placeholder: true },
 		...(auth?.user?.can.view_users
 			? [{ title: t('navbar.users'), icon: Users, href: route('users.index') }]
 			: []),
-		{ title: 'Notifications', icon: BellRing, href: '#', placeholder: true },
-		{ title: 'Audit Log', icon: Captions, href: '#', placeholder: true },
+		{ title: t('navbar.notifications'), icon: BellRing, href: '#', placeholder: true },
+		{ title: t('navbar.audit_log'), icon: Captions, href: '#', placeholder: true },
 	];
 
 	return (
@@ -138,6 +139,9 @@ export default function AppSidebarLayout({
 										</Link>
 									);
 								})}
+								<div className="mt-auto px-1 pb-2">
+									<LocaleToggle className="w-full justify-start rounded-lg px-1 py-2 text-sm font-medium text-white hover:bg-white/10" />
+								</div>
 							</nav>
 						</SheetContent>
 					</Sheet>
@@ -196,6 +200,8 @@ export default function AppSidebarLayout({
 								{auth?.user && <UserMenuContent user={auth.user} />}
 							</DropdownMenuContent>
 						</DropdownMenu>
+
+						<LocaleToggle className="bg-brand-blue-50 hover:bg-brand-blue-75 focus-visible:outline-brand-blue-700 rounded-lg px-2.5 py-[10px] text-sm font-semibold text-slate-600 transition-colors focus-visible:outline focus-visible:outline-2" />
 
 						{/* Notifications button */}
 						<div className="relative">

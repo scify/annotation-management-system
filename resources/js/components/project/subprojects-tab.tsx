@@ -1,6 +1,7 @@
 import { SubProjectList } from '@/components/sub-project/sub-project-list';
 import { type SubProjectListItemData } from '@/components/sub-project/sub-project-list-item';
 import { Button } from '@/components/ui/button';
+import { useTranslations } from '@/hooks/use-translations';
 import { Plus } from 'lucide-react';
 
 interface SubprojectsTabProps {
@@ -10,6 +11,7 @@ interface SubprojectsTabProps {
 }
 
 export function SubprojectsTab({ subProjects, onSubprojectCreated }: SubprojectsTabProps) {
+	const { t } = useTranslations();
 	return (
 		<div
 			id="tabpanel-subprojects"
@@ -18,13 +20,13 @@ export function SubprojectsTab({ subProjects, onSubprojectCreated }: Subprojects
 			className="flex flex-col gap-6"
 		>
 			<div className="flex items-center justify-between">
-				<h2 className="page-subtitle">Subprojects</h2>
+				<h2 className="page-subtitle">{t('projects.subprojects_tab.title')}</h2>
 				<Button
 					className="hover:bg-brand-blue-800 h-10 font-semibold text-white"
 					onClick={onSubprojectCreated}
 				>
 					<Plus className="size-4" aria-hidden="true" />
-					Create Subproject
+					{t('projects.subprojects_tab.create_button')}
 				</Button>
 			</div>
 			<SubProjectList subProjects={subProjects} />

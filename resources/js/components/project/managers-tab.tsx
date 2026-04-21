@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/table';
 import { ProjectDialog } from '@/components/project/project-dialog';
 import { UserTableCell } from '@/components/project/user-table-cell';
+import { useTranslations } from '@/hooks/use-translations';
 import { Check, CircleStar, LogOut, Mail, Send, TriangleAlert, X } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -65,6 +66,7 @@ export function ManagersTab({
 	onOwnershipChanged,
 	onLeaveRequested,
 }: ManagersTabProps) {
+	const { t, trans } = useTranslations();
 	const [managers, setManagers] = useState<ProjectManagerRowData[]>(initialManagers);
 	const [dialogType, setDialogType] = useState<ManagerDialogType>(null);
 	const [dialogManager, setDialogManager] = useState<ProjectManagerRowData | null>(null);
@@ -115,17 +117,17 @@ export function ManagersTab({
 				className="flex flex-col gap-6"
 			>
 				<div className="flex items-center justify-between">
-					<h2 className="page-subtitle">Managers</h2>
+					<h2 className="page-subtitle">{t('projects.managers_tab.title')}</h2>
 					<div className="flex items-center gap-4">
 						<Input
 							id="invite-email"
 							type="email"
-							placeholder="Placeholder text"
+							placeholder={t('projects.managers_tab.invite_placeholder')}
 							className="w-48"
-							aria-label="Email address to invite"
+							aria-label={t('projects.managers_tab.invite_placeholder')}
 						/>
 						<Button className="bg-brand-blue-700 hover:bg-brand-blue-800 h-10 px-4 font-semibold text-white">
-							Invite by email
+							{t('projects.managers_tab.invite_button')}
 						</Button>
 					</div>
 				</div>
@@ -134,16 +136,16 @@ export function ManagersTab({
 						<TableHeader>
 							<TableRow className="bg-brand-blue-100 hover:bg-brand-blue-100 border-b border-slate-300">
 								<TableHead className="pl-4 text-sm font-semibold text-slate-800">
-									Username
+									{t('projects.managers_tab.table_username')}
 								</TableHead>
 								<TableHead className="text-center text-sm font-semibold text-slate-800">
-									Role
+									{t('projects.managers_tab.table_role')}
 								</TableHead>
 								<TableHead className="text-center text-sm font-semibold text-slate-800">
-									Ownership
+									{t('projects.managers_tab.table_ownership')}
 								</TableHead>
 								<TableHead className="text-center text-sm font-semibold text-slate-800">
-									Actions
+									{t('projects.managers_tab.table_actions')}
 								</TableHead>
 							</TableRow>
 						</TableHeader>
@@ -164,11 +166,11 @@ export function ManagersTab({
 									<TableCell className="text-center">
 										{manager.role === 'owner' ? (
 											<span className="inline-flex h-[22px] w-[122px] items-center justify-center rounded border border-purple-300 bg-purple-50 px-2 py-px text-center text-xs font-semibold text-purple-600">
-												Owner
+												{t('projects.managers_tab.role_owner')}
 											</span>
 										) : (
 											<span className="inline-flex h-[22px] w-[122px] items-center justify-center rounded border border-cyan-300 px-2 py-px text-center text-xs font-semibold text-cyan-600">
-												Co-Manager
+												{t('projects.managers_tab.role_co_manager')}
 											</span>
 										)}
 									</TableCell>
@@ -181,7 +183,9 @@ export function ManagersTab({
 												}
 												className="text-brand-blue-900 h-[30px] cursor-pointer rounded-lg bg-yellow-300 px-3.5 text-sm font-semibold hover:bg-yellow-400"
 											>
-												Ownership Request
+												{t(
+													'projects.managers_tab.ownership_request_button'
+												)}
 											</button>
 										)}
 									</TableCell>
@@ -191,7 +195,7 @@ export function ManagersTab({
 											onClick={() => openDialog('leave-request', manager)}
 											className="bg-brand-blue-700 hover:bg-brand-blue-800 h-[30px] cursor-pointer rounded-lg px-3.5 text-sm font-semibold text-white"
 										>
-											Request to leave
+											{t('projects.managers_tab.leave_button')}
 										</button>
 									</TableCell>
 								</TableRow>
@@ -206,19 +210,22 @@ export function ManagersTab({
 				open={dialogType === 'ownership-request'}
 				onClose={closeDialog}
 				icon={<CircleStar />}
-				title="Ownership Request"
+				title={t('projects.managers_tab.dialog_ownership_title')}
 				description={
 					<>
 						<p>
-							{dialogManager?.username} transferred the Ownership of this Project to
-							you.
+							{trans('projects.managers_tab.dialog_ownership_transferred', {
+								username: dialogManager?.username ?? '',
+							})}
 						</p>
-						<p className="mt-[14px]">Do you accept the Ownership?</p>
+						<p className="mt-[14px]">
+							{t('projects.managers_tab.dialog_ownership_accept')}
+						</p>
 					</>
 				}
-				cancelLabel="Reject"
+				cancelLabel={t('projects.managers_tab.dialog_ownership_reject')}
 				cancelIcon={<X className="size-4" aria-hidden="true" />}
-				actionLabel="Approve"
+				actionLabel={t('projects.managers_tab.dialog_ownership_approve')}
 				actionIcon={<Check className="size-4" aria-hidden="true" />}
 				onAction={handleApproveOwnership}
 				actionStyle="highlighted"
@@ -229,16 +236,16 @@ export function ManagersTab({
 				open={dialogType === 'leave-request'}
 				onClose={closeDialog}
 				icon={<LogOut />}
-				title="Leave Request"
+				title={t('projects.managers_tab.dialog_leave_title')}
 				description={
 					<>
-						<p>
-							This action will submit your Leave request for approval from the Owner
+						<p>{t('projects.managers_tab.dialog_leave_description')}</p>
+						<p className="mt-[14px]">
+							{t('projects.managers_tab.dialog_leave_confirm')}
 						</p>
-						<p className="mt-[14px]">Send Leave Request?</p>
 					</>
 				}
-				actionLabel="Send Request"
+				actionLabel={t('projects.managers_tab.dialog_leave_send')}
 				actionIcon={<Send className="size-4" aria-hidden="true" />}
 				onAction={handleSendLeaveRequest}
 				actionStyle="highlighted"
@@ -252,7 +259,7 @@ export function ManagersTab({
 						aria-hidden="true"
 					/>
 					<p className="text-xs leading-5 font-medium text-yellow-600">
-						By Leaving this Project, you will no longer have access to its data
+						{t('projects.managers_tab.dialog_leave_warning')}
 					</p>
 				</div>
 			</ProjectDialog>
@@ -262,9 +269,11 @@ export function ManagersTab({
 				open={dialogType === 'send-message'}
 				onClose={closeDialog}
 				icon={<Mail />}
-				title="Send message"
-				description={`Write your message to ${dialogManager?.username ?? ''}`}
-				actionLabel="Send"
+				title={t('projects.managers_tab.dialog_message_title')}
+				description={trans('projects.managers_tab.dialog_message_write', {
+					username: dialogManager?.username ?? '',
+				})}
+				actionLabel={t('projects.managers_tab.dialog_message_send')}
 				actionIcon={<Send className="size-4" aria-hidden="true" />}
 				onAction={handleSendMessage}
 				actionStyle="standard"
@@ -273,10 +282,12 @@ export function ManagersTab({
 					name={'message_' + dialogManager?.id}
 					id={'message_' + dialogManager?.id}
 					className="focus:border-brand-blue-500 mb-6 h-[120px] w-full resize-none rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-base text-slate-800 placeholder:text-slate-400 focus:shadow-[0_0_0_3px_#cbd5e1] focus:outline-none"
-					placeholder="Placeholder text"
+					placeholder={t('projects.managers_tab.dialog_message_placeholder')}
 					value={messageText}
 					onChange={(e) => setMessageText(e.target.value)}
-					aria-label={`Message to ${dialogManager?.username ?? 'manager'}`}
+					aria-label={trans('projects.managers_tab.dialog_message_write', {
+						username: dialogManager?.username ?? 'manager',
+					})}
 				/>
 			</ProjectDialog>
 		</>

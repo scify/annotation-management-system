@@ -21,25 +21,27 @@ STAGED_PHP=$(git diff --cached --name-only --diff-filter=d | grep ".php$" || tru
 STAGED_JS_TS=$(git diff --cached --name-only --diff-filter=d | grep -E "\.(js|jsx|ts|tsx)$" || true)
 STAGED_SCSS=$(git diff --cached --name-only --diff-filter=d | grep -E "\.scss|\.css$" || true)
 
-# Format PHP files
+# Refactor + format PHP files (Rector first, then Pint — same order as lint:backend)
 if [ -n "$STAGED_PHP" ]; then
-    echo "🔍 Formatting PHP files..."
-    echo "$STAGED_PHP" | xargs ./vendor/bin/pint --parallel
-    echo "$STAGED_PHP" | xargs git add
+    echo "🔍 Running Rector on PHP files..."
+    echo "$STAGED_PHP" | xargs -d '\n' ./vendor/bin/rector process --no-progress-bar
+    echo "🔍 Formatting PHP files with Pint..."
+    echo "$STAGED_PHP" | xargs -d '\n' ./vendor/bin/pint --parallel
+    echo "$STAGED_PHP" | xargs -d '\n' git add
 fi
 
 # Format JS/TS/SCSS files
 if [ -n "$STAGED_JS_TS" ]; then
     echo "🔍 Formatting JS/TS/SCSS files..."
-    echo "$STAGED_JS_TS" | xargs npm run format:staged
-    echo "$STAGED_JS_TS" | xargs git add
+    echo "$STAGED_JS_TS" | xargs -d '\n' npm run format:staged
+    echo "$STAGED_JS_TS" | xargs -d '\n' git add
 fi
 
 # Format SCSS files
 if [ -n "$STAGED_SCSS" ]; then
     echo "🔍 Formatting SCSS files..."
-    echo "$STAGED_SCSS" | xargs npm run format:staged:styles
-    echo "$STAGED_SCSS" | xargs git add
+    echo "$STAGED_SCSS" | xargs -d '\n' npm run format:staged:styles
+    echo "$STAGED_SCSS" | xargs -d '\n' git add
 fi
 
 exit 0

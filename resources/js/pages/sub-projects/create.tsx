@@ -1,19 +1,22 @@
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
+import { ProjectDialog } from '@/components/project/project-dialog';
+import {
+	ConfigurationStep,
+	type SubprojectPriority,
+	type SubmissionMode,
+} from '@/components/sub-project/configuration-step';
 import { CreateSubprojectStepper } from '@/components/sub-project/create-subproject-stepper';
-import { Button } from '@/components/ui/button';
-import AppLayout from '@/layouts/app-layout';
 import { SelectAnnotatorsStep } from '@/components/sub-project/select-annotators-step';
 import { SelectDatasetSubsetStep } from '@/components/sub-project/select-dataset-subset-step';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useTranslations } from '@/hooks/use-translations';
+import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { CalendarDate } from '@internationalized/date';
 import { Head, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FolderDot } from 'lucide-react';
 import { useState } from 'react';
-
-const STEPS = [
-	{ label: 'Select Annotators' },
-	{ label: 'Select Dataset Subset' },
-	{ label: 'Configurations' },
-];
 
 const MOCK_PROJECT = { id: 1, name: 'Project New Nov_26' };
 
@@ -75,9 +78,16 @@ interface Props {
 }
 
 export default function CreateSubproject({ project, annotators, dataset }: Props) {
+	const { t } = useTranslations();
 	const displayProject = project ?? MOCK_PROJECT;
 	const displayAnnotators = annotators ?? MOCK_ANNOTATORS;
 	const displayDataset = dataset ?? MOCK_DATASET;
+
+	const STEPS = [
+		{ label: t('sub-projects.select_annotators.heading') },
+		{ label: t('sub-projects.select_dataset.select_subset_heading') },
+		{ label: t('sub-projects.create.step_configurations') },
+	];
 
 	const [currentStep, setCurrentStep] = useState(0);
 	const [selectedAnnotatorIds, setSelectedAnnotatorIds] = useState<Set<number>>(new Set());
@@ -87,11 +97,24 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 	const [toInstance, setToInstance] = useState(displayDataset.totalInstances);
 	const [shuffle, setShuffle] = useState(true);
 
+	// Step 3 — Configuration
+	const [priority, setPriority] = useState<SubprojectPriority | null>(null);
+	const [dateRange, setDateRange] = useState<{ start: CalendarDate; end: CalendarDate } | null>(
+		null
+	);
+	const [minAnnotationsEnabled, setMinAnnotationsEnabled] = useState(false);
+	const [minAnnotations, setMinAnnotations] = useState(1);
+	const [flexibleBrowsing, setFlexibleBrowsing] = useState(false);
+	const [submissionMode, setSubmissionMode] = useState<SubmissionMode>('auto');
+
+	const [confirmOpen, setConfirmOpen] = useState(false);
+	const [subprojectName, setSubprojectName] = useState('');
+
 	const breadcrumbs: BreadcrumbItem[] = [
-		{ title: 'Projects', href: route('projects.index') },
+		{ title: t('projects.title'), href: route('projects.index') },
 		{ title: displayProject.name, href: route('projects.show', displayProject.id) },
 		{
-			title: 'Create Subproject',
+			title: t('sub-projects.create.heading'),
 			href: route('projects.subprojects.create', displayProject.id),
 		},
 	];
@@ -119,15 +142,16 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 	function handleNext() {
 		if (currentStep < STEPS.length - 1) {
 			setCurrentStep((s) => s + 1);
+		} else {
+			setConfirmOpen(true);
 		}
-		// TODO: submit on final step
 	}
 
 	return (
 		<AppLayout breadcrumbs={breadcrumbs}>
-			<Head title="Create Subproject" />
-			<div className="flex flex-col gap-6 px-6 py-6">
-				<h1 className="text-slate-800">Create Subproject</h1>
+			<Head title={t('sub-projects.create.page_title')} />
+			<div className="flex w-full max-w-5xl flex-col gap-8 px-6 py-6">
+				<h1 className="text-slate-800">{t('sub-projects.create.heading')}</h1>
 
 				<CreateSubprojectStepper currentStep={currentStep} steps={STEPS} />
 
@@ -154,21 +178,40 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 				)}
 
 				{currentStep === 2 && (
-					<section aria-labelledby="step-heading" className="flex flex-col gap-4">
-						<h2 id="step-heading" className="page-subtitle">
-							Configurations
-						</h2>
-						<p className="text-slate-500">Configuration options coming soon…</p>
-					</section>
+					<ConfigurationStep
+						priority={priority}
+						dateRange={dateRange}
+						minAnnotationsEnabled={minAnnotationsEnabled}
+						minAnnotations={minAnnotations}
+						annotatorCount={selectedAnnotatorIds.size}
+						flexibleBrowsing={flexibleBrowsing}
+						submissionMode={submissionMode}
+						onPriorityChange={setPriority}
+						onDateRangeChange={setDateRange}
+						onMinAnnotationsEnabledChange={setMinAnnotationsEnabled}
+						onMinAnnotationsChange={setMinAnnotations}
+						onFlexibleBrowsingChange={setFlexibleBrowsing}
+						onSubmissionModeChange={setSubmissionMode}
+					/>
 				)}
 
 				{/* Action bar */}
 				<div className="flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
+					{currentStep === 0 && selectedAnnotatorIds.size === 0 && (
+						<p role="alert" className="mr-auto text-sm text-slate-500">
+							{t('sub-projects.select_annotators.min_one_required')}
+						</p>
+					)}
+					{currentStep === 2 && (!priority || !dateRange) && (
+						<p role="alert" className="mr-auto text-sm text-slate-500">
+							{t('sub-projects.configuration.priority_and_timeframe_required')}
+						</p>
+					)}
 					<Button
 						variant="outline"
 						onClick={() => router.visit(route('projects.show', displayProject.id))}
 					>
-						Cancel
+						{t('sub-projects.create.cancel')}
 					</Button>
 					<Button
 						variant="outline"
@@ -177,16 +220,45 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 						onClick={() => setCurrentStep((s) => Math.max(0, s - 1))}
 					>
 						<ChevronLeft className="size-4" aria-hidden="true" />
-						Back
+						{t('sub-projects.create.back')}
 					</Button>
 					<Button
 						className="hover:bg-brand-blue-800 bg-brand-blue-700 text-white"
+						isDisabled={
+							(currentStep === 0 && selectedAnnotatorIds.size === 0) ||
+							(currentStep === 2 && (!priority || !dateRange))
+						}
 						onClick={handleNext}
 					>
-						Next
+						{currentStep === STEPS.length - 1
+							? t('sub-projects.create.create_action')
+							: t('sub-projects.create.next')}
 						<ChevronRight className="size-4" aria-hidden="true" />
 					</Button>
 				</div>
+
+				<ProjectDialog
+					open={confirmOpen}
+					onClose={() => setConfirmOpen(false)}
+					icon={<FolderDot />}
+					title={t('sub-projects.create.heading')}
+					description={t('sub-projects.create.dialog_description')}
+					cancelLabel={t('sub-projects.create.back')}
+					actionLabel={t('sub-projects.create.create_action')}
+					onAction={() => {
+						setConfirmOpen(false);
+						// TODO: submit with subprojectName
+					}}
+				>
+					<Input
+						type="text"
+						value={subprojectName}
+						onChange={(e) => setSubprojectName(e.target.value)}
+						placeholder={t('sub-projects.create.dialog_name_placeholder')}
+						className="mb-12 h-10 bg-white px-3 py-3"
+						aria-label={t('sub-projects.create.dialog_description')}
+					/>
+				</ProjectDialog>
 			</div>
 		</AppLayout>
 	);

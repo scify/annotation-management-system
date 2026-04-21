@@ -21,7 +21,7 @@
       - [Run all backend tests](#run-all-backend-tests)
       - [Filter by test name or class](#filter-by-test-name-or-class)
       - [Combine flags](#combine-flags)
-    - [Frontend tests](#frontend-tests)
+    - [Frontend / Browser tests](#frontend--browser-tests)
   - [Code Scanning](#code-scanning)
   - [Git Hooks](#git-hooks)
 - [Available Scripts](#available-scripts)
@@ -170,15 +170,31 @@ To run with code coverage (requires Xdebug):
 XDEBUG_MODE=coverage ddev composer test:coverage
 ```
 
-#### Frontend tests
+#### Frontend / Browser tests
 
-We use Jest for frontend tests.
+We use Laravel with Pest for end-to-end browser testing via Playwright. This replaces Jest component tests with real Chromium testing.
+
+**Prerequisites:**
 
 ```shell
-npm run test           # run all Jest tests
-npm run test:watch     # Jest in watch mode
-npm run test:coverage  # with coverage report
+# 1. Kill any running dev servers (to avoid port conflicts)
+pkill -f "vite" || pkill -f "composer run dev" || true
+
+# 2. Build frontend assets (required)
+npm run build
 ```
+
+**Run tests:**
+
+```shell
+# Headless mode (CI-friendly)
+composer test:browser
+
+# Headed mode — watch the browser (debugging)
+BROWSER_HEADLESS=false composer test:browser
+```
+
+The in-process server serves compiled assets from `public/build/`. Without them, Inertia pages fail to load and tests will fail.
 
 ### Code Scanning
 
@@ -190,11 +206,39 @@ composer test:types  # PHPStan (level 8) + TypeScript tsc --noEmit
 
 ### Git Hooks
 
-The project includes pre-commit hooks that automatically format code. They are installed automatically via:
+A pre-commit hook runs automatically on every commit. It:
+
+1. Scans staged files for secrets with **Gitleaks** (blocks commit if secrets detected)
+2. Runs **Rector** on staged `.php` files (automated refactors)
+3. Runs **Pint** on staged `.php` files (code style formatting)
+4. Runs **Prettier / ESLint** on staged `.js/.ts/.tsx` files
+5. Runs **Prettier** on staged `.scss/.css` files
+
+Modified files are re-staged automatically, so the committed code always matches the formatted output.
+
+#### Setup
+
+The hook is installed automatically when you run:
 
 ```shell
 composer install
 ```
+
+For Gitleaks, you will need also to install the executable. See [GITLEAKS-SECURITY.md](docs/GITLEAKS-SECURITY.md) for details.
+
+If you need to reinstall it manually (e.g. after cloning without running `composer install`):
+
+```shell
+bash tools/git-hooks/install.sh
+```
+
+> **DDEV users:** Git hooks run on the **host machine**, not inside the container. 
+> 
+> Run `ddev composer install` to install dependencies inside the container, but the hook script itself executes on the host using `vendor/bin/rector`, `vendor/bin/pint`, and `npm` from the project root. 
+> 
+> Make sure PHP and Node are available in your host shell, or run `ddev composer install` first to populate `vendor/bin/`.
+
+> **Bypassing the hook:** If you genuinely need to skip it (e.g. a work-in-progress commit), use `git commit --no-verify`. This should be rare.
 
 ## Available Scripts
 
@@ -223,9 +267,6 @@ composer install
 | `npm run format` | Prettier formatting (fix mode) |
 | `npm run format:check` | Prettier dry-run |
 | `npm run types` | TypeScript type-check (`tsc --noEmit`) |
-| `npm run test` | Run Jest component tests |
-| `npm run test:watch` | Jest in watch mode |
-| `npm run test:coverage` | Jest with coverage report |
 
 ### Database commands
 

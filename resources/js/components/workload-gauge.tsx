@@ -17,10 +17,11 @@ export function WorkloadGauge({ value }: { value: number }) {
 		>
 			{Array.from({ length: TOTAL }).map((_, i) => {
 				const angle = Math.PI - (i / (TOTAL - 1)) * Math.PI;
-				const x1 = cx + r1 * Math.cos(angle);
-				const y1 = cy - r1 * Math.sin(angle);
-				const x2 = cx + r2 * Math.cos(angle);
-				const y2 = cy - r2 * Math.sin(angle);
+				const round = (n: number) => Math.round(n * 1e6) / 1e6;
+				const x1 = round(cx + r1 * Math.cos(angle));
+				const y1 = round(cy - r1 * Math.sin(angle));
+				const x2 = round(cx + r2 * Math.cos(angle));
+				const y2 = round(cy - r2 * Math.sin(angle));
 				return (
 					<line
 						key={i}

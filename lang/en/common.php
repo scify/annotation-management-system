@@ -14,4 +14,6 @@ return [
     'sidebar' => [
         'title' => 'Backoffice',
     ],
+    'switch_to_english' => 'Switch to English',
+    'switch_to_greek' => 'Switch to Greek',
 ];

@@ -28,7 +28,11 @@ pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Browser');
 
-pest()->browser()->timeout(10000);
+$browserConfig = pest()->browser()->timeout(10000);
+
+if (getenv('BROWSER_HEADLESS') === 'false') {
+    $browserConfig->headed();
+}
 
 /*
 |--------------------------------------------------------------------------

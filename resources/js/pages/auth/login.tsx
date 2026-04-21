@@ -34,7 +34,7 @@ export default function Login({
 	skipCaptcha = false,
 }: Readonly<LoginProps>) {
 	useEffect(() => {
-		void import('altcha');
+		import('altcha').catch(() => {});
 	}, []);
 
 	const form = useForm<Required<LoginForm>>({

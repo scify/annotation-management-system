@@ -9,6 +9,7 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 import { WorkloadGauge } from '@/components/workload-gauge';
+import { useTranslations } from '@/hooks/use-translations';
 import { UserTableCell } from '@/components/project/user-table-cell';
 import { CircleMinus } from 'lucide-react';
 
@@ -38,6 +39,7 @@ type AnnotatorsTableProps =
 
 export function AnnotatorsTable(props: AnnotatorsTableProps) {
 	const { mode, annotators } = props;
+	const { t } = useTranslations();
 
 	return (
 		<div className="overflow-hidden rounded-xl">
@@ -50,23 +52,23 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
 							</TableHead>
 						)}
 						<TableHead className="pl-4 text-sm font-semibold text-slate-800">
-							Username
+							{t('projects.annotators_tab.table_username')}
 						</TableHead>
 						<TableHead className="text-right text-sm font-semibold text-slate-800">
-							Projects
+							{t('projects.annotators_tab.table_projects')}
 						</TableHead>
 						<TableHead className="text-right text-sm font-semibold text-slate-800">
-							Subprojects
+							{t('projects.annotators_tab.table_subprojects')}
 						</TableHead>
 						<TableHead className="text-center text-sm font-semibold text-slate-800">
-							Remain.Workload
+							{t('projects.annotators_tab.table_workload')}
 						</TableHead>
 						<TableHead className="text-center text-sm font-semibold text-slate-800">
-							Progress
+							{t('projects.annotators_tab.table_progress')}
 						</TableHead>
 						{mode === 'remove' && (
 							<TableHead className="text-center text-sm font-semibold text-slate-800">
-								Action
+								{t('projects.annotators_tab.table_action')}
 							</TableHead>
 						)}
 					</TableRow>

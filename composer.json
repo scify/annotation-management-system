@@ -113,7 +113,7 @@
 			"@test:backend",
 			"@test:browser"
 		],
-		"test": "pest",
+		"test": "pest --exclude-testsuite=Browser",
 		"test:backend": "pest --exclude-testsuite=Browser",
 		"test:browser": "pest --testsuite=Browser",
 		"test:coverage": "pest --coverage --parallel"

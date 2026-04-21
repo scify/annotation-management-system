@@ -1,5 +1,6 @@
 import { type SubProjectListItemData } from '@/components/sub-project/sub-project-list-item';
 import { Tag } from '@/components/ui/tag';
+import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { AnnotatorsTab } from '@/components/project/annotators-tab';
@@ -67,14 +68,19 @@ const MOCK_PROJECT: ProjectShowData = {
 };
 
 export default function ProjectShow({ project }: Props) {
+	const { t } = useTranslations();
 	const displayProject = project ?? MOCK_PROJECT;
 	const [activeTab, setActiveTab] = useState<TabKey>('subprojects');
 
 	const tabs: { key: TabKey; label: string; count?: number }[] = [
-		{ key: 'subprojects', label: 'Subprojects', count: displayProject.subProjects.length },
-		{ key: 'annotators', label: 'Annotators', count: 3 },
-		{ key: 'managers', label: 'Managers', count: 3 },
-		{ key: 'export', label: 'Export' },
+		{
+			key: 'subprojects',
+			label: t('projects.show.tab_subprojects'),
+			count: displayProject.subProjects.length,
+		},
+		{ key: 'annotators', label: t('projects.show.tab_annotators'), count: 3 },
+		{ key: 'managers', label: t('projects.show.tab_managers'), count: 3 },
+		{ key: 'export', label: t('projects.show.tab_export') },
 	];
 
 	const breadcrumbs: BreadcrumbItem[] = [
@@ -92,11 +98,11 @@ export default function ProjectShow({ project }: Props) {
 				{/* Tags */}
 				<div className="flex flex-wrap gap-3">
 					<Tag>
-						<strong className="font-bold">Task:</strong>
+						<strong className="font-bold">{t('projects.show.tag_task')}</strong>
 						<span className="ml-1">{displayProject.tags[0]}</span>
 					</Tag>
 					<Tag>
-						<strong className="font-bold">Dataset:</strong>
+						<strong className="font-bold">{t('projects.show.tag_dataset')}</strong>
 						<span className="ml-1">{displayProject.tags[1]}</span>
 					</Tag>
 				</div>
@@ -104,7 +110,7 @@ export default function ProjectShow({ project }: Props) {
 				{/* Overall progress bar */}
 				<div className="flex flex-col gap-2">
 					<span className="text-sm font-semibold text-slate-800">
-						Overall Progress {displayProject.progress}%
+						{t('projects.show.overall_progress')} {displayProject.progress}%
 					</span>
 					<div className="bg-brand-blue-100 h-3 w-full overflow-hidden rounded-full">
 						<div

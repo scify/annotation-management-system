@@ -14,7 +14,7 @@ interface CreateSubprojectStepperProps {
 
 export function CreateSubprojectStepper({ currentStep, steps }: CreateSubprojectStepperProps) {
 	return (
-		<nav aria-label="Create subproject progress" className="flex items-start">
+		<nav aria-label="Create subproject progress" className="mb-4 flex items-start">
 			{steps.map((step, index) => {
 				const isActive = index === currentStep;
 				const isCompleted = index < currentStep;

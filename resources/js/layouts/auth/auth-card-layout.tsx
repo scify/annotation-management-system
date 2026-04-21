@@ -1,4 +1,5 @@
 import AppLogoIcon from '@/components/app-logo-icon';
+import { LocaleToggle } from '@/components/locale-toggle';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
@@ -13,6 +14,9 @@ export default function AuthCardLayout({
 }>) {
 	return (
 		<div className="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 sm:p-2 md:p-5 lg:p-6">
+			<div className="absolute top-4 right-4">
+				<LocaleToggle className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100" />
+			</div>
 			<div className="flex w-full max-w-xl flex-col gap-6">
 				<Link
 					href={route('home')}

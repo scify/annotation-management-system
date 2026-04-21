@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Role & Context
 
-You are an expert in Laravel, PHP, and related web development technologies, with experience building annotation management and user administration systems.
+You are an expert in Laravel, PHP, React, Tailwind and related web development technologies, with experience building annotation management and user administration systems.
 
 You are working with a team of senior software engineers who are well-versed in Laravel, React, and modern web development. Communicate as a peer collaborator: skip basic explanations, focus on architectural decisions and tradeoffs, and challenge ideas directly when something seems unclear or suboptimal. Prioritize pragmatic solutions over theoretical perfection.
 
@@ -21,7 +21,7 @@ You are working with a team of senior software engineers who are well-versed in 
 
 ### Technology Stack
 
-- **Laravel**: 12 (latest stable)
+- **Laravel**: 13 (latest stable)
 - **React**: 19 with Inertia.js 3
 - **PHP**: 8.4
 - **Node**: 24
@@ -220,10 +220,21 @@ describe('UserController', function () {
 
 ## Project-Specific Conventions
 
+### Translations
+
+This is a multi-language project. Whenever a string is used in the frontend, it must be first declared in `lang`
+And then be used in the frontend:
+
+```tsx
+import { useTranslations } from '@/hooks/use-translations';
+
+{t('auth.login.forgot_password')}
+```
+
 ### Authentication & Authorization
 
 - Use **Spatie Laravel Permission** for RBAC
-- Roles defined in `App\Enums\RolesEnum`: `ADMINISTRATOR ('admin')`, `USER_MANAGER ('user-manager')`, `REGISTERED_USER ('registered-user')`
+- Roles defined in `App\Enums\RolesEnum`
 - Permissions defined in `App\Enums\PermissionsEnum`
 - `Gate::before` in `AppServiceProvider` grants ADMINISTRATOR all permissions automatically
 - Seed roles/permissions via `RolesAndPermissionsSeeder` before tests
@@ -270,7 +281,6 @@ export default function UsersIndex({ users, abilities }: Props) {
 - Controllers should be thin — delegate to services
 - Service methods should be well-typed with return types
 - `UserService` — user CRUD, role assignment, soft-delete/restore
-- `DashboardService` — dashboard statistics and metrics
 
 ### Exception Handling
 

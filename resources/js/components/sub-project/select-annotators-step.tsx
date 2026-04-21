@@ -9,6 +9,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select';
+import { useTranslations } from '@/hooks/use-translations';
 import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -25,6 +26,7 @@ export function SelectAnnotatorsStep({
 	onSelectionChange,
 	onSelectAllChange,
 }: SelectAnnotatorsStepProps) {
+	const { t, trans } = useTranslations();
 	const [sortByName, setSortByName] = useState('');
 	const [sortByWorkload, setSortByWorkload] = useState('');
 	const [search, setSearch] = useState('');
@@ -59,35 +61,55 @@ export function SelectAnnotatorsStep({
 		<section aria-labelledby="step-heading" className="flex flex-col gap-5">
 			<hgroup>
 				<h2 id="step-heading" className="page-subtitle">
-					Select Annotators
+					{t('sub-projects.select_annotators.heading')}
 				</h2>
-				<p className="text-sm font-semibold text-slate-800">{selectedIds.size} selected</p>
+				<p className="text-sm font-semibold text-slate-800">
+					{trans('sub-projects.select_annotators.selected_count', {
+						count: selectedIds.size,
+					})}
+				</p>
 			</hgroup>
 
 			{/* Filters row */}
 			<div className="flex items-end gap-4">
 				<div className="flex flex-col gap-1">
-					<span className="text-sm font-medium text-slate-700">Sort by Name</span>
+					<span className="text-sm font-medium text-slate-700">
+						{t('sub-projects.select_annotators.sort_by_name')}
+					</span>
 					<Select value={sortByName} onValueChange={setSortByName}>
 						<SelectTrigger className="h-10 w-[180px] bg-white px-4">
-							<SelectValue placeholder="Sort by Name" />
+							<SelectValue
+								placeholder={t('sub-projects.select_annotators.sort_by_name')}
+							/>
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="asc">A → Z</SelectItem>
-							<SelectItem value="desc">Z → A</SelectItem>
+							<SelectItem value="asc">
+								{t('sub-projects.select_annotators.sort_asc_name')}
+							</SelectItem>
+							<SelectItem value="desc">
+								{t('sub-projects.select_annotators.sort_desc_name')}
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
 
 				<div className="flex flex-col gap-1">
-					<span className="text-sm font-medium text-slate-700">Sort by Workload</span>
+					<span className="text-sm font-medium text-slate-700">
+						{t('sub-projects.select_annotators.sort_by_workload')}
+					</span>
 					<Select value={sortByWorkload} onValueChange={setSortByWorkload}>
 						<SelectTrigger className="h-10 w-[180px] bg-white px-4">
-							<SelectValue placeholder="Sort by Workload" />
+							<SelectValue
+								placeholder={t('sub-projects.select_annotators.sort_by_workload')}
+							/>
 						</SelectTrigger>
 						<SelectContent>
-							<SelectItem value="asc">Low → High</SelectItem>
-							<SelectItem value="desc">High → Low</SelectItem>
+							<SelectItem value="asc">
+								{t('sub-projects.select_annotators.sort_asc_workload')}
+							</SelectItem>
+							<SelectItem value="desc">
+								{t('sub-projects.select_annotators.sort_desc_workload')}
+							</SelectItem>
 						</SelectContent>
 					</Select>
 				</div>
@@ -99,11 +121,11 @@ export function SelectAnnotatorsStep({
 					/>
 					<Input
 						type="search"
-						placeholder="Search Annotators…"
+						placeholder={t('sub-projects.select_annotators.search_placeholder')}
 						value={search}
 						onChange={(e) => setSearch(e.target.value)}
 						className="w-[220px] pr-9 pl-4"
-						aria-label="Search annotators"
+						aria-label={t('sub-projects.select_annotators.search_placeholder')}
 					/>
 				</div>
 			</div>
@@ -113,9 +135,11 @@ export function SelectAnnotatorsStep({
 				<Checkbox
 					checked={allFilteredSelected}
 					onCheckedChange={handleSelectAll}
-					aria-label="Select all annotators"
+					aria-label={t('sub-projects.select_annotators.select_all')}
 				/>
-				<span className="text-sm text-slate-700">Select all</span>
+				<span className="text-sm text-slate-700">
+					{t('sub-projects.select_annotators.select_all')}
+				</span>
 			</label>
 
 			<AnnotatorsTable
