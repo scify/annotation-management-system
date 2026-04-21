@@ -11,6 +11,9 @@ return [
         'next' => 'Επόμενο',
         'step_configurations' => 'Ρυθμίσεις',
         'config_coming_soon' => 'Οι επιλογές ρυθμίσεων έρχονται σύντομα…',
+        'create_action' => 'Δημιουργία',
+        'dialog_description' => 'Εισάγετε ένα όνομα για το υποέργο',
+        'dialog_name_placeholder' => 'Όνομα Νέου Υποέργου…',
     ],
 
     'list_item' => [
@@ -34,6 +37,27 @@ return [
         'sort_desc_workload' => 'Υψηλός → Χαμηλός',
         'search_placeholder' => 'Αναζήτηση Επισημειωτών…',
         'select_all' => 'Επιλογή όλων',
+    ],
+
+    'configuration' => [
+        'heading' => 'Ρυθμίσεις',
+        'priority_label' => 'Προτεραιότητα',
+        'priority_placeholder' => 'Ορισμός Προτεραιότητας',
+        'priority_low' => 'Χαμηλή',
+        'priority_medium' => 'Μεσαία',
+        'priority_high' => 'Υψηλή',
+        'timeframe_label' => 'Χρονικό Πλαίσιο',
+        'timeframe_placeholder' => 'Ορισμός χρονικού πλαισίου',
+        'requirements_label' => 'Απαιτήσεις',
+        'min_annotations_label' => 'Ελάχιστες Επισημειώσεις',
+        'min_annotations_description' => 'Ορισμός ελάχιστων επισημειώσεων ανά παράδειγμα',
+        'min_annotations_inactive' => 'Ανενεργό',
+        'min_annotations_placeholder' => 'Ορίστε αριθμό από 1 έως :max',
+        'browsing_label' => 'Περιήγηση και Υποβολή',
+        'flexible_browsing_label' => 'Ευέλικτη Περιήγηση',
+        'flexible_browsing_description' => 'Επιτρέπει στον επισημειωτή να πλοηγείται μπρος-πίσω στα παραδείγματα',
+        'submission_auto' => 'Αυτόματα ανά παράδειγμα',
+        'submission_manual' => 'Με επιβεβαίωση του Επισημειωτή',
     ],
 
     'select_dataset' => [

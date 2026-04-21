@@ -11,6 +11,9 @@ return [
         'next' => 'Next',
         'step_configurations' => 'Configurations',
         'config_coming_soon' => 'Configuration options coming soon…',
+        'create_action' => 'Create',
+        'dialog_description' => 'Enter a subproject name',
+        'dialog_name_placeholder' => 'New Subproject Name…',
     ],
 
     'list_item' => [
@@ -34,6 +37,27 @@ return [
         'sort_desc_workload' => 'High → Low',
         'search_placeholder' => 'Search Annotators…',
         'select_all' => 'Select all',
+    ],
+
+    'configuration' => [
+        'heading' => 'Configurations',
+        'priority_label' => 'Priority',
+        'priority_placeholder' => 'Set Priority',
+        'priority_low' => 'Low',
+        'priority_medium' => 'Medium',
+        'priority_high' => 'High',
+        'timeframe_label' => 'Timeframe',
+        'timeframe_placeholder' => 'Set timeframe',
+        'requirements_label' => 'Requirements',
+        'min_annotations_label' => 'Minimum Annotations',
+        'min_annotations_description' => 'Set minimum annotations per instance',
+        'min_annotations_inactive' => 'Not active',
+        'min_annotations_placeholder' => 'Set a number from 1 to :max',
+        'browsing_label' => 'Browsing and Submission',
+        'flexible_browsing_label' => 'Flexible Browsing',
+        'flexible_browsing_description' => 'Allows annotator to go back and forth through instances',
+        'submission_auto' => 'Automatically per instance',
+        'submission_manual' => 'By Annotator\'s Confirmation',
     ],
 
     'select_dataset' => [

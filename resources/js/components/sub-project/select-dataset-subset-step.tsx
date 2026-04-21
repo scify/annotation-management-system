@@ -99,7 +99,7 @@ export function SelectDatasetSubsetStep({
 									type="button"
 									className="text-sm font-semibold text-slate-800 underline"
 									onClick={() =>
-										onFromInstanceChange(dataset.previousEndInstance + 1)
+										onFromInstanceChange(dataset.previousEndInstance ?? +1)
 									}
 								>
 									{trans('sub-projects.select_dataset.start_from', {

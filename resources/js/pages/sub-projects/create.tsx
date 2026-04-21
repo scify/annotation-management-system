@@ -1,13 +1,21 @@
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
+import { ProjectDialog } from '@/components/project/project-dialog';
+import {
+	ConfigurationStep,
+	type SubprojectPriority,
+	type SubmissionMode,
+} from '@/components/sub-project/configuration-step';
 import { CreateSubprojectStepper } from '@/components/sub-project/create-subproject-stepper';
-import { Button } from '@/components/ui/button';
-import { useTranslations } from '@/hooks/use-translations';
-import AppLayout from '@/layouts/app-layout';
 import { SelectAnnotatorsStep } from '@/components/sub-project/select-annotators-step';
 import { SelectDatasetSubsetStep } from '@/components/sub-project/select-dataset-subset-step';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useTranslations } from '@/hooks/use-translations';
+import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { CalendarDate } from '@internationalized/date';
 import { Head, router } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FolderDot } from 'lucide-react';
 import { useState } from 'react';
 
 const MOCK_PROJECT = { id: 1, name: 'Project New Nov_26' };
@@ -89,6 +97,19 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 	const [toInstance, setToInstance] = useState(displayDataset.totalInstances);
 	const [shuffle, setShuffle] = useState(true);
 
+	// Step 3 — Configuration
+	const [priority, setPriority] = useState<SubprojectPriority | null>(null);
+	const [dateRange, setDateRange] = useState<{ start: CalendarDate; end: CalendarDate } | null>(
+		null
+	);
+	const [minAnnotationsEnabled, setMinAnnotationsEnabled] = useState(false);
+	const [minAnnotations, setMinAnnotations] = useState(1);
+	const [flexibleBrowsing, setFlexibleBrowsing] = useState(false);
+	const [submissionMode, setSubmissionMode] = useState<SubmissionMode>('auto');
+
+	const [confirmOpen, setConfirmOpen] = useState(false);
+	const [subprojectName, setSubprojectName] = useState('');
+
 	const breadcrumbs: BreadcrumbItem[] = [
 		{ title: t('projects.title'), href: route('projects.index') },
 		{ title: displayProject.name, href: route('projects.show', displayProject.id) },
@@ -121,14 +142,15 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 	function handleNext() {
 		if (currentStep < STEPS.length - 1) {
 			setCurrentStep((s) => s + 1);
+		} else {
+			setConfirmOpen(true);
 		}
-		// TODO: submit on final step
 	}
 
 	return (
 		<AppLayout breadcrumbs={breadcrumbs}>
 			<Head title={t('sub-projects.create.page_title')} />
-			<div className="flex flex-col gap-6 px-6 py-6">
+			<div className="flex w-full max-w-5xl flex-col gap-8 px-6 py-6">
 				<h1 className="text-slate-800">{t('sub-projects.create.heading')}</h1>
 
 				<CreateSubprojectStepper currentStep={currentStep} steps={STEPS} />
@@ -156,14 +178,21 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 				)}
 
 				{currentStep === 2 && (
-					<section aria-labelledby="step-heading" className="flex flex-col gap-4">
-						<h2 id="step-heading" className="page-subtitle">
-							{t('sub-projects.create.step_configurations')}
-						</h2>
-						<p className="text-slate-500">
-							{t('sub-projects.create.config_coming_soon')}
-						</p>
-					</section>
+					<ConfigurationStep
+						priority={priority}
+						dateRange={dateRange}
+						minAnnotationsEnabled={minAnnotationsEnabled}
+						minAnnotations={minAnnotations}
+						annotatorCount={selectedAnnotatorIds.size}
+						flexibleBrowsing={flexibleBrowsing}
+						submissionMode={submissionMode}
+						onPriorityChange={setPriority}
+						onDateRangeChange={setDateRange}
+						onMinAnnotationsEnabledChange={setMinAnnotationsEnabled}
+						onMinAnnotationsChange={setMinAnnotations}
+						onFlexibleBrowsingChange={setFlexibleBrowsing}
+						onSubmissionModeChange={setSubmissionMode}
+					/>
 				)}
 
 				{/* Action bar */}
@@ -187,10 +216,35 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 						className="hover:bg-brand-blue-800 bg-brand-blue-700 text-white"
 						onClick={handleNext}
 					>
-						{t('sub-projects.create.next')}
+						{currentStep === STEPS.length - 1
+							? t('sub-projects.create.create_action')
+							: t('sub-projects.create.next')}
 						<ChevronRight className="size-4" aria-hidden="true" />
 					</Button>
 				</div>
+
+				<ProjectDialog
+					open={confirmOpen}
+					onClose={() => setConfirmOpen(false)}
+					icon={<FolderDot />}
+					title={t('sub-projects.create.heading')}
+					description={t('sub-projects.create.dialog_description')}
+					cancelLabel={t('sub-projects.create.back')}
+					actionLabel={t('sub-projects.create.create_action')}
+					onAction={() => {
+						setConfirmOpen(false);
+						// TODO: submit with subprojectName
+					}}
+				>
+					<Input
+						type="text"
+						value={subprojectName}
+						onChange={(e) => setSubprojectName(e.target.value)}
+						placeholder={t('sub-projects.create.dialog_name_placeholder')}
+						className="mb-12 h-10 bg-white px-3 py-3"
+						aria-label={t('sub-projects.create.dialog_description')}
+					/>
+				</ProjectDialog>
 			</div>
 		</AppLayout>
 	);
