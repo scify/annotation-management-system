@@ -10,7 +10,11 @@ use App\Models\User;
 
 class UserPolicy {
     public function viewAny(User $user): bool {
-        return $user->hasRole(RolesEnum::ADMIN) || $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+
+        return $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
     }
 
     public function view(User $user, User $model): bool {

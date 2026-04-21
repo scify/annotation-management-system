@@ -73,4 +73,10 @@ class DashboardService {
                 ];
             });
     }
+
+    /*private function getProjectsList(): array {
+        return [
+            '1' => 'test',
+        ];
+    }*/
 }

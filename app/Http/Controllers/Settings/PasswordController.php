@@ -18,8 +18,7 @@ class PasswordController extends Controller {
      * Show the user's password settings page.
      */
     public function edit(Request $request): Response|RedirectResponse {
-        /** @var User $user */
-        $user = $request->user();
+        $request->user();
 
         return Inertia::render('settings/password', [
             'status' => $request->session()->get('status'),
