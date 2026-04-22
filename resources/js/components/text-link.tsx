@@ -7,6 +7,8 @@ interface TextLinkProps {
 	href: string;
 	children: React.ReactNode;
 	className?: string;
+	/** Force opening in a new tab. When omitted, inferred from the href (http/protocol-relative). */
+	openInNewTab?: boolean;
 	// MouseEventHandler<Element> is compatible with both <a> and Inertia's <Link> onClick types
 	onClick?: React.MouseEventHandler;
 	id?: string;
@@ -17,8 +19,14 @@ interface TextLinkProps {
 	tabIndex?: number;
 }
 
-export default function TextLink({ href, children, className, ...props }: TextLinkProps) {
-	const isExternal = href.startsWith('http') || href.startsWith('//');
+export default function TextLink({
+	href,
+	children,
+	className,
+	openInNewTab,
+	...props
+}: TextLinkProps) {
+	const isExternal = openInNewTab ?? (href.startsWith('http') || href.startsWith('//'));
 
 	const classes = cn('text-primary underline-offset-4 hover:underline', className);
 

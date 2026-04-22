@@ -61,7 +61,7 @@ export default function ForgotPassword({ status }: Readonly<{ status?: string }>
 
 				<div className="text-muted-foreground space-x-1 text-center text-sm">
 					<span>{t('auth.forgot_password.return_to_login')}</span>
-					<TextLink href={route('login')}>
+					<TextLink href={route('login')} openInNewTab={false}>
 						{t('auth.forgot_password.login_link')}
 					</TextLink>
 				</div>

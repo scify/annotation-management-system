@@ -185,6 +185,7 @@ export default function Login({
 									{canResetPassword && (
 										<TextLink
 											href={route('password.request')}
+											openInNewTab={false}
 											className="ml-0 text-sm"
 										>
 											{t('auth.login.forgot_password')}

@@ -36,7 +36,11 @@ export default function VerifyEmail({ status }: Readonly<{ status?: string }>) {
 					{t('auth.verify_email.resend_button')}
 				</Button>
 
-				<TextLink href={route('logout')} className="mx-auto block text-sm">
+				<TextLink
+					href={route('logout')}
+					openInNewTab={false}
+					className="mx-auto block text-sm"
+				>
 					{t('auth.verify_email.logout_link')}
 				</TextLink>
 			</form>
