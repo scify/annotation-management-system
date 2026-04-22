@@ -20,11 +20,11 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
 			href: '/settings/password',
 			icon: null,
 		},
-		{
-			title: t('settings.appearance.title'),
-			href: '/settings/appearance',
-			icon: null,
-		},
+		// {
+		// 	title: t('settings.appearance.title'),
+		// 	href: '/settings/appearance',
+		// 	icon: null,
+		// },
 	];
 
 	// When server-side rendering, we only render the layout on the client...

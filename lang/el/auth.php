@@ -16,8 +16,8 @@ return [
     */
     'login' => [
         'title' => 'Συνδεθείτε στο Annotation Management System',
-        'description' => 'Εισάγετε το email και τον κωδικό σας παρακάτω για να συνδεθείτε',
-        'email' => 'Διεύθυνση email',
+        'description' => 'Εισάγετε το όνομα χρήστη και τον κωδικό σας παρακάτω για να συνδεθείτε',
+        'username' => 'Όνομα χρήστη',
         'password' => 'Κωδικός',
         'remember' => 'Να με θυμάσαι',
         'forgot_password' => 'Ξεχάσατε τον κωδικό σας;',

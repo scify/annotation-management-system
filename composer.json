@@ -86,8 +86,8 @@
 			"npx npm-check-updates -u"
 		],
 		"lint": [
-			"lint:backend",
-			"lint:frontend"
+			"composer lint:backend",
+			"composer lint:frontend"
 		],
 		"lint:backend": [
 			"rector",

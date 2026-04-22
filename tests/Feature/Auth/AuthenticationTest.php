@@ -32,7 +32,7 @@ test('users can authenticate using the login screen', function (): void {
     // Then attempt login with the token
     $response = $this->withSession(['_token' => csrf_token()])
         ->post($this->loginRoute, [
-            'email' => $user->email,
+            'username' => $user->username,
             'password' => 'password',
             '_token' => csrf_token(),
             'captcha' => 'test',
@@ -49,7 +49,7 @@ test('users can not authenticate with invalid password', function (): void {
     $user = User::factory()->create();
 
     $response = $this->post($this->loginRoute, [
-        'email' => $user->email,
+        'username' => $user->username,
         'password' => 'wrong-password',
         '_token' => csrf_token(),
         'captcha' => 'test',

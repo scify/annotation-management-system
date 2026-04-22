@@ -38,8 +38,8 @@ function Checkbox({
                 checked={checked}
                 defaultChecked={defaultChecked}
                 onChange={handleChange}
-                // peer + sr-only: invisible but still focusable/clickable
-                className={cn('peer sr-only', className)}
+                // transparent overlay sized to the parent span so the full visual area is clickable
+                className={cn('peer absolute inset-0 m-0 size-full cursor-pointer opacity-0', className)}
                 {...props}
             />
             {/* Visual indicator — peer-checked:* applies when the sibling input is checked.

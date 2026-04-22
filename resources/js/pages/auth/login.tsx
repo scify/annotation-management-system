@@ -12,7 +12,7 @@ import AuthLayout from '@/layouts/auth-layout';
 import { useTranslations } from '@/hooks/use-translations';
 
 type LoginForm = {
-	email: string;
+	username: string;
 	password: string;
 	remember: boolean;
 	captcha?: string;
@@ -38,7 +38,7 @@ export default function Login({
 	}, []);
 
 	const form = useForm<Required<LoginForm>>({
-		email: '',
+		username: '',
 		password: '',
 		remember: false,
 		captcha: '',
@@ -48,7 +48,7 @@ export default function Login({
 	const reset = (...args: Parameters<typeof form.reset>) => form.reset(...args);
 
 	const { errors: pageErrors } = usePage().props as {
-		errors: { email?: string; login?: string; captcha?: string };
+		errors: { username?: string; login?: string; captcha?: string };
 	};
 	const { t } = useTranslations();
 	const [altchaError, setAltchaError] = useState<string>('');
@@ -153,18 +153,18 @@ export default function Login({
 
 						<div className="grid gap-6">
 							<div className="grid gap-2">
-								<Label htmlFor="email">{t('auth.login.email')}</Label>
+								<Label htmlFor="username">{t('auth.login.username')}</Label>
 								<Input
-									id="email"
-									type="email"
+									id="username"
+									type="text"
 									required
 									autoFocus
-									autoComplete="email"
-									value={data.email}
-									onChange={(e) => setData('email', e.target.value)}
-									placeholder="email@example.com"
+									autoComplete="username"
+									value={data.username}
+									onChange={(e) => setData('username', e.target.value)}
+									placeholder={t('auth.login.username')}
 								/>
-								<InputError message={pageErrors.email} />
+								<InputError message={pageErrors.username} />
 							</div>
 
 							<div className="grid gap-2">
@@ -198,7 +198,7 @@ export default function Login({
 									id="remember"
 									name="remember"
 									checked={data.remember}
-									onClick={() => setData('remember', !data.remember)}
+									onCheckedChange={(checked) => setData('remember', checked)}
 								/>
 								<Label htmlFor="remember">{t('auth.login.remember')}</Label>
 							</div>

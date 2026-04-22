@@ -23,11 +23,11 @@ describe('Authentication', function (): void {
         $page = visit('/login');
         $page->assertNoJavascriptErrors();
 
-        $page->type('email', $user->email)
+        $page->type('username', $user->username)
             ->type('password', 'password');
 
-        $emailValue = $page->script("document.getElementById('email')?.value ?? 'NOT FOUND'");
-        expect($emailValue)->toBe($user->email, 'email input was not filled');
+        $usernameValue = $page->script("document.getElementById('username')?.value ?? 'NOT FOUND'");
+        expect($usernameValue)->toBe($user->username, 'username input was not filled');
 
         // script() returns the JS evaluation result, not $this — call it separately.
         // wait(0.1) lets React flush the captcha state update before pressing.
@@ -47,13 +47,12 @@ describe('Authentication', function (): void {
     });
 
     it('stays on the login page after invalid credentials', function (): void {
-        User::factory()->create([
-            'email' => 'user@example.com',
+        $user = User::factory()->create([
             'password' => Hash::make('correct-password'),
         ])->assignRole(RolesEnum::ADMIN);
 
         $page = visit('/login')
-            ->type('email', 'user@example.com')
+            ->type('username', $user->username)
             ->type('password', 'wrong-password');
 
         $page->script("
