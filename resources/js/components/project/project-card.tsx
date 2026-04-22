@@ -165,7 +165,7 @@ export function ProjectCard({ project }: { project: ProjectCardData }) {
 
 				{/* View Project */}
 				<Link href={route('projects.show', project.id)}>
-					<Button className="hover:bg-brand-blue-800 h-10 w-full font-semibold text-white">
+					<Button className="hover:bg-brand-blue-800 h-10 font-semibold text-white">
 						{t('projects.card.view_project')}
 					</Button>
 				</Link>
