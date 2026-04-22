@@ -1,3 +1,7 @@
+import {
+	ProjectActiveFilters,
+	type ActiveFilterTag,
+} from '@/components/project/project-active-filters';
 import { type ProjectCardData } from '@/components/project/project-card';
 import {
 	ProjectFilterPanel,
@@ -5,7 +9,11 @@ import {
 	type FilterSectionKey,
 } from '@/components/project/project-filter-panel';
 import { ProjectList } from '@/components/project/project-list';
-import { ProjectSortPanel, type SortOption } from '@/components/project/project-sort-panel';
+import {
+	ProjectSortPanel,
+	DEFAULT_SORT_STATE,
+	type SortState,
+} from '@/components/project/project-sort-panel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
@@ -117,7 +125,7 @@ export default function ProjectsIndex({ projects }: Props) {
 
 	const [searchQuery, setSearchQuery] = useState('');
 	const [filters, setFilters] = useState<FilterState>({ tasks: [], datasets: [], states: [] });
-	const [sortOption, setSortOption] = useState<SortOption>(null);
+	const [sortState, setSortState] = useState<SortState>(DEFAULT_SORT_STATE);
 
 	const filterSections = useMemo(
 		() => [
@@ -159,6 +167,70 @@ export default function ProjectsIndex({ projects }: Props) {
 	const hasActiveFilters =
 		filters.tasks.length > 0 || filters.datasets.length > 0 || filters.states.length > 0;
 
+	const activeTags = useMemo((): ActiveFilterTag[] => {
+		const tags: ActiveFilterTag[] = [];
+		const is = t('projects.filter_tag_is');
+
+		if (filters.tasks.length > 0)
+			tags.push({
+				id: 'task',
+				label: `${t('projects.filter_task_section')} ${is} (${filters.tasks.length})`,
+				value: filters.tasks.join(', '),
+				onRemove: () => setFilters((prev) => ({ ...prev, tasks: [] })),
+			});
+
+		if (filters.datasets.length > 0)
+			tags.push({
+				id: 'dataset',
+				label: `${t('projects.filter_dataset_section')} ${is} (${filters.datasets.length})`,
+				value: filters.datasets.join(', '),
+				onRemove: () => setFilters((prev) => ({ ...prev, datasets: [] })),
+			});
+
+		if (filters.states.length > 0)
+			tags.push({
+				id: 'state',
+				label: `${t('projects.filter_state_section')} ${is} (${filters.states.length})`,
+				value: filters.states.join(', '),
+				onRemove: () => setFilters((prev) => ({ ...prev, states: [] })),
+			});
+
+		if (sortState.progress !== '')
+			tags.push({
+				id: 'sort-progress',
+				label: t('projects.sort_progress_section'),
+				value:
+					sortState.progress === 'ascending'
+						? t('projects.sort_ascending')
+						: t('projects.sort_descending'),
+				onRemove: () => setSortState((prev) => ({ ...prev, progress: '' })),
+			});
+
+		if (sortState.dateCreated !== '')
+			tags.push({
+				id: 'sort-date-created',
+				label: t('projects.sort_date_created_section'),
+				value:
+					sortState.dateCreated === 'recent_first'
+						? t('projects.sort_recent_first')
+						: t('projects.sort_older_first'),
+				onRemove: () => setSortState((prev) => ({ ...prev, dateCreated: '' })),
+			});
+
+		if (sortState.dueDate !== '')
+			tags.push({
+				id: 'sort-due-date',
+				label: t('projects.sort_due_date_section'),
+				value:
+					sortState.dueDate === 'recent_first'
+						? t('projects.sort_recent_first')
+						: t('projects.sort_older_first'),
+				onRemove: () => setSortState((prev) => ({ ...prev, dueDate: '' })),
+			});
+
+		return tags;
+	}, [filters, sortState, t]);
+
 	const displayedProjects = useMemo(() => {
 		let result = allProjects;
 
@@ -176,23 +248,33 @@ export default function ProjectsIndex({ projects }: Props) {
 			result = result.filter((p) => filters.states.includes(p.statusLabel));
 		}
 
-		if (sortOption) {
+		const hasSort =
+			sortState.progress !== '' || sortState.dateCreated !== '' || sortState.dueDate !== '';
+
+		if (hasSort) {
 			result = [...result].sort((a, b) => {
-				switch (sortOption) {
-					case 'name_asc':
-						return a.name.localeCompare(b.name);
-					case 'name_desc':
-						return b.name.localeCompare(a.name);
-					case 'progress_high':
-						return b.progress - a.progress;
-					case 'progress_low':
-						return a.progress - b.progress;
+				if (sortState.progress !== '') {
+					const diff = a.progress - b.progress;
+					if (diff !== 0) return sortState.progress === 'ascending' ? diff : -diff;
 				}
+				if (sortState.dateCreated !== '') {
+					const aDate = new Date(a.dateRange.split('–')[0].trim());
+					const bDate = new Date(b.dateRange.split('–')[0].trim());
+					const diff = aDate.getTime() - bDate.getTime();
+					if (diff !== 0) return sortState.dateCreated === 'recent_first' ? -diff : diff;
+				}
+				if (sortState.dueDate !== '') {
+					const aDate = new Date(a.dateRange.split('–')[1].trim());
+					const bDate = new Date(b.dateRange.split('–')[1].trim());
+					const diff = aDate.getTime() - bDate.getTime();
+					if (diff !== 0) return sortState.dueDate === 'recent_first' ? -diff : diff;
+				}
+				return 0;
 			});
 		}
 
 		return result;
-	}, [allProjects, searchQuery, filters, sortOption]);
+	}, [allProjects, searchQuery, filters, sortState]);
 
 	return (
 		<AppLayout breadcrumbs={breadcrumbs}>
@@ -218,11 +300,22 @@ export default function ProjectsIndex({ projects }: Props) {
 							onClear={clearFilters}
 							hasActiveFilters={hasActiveFilters}
 						/>
-						<ProjectSortPanel value={sortOption} onChange={setSortOption} />
+						<ProjectSortPanel
+							state={sortState}
+							onChange={setSortState}
+							hasActiveSort={
+								sortState.progress !== '' ||
+								sortState.dateCreated !== '' ||
+								sortState.dueDate !== ''
+							}
+							onClear={() => setSortState(DEFAULT_SORT_STATE)}
+						/>
 					</div>
 
-					{/* Right: count + search + project list */}
+					{/* Right: active tags + count + search + project list */}
 					<div className="flex min-w-0 flex-1 flex-col gap-4">
+						<ProjectActiveFilters tags={activeTags} />
+
 						<div className="flex items-center justify-between gap-4">
 							<p className="text-base font-medium text-slate-800">
 								{trans('projects.projects_count', {

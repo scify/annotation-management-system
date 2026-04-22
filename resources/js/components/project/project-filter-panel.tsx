@@ -57,6 +57,10 @@ export function ProjectFilterPanel({
 		return q ? section.items.filter((item) => item.toLowerCase().includes(q)) : section.items;
 	};
 
+	const activeCount = Object.values(selected).reduce((sum, arr) => sum + arr.length, 0);
+	const triggerLabel =
+		activeCount > 0 ? `${t('projects.filter')} (${activeCount})` : t('projects.filter');
+
 	return (
 		<div ref={wrapperRef} className="relative">
 			<button
@@ -65,8 +69,9 @@ export function ProjectFilterPanel({
 				aria-expanded={isOpen}
 				aria-haspopup="true"
 				className={cn(
-					'flex h-10 w-full items-center justify-between rounded-lg border bg-white px-4 text-sm font-medium text-slate-800 transition-colors hover:bg-slate-50',
-					isOpen || hasActiveFilters ? 'border-brand-blue-500' : 'border-slate-200'
+					'flex h-10 w-full items-center justify-between rounded-lg border bg-white px-4 text-sm transition-colors hover:bg-slate-50',
+					isOpen || hasActiveFilters ? 'border-brand-blue-500' : 'border-slate-200',
+					hasActiveFilters ? 'font-semibold text-slate-800' : 'font-medium text-slate-800'
 				)}
 			>
 				<span className="flex items-center gap-2">
@@ -74,7 +79,7 @@ export function ProjectFilterPanel({
 						className="size-[18px] shrink-0 text-slate-600"
 						aria-hidden="true"
 					/>
-					{t('projects.filter')}
+					{triggerLabel}
 				</span>
 				<ChevronDown
 					className={cn(
@@ -89,7 +94,7 @@ export function ProjectFilterPanel({
 				type="button"
 				onClick={onClear}
 				disabled={!hasActiveFilters}
-				className="enabled:bg-brand-yellow-400 enabled:text-brand-blue-700 enabled:hover:bg-brand-yellow-300 mt-3 h-10 w-full rounded-lg text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-white"
+				className="enabled:bg-brand-yellow-400 enabled:text-brand-blue-700 enabled:hover:bg-brand-yellow-300 mt-3 h-10 w-full rounded-lg text-sm font-semibold transition-colors hover:cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-white"
 			>
 				{t('projects.filter_clear')}
 			</button>
@@ -128,25 +133,27 @@ export function ProjectFilterPanel({
 							<div role="group" aria-label={section.label}>
 								{visibleItems(section).map((item) => {
 									const checked = selected[section.key].includes(item);
+									const id = `filter-${section.key}-${item}`;
 									return (
-										<label
+										<div
 											key={item}
-											className="flex min-h-[40px] cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-slate-50"
+											className="flex min-h-[40px] items-center gap-2 rounded px-2 py-1.5 hover:bg-slate-50"
 										>
 											<Checkbox
+												id={id}
 												checked={checked}
 												onCheckedChange={() => onToggle(section.key, item)}
-												aria-label={item}
 											/>
-											<span
+											<label
+												htmlFor={id}
 												className={cn(
-													'min-w-0 flex-1 truncate text-base text-slate-800',
+													'min-w-0 flex-1 cursor-pointer truncate text-base text-slate-800 select-none',
 													checked ? 'font-semibold' : 'font-normal'
 												)}
 											>
 												{item}
-											</span>
-										</label>
+											</label>
+										</div>
 									);
 								})}
 							</div>
