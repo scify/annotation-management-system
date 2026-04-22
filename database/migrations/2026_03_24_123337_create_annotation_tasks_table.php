@@ -17,6 +17,7 @@ return new class() extends Migration {
             $table->text('description')->nullable();
             $table->string('guidelines_url')->nullable();
             $table->unsignedTinyInteger('weight');
+            $table->json('customization_options')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

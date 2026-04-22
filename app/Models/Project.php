@@ -24,8 +24,11 @@ use Illuminate\Support\Facades\Date;
  * @property int $annotation_task_id
  * @property int $dataset_id
  * @property ProjectStatusEnum $status
+ * @property bool $restricted_visibility
  * @property Carbon|null $scheduled_at
  * @property Carbon|null $deadline_at
+ * @property Carbon|null $started_at
+ * @property Carbon|null $completed_at
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
  * @property-read Carbon|null $deleted_at
@@ -34,7 +37,8 @@ use Illuminate\Support\Facades\Date;
  * @property-read Dataset $dataset
  * @property-read Collection<int, SubProject> $subProjects
  * @property-read Collection<int, User> $managers
- * @property-read bool $is_delayed
+ * @property-read bool $is_delayed_to_start
+ * @property-read bool $is_delayed_to_end
  */
 class Project extends Model {
     /** @use HasFactory<ProjectFactory> */
@@ -45,7 +49,7 @@ class Project extends Model {
     /**
      * @var list<string>
      */
-    protected $appends = ['is_delayed'];
+    protected $appends = ['is_delayed_to_start', 'is_delayed_to_end'];
 
     /**
      * @var list<string>
@@ -57,8 +61,11 @@ class Project extends Model {
         'annotation_task_id',
         'dataset_id',
         'status',
+        'restricted_visibility',
         'scheduled_at',
         'deadline_at',
+        'started_at',
+        'completed_at',
     ];
 
     public function owner(): BelongsTo {
@@ -83,18 +90,29 @@ class Project extends Model {
             ->withTimestamps();
     }
 
-    protected function getIsDelayedAttribute(): bool {
+    /**
+     * @return array<string, string|class-string>
+     */
+    protected function casts(): array {
+        return [
+            'status' => ProjectStatusEnum::class,
+            'restricted_visibility' => 'boolean',
+            'scheduled_at' => 'datetime',
+            'deadline_at' => 'datetime',
+            'started_at' => 'datetime',
+            'completed_at' => 'datetime',
+        ];
+    }
+
+    protected function getIsDelayedToStartAttribute(): bool {
         $now = Date::now();
-        $delayed_to_start = false;
-        if ($this->scheduled_at !== null && $now->gt($this->scheduled_at) && $this->status === ProjectStatusEnum::PENDING) {
-            $delayed_to_start = true;
-        }
 
-        $delayed_to_end = false;
-        if ($this->deadline_at !== null && $now->gt($this->deadline_at) && $this->status !== ProjectStatusEnum::COMPLETED) {
-            $delayed_to_end = true;
-        }
+        return $this->scheduled_at !== null && $now->gt($this->scheduled_at) && $this->status === ProjectStatusEnum::PENDING;
+    }
 
-        return $delayed_to_start || $delayed_to_end;
+    protected function getIsDelayedToEndAttribute(): bool {
+        $now = Date::now();
+
+        return $this->deadline_at !== null && $now->gt($this->deadline_at) && $this->status !== ProjectStatusEnum::COMPLETED;
     }
 }
