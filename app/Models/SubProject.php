@@ -67,8 +67,8 @@ class SubProject extends Model {
             'priority' => SubProjectPriorityEnum::class,
             'flexible' => 'boolean',
             'auto_submission' => 'boolean',
-            'scheduled_at' => 'datetime',
-            'deadline_at' => 'datetime',
+            'scheduled_at' => 'date',
+            'deadline_at' => 'date',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
         ];

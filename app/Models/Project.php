@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Date;
  * @property int $dataset_id
  * @property ProjectStatusEnum $status
  * @property bool $restricted_visibility
+ * @property array<int, array{id: int, answer: string}>|null $annotation_task_configuration
  * @property Carbon|null $scheduled_at
  * @property Carbon|null $deadline_at
  * @property Carbon|null $started_at
@@ -62,6 +63,7 @@ class Project extends Model {
         'dataset_id',
         'status',
         'restricted_visibility',
+        'annotation_task_configuration',
         'scheduled_at',
         'deadline_at',
         'started_at',
@@ -97,8 +99,9 @@ class Project extends Model {
         return [
             'status' => ProjectStatusEnum::class,
             'restricted_visibility' => 'boolean',
-            'scheduled_at' => 'datetime',
-            'deadline_at' => 'datetime',
+            'annotation_task_configuration' => 'array',
+            'scheduled_at' => 'date',
+            'deadline_at' => 'date',
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
         ];

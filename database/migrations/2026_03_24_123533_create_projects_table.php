@@ -20,11 +20,12 @@ return new class() extends Migration {
             $table->foreignId('annotation_task_id')->constrained('annotation_tasks')->cascadeOnDelete();
             $table->foreignId('dataset_id')->constrained('datasets')->cascadeOnDelete();
             $table->string('status')->default(ProjectStatusEnum::PENDING->value);
+            $table->boolean('restricted_visibility')->default(false);
+            $table->json('annotation_task_configuration')->nullable();
             $table->date('scheduled_at')->nullable();
             $table->date('deadline_at')->nullable();
             $table->dateTime('started_at')->nullable();
             $table->dateTime('completed_at')->nullable();
-            $table->boolean('restricted_visibility')->default(false);
             $table->timestamps();
             $table->softDeletes();
         });

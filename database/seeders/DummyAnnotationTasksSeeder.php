@@ -13,12 +13,14 @@ class DummyAnnotationTasksSeeder extends Seeder {
      */
     public function run(): void {
         $confidenceQuestion = [
+            'id' => 0,
             'question' => 'Do you want to allow the annotators to mark their confidence?',
             'answers' => ['Yes', 'No'],
             'parameters' => ['low', 'medium', 'high'],
         ];
 
         $notSureQuestion = [
+            'id' => 1,
             'question' => 'Do you want to allow the answer "I am not sure"?',
             'answers' => ['Yes', 'No'],
             'parameters' => ['Not sure'],

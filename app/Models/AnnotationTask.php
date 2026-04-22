@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $description
  * @property string|null $guidelines_url
  * @property int $weight
- * @property array<string, mixed>|null $customization_options
+ * @property array<int, array{id: int, question: string, answers: list<string>, parameters: list<string>}>|null $customization_options
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
  * @property-read Carbon|null $deleted_at
