@@ -6,6 +6,18 @@ return [
     'title' => 'Έργα',
     'create_button' => 'Δημιουργία Έργου',
     'filter' => 'Φίλτρο',
+    'filter_clear' => 'Καθαρισμός',
+    'filter_task_section' => 'Εργασία',
+    'filter_dataset_section' => 'Σύνολο δεδομένων',
+    'filter_state_section' => 'Κατάσταση',
+    'filter_search' => 'Αναζήτηση',
+    'sort_button' => 'Ταξινόμηση',
+    'sort_name_asc' => 'Όνομα Α → Ω',
+    'sort_name_desc' => 'Όνομα Ω → Α',
+    'sort_progress_high' => 'Πρόοδος Υψηλή → Χαμηλή',
+    'sort_progress_low' => 'Πρόοδος Χαμηλή → Υψηλή',
+    'projects_count' => ':count Έργα',
+    'search_placeholder' => 'Αναζήτηση Έργων…',
 
     'card' => [
         'overall_progress' => 'Συνολική Πρόοδος',

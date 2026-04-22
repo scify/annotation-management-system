@@ -6,6 +6,18 @@ return [
     'title' => 'Projects',
     'create_button' => 'Create Project',
     'filter' => 'Filter',
+    'filter_clear' => 'Clear all',
+    'filter_task_section' => 'Task',
+    'filter_dataset_section' => 'Dataset',
+    'filter_state_section' => 'State',
+    'filter_search' => 'Search',
+    'sort_button' => 'Sorting',
+    'sort_name_asc' => 'Name A → Z',
+    'sort_name_desc' => 'Name Z → A',
+    'sort_progress_high' => 'Progress High → Low',
+    'sort_progress_low' => 'Progress Low → High',
+    'projects_count' => ':count Projects',
+    'search_placeholder' => 'Search Projects…',
 
     'card' => [
         'overall_progress' => 'Overall Progress',
