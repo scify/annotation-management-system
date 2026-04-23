@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -283,7 +283,10 @@ export default function ProjectsIndex({ projects }: Props) {
 				{/* Page header */}
 				<div className="flex items-center justify-between">
 					<h1 className="text-slate-800">{t('projects.title')}</h1>
-					<Button className="hover:bg-brand-blue-800 h-10 font-semibold text-white">
+					<Button
+						className="hover:bg-brand-blue-800 bg-brand-blue-700 h-10 font-semibold text-white"
+						onClick={() => router.visit(route('projects.create'))}
+					>
 						<Plus className="size-4" aria-hidden="true" />
 						{t('projects.create_button')}
 					</Button>

@@ -12,6 +12,10 @@ class ProjectController extends Controller {
         return Inertia::render('projects/index');
     }
 
+    public function create(): Response {
+        return Inertia::render('projects/create');
+    }
+
     public function show(int $id): Response {
         return Inertia::render('projects/show');
     }

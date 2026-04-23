@@ -10,11 +10,17 @@ interface CreateSubprojectStepperProps {
 	/** 0-indexed current step */
 	currentStep: number;
 	steps: CreateSubprojectStep[];
+	/** Accessible label for the nav landmark */
+	ariaLabel?: string;
 }
 
-export function CreateSubprojectStepper({ currentStep, steps }: CreateSubprojectStepperProps) {
+export function CreateSubprojectStepper({
+	currentStep,
+	steps,
+	ariaLabel = 'Create subproject progress',
+}: CreateSubprojectStepperProps) {
 	return (
-		<nav aria-label="Create subproject progress" className="mb-4 flex items-start">
+		<nav aria-label={ariaLabel} className="mb-4 flex items-center">
 			{steps.map((step, index) => {
 				const isActive = index === currentStep;
 				const isCompleted = index < currentStep;
@@ -25,16 +31,16 @@ export function CreateSubprojectStepper({ currentStep, steps }: CreateSubproject
 							<div
 								aria-hidden="true"
 								className={cn(
-									'mt-5 h-px flex-1',
+									'h-px flex-1',
 									isCompleted ? 'bg-brand-blue-700' : 'bg-slate-300'
 								)}
 							/>
 						)}
-						<div className="flex flex-col items-center gap-1.5">
+						<div className="flex items-center gap-2">
 							<div
 								aria-current={isActive ? 'step' : undefined}
 								className={cn(
-									'border-brand-blue-700 flex size-10 items-center justify-center rounded-full border',
+									'border-brand-blue-700 flex size-10 shrink-0 items-center justify-center rounded-full border',
 									isCompleted && 'bg-brand-blue-800',
 									isActive && 'bg-brand-blue-100',
 									!isActive && !isCompleted && 'bg-white'
@@ -50,7 +56,7 @@ export function CreateSubprojectStepper({ currentStep, steps }: CreateSubproject
 							</div>
 							<span
 								className={cn(
-									'max-w-[120px] text-center text-xs text-slate-800',
+									'text-sm whitespace-nowrap text-slate-800',
 									isActive || isCompleted ? 'font-semibold' : 'font-normal'
 								)}
 							>
