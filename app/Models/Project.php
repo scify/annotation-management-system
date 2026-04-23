@@ -70,22 +70,37 @@ class Project extends Model {
         'completed_at',
     ];
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function owner(): BelongsTo {
         return $this->belongsTo(User::class, 'owner_user_id');
     }
 
+    /**
+     * @return BelongsTo<AnnotationTask, $this>
+     */
     public function annotationTask(): BelongsTo {
         return $this->belongsTo(AnnotationTask::class);
     }
 
+    /**
+     * @return BelongsTo<Dataset, $this>
+     */
     public function dataset(): BelongsTo {
         return $this->belongsTo(Dataset::class);
     }
 
+    /**
+     * @return HasMany<SubProject, $this>
+     */
     public function subProjects(): HasMany {
         return $this->hasMany(SubProject::class);
     }
 
+    /**
+     * @return BelongsToMany<User, $this>
+     */
     public function managers(): BelongsToMany {
         return $this->belongsToMany(User::class, 'project_user')
             ->withPivot('role')

@@ -19,6 +19,9 @@ class Dataset extends Model {
         'is_available',
     ];
 
+    /**
+     * @return BelongsToMany<AnnotationTask, $this>
+     */
     protected function connectedAnnotationTasks(): BelongsToMany {
         return $this->belongsToMany(AnnotationTask::class, 'dataset_annotation_tasks', 'dataset_id', 'annotation_task_id');
     }
