@@ -15,10 +15,8 @@ class AnnotationAssignment extends Model {
     protected $fillable = [
         'user_id',
         'sub_project_id',
-        'indexes_array',
+        'shuffling_array',
     ];
 
-    protected $casts = [
-        'indexes_array' => 'array',
-    ];
+    protected $casts = [];
 }

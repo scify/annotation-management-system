@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace App\Services\User;
 
+use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
+use App\Models\Annotation;
+use App\Models\AnnotationAssignment;
+use App\Models\SubProject;
 use App\Models\User;
 use Illuminate\Support\Collection;
 
@@ -43,6 +47,51 @@ class UserService {
         $user->restore();
 
         return $user;
+    }
+
+    public function getWorkload(User $user): ?float {
+        if (! $user->hasRole(RolesEnum::ANNOTATOR)) {
+            return null;
+        }
+
+        $subProjects = SubProject::query()
+            ->where('status', ProjectStatusEnum::IN_PROGRESS)
+            ->whereIn('id', function ($query) use ($user): void {
+                $query->select('sub_project_id')
+                    ->from('annotation_assignments')
+                    ->where('user_id', $user->id);
+            })
+            ->with('project.annotationTask')
+            ->get();
+
+        $annotationAssignments = AnnotationAssignment::query()
+            ->where('user_id', $user->id)
+            ->whereIn('sub_project_id', $subProjects->pluck('id'))
+            ->get();
+
+        $annotationCountsByAssignment = Annotation::query()
+            ->whereIn('annotation_assignment_id', $annotationAssignments->pluck('id'))
+            ->selectRaw('annotation_assignment_id, COUNT(*) as count')
+            ->groupBy('annotation_assignment_id')
+            ->pluck('count', 'annotation_assignment_id');
+
+        $assignmentsBySubProject = $annotationAssignments->keyBy('sub_project_id');
+
+        $sum_of_effort = 0.0;
+        $sum_of_work_done = 0.0;
+        foreach ($subProjects as $subProject) {
+            /** @var SubProject $subProject */
+            $weight = $subProject->project->annotationTask->weight;
+            $effort = ($subProject->last_instance_index - $subProject->first_instance_index) * $weight;
+            $sum_of_effort += $effort;
+            $assignment = $assignmentsBySubProject->get($subProject->id);
+            $work_done = $assignment instanceof AnnotationAssignment
+                ? (int) $annotationCountsByAssignment->get($assignment->getKey(), 0)
+                : 0;
+            $sum_of_work_done += $work_done * $weight;
+        }
+
+        return 0.0;
     }
 
     public function findByEmail(string $email): ?User {

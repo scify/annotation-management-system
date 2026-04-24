@@ -21,6 +21,7 @@ return new class() extends Migration {
             $table->foreignId('dataset_id')->constrained('datasets')->cascadeOnDelete();
             $table->string('status')->default(ProjectStatusEnum::PENDING->value);
             $table->boolean('restricted_visibility')->default(false);
+            $table->boolean('is_instance_shuffled')->default(false);
             $table->json('annotation_task_configuration')->nullable();
             $table->date('scheduled_at')->nullable();
             $table->date('deadline_at')->nullable();

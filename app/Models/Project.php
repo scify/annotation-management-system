@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Date;
  * @property int $dataset_id
  * @property ProjectStatusEnum $status
  * @property bool $restricted_visibility
+ * @property bool $is_instance_shuffled
  * @property array<int, array{id: int, answer: string}>|null $annotation_task_configuration
  * @property Carbon|null $scheduled_at
  * @property Carbon|null $deadline_at
@@ -63,6 +64,7 @@ class Project extends Model {
         'dataset_id',
         'status',
         'restricted_visibility',
+        'is_instance_shuffled',
         'annotation_task_configuration',
         'scheduled_at',
         'deadline_at',
@@ -114,6 +116,7 @@ class Project extends Model {
         return [
             'status' => ProjectStatusEnum::class,
             'restricted_visibility' => 'boolean',
+            'is_instance_shuffled' => 'boolean',
             'annotation_task_configuration' => 'array',
             'scheduled_at' => 'date',
             'deadline_at' => 'date',

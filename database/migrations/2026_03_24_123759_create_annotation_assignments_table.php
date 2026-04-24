@@ -15,7 +15,7 @@ return new class() extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('sub_project_id')->constrained('sub_projects')->cascadeOnDelete();
-            $table->json('indexes_array');
+            $table->json('shuffling_array')->nullable();
             $table->timestamps();
         });
     }
