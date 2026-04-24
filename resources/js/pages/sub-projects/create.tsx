@@ -6,7 +6,7 @@ import {
 	type SubmissionMode,
 } from '@/components/sub-project/configuration-step';
 import { CreateSubprojectStepper } from '@/components/sub-project/create-subproject-stepper';
-import { SelectAnnotatorsStep } from '@/components/sub-project/select-annotators-step';
+import { SelectAnnotatorsStep } from '@/components/annotator/select-annotators-step';
 import { SelectDatasetSubsetStep } from '@/components/sub-project/select-dataset-subset-step';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

@@ -117,6 +117,20 @@ return [
         'dialog_name_placeholder' => 'Project name…',
     ],
 
+    'select_annotators' => [
+        'heading' => 'Select Annotators',
+        'selected_count' => ':count selected',
+        'sort_by_name' => 'Sort by Name',
+        'sort_by_workload' => 'Sort by Workload',
+        'sort_asc_name' => 'A → Z',
+        'sort_desc_name' => 'Z → A',
+        'sort_asc_workload' => 'Low → High',
+        'sort_desc_workload' => 'High → Low',
+        'search_placeholder' => 'Search Annotators…',
+        'select_all' => 'Select all',
+        'min_one_required' => 'Select at least 1 annotator to continue.',
+    ],
+
     'select_task_type' => [
         'heading' => 'Select Task Type',
         'search_placeholder' => 'Search by tags…',

@@ -1,3 +1,5 @@
+import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
+import { SelectAnnotatorsStep } from '@/components/annotator/select-annotators-step';
 import { ProjectConfigurationStep } from '@/components/project/configuration-step';
 import { ProjectDialog } from '@/components/project/project-dialog';
 import { MOCK_TASK_TYPES, SelectTaskTypeStep } from '@/components/project/select-task-type-step';
@@ -11,8 +13,61 @@ import { Head, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, FolderDot } from 'lucide-react';
 import { useState } from 'react';
 
-export default function CreateProject() {
+const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
+	{
+		id: 1,
+		initials: 'G',
+		username: '@ggiannakopulos',
+		projects: 23,
+		subprojects: 23,
+		workload: 85,
+		progress: 75,
+	},
+	{
+		id: 2,
+		initials: 'N',
+		username: '@nellisavrani',
+		projects: 12,
+		subprojects: 4,
+		workload: 30,
+		progress: 75,
+	},
+	{
+		id: 3,
+		initials: 'P',
+		username: '@pisaris',
+		projects: 5,
+		subprojects: 10,
+		workload: 60,
+		progress: 40,
+	},
+	{
+		id: 4,
+		initials: 'A',
+		username: '@apapadopoulos',
+		projects: 8,
+		subprojects: 16,
+		workload: 50,
+		progress: 55,
+	},
+	{
+		id: 5,
+		initials: 'M',
+		username: '@mkonstantinou',
+		projects: 15,
+		subprojects: 30,
+		workload: 70,
+		progress: 90,
+	},
+];
+
+interface Props {
+	annotators?: ProjectAnnotatorRowData[];
+}
+
+export default function CreateProject({ annotators }: Props) {
 	const { t } = useTranslations();
+	const displayAnnotators = annotators ?? MOCK_ANNOTATORS;
 
 	const STEPS = [
 		{ label: t('projects.create.step_select_task_type') },
@@ -28,8 +83,26 @@ export default function CreateProject() {
 
 	const [currentStep, setCurrentStep] = useState(0);
 	const [selectedTaskTypeId, setSelectedTaskTypeId] = useState<number | null>(null);
+	const [selectedAnnotatorIds, setSelectedAnnotatorIds] = useState<Set<number>>(new Set());
 	const [confirmOpen, setConfirmOpen] = useState(false);
 	const [projectName, setProjectName] = useState('');
+
+	function handleSelectionChange(id: number, checked: boolean) {
+		setSelectedAnnotatorIds((prev) => {
+			const next = new Set(prev);
+			if (checked) next.add(id);
+			else next.delete(id);
+			return next;
+		});
+	}
+
+	function handleSelectAllChange(ids: number[], checked: boolean) {
+		setSelectedAnnotatorIds((prev) => {
+			const next = new Set(prev);
+			ids.forEach((id) => (checked ? next.add(id) : next.delete(id)));
+			return next;
+		});
+	}
 
 	// Step 2 — configuration state
 	const [selectedDatasetId, setSelectedDatasetId] = useState<number | null>(null);
@@ -50,7 +123,8 @@ export default function CreateProject() {
 
 	const isNextDisabled =
 		(currentStep === 0 && selectedTaskTypeId === null) ||
-		(currentStep === 1 && selectedDatasetId === null);
+		(currentStep === 1 && selectedDatasetId === null) ||
+		(currentStep === 2 && selectedAnnotatorIds.size === 0);
 
 	return (
 		<AppLayout breadcrumbs={breadcrumbs}>
@@ -87,7 +161,17 @@ export default function CreateProject() {
 					/>
 				)}
 
-				{currentStep > 1 && (
+				{currentStep === 2 && (
+					<SelectAnnotatorsStep
+						annotators={displayAnnotators}
+						selectedIds={selectedAnnotatorIds}
+						onSelectionChange={handleSelectionChange}
+						onSelectAllChange={handleSelectAllChange}
+						translationNamespace="projects"
+					/>
+				)}
+
+				{currentStep === 3 && (
 					<div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-slate-300 text-sm text-slate-400">
 						{STEPS[currentStep]?.label} — coming soon
 					</div>
@@ -103,6 +187,11 @@ export default function CreateProject() {
 					{currentStep === 1 && selectedDatasetId === null && (
 						<p role="alert" className="mr-auto text-sm text-slate-500">
 							{t('projects.configuration.min_one_dataset_required')}
+						</p>
+					)}
+					{currentStep === 2 && selectedAnnotatorIds.size === 0 && (
+						<p role="alert" className="mr-auto text-sm text-slate-500">
+							{t('projects.select_annotators.min_one_required')}
 						</p>
 					)}
 					<Button variant="outline" onClick={() => router.visit(route('projects.index'))}>
