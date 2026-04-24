@@ -15,5 +15,10 @@ class DatasetInstance extends Model {
     protected $fillable = [
         'index',
         'dataset_id',
+        'content',
+    ];
+
+    protected $casts = [
+        'content' => 'array',
     ];
 }

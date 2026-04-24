@@ -14,8 +14,10 @@ return new class() extends Migration {
         Schema::create('annotations', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('annotation_assignment_id')->constrained();
-            $table->foreignId('user_id')->constrained();
-            $table->unique(['annotation_assignment_id', 'user_id']);
+            $table->foreignId('dataset_instance_id')->constrained();
+            $table->unsignedMediumInteger('index');
+            $table->unique(['annotation_assignment_id', 'dataset_instance_id']);
+            $table->json('annotations');
             $table->timestamps();
         });
     }

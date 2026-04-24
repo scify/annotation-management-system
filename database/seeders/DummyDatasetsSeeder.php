@@ -7,7 +7,6 @@ namespace Database\Seeders;
 use App\Models\AnnotationTask;
 use App\Models\Dataset;
 use App\Models\DatasetInstance;
-use App\Models\DatasetInstanceElement;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -56,23 +55,19 @@ class DummyDatasetsSeeder extends Seeder {
             )->getKey();
             // add dummy instances
             for ($i = 0; $i < 5; $i++) {
-                $instance_id = DatasetInstance::query()->updateOrCreate(
+                DatasetInstance::query()->updateOrCreate(
                     ['index' => $i, 'dataset_id' => $added_dataset_id],
                     [
                         'index' => $i,
                         'dataset_id' => $added_dataset_id,
-                    ],
-                )->getKey();
-            }
-
-            for ($i = 0; $i < 3; $i++) {
-                DatasetInstanceElement::query()->updateOrCreate(
-                    ['index' => $i, 'dataset_instance_id' => $instance_id],
-                    [
-                        'index' => $i,
-                        'key' => 'key' . $i,
-                        'value' => 'value' . $i,
-                        'dataset_instance_id' => $instance_id,
+                        'content' => [
+                            'text1' => 'First additional text for instance ' . $i,
+                            'text2' => 'Second additional text for instance ' . $i,
+                            'question' => [
+                                'prompt' => sprintf('Sample question for instance %d?', $i),
+                                'answers' => ['Answer A', 'Answer B', 'Answer C'],
+                            ],
+                        ],
                     ],
                 );
             }

@@ -13,8 +13,12 @@ class AnnotationAssignment extends Model {
     use HasFactory;
 
     protected $fillable = [
-        'annotation_instance_id',
         'user_id',
         'sub_project_id',
+        'indexes_array',
+    ];
+
+    protected $casts = [
+        'indexes_array' => 'array',
     ];
 }

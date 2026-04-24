@@ -15,8 +15,12 @@ class Dataset extends Model {
 
     protected $fillable = [
         'name',
-        'desciption',
+        'description',
         'is_available',
+    ];
+
+    protected $casts = [
+        'is_available' => 'boolean',
     ];
 
     /**

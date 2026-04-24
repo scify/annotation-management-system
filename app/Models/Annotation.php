@@ -14,6 +14,12 @@ class Annotation extends Model {
 
     protected $fillable = [
         'annotation_assignment_id',
-        'user_id',
+        'dataset_instance_id',
+        'index',
+        'annotations',
+    ];
+
+    protected $casts = [
+        'annotations' => 'array',
     ];
 }

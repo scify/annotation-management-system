@@ -120,6 +120,7 @@ class User extends Authenticatable {
      */
     protected function casts(): array {
         return [
+            'is_active' => 'boolean',
             'password' => 'hashed',
             'deleted_at' => 'datetime',
         ];

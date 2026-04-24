@@ -15,6 +15,7 @@ return new class() extends Migration {
             $table->id();
             $table->unsignedMediumInteger('index');
             $table->foreignId('dataset_id')->constrained();
+            $table->json('content');
             $table->unique(['index', 'dataset_id']);
             $table->timestamps();
         });
