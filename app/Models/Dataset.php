@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Database\Factories\DatasetFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+#[Fillable([
+    'name',
+    'description',
+    'is_available',
+])]
 class Dataset extends Model {
     /** @use HasFactory<DatasetFactory> */
     use HasFactory;
-
-    protected $fillable = [
-        'name',
-        'description',
-        'is_available',
-    ];
 
     protected $casts = [
         'is_available' => 'boolean',

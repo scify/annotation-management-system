@@ -6,6 +6,9 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -31,6 +34,21 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read string|null $role
  * @property-read Collection|Role[] $roles
  */
+#[Appends([
+    'role',
+])]
+#[Fillable([
+    'name',
+    'username',
+    'email',
+    'password',
+    'is_active',
+    'deleted_at',
+])]
+#[Hidden([
+    'password',
+    'remember_token',
+])]
 class User extends Authenticatable {
     use HasApiTokens;
 
@@ -40,34 +58,6 @@ class User extends Authenticatable {
     use HasRoles;
     use Notifiable;
     use SoftDeletes;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'username',
-        'email',
-        'password',
-        'is_active',
-        'deleted_at',
-    ];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var list<string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected $appends = [
-        'role',
-    ];
 
     protected $with = [
         'roles',

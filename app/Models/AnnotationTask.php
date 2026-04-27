@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Database\Factories\AnnotationTaskFactory;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -22,22 +23,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read Carbon $updated_at
  * @property-read Carbon|null $deleted_at
  */
+#[Fillable([
+    'title',
+    'description',
+    'guidelines_url',
+    'weight',
+    'customization_options',
+])]
 class AnnotationTask extends Model {
     /** @use HasFactory<AnnotationTaskFactory> */
     use HasFactory;
 
     use SoftDeletes;
-
-    /**
-     * @var list<string>
-     */
-    protected $fillable = [
-        'title',
-        'description',
-        'guidelines_url',
-        'weight',
-        'customization_options',
-    ];
 
     public function connectedUsers(): BelongsToMany {
         return $this->belongsToMany(User::class, 'annotation_task_user', 'annotation_task_id', 'user_id');

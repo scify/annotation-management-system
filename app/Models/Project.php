@@ -7,6 +7,8 @@ namespace App\Models;
 use App\Enums\ProjectStatusEnum;
 use Carbon\Carbon;
 use Database\Factories\ProjectFactory;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -42,35 +44,27 @@ use Illuminate\Support\Facades\Date;
  * @property-read bool $is_delayed_to_start
  * @property-read bool $is_delayed_to_end
  */
+#[Appends(['is_delayed_to_start', 'is_delayed_to_end'])]
+#[Fillable([
+    'name',
+    'description',
+    'owner_user_id',
+    'annotation_task_id',
+    'dataset_id',
+    'status',
+    'restricted_visibility',
+    'is_instance_shuffled',
+    'annotation_task_configuration',
+    'scheduled_at',
+    'deadline_at',
+    'started_at',
+    'completed_at',
+])]
 class Project extends Model {
     /** @use HasFactory<ProjectFactory> */
     use HasFactory;
 
     use SoftDeletes;
-
-    /**
-     * @var list<string>
-     */
-    protected $appends = ['is_delayed_to_start', 'is_delayed_to_end'];
-
-    /**
-     * @var list<string>
-     */
-    protected $fillable = [
-        'name',
-        'description',
-        'owner_user_id',
-        'annotation_task_id',
-        'dataset_id',
-        'status',
-        'restricted_visibility',
-        'is_instance_shuffled',
-        'annotation_task_configuration',
-        'scheduled_at',
-        'deadline_at',
-        'started_at',
-        'completed_at',
-    ];
 
     /**
      * @return BelongsTo<User, $this>

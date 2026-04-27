@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -19,17 +20,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read DatasetInstance $datasetInstance
  * @property-read Project $project
  */
+#[Fillable([
+    'new_index',
+    'dataset_instance_id',
+    'project_id',
+])]
 class InstanceShuffleMapper extends Model {
     use HasFactory;
-
-    /**
-     * @var list<string>
-     */
-    protected $fillable = [
-        'new_index',
-        'dataset_instance_id',
-        'project_id',
-    ];
 
     /**
      * @return BelongsTo<DatasetInstance, $this>
