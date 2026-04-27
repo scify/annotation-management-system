@@ -16,6 +16,7 @@ class DummyDataSeeder extends Seeder {
             DummyAnnotationTasksSeeder::class,
             DummyDatasetsSeeder::class,
             DummyUsersSeeder::class,
+            DummyProjectSeeder::class,
         ]);
     }
 }

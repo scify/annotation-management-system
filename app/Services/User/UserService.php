@@ -49,9 +49,9 @@ class UserService {
         return $user;
     }
 
-    public function getWorkload(User $user): ?float {
+    public function getWorkload(User $user): int {
         if (! $user->hasRole(RolesEnum::ANNOTATOR)) {
-            return null;
+            return 0;
         }
 
         $subProjects = SubProject::query()
@@ -77,8 +77,8 @@ class UserService {
 
         $assignmentsBySubProject = $annotationAssignments->keyBy('sub_project_id');
 
-        $sum_of_effort = 0.0;
-        $sum_of_work_done = 0.0;
+        $sum_of_effort = 0;
+        $sum_of_work_done = 0;
         foreach ($subProjects as $subProject) {
             /** @var SubProject $subProject */
             $weight = $subProject->project->annotationTask->weight;
@@ -88,10 +88,10 @@ class UserService {
             $work_done = $assignment instanceof AnnotationAssignment
                 ? (int) $annotationCountsByAssignment->get($assignment->getKey(), 0)
                 : 0;
-            $sum_of_work_done += $work_done * $weight;
+            $sum_of_work_done += ($work_done * $weight);
         }
 
-        return 0.0;
+        return $sum_of_effort - $sum_of_work_done;
     }
 
     public function findByEmail(string $email): ?User {

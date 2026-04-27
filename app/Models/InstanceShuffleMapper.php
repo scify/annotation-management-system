@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property-read int $id
  * @property int $new_index
- * @property int $dataset_instance_id
+ * @property int $old_index
  * @property int $project_id
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at

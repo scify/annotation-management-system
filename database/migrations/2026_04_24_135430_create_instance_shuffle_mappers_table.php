@@ -14,7 +14,7 @@ return new class() extends Migration {
         Schema::create('instance_shuffle_mappers', function (Blueprint $table): void {
             $table->id();
             $table->unsignedInteger('new_index');
-            $table->foreignId('dataset_instance_id')->constrained('dataset_instances')->cascadeOnDelete();
+            $table->unsignedInteger('old_index');
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
             $table->timestamps();
             $table->unique(['new_index', 'project_id']);
