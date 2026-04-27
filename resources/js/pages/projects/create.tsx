@@ -2,6 +2,10 @@ import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-
 import { SelectAnnotatorsStep } from '@/components/annotator/select-annotators-step';
 import { ProjectConfigurationStep } from '@/components/project/configuration-step';
 import { ProjectDialog } from '@/components/project/project-dialog';
+import {
+	type CoManagerCandidateRowData,
+	SelectCoManagersStep,
+} from '@/components/project/select-co-managers-step';
 import { MOCK_TASK_TYPES, SelectTaskTypeStep } from '@/components/project/select-task-type-step';
 import { CreateSubprojectStepper } from '@/components/sub-project/create-subproject-stepper';
 import { Button } from '@/components/ui/button';
@@ -12,6 +16,37 @@ import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, FolderDot } from 'lucide-react';
 import { useState } from 'react';
+
+const MOCK_CO_MANAGER_CANDIDATES: CoManagerCandidateRowData[] = [
+	{
+		id: 1,
+		initials: 'G',
+		username: '@ggiannakopoulos',
+		name: 'George Giannakopoulos',
+		role: 'admin',
+	},
+	{
+		id: 2,
+		initials: 'A',
+		username: '@akosmo',
+		name: 'Aris Kosmopoulos',
+		role: 'manager',
+	},
+	{
+		id: 3,
+		initials: 'P',
+		username: '@paulisar',
+		name: 'Paul Isaris',
+		role: 'manager',
+	},
+	{
+		id: 4,
+		initials: 'N',
+		username: '@NelliSav',
+		name: 'Nelly Savrani',
+		role: 'manager',
+	},
+];
 
 const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
 	{
@@ -104,6 +139,32 @@ export default function CreateProject({ annotators }: Props) {
 		});
 	}
 
+	// Step 3 — co-managers state
+	const [selectedCoManagerIds, setSelectedCoManagerIds] = useState<Set<number>>(new Set());
+	const [coManagerInviteEmail, setCoManagerInviteEmail] = useState('');
+
+	function handleCoManagerSelectionChange(id: number, checked: boolean) {
+		setSelectedCoManagerIds((prev) => {
+			const next = new Set(prev);
+			if (checked) next.add(id);
+			else next.delete(id);
+			return next;
+		});
+	}
+
+	function handleCoManagerSelectAllChange(ids: number[], checked: boolean) {
+		setSelectedCoManagerIds((prev) => {
+			const next = new Set(prev);
+			ids.forEach((id) => (checked ? next.add(id) : next.delete(id)));
+			return next;
+		});
+	}
+
+	function handleCoManagerInvite() {
+		// TODO: submit invite with coManagerInviteEmail
+		setCoManagerInviteEmail('');
+	}
+
 	// Step 2 — configuration state
 	const [selectedDatasetId, setSelectedDatasetId] = useState<number | null>(null);
 	const [shuffleInstances, setShuffleInstances] = useState(true);
@@ -172,9 +233,15 @@ export default function CreateProject({ annotators }: Props) {
 				)}
 
 				{currentStep === 3 && (
-					<div className="flex h-48 items-center justify-center rounded-xl border border-dashed border-slate-300 text-sm text-slate-400">
-						{STEPS[currentStep]?.label} — coming soon
-					</div>
+					<SelectCoManagersStep
+						candidates={MOCK_CO_MANAGER_CANDIDATES}
+						selectedIds={selectedCoManagerIds}
+						inviteEmail={coManagerInviteEmail}
+						onSelectionChange={handleCoManagerSelectionChange}
+						onSelectAllChange={handleCoManagerSelectAllChange}
+						onInviteEmailChange={setCoManagerInviteEmail}
+						onInvite={handleCoManagerInvite}
+					/>
 				)}
 
 				{/* Action bar */}

@@ -113,8 +113,21 @@ return [
         'step_configurations' => 'Configurations',
         'step_select_annotators' => 'Select Annotators',
         'step_add_co_managers' => 'Add Co-Managers',
-        'dialog_description' => 'Enter a name for your new project',
+        'dialog_description' => 'Enter a Project name',
         'dialog_name_placeholder' => 'Project name…',
+    ],
+
+    'select_co_managers' => [
+        'heading' => 'Add Co-Managers',
+        'selected_count' => ':count selected',
+        'select_all' => 'Select all',
+        'email_placeholder' => 'Enter e-mail',
+        'invite_button' => 'Invite Co-Manager by email',
+        'table_username' => 'Username',
+        'table_name' => 'Name',
+        'table_role' => 'Role',
+        'role_admin' => 'Admin',
+        'role_manager' => 'Manager',
     ],
 
     'select_annotators' => [
