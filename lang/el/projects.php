@@ -113,8 +113,21 @@ return [
         'step_configurations' => 'Ρυθμίσεις',
         'step_select_annotators' => 'Επιλογή Επισημειωτών',
         'step_add_co_managers' => 'Προσθήκη Συν-Διαχειριστών',
-        'dialog_description' => 'Εισάγετε όνομα για το νέο έργο',
+        'dialog_description' => 'Εισάγετε ένα όνομα για το έργο',
         'dialog_name_placeholder' => 'Όνομα έργου…',
+    ],
+
+    'select_co_managers' => [
+        'heading' => 'Προσθήκη Συν-Διαχειριστών',
+        'selected_count' => ':count επιλεγμένοι',
+        'select_all' => 'Επιλογή όλων',
+        'email_placeholder' => 'Εισάγετε e-mail',
+        'invite_button' => 'Πρόσκληση Συν-Διαχειριστή μέσω email',
+        'table_username' => 'Όνομα χρήστη',
+        'table_name' => 'Όνομα',
+        'table_role' => 'Ρόλος',
+        'role_admin' => 'Διαχειριστής',
+        'role_manager' => 'Υπεύθυνος',
     ],
 
     'select_task_type' => [
