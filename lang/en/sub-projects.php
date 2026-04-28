@@ -3,6 +3,24 @@
 declare(strict_types=1);
 
 return [
+    'edit' => [
+        'page_title' => 'Edit Subproject',
+        'save_changes' => 'Save changes',
+        'tab_aria_label' => 'Subproject sections',
+        'tab_overview_settings' => 'Overview & Settings',
+        'tab_annotators' => 'Annotators',
+        'tab_annotations' => 'Annotations',
+        'section_overview' => 'Overview & Settings',
+        'name_label' => "Subproject's name",
+        'dataset_label' => 'Dataset',
+        'scheduled_for' => 'Scheduled for:',
+        'date_started' => 'Date Started:',
+        'date_completed' => 'Date Completed:',
+        'not_started' => 'Not Started',
+        'not_completed' => 'Not Completed',
+        'overall_progress' => 'Overall Progress',
+    ],
+
     'create' => [
         'page_title' => 'Create Subproject',
         'heading' => 'Create Subproject',
@@ -59,7 +77,40 @@ return [
         'flexible_browsing_label' => 'Flexible Browsing',
         'flexible_browsing_description' => 'Allows annotator to go back and forth through instances',
         'submission_auto' => 'Automatically per instance',
-        'submission_manual' => 'By Annotator\'s Confirmation',
+        'submission_auto_description' => 'Annotation is submitted by continuing to the next instance',
+        'submission_manual' => "By Annotator's Confirmation",
+        'submission_manual_description' => 'The annotator decides when the annotation will be submitted',
+    ],
+
+    'annotators_panel' => [
+        'remove_dialog_title' => 'Remove Annotator',
+        'remove_dialog_description' => 'Are you sure you want to remove :username from this subproject?',
+        'remove_confirm' => 'Remove',
+    ],
+
+    'annotations' => [
+        'heading' => 'Annotations',
+        'sort_by_progress' => 'Sort by Progress',
+        'sort_by_agreement' => 'Sort by Agreement',
+        'sort_asc' => 'Low → High',
+        'sort_desc' => 'High → Low',
+        'search_placeholder' => 'Search Instances by #…',
+        'col_instance' => 'Instance #',
+        'col_progress' => 'Annotation Progress',
+        'col_agreement' => 'Agreement',
+        'col_action' => 'Action',
+        'col_annotation' => 'Annotation',
+        'col_assigned_to' => 'Assigned to',
+        'col_annotated_by' => 'Annotated by',
+        'col_timestamp' => 'Timestamp',
+        'col_confidence' => 'Confidence',
+        'go_to_instance' => 'Go to instance',
+        'progress_label' => ':completed / :total annotations',
+        'role_annotator' => 'Annotator',
+        'role_manager' => 'Manager',
+        'agreement_high' => 'High',
+        'agreement_medium' => 'Medium',
+        'agreement_low' => 'Low',
     ],
 
     'select_dataset' => [

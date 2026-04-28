@@ -6,11 +6,16 @@ import { Plus } from 'lucide-react';
 
 interface SubprojectsTabProps {
 	subProjects: SubProjectListItemData[];
+	projectId?: number;
 	/** Called after a new subproject is successfully created */
 	onSubprojectCreated?: () => void;
 }
 
-export function SubprojectsTab({ subProjects, onSubprojectCreated }: SubprojectsTabProps) {
+export function SubprojectsTab({
+	subProjects,
+	projectId,
+	onSubprojectCreated,
+}: SubprojectsTabProps) {
 	const { t } = useTranslations();
 	return (
 		<div
@@ -29,7 +34,7 @@ export function SubprojectsTab({ subProjects, onSubprojectCreated }: Subprojects
 					{t('projects.subprojects_tab.create_button')}
 				</Button>
 			</div>
-			<SubProjectList subProjects={subProjects} />
+			<SubProjectList subProjects={subProjects} projectId={projectId} />
 		</div>
 	);
 }

@@ -370,6 +370,7 @@ export function ProjectConfigurationStep({
 							{t('projects.configuration.allow_confidence_question')}
 						</p>
 						<Select
+							aria-label={t('projects.configuration.allow_confidence_question')}
 							value={allowMarkConfidence}
 							onValueChange={(v) => onAllowMarkConfidenceChange(v as 'yes' | 'no')}
 						>
@@ -393,6 +394,7 @@ export function ProjectConfigurationStep({
 							{t('projects.configuration.allow_not_sure_question')}
 						</p>
 						<Select
+							aria-label={t('projects.configuration.allow_not_sure_question')}
 							value={allowNotSureAnswer}
 							onValueChange={(v) => onAllowNotSureAnswerChange(v as 'yes' | 'no')}
 						>

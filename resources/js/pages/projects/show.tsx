@@ -157,6 +157,7 @@ export default function ProjectShow({ project }: Props) {
 				{activeTab === 'subprojects' && (
 					<SubprojectsTab
 						subProjects={displayProject.subProjects}
+						projectId={displayProject.id}
 						onSubprojectCreated={() =>
 							router.visit(route('projects.subprojects.create', displayProject.id))
 						}

@@ -78,9 +78,15 @@ export function UserForm({ user, action, roles }: Readonly<UserFormProps>) {
 			</div>
 
 			<div>
-				<Label htmlFor="role">{t('users.labels.role')}</Label>
+				<Label id="role-label" htmlFor="role">
+					{t('users.labels.role')}
+				</Label>
 				{roles.length > 1 ? (
-					<Select value={data.role} onValueChange={(value) => setData('role', value)}>
+					<Select
+						aria-labelledby="role-label"
+						value={data.role}
+						onValueChange={(value) => setData('role', value)}
+					>
 						<SelectTrigger id="role">
 							<SelectValue placeholder={t('users.placeholders.select_role')} />
 						</SelectTrigger>

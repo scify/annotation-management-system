@@ -25,6 +25,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('projects/create', [ProjectController::class, 'create'])->name('projects.create');
     Route::get('projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
     Route::get('projects/{id}/subprojects/create', [SubProjectController::class, 'create'])->name('projects.subprojects.create');
+    Route::get('projects/{projectId}/subprojects/{subprojectId}/edit', [SubProjectController::class, 'edit'])->name('projects.subprojects.edit');
 
     Route::resource('users', UserController::class);
 

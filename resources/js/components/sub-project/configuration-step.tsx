@@ -1,3 +1,7 @@
+import {
+	DateRangePickerButton,
+	type DateRangeValue,
+} from '@/components/ui/date-range-picker-button';
 import { Input } from '@/components/ui/input';
 import {
 	Select,
@@ -8,44 +12,21 @@ import {
 } from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { CalendarDate, getLocalTimeZone, today } from '@internationalized/date';
-import {
-	ArrowDown,
-	ArrowUp,
-	Calendar,
-	CircleAlert,
-	ChevronLeft,
-	ChevronRight,
-	Ellipsis,
-} from 'lucide-react';
-import {
-	Button,
-	CalendarCell,
-	CalendarGrid,
-	CalendarGridBody,
-	CalendarGridHeader,
-	CalendarHeaderCell,
-	DateRangePicker,
-	Dialog,
-	Group,
-	Heading,
-	Popover,
-	RangeCalendar,
-} from 'react-aria-components';
+import { ArrowDown, ArrowUp, CircleAlert, Ellipsis } from 'lucide-react';
 
 export type SubprojectPriority = 'low' | 'medium' | 'high';
 export type SubmissionMode = 'auto' | 'manual';
 
 export interface ConfigurationStepProps {
 	priority: SubprojectPriority | null;
-	dateRange: { start: CalendarDate; end: CalendarDate } | null;
+	dateRange: DateRangeValue | null;
 	minAnnotationsEnabled: boolean;
 	minAnnotations: number;
 	annotatorCount: number;
 	flexibleBrowsing: boolean;
 	submissionMode: SubmissionMode;
 	onPriorityChange: (value: SubprojectPriority) => void;
-	onDateRangeChange: (value: { start: CalendarDate; end: CalendarDate } | null) => void;
+	onDateRangeChange: (value: DateRangeValue | null) => void;
 	onMinAnnotationsEnabledChange: (value: boolean) => void;
 	onMinAnnotationsChange: (value: number) => void;
 	onFlexibleBrowsingChange: (value: boolean) => void;
@@ -59,7 +40,7 @@ interface PriorityBadgeProps {
 	size?: 'sm' | 'md';
 }
 
-function PriorityBadge({ priority, size = 'md' }: Readonly<PriorityBadgeProps>) {
+export function PriorityBadge({ priority, size = 'md' }: Readonly<PriorityBadgeProps>) {
 	const config: Record<SubprojectPriority, { bg: string; icon: React.ReactNode }> = {
 		low: {
 			bg: 'bg-brand-lime-500',
@@ -101,7 +82,13 @@ interface ToggleSwitchProps {
 	description?: string;
 }
 
-function ToggleSwitch({ id, checked, onChange, label, description }: Readonly<ToggleSwitchProps>) {
+export function ToggleSwitch({
+	id,
+	checked,
+	onChange,
+	label,
+	description,
+}: Readonly<ToggleSwitchProps>) {
 	return (
 		<label htmlFor={id} className="flex cursor-pointer items-start gap-3">
 			{/* Pill track */}
@@ -139,19 +126,6 @@ function ToggleSwitch({ id, checked, onChange, label, description }: Readonly<To
 	);
 }
 
-// ── Date range trigger button ─────────────────────────────────────────────────
-
-function formatDateRange(range: { start: CalendarDate; end: CalendarDate } | null): string | null {
-	if (!range) return null;
-	const fmt = (d: CalendarDate) =>
-		d.toDate(getLocalTimeZone()).toLocaleDateString(undefined, {
-			day: '2-digit',
-			month: 'short',
-			year: 'numeric',
-		});
-	return `${fmt(range.start)} – ${fmt(range.end)}`;
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function ConfigurationStep({
@@ -170,7 +144,6 @@ export function ConfigurationStep({
 	onSubmissionModeChange,
 }: Readonly<ConfigurationStepProps>) {
 	const { t, trans } = useTranslations();
-	const formattedRange = formatDateRange(dateRange);
 
 	return (
 		<section aria-labelledby="step-config-heading" className="flex flex-col gap-5">
@@ -188,6 +161,7 @@ export function ConfigurationStep({
 						</h3>
 
 						<Select
+							aria-label={t('sub-projects.configuration.priority_label')}
 							value={priority ?? undefined}
 							onValueChange={(v) => onPriorityChange(v as SubprojectPriority)}
 						>
@@ -242,129 +216,12 @@ export function ConfigurationStep({
 							{t('sub-projects.configuration.timeframe_label')}
 						</h3>
 
-						<DateRangePicker
-							className="hover:cursor-pointer"
+						<DateRangePickerButton
 							value={dateRange}
-							onChange={(range) =>
-								onDateRangeChange(
-									range
-										? {
-												start: range.start,
-												end: range.end,
-											}
-										: null
-								)
-							}
-							minValue={today(getLocalTimeZone())}
-						>
-							<Group className="w-full">
-								<Button className="focus-visible:ring-brand-blue-700/50 flex h-10 w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-left text-sm focus-visible:ring-2 focus-visible:outline-none">
-									<Calendar
-										className="size-4 shrink-0 text-slate-800"
-										aria-hidden="true"
-									/>
-									{formattedRange ? (
-										<span className="flex-1 text-slate-800">
-											{formattedRange}
-										</span>
-									) : (
-										<span className="text-muted-foreground flex-1">
-											{t('sub-projects.configuration.timeframe_placeholder')}
-										</span>
-									)}
-									<ChevronRight
-										className="size-4 shrink-0 text-slate-400 opacity-50"
-										aria-hidden="true"
-									/>
-								</Button>
-							</Group>
-
-							<Popover
-								className={cn(
-									'z-50 mt-1 rounded-2xl border border-slate-200 bg-white p-4 shadow-md',
-									'data-[entering]:animate-in data-[entering]:fade-in-0 data-[entering]:zoom-in-95',
-									'data-[exiting]:animate-out data-[exiting]:fade-out-0 data-[exiting]:zoom-out-95'
-								)}
-							>
-								<Dialog className="outline-none">
-									<RangeCalendar
-										aria-label={t('sub-projects.configuration.timeframe_label')}
-										className="w-[294px]"
-									>
-										{/* Calendar header */}
-										<header className="mb-3 flex items-center justify-between">
-											<Button
-												slot="previous"
-												aria-label="Previous month"
-												className="bg-brand-blue-50 hover:bg-brand-blue-100 focus-visible:ring-brand-blue-700/50 flex size-8 items-center justify-center rounded-lg text-slate-800 focus-visible:ring-2 focus-visible:outline-none"
-											>
-												<ChevronLeft
-													className="size-4"
-													aria-hidden="true"
-												/>
-											</Button>
-											<Heading className="text-base font-medium text-slate-800" />
-											<Button
-												slot="next"
-												aria-label="Next month"
-												className="bg-brand-blue-50 hover:bg-brand-blue-100 focus-visible:ring-brand-blue-700/50 flex size-8 items-center justify-center rounded-lg text-slate-800 focus-visible:ring-2 focus-visible:outline-none"
-											>
-												<ChevronRight
-													className="size-4"
-													aria-hidden="true"
-												/>
-											</Button>
-										</header>
-
-										<CalendarGrid>
-											<CalendarGridHeader>
-												{(day) => (
-													<CalendarHeaderCell className="pb-1 text-center text-sm font-normal text-slate-400">
-														{day}
-													</CalendarHeaderCell>
-												)}
-											</CalendarGridHeader>
-											<CalendarGridBody>
-												{(date) => (
-													<CalendarCell
-														date={date}
-														className={({
-															isSelected,
-															isSelectionStart,
-															isSelectionEnd,
-															isOutsideMonth,
-															isDisabled,
-														}) =>
-															cn(
-																'flex size-[42px] cursor-pointer items-center justify-center rounded-lg text-base font-medium outline-none',
-																'hover:bg-brand-blue-100 focus-visible:ring-brand-blue-700/50 focus-visible:ring-2',
-																isOutsideMonth && 'text-slate-400',
-																!isOutsideMonth &&
-																	!isSelected &&
-																	'text-slate-800',
-																isSelected &&
-																	!isSelectionStart &&
-																	!isSelectionEnd &&
-																	'bg-brand-blue-50 hover:bg-brand-blue-100 rounded-none text-slate-900',
-																(isSelectionStart ||
-																	isSelectionEnd) &&
-																	'bg-brand-blue-700 hover:bg-brand-blue-800 text-white',
-																isSelectionStart &&
-																	'rounded-l-lg rounded-r-none',
-																isSelectionEnd &&
-																	'rounded-l-none rounded-r-lg',
-																isDisabled &&
-																	'cursor-not-allowed opacity-40'
-															)
-														}
-													/>
-												)}
-											</CalendarGridBody>
-										</CalendarGrid>
-									</RangeCalendar>
-								</Dialog>
-							</Popover>
-						</DateRangePicker>
+							onChange={onDateRangeChange}
+							placeholder={t('sub-projects.configuration.timeframe_placeholder')}
+							aria-label={t('sub-projects.configuration.timeframe_label')}
+						/>
 					</div>
 
 					{/* Requirements */}
@@ -396,7 +253,7 @@ export function ConfigurationStep({
 								inputMode="numeric"
 								min={1}
 								max={annotatorCount || undefined}
-								value={minAnnotationsEnabled ? minAnnotations : undefined}
+								value={minAnnotationsEnabled ? minAnnotations : ''}
 								placeholder={
 									minAnnotationsEnabled
 										? trans(

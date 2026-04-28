@@ -11,4 +11,8 @@ class SubProjectController extends Controller {
     public function create(int $id): Response {
         return Inertia::render('sub-projects/create');
     }
+
+    public function edit(int $projectId, int $subprojectId): Response {
+        return Inertia::render('sub-projects/edit');
+    }
 }

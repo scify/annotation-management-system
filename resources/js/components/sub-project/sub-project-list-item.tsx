@@ -1,3 +1,4 @@
+import { type StatusVariant } from '@/components/project/project-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -7,9 +8,9 @@ import {
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tag } from '@/components/ui/tag';
-import { type StatusVariant } from '@/components/project/project-card';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
+import { router } from '@inertiajs/react';
 import { BellRing, FolderOpenDot, MoreVertical, UserRound } from 'lucide-react';
 
 export interface SubProjectListItemData {
@@ -26,12 +27,15 @@ export interface SubProjectListItemData {
 
 interface SubProjectListItemProps {
 	subProject: SubProjectListItemData;
+	/** Project ID used to build the edit route */
+	projectId?: number;
 	className?: string;
 	showActions?: boolean;
 }
 
 export function SubProjectListItem({
 	subProject,
+	projectId,
 	className,
 	showActions = true,
 }: SubProjectListItemProps) {
@@ -78,7 +82,18 @@ export function SubProjectListItem({
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end" className="w-44">
-								<DropdownMenuItem>
+								<DropdownMenuItem
+									onSelect={() => {
+										if (projectId) {
+											router.visit(
+												route('projects.subprojects.edit', {
+													projectId,
+													subprojectId: subProject.id,
+												})
+											);
+										}
+									}}
+								>
 									{t('sub-projects.list_item.action_view_edit')}
 								</DropdownMenuItem>
 								<DropdownMenuItem>

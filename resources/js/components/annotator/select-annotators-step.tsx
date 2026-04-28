@@ -81,7 +81,11 @@ export function SelectAnnotatorsStep({
 					<span className="text-sm font-medium text-slate-700">
 						{t(`${ns}.sort_by_name`)}
 					</span>
-					<Select value={sortByName} onValueChange={setSortByName}>
+					<Select
+						aria-label={t(`${ns}.sort_by_name`)}
+						value={sortByName}
+						onValueChange={setSortByName}
+					>
 						<SelectTrigger className="h-10 w-[180px] bg-white px-4">
 							<SelectValue placeholder={t(`${ns}.sort_by_name`)} />
 						</SelectTrigger>
@@ -96,7 +100,11 @@ export function SelectAnnotatorsStep({
 					<span className="text-sm font-medium text-slate-700">
 						{t(`${ns}.sort_by_workload`)}
 					</span>
-					<Select value={sortByWorkload} onValueChange={setSortByWorkload}>
+					<Select
+						aria-label={t(`${ns}.sort_by_workload`)}
+						value={sortByWorkload}
+						onValueChange={setSortByWorkload}
+					>
 						<SelectTrigger className="h-10 w-[180px] bg-white px-4">
 							<SelectValue placeholder={t(`${ns}.sort_by_workload`)} />
 						</SelectTrigger>

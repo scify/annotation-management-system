@@ -3,6 +3,24 @@
 declare(strict_types=1);
 
 return [
+    'edit' => [
+        'page_title' => 'Επεξεργασία Υποέργου',
+        'save_changes' => 'Αποθήκευση αλλαγών',
+        'tab_aria_label' => 'Ενότητες υποέργου',
+        'tab_overview_settings' => 'Επισκόπηση & Ρυθμίσεις',
+        'tab_annotators' => 'Επισημειωτές',
+        'tab_annotations' => 'Επισημειώσεις',
+        'section_overview' => 'Επισκόπηση & Ρυθμίσεις',
+        'name_label' => 'Όνομα Υποέργου',
+        'dataset_label' => 'Σύνολο Δεδομένων',
+        'scheduled_for' => 'Προγραμματισμένο για:',
+        'date_started' => 'Ημερομηνία Έναρξης:',
+        'date_completed' => 'Ημερομηνία Ολοκλήρωσης:',
+        'not_started' => 'Δεν ξεκίνησε',
+        'not_completed' => 'Δεν ολοκληρώθηκε',
+        'overall_progress' => 'Συνολική Πρόοδος',
+    ],
+
     'create' => [
         'page_title' => 'Δημιουργία Υποέργου',
         'heading' => 'Δημιουργία Υποέργου',
@@ -59,7 +77,40 @@ return [
         'flexible_browsing_label' => 'Ευέλικτη Περιήγηση',
         'flexible_browsing_description' => 'Επιτρέπει στον επισημειωτή να πλοηγείται μπρος-πίσω στα παραδείγματα',
         'submission_auto' => 'Αυτόματα ανά παράδειγμα',
+        'submission_auto_description' => 'Η επισημείωση υποβάλλεται με τη συνέχεια στο επόμενο παράδειγμα',
         'submission_manual' => 'Με επιβεβαίωση του Επισημειωτή',
+        'submission_manual_description' => 'Ο επισημειωτής αποφασίζει πότε θα υποβληθεί η επισημείωση',
+    ],
+
+    'annotators_panel' => [
+        'remove_dialog_title' => 'Αφαίρεση Επισημειωτή',
+        'remove_dialog_description' => 'Είστε βέβαιοι ότι θέλετε να αφαιρέσετε τον :username από αυτό το υποέργο;',
+        'remove_confirm' => 'Αφαίρεση',
+    ],
+
+    'annotations' => [
+        'heading' => 'Επισημειώσεις',
+        'sort_by_progress' => 'Ταξινόμηση κατά Πρόοδο',
+        'sort_by_agreement' => 'Ταξινόμηση κατά Συμφωνία',
+        'sort_asc' => 'Χαμηλό → Υψηλό',
+        'sort_desc' => 'Υψηλό → Χαμηλό',
+        'search_placeholder' => 'Αναζήτηση Παραδειγμάτων κατά #…',
+        'col_instance' => 'Παράδειγμα #',
+        'col_progress' => 'Πρόοδος Επισημείωσης',
+        'col_agreement' => 'Συμφωνία',
+        'col_action' => 'Ενέργεια',
+        'col_annotation' => 'Επισημείωση',
+        'col_assigned_to' => 'Ανατέθηκε σε',
+        'col_annotated_by' => 'Επισημειώθηκε από',
+        'col_timestamp' => 'Ώρα',
+        'col_confidence' => 'Αξιοπιστία',
+        'go_to_instance' => 'Μετάβαση στο παράδειγμα',
+        'progress_label' => ':completed / :total επισημειώσεις',
+        'role_annotator' => 'Επισημειωτής',
+        'role_manager' => 'Διαχειριστής',
+        'agreement_high' => 'Υψηλή',
+        'agreement_medium' => 'Μεσαία',
+        'agreement_low' => 'Χαμηλή',
     ],
 
     'select_dataset' => [

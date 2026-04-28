@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
-import { CalendarDate } from '@internationalized/date';
+import { type DateRangeValue } from '@/components/ui/date-range-picker-button';
 import { Head, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, FolderDot } from 'lucide-react';
 import { useState } from 'react';
@@ -99,9 +99,7 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 
 	// Step 3 — Configuration
 	const [priority, setPriority] = useState<SubprojectPriority | null>(null);
-	const [dateRange, setDateRange] = useState<{ start: CalendarDate; end: CalendarDate } | null>(
-		null
-	);
+	const [dateRange, setDateRange] = useState<DateRangeValue | null>(null);
 	const [minAnnotationsEnabled, setMinAnnotationsEnabled] = useState(false);
 	const [minAnnotations, setMinAnnotations] = useState(1);
 	const [flexibleBrowsing, setFlexibleBrowsing] = useState(false);
