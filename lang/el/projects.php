@@ -35,7 +35,7 @@ return [
         'overall_progress' => 'Συνολική Πρόοδος',
         'tab_subprojects' => 'Υποέργα',
         'tab_annotators' => 'Επισημειωτές',
-        'tab_managers' => 'Διαχειριστές',
+        'tab_managers' => 'Συνδιαχειριστές',
         'tab_export' => 'Εξαγωγή',
         'tag_task' => 'Εργασία:',
         'tag_dataset' => 'Σύνολο δεδομένων:',
@@ -53,7 +53,7 @@ return [
     ],
 
     'managers_tab' => [
-        'title' => 'Διαχειριστές',
+        'title' => 'Συνδιαχειριστές',
         'invite_placeholder' => 'Κείμενο…',
         'invite_button' => 'Πρόσκληση μέσω email',
         'table_username' => 'Όνομα χρήστη',
@@ -61,7 +61,7 @@ return [
         'table_ownership' => 'Ιδιοκτησία',
         'table_actions' => 'Ενέργειες',
         'role_owner' => 'Ιδιοκτήτης',
-        'role_co_manager' => 'Συν-Διαχειριστής',
+        'role_co_manager' => 'Συνδιαχειριστής',
         'ownership_request_button' => 'Αίτημα Ιδιοκτησίας',
         'leave_button' => 'Αίτημα αποχώρησης',
         'dialog_ownership_title' => 'Αίτημα Ιδιοκτησίας',

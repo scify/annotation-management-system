@@ -35,7 +35,7 @@ return [
         'overall_progress' => 'Overall Progress',
         'tab_subprojects' => 'Subprojects',
         'tab_annotators' => 'Annotators',
-        'tab_managers' => 'Managers',
+        'tab_managers' => 'Co-Managers',
         'tab_export' => 'Export',
         'tag_task' => 'Task:',
         'tag_dataset' => 'Dataset:',
@@ -53,7 +53,7 @@ return [
     ],
 
     'managers_tab' => [
-        'title' => 'Managers',
+        'title' => 'Co-Managers',
         'invite_placeholder' => 'Placeholder text',
         'invite_button' => 'Invite by email',
         'table_username' => 'Username',

@@ -1,7 +1,7 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { LoaderCircle } from 'lucide-react';
-import { FormEventHandler, useEffect, useState, useCallback } from 'react';
-
+import { FormEventHandler, useEffect, useRef, useState, useCallback } from 'react';
+import 'altcha';
 import InputError from '@/components/input-error';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -65,15 +65,16 @@ export default function Login({
 		[setData, setAltchaError]
 	);
 
-	// Now define the useCallback hooks
-	const setAltchaRef = useCallback(
-		(node: HTMLElement | null) => {
-			if (node) {
-				node.addEventListener('statechange', handleAltchaStateChange as EventListener);
-			}
-		},
-		[handleAltchaStateChange]
-	);
+	const altchaRef = useRef<HTMLElement>(null);
+
+	useEffect(() => {
+		const node = altchaRef.current;
+		if (!node) return;
+		node.addEventListener('statechange', handleAltchaStateChange as EventListener);
+		return () => {
+			node.removeEventListener('statechange', handleAltchaStateChange as EventListener);
+		};
+	}, [handleAltchaStateChange]);
 
 	useEffect(() => {
 		if (token && redirectTo) {
@@ -210,10 +211,8 @@ export default function Login({
 										id="altcha-widget"
 										hidelogo
 										hidefooter
-										challengeurl="/altcha-challenge"
-										ref={
-											setAltchaRef as unknown as AltchaWidgetReactRefObject<HTMLElement>
-										}
+										challenge="/altcha-challenge"
+										ref={altchaRef}
 									/>
 								</div>
 							)}
