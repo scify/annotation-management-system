@@ -60,7 +60,7 @@
 		"@inertiajs/react": "^3.0.3",
 		"@inertiajs/vite": "^3.0.3",
 		"@types/react-google-recaptcha": "^2.1.9",
-		"altcha": "^2.3.0",
+		"altcha": "^3.0.4",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"dotenv": "^17.4.2",
