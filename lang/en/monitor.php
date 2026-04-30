@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'page_title' => 'Monitor',
+    'sort_by_name' => 'Sort by Name',
+    'sort_by_workload' => 'Sort by Workload',
+    'sort_name_asc' => 'Name: A → Z',
+    'sort_name_desc' => 'Name: Z → A',
+    'sort_workload_asc' => 'Workload: Low → High',
+    'sort_workload_desc' => 'Workload: High → Low',
+    'search_placeholder' => 'Search Annotators…',
+    'col_username' => 'Username',
+    'col_status' => 'Status',
+    'col_active_subprojects' => 'Active Subprojects',
+    'col_active_projects' => 'Active Projects',
+    'col_rem_workload' => 'Rem. Workload',
+    'col_progress' => 'Progress',
+    'owner' => 'Owner',
+    'co_managers' => 'Co-managers',
+    'overall_progress' => 'Overall Progress',
+    'subproject' => 'Subproject',
+    'state' => 'State',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
+    'in_progress' => 'In Progress',
+    'completed' => 'Completed',
+    'pending' => 'Pending',
+    'restricted' => 'Restricted',
+    'hidden_project' => 'Hidden Project',
+    'subprojects_assigned_to' => 'Subprojects assigned to',
+    'project_label' => 'Project',
+    'expand_row' => 'Expand annotator details',
+    'collapse_row' => 'Collapse annotator details',
+    'expand_subprojects' => 'Expand subprojects',
+    'collapse_subprojects' => 'Collapse subprojects',
+];

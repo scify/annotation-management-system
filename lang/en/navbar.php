@@ -8,7 +8,7 @@ return [
     'dashboard' => 'Dashboard',
     'users' => 'Users',
     'projects' => 'Projects',
-    'assignments' => 'Assignments',
+    'monitor' => 'Monitor',
     'notifications' => 'Notifications',
     'audit_log' => 'Audit Log',
 ];

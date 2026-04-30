@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'page_title' => 'Monitor',
+    'sort_by_name' => 'Ταξινόμηση κατά Όνομα',
+    'sort_by_workload' => 'Ταξινόμηση κατά Φόρτο',
+    'sort_name_asc' => 'Όνομα: Α → Ω',
+    'sort_name_desc' => 'Όνομα: Ω → Α',
+    'sort_workload_asc' => 'Φόρτος: Χαμηλός → Υψηλός',
+    'sort_workload_desc' => 'Φόρτος: Υψηλός → Χαμηλός',
+    'search_placeholder' => 'Αναζήτηση Σχολιαστών…',
+    'col_username' => 'Όνομα Χρήστη',
+    'col_status' => 'Κατάσταση',
+    'col_active_subprojects' => 'Ενεργά Υποέργα',
+    'col_active_projects' => 'Ενεργά Έργα',
+    'col_rem_workload' => 'Υπολ. Φόρτος',
+    'col_progress' => 'Πρόοδος',
+    'owner' => 'Υπεύθυνος',
+    'co_managers' => 'Συνδιαχειριστές',
+    'overall_progress' => 'Συνολική Πρόοδος',
+    'subproject' => 'Υποέργο',
+    'state' => 'Κατάσταση',
+    'active' => 'Ενεργός',
+    'inactive' => 'Ανενεργός',
+    'in_progress' => 'Σε Εξέλιξη',
+    'completed' => 'Ολοκληρωμένο',
+    'pending' => 'Σε Αναμονή',
+    'restricted' => 'Περιορισμένο',
+    'hidden_project' => 'Κρυφό Έργο',
+    'subprojects_assigned_to' => 'Υποέργα ανατεθειμένα στον',
+    'project_label' => 'Έργο',
+    'expand_row' => 'Ανάπτυξη λεπτομερειών σχολιαστή',
+    'collapse_row' => 'Σύμπτυξη λεπτομερειών σχολιαστή',
+    'expand_subprojects' => 'Ανάπτυξη υποέργων',
+    'collapse_subprojects' => 'Σύμπτυξη υποέργων',
+];

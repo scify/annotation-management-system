@@ -59,6 +59,7 @@ export interface TranslationMap {
 	'client-applications': TranslationRecord;
 	common: TranslationRecord;
 	dashboard: TranslationRecord;
+	monitor: TranslationRecord;
 	navbar: TranslationRecord;
 	pagination: TranslationRecord;
 	passwords: TranslationRecord;
