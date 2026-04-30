@@ -51,6 +51,7 @@ class HandleInertiaRequests extends Middleware {
                 'client-applications' => trans('client-applications'),
                 'navbar' => trans('navbar'),
                 'settings' => trans('settings'),
+                'monitor' => trans('monitor'),
                 'projects' => trans('projects'),
                 'sub-projects' => trans('sub-projects'),
             ],

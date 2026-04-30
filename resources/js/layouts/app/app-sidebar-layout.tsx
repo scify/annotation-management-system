@@ -19,7 +19,7 @@ import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
 	BellRing,
-	Briefcase,
+	Activity,
 	FolderDot,
 	LayoutDashboard,
 	Menu,
@@ -59,7 +59,7 @@ export default function AppSidebarLayout({
 	const mobileNavItems: MobileNavItem[] = [
 		{ title: t('navbar.dashboard'), icon: LayoutDashboard, href: '/dashboard' },
 		{ title: t('navbar.projects'), icon: FolderDot, href: route('projects.index') },
-		{ title: t('navbar.assignments'), icon: Briefcase, href: '#', placeholder: true },
+		{ title: t('navbar.monitor'), icon: Activity, href: route('monitor.index') },
 		...(auth?.user?.can.view_users
 			? [{ title: t('navbar.users'), icon: Users, href: route('users.index') }]
 			: []),

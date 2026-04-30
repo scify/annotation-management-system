@@ -9,6 +9,7 @@ return [
     'users' => 'Χρήστες',
     'projects' => 'Έργα',
     'assignments' => 'Αναθέσεις',
+    'monitor' => 'Monitor',
     'notifications' => 'Ειδοποιήσεις',
     'audit_log' => 'Αρχείο Ελέγχου',
 ];

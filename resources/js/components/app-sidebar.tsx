@@ -4,7 +4,7 @@ import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
 import {
 	BellRing,
-	Briefcase,
+	Activity,
 	FolderDot,
 	LayoutDashboard,
 	PanelLeftClose,
@@ -40,14 +40,14 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
 	const { t } = useTranslations();
 
 	const navItems: SidebarItem[] = [
-		{ title: 'Dashboard', icon: LayoutDashboard, href: route('dashboard') },
-		{ title: 'Projects', icon: FolderDot, href: route('projects.index') },
-		{ title: 'Assignments', icon: Briefcase, href: '#', placeholder: true },
+		{ title: t('navbar.dashboard'), icon: LayoutDashboard, href: '/dashboard' },
+		{ title: t('navbar.projects'), icon: FolderDot, href: route('projects.index') },
+		{ title: t('navbar.monitor'), icon: Activity, href: route('monitor.index') },
 		...(auth?.user?.can.view_users
 			? [{ title: t('navbar.users'), icon: Users, href: route('users.index') }]
 			: []),
-		{ title: 'Notifications', icon: BellRing, href: '#', placeholder: true },
-		{ title: 'Audit Log', icon: Captions, href: '#', placeholder: true },
+		{ title: t('navbar.notifications'), icon: BellRing, href: '#', placeholder: true },
+		{ title: t('navbar.audit_log'), icon: Captions, href: '#', placeholder: true },
 	];
 
 	return (
