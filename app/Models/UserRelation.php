@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 
 #[Fillable([
     'user_id',
+    'project_id',
     'related_user_id',
     'relation_type',
 ])]

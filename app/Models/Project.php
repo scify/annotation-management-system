@@ -13,7 +13,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Date;
@@ -92,15 +91,6 @@ class Project extends Model {
      */
     public function subProjects(): HasMany {
         return $this->hasMany(SubProject::class);
-    }
-
-    /**
-     * @return BelongsToMany<User, $this>
-     */
-    public function managers(): BelongsToMany {
-        return $this->belongsToMany(User::class, 'project_user')
-            ->withPivot('role')
-            ->withTimestamps();
     }
 
     /**

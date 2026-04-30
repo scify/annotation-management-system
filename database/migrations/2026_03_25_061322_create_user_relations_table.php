@@ -12,11 +12,13 @@ return new class() extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('user_relations', function (Blueprint $table) {
+        Schema::create('user_relations', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
             $table->foreignId('related_user_id')->constrained('users')->cascadeOnDelete();
             $table->enum('relation_type', array_column(UserRelationsEnum::cases(), 'value'));
+            $table->unique(['user_id', 'project_id']);
             $table->timestamps();
         });
     }

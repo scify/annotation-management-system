@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\RolesEnum;
-use App\Enums\UserRelationsEnum;
 use App\Models\User;
-use App\Models\UserRelation;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -63,33 +61,6 @@ class DummyUsersSeeder extends Seeder {
                 'password' => Hash::make($password),
             ]);
             $user->syncRoles([RolesEnum::ANNOTATOR->value]);
-        }
-
-        // Connect each annotator to 2 managers / admins.
-        $alice = User::query()->where('email', 'admin.alice@example.com')->firstOrFail();
-        $bob = User::query()->where('email', 'admin.bob@example.com')->firstOrFail();
-        $carol = User::query()->where('email', 'manager.carol@example.com')->firstOrFail();
-        $dave = User::query()->where('email', 'manager.dave@example.com')->firstOrFail();
-
-        $annotatorRelations = [
-            'annotator.eva@example.com' => [$carol, $dave],
-            'annotator.frank@example.com' => [$alice, $carol],
-            'annotator.grace@example.com' => [$bob,   $dave],
-            'annotator.henry@example.com' => [$alice, $bob],
-            'annotator.ivy@example.com' => [$carol, $bob],
-            'annotator.jack@example.com' => [$alice, $dave],
-            'annotator.karen@example.com' => [$bob,   $carol],
-        ];
-
-        foreach ($annotatorRelations as $email => $supervisors) {
-            $annotator = User::query()->where('email', $email)->firstOrFail();
-            foreach ($supervisors as $supervisor) {
-                UserRelation::query()->firstOrCreate([
-                    'user_id' => $annotator->getKey(),
-                    'related_user_id' => $supervisor->getKey(),
-                    'relation_type' => UserRelationsEnum::ANNOTATOR_OF_MANAGER,
-                ]);
-            }
         }
     }
 }

@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Enums\ProjectStatusEnum;
 use App\Enums\SubProjectPriorityEnum;
+use App\Enums\UserRelationsEnum;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotationTask;
 use App\Models\Dataset;
@@ -13,6 +14,7 @@ use App\Models\InstanceShuffleMapper;
 use App\Models\Project;
 use App\Models\SubProject;
 use App\Models\User;
+use App\Models\UserRelation;
 use App\Services\Dataset\DatasetService;
 use Illuminate\Database\Seeder;
 
@@ -34,6 +36,8 @@ class DummyProjectSeeder extends Seeder {
 
         $projects = [
             [
+                'collaborator_id' => $adminAlice->getKey(),
+                'annotator_emails' => ['annotator.eva@example.com', 'annotator.grace@example.com', 'annotator.frank@example.com'],
                 'project' => [
                     'name' => 'NER – English News',
                     'description' => 'Named entity recognition on English-language news articles.',
@@ -78,6 +82,8 @@ class DummyProjectSeeder extends Seeder {
                 ],
             ],
             [
+                'collaborator_id' => $adminBob->getKey(),
+                'annotator_emails' => ['annotator.ivy@example.com', 'annotator.jack@example.com', 'annotator.karen@example.com'],
                 'project' => [
                     'name' => 'NER – Greek News',
                     'description' => 'Named entity recognition on Greek-language news articles.',
@@ -121,6 +127,8 @@ class DummyProjectSeeder extends Seeder {
                 ],
             ],
             [
+                'collaborator_id' => $managerCarol->getKey(),
+                'annotator_emails' => ['annotator.frank@example.com', 'annotator.grace@example.com'],
                 'project' => [
                     'name' => 'Sentiment – Product Reviews',
                     'description' => 'Sentiment analysis on e-commerce product reviews.',
@@ -152,6 +160,8 @@ class DummyProjectSeeder extends Seeder {
                 ],
             ],
             [
+                'collaborator_id' => $managerDave->getKey(),
+                'annotator_emails' => ['annotator.henry@example.com', 'annotator.ivy@example.com', 'annotator.jack@example.com'],
                 'project' => [
                     'name' => 'Toxic Content – Social Media',
                     'description' => 'Toxic content detection on social media posts.',
@@ -203,6 +213,24 @@ class DummyProjectSeeder extends Seeder {
                 ['name' => $entry['project']['name']],
                 $entry['project'],
             );
+
+            UserRelation::query()->firstOrCreate([
+                'user_id' => $entry['collaborator_id'],
+                'project_id' => $project->id,
+                'related_user_id' => $project->owner_user_id,
+                'relation_type' => UserRelationsEnum::COLLABORATOR_OF_USER,
+            ]);
+
+            foreach ($entry['annotator_emails'] as $email) {
+                $annotator = User::query()->where('email', $email)->firstOrFail();
+                UserRelation::query()->firstOrCreate([
+                    'user_id' => $annotator->id,
+                    'project_id' => $project->id,
+                    'related_user_id' => $project->owner_user_id,
+                    'relation_type' => UserRelationsEnum::ANNOTATOR_OF_MANAGER,
+                ]);
+
+            }
 
             if ($entry['project']['is_instance_shuffled']) {
                 $datasetId = $entry['project']['dataset_id'];
