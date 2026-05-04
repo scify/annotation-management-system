@@ -15,6 +15,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
     'description',
     'is_available',
 ])]
+/**
+ * @property-read int $id
+ * @property string $name
+ * @property string|null $description
+ * @property bool $is_available
+ */
 class Dataset extends Model {
     /** @use HasFactory<DatasetFactory> */
     use HasFactory;

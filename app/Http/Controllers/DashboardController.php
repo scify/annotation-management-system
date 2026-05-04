@@ -20,7 +20,6 @@ class DashboardController extends Controller {
     public function index(): Response|RedirectResponse {
         /** @var User $user */
         $user = Auth::user();
-
         if ($user->hasRole(RolesEnum::ANNOTATOR->value)) {
             return Inertia::render('dashboard-simple');
         }
@@ -30,8 +29,10 @@ class DashboardController extends Controller {
         $data_for_dashboard['my_projects'] = $this->dashboardService->getMyInProgressProjects($user->id);
         if ($user->hasRole(RolesEnum::ADMIN->value)) {
             // Also data for all Projects
-            $data_for_dashboard['my_projects'] = $this->dashboardService->getAllInProgressProjects();
+            $data_for_dashboard['all_projects'] = $this->dashboardService->getAllInProgressProjects();
         }
+
+        dump(json_decode(json_encode($data_for_dashboard), true));
 
         return Inertia::render('dashboard', $data_for_dashboard);
 

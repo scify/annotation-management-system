@@ -19,7 +19,7 @@ class UserController extends Controller {
     use AuthorizesRequests;
 
     public function __construct(
-        private UserService $userService
+        private readonly UserService $userService
     ) {}
 
     /**
