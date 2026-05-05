@@ -32,8 +32,6 @@ class DashboardController extends Controller {
             $data_for_dashboard['all_annotators'] = $this->dashboardService->getAllAnnotators();
         }
 
-        // dump(json_decode(json_encode($data_for_dashboard), true));
-
         return Inertia::render('dashboard', $data_for_dashboard);
 
     }
