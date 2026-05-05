@@ -47,6 +47,9 @@ class DummyProjectSeeder extends Seeder {
                     'status' => ProjectStatusEnum::IN_PROGRESS,
                     'restricted_visibility' => false,
                     'is_instance_shuffled' => false,
+                    'scheduled_at' => '2026-03-01',
+                    'started_at' => '2026-04-01 09:00:00',
+                    'deadline_at' => '2026-06-30',
                     'annotation_task_configuration' => [
                         ['id' => 0, 'answer' => 'Yes'],
                     ],
@@ -93,6 +96,7 @@ class DummyProjectSeeder extends Seeder {
                     'status' => ProjectStatusEnum::PENDING,
                     'restricted_visibility' => false,
                     'is_instance_shuffled' => true,
+                    'scheduled_at' => '2026-05-15',
                     'annotation_task_configuration' => [
                         ['id' => 0, 'answer' => 'No'],
                     ],
@@ -138,6 +142,8 @@ class DummyProjectSeeder extends Seeder {
                     'status' => ProjectStatusEnum::IN_PROGRESS,
                     'restricted_visibility' => false,
                     'is_instance_shuffled' => false,
+                    'scheduled_at' => '2026-02-15',
+                    'started_at' => '2026-03-10 09:00:00',
                     'annotation_task_configuration' => [
                         ['id' => 0, 'answer' => 'Yes'],
                     ],
@@ -171,6 +177,9 @@ class DummyProjectSeeder extends Seeder {
                     'status' => ProjectStatusEnum::IN_PROGRESS,
                     'restricted_visibility' => false,
                     'is_instance_shuffled' => false,
+                    'scheduled_at' => '2026-04-01',
+                    'started_at' => '2026-04-15 09:00:00',
+                    'deadline_at' => '2026-06-20',
                     'annotation_task_configuration' => [
                         ['id' => 0, 'answer' => 'Yes'],
                         ['id' => 1, 'answer' => 'Yes'],

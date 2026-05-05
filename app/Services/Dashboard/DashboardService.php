@@ -21,7 +21,7 @@ class DashboardService {
     public function getAllInProgressProjects(): array {
         $dashboard_project_data = Project::query()
             ->where('status', ProjectStatusEnum::IN_PROGRESS)
-            ->select(['id', 'name', 'owner_user_id', 'annotation_task_id', 'dataset_id', 'deadline_at'])
+            ->select(['id', 'name', 'owner_user_id', 'annotation_task_id', 'status', 'dataset_id', 'started_at', 'deadline_at'])
             ->get()
             ->map(fn (Project $project) => $project->makeHidden(['is_delayed_to_start', 'is_delayed_to_end'])->toArray())
             ->values()
@@ -45,7 +45,7 @@ class DashboardService {
                 $query->where('owner_user_id', $userId)
                     ->orWhereIn('owner_user_id', $collaboratorOwnerIds);
             })
-            ->select(['id', 'name', 'owner_user_id', 'annotation_task_id', 'dataset_id', 'deadline_at'])
+            ->select(['id', 'name', 'owner_user_id', 'annotation_task_id', 'dataset_id', 'status', 'started_at', 'deadline_at'])
             ->get()
             ->map(fn (Project $project) => $project->makeHidden(['is_delayed_to_start', 'is_delayed_to_end'])->toArray())
             ->values()
@@ -171,6 +171,27 @@ class DashboardService {
     /**
      * @param  array<int, array<string, mixed>>  $dashboard_project_data
      */
+    protected function augmentWithStatusLabel(array &$dashboard_project_data): void {
+        foreach ($dashboard_project_data as &$project) {
+            $enum = ProjectStatusEnum::tryFrom((string) $project['status']);
+            $project['status'] = $enum instanceof ProjectStatusEnum ? $enum->label() : $project['status'];
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $dashboard_project_data
+     */
+    protected function augmentWithDateRange(array &$dashboard_project_data): void {
+        foreach ($dashboard_project_data as &$project) {
+            $project['date_range_start'] = $project['started_at'] ?? null;
+            $project['date_range_end'] = $project['deadline_at'] ?? null;
+            unset($project['started_at'], $project['deadline_at']);
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $dashboard_project_data
+     */
     private function augmentProjectData(array &$dashboard_project_data): void {
         $this->augmentWithAnnotationTasks($dashboard_project_data);
         $this->augmentWithSubprojects($dashboard_project_data);
@@ -178,5 +199,7 @@ class DashboardService {
         $this->augmentWithNotifications($dashboard_project_data);
         $this->augmentWithManagers($dashboard_project_data);
         $this->augmentWithProgress($dashboard_project_data);
+        $this->augmentWithDateRange($dashboard_project_data);
+        $this->augmentWithStatusLabel($dashboard_project_data);
     }
 }

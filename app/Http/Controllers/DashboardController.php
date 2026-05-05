@@ -32,7 +32,7 @@ class DashboardController extends Controller {
             $data_for_dashboard['all_projects'] = $this->dashboardService->getAllInProgressProjects();
         }
 
-        // dump(json_decode(json_encode($data_for_dashboard), true));
+        dump(json_decode(json_encode($data_for_dashboard), true));
 
         return Inertia::render('dashboard', $data_for_dashboard);
 
