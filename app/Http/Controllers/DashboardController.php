@@ -24,17 +24,11 @@ class DashboardController extends Controller {
             return Inertia::render('dashboard-simple');
         }
 
-        $data_for_dashboard = [];
-        // Get all Projects owned by user
-        $data_for_dashboard['my_projects'] = $this->dashboardService->getMyInProgressProjects($user->id);
-        if ($user->hasRole(RolesEnum::ADMIN->value)) {
-            // Also data for all Projects
-            $data_for_dashboard['all_projects'] = $this->dashboardService->getAllInProgressProjects();
-        }
+        $projects = $user->hasRole(RolesEnum::ADMIN->value)
+            ? $this->dashboardService->getAllInProgressProjects()
+            : $this->dashboardService->getMyInProgressProjects($user->id);
 
-        // dump(json_decode(json_encode($data_for_dashboard), true));
-
-        return Inertia::render('dashboard', $data_for_dashboard);
+        return Inertia::render('dashboard', ['projects' => $projects]);
 
     }
 }
