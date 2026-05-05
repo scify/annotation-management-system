@@ -25,11 +25,11 @@ class DashboardController extends Controller {
         }
 
         $data_for_dashboard = [];
-        // Get all Projects owned by user
         $data_for_dashboard['my_projects'] = $this->dashboardService->getMyInProgressProjects($user->id);
+        $data_for_dashboard['my_annotators'] = $this->dashboardService->getMyAnnotators($data_for_dashboard['my_projects']);
         if ($user->hasRole(RolesEnum::ADMIN->value)) {
-            // Also data for all Projects
             $data_for_dashboard['all_projects'] = $this->dashboardService->getAllInProgressProjects();
+            $data_for_dashboard['all_annotators'] = $this->dashboardService->getAllAnnotators();
         }
 
         // dump(json_decode(json_encode($data_for_dashboard), true));
