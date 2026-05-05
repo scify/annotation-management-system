@@ -171,16 +171,6 @@ class DashboardService {
     /**
      * @param  array<int, array<string, mixed>>  $dashboard_project_data
      */
-    protected function augmentWithStatusLabel(array &$dashboard_project_data): void {
-        foreach ($dashboard_project_data as &$project) {
-            $enum = ProjectStatusEnum::tryFrom((string) $project['status']);
-            $project['status'] = $enum instanceof ProjectStatusEnum ? $enum->label() : $project['status'];
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $dashboard_project_data
-     */
     protected function augmentWithDateRange(array &$dashboard_project_data): void {
         foreach ($dashboard_project_data as &$project) {
             $project['date_range_start'] = $project['started_at'] ?? null;
@@ -200,6 +190,5 @@ class DashboardService {
         $this->augmentWithManagers($dashboard_project_data);
         $this->augmentWithProgress($dashboard_project_data);
         $this->augmentWithDateRange($dashboard_project_data);
-        $this->augmentWithStatusLabel($dashboard_project_data);
     }
 }
