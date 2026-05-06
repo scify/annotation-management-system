@@ -24,6 +24,12 @@ return [
     'projects_count' => ':count Projects',
     'search_placeholder' => 'Search Projects…',
 
+    'status' => [
+        'pending' => 'Pending',
+        'in_progress' => 'In Progress',
+        'completed' => 'Completed',
+    ],
+
     'card' => [
         'overall_progress' => 'Overall Progress',
         'owner' => 'Owner:',
@@ -100,6 +106,7 @@ return [
         'table_active_projects' => 'Active Projects',
         'table_remaining_workload' => 'Remaining Workload',
         'table_progress' => 'Progress',
+        'no_annotators' => 'No annotators found.',
     ],
 
     'create' => [

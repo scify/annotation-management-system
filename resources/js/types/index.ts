@@ -93,6 +93,35 @@ export type PageProps<T extends Record<string, unknown> = Record<string, unknown
 	ziggy: Config & { location: string };
 };
 
+export type ProjectStatus = 'pending' | 'in_progress' | 'completed';
+
+export interface Project {
+	id: number;
+	name: string;
+	owner_user_id: number;
+	annotation_task_id: number;
+	status: ProjectStatus;
+	dataset_id: number;
+	annotation_task_title: string | null;
+	dataset_name: string | null;
+	subprojects_count: number;
+	annotators_count: number;
+	notifications_count: number;
+	owner_name: string | null;
+	co_managers: Array<{ id: number; username: string }> | null;
+	project_progress: number;
+	date_range_start: string | null;
+	date_range_end: string | null;
+}
+
+export interface Annotator {
+	id: number;
+	name: string;
+	annotator_progress: number;
+	active_projects_count: number;
+	workload: number;
+}
+
 export enum RolesEnum {
 	ADMIN = 'admin',
 	ANNOTATION_MANAGER = 'annotation-manager',

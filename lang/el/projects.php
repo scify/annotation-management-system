@@ -24,6 +24,12 @@ return [
     'projects_count' => ':count Έργα',
     'search_placeholder' => 'Αναζήτηση Έργων…',
 
+    'status' => [
+        'pending' => 'Σε αναμονή',
+        'in_progress' => 'Σε εξέλιξη',
+        'completed' => 'Ολοκληρωμένο',
+    ],
+
     'card' => [
         'overall_progress' => 'Συνολική Πρόοδος',
         'owner' => 'Ιδιοκτήτης:',
@@ -100,6 +106,7 @@ return [
         'table_active_projects' => 'Ενεργά Έργα',
         'table_remaining_workload' => 'Υπόλοιπος Φόρτος',
         'table_progress' => 'Πρόοδος',
+        'no_annotators' => 'Δεν βρέθηκαν επισημειωτές.',
     ],
 
     'create' => [
