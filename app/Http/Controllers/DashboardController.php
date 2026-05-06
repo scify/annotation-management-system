@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Services\Dashboard\DashboardService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -33,8 +32,13 @@ class DashboardController extends Controller {
             $data_for_dashboard['all_annotators'] = $this->dashboardService->getAllAnnotators();
         }
 
-        Storage::disk('local')->put('dashboard-data.json', json_encode($data_for_dashboard));
-
+        //        Storage::disk('local')->put(
+        //            'dashboard-data.json',
+        //            json_encode(
+        //                $data_for_dashboard,
+        //                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        //            )
+        //        );
         return Inertia::render('dashboard', $data_for_dashboard);
 
     }

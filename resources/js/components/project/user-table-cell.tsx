@@ -27,7 +27,7 @@ export function UserTableCell({
                     {initials}
                 </AvatarFallback>
             </Avatar>
-            <div className="flex min-w-0 flex-col">
+            <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-base font-medium text-slate-800">{username}</span>
                 {email && <span className="text-sm text-slate-400">{email}</span>}
             </div>
