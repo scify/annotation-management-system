@@ -3,13 +3,13 @@
  * The message comes from the API's `{ error: '...' }` response body.
  */
 export class ApiError extends Error {
-	constructor(
-		readonly status: number,
-		message: string
-	) {
-		super(message);
-		this.name = 'ApiError';
-	}
+    constructor(
+        readonly status: number,
+        message: string
+    ) {
+        super(message);
+        this.name = 'ApiError';
+    }
 }
 
 /**
@@ -17,8 +17,8 @@ export class ApiError extends Error {
  * The cookie value is URL-encoded — decodeURIComponent gives us the raw token.
  */
 function xsrfToken(): string {
-	const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
-	return match ? decodeURIComponent(match[1]) : '';
+    const match = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
 }
 
 type ErrorBody = { error?: string };
@@ -42,21 +42,21 @@ type ErrorBody = { error?: string };
  * }
  */
 export async function apiFetch<T = unknown>(path: string, options: RequestInit = {}): Promise<T> {
-	const response = await fetch(path, {
-		...options,
-		credentials: 'include',
-		headers: {
-			Accept: 'application/json',
-			'Content-Type': 'application/json',
-			'X-XSRF-TOKEN': xsrfToken(),
-			...options.headers,
-		},
-	});
+    const response = await fetch(path, {
+        ...options,
+        credentials: 'include',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': xsrfToken(),
+            ...options.headers,
+        },
+    });
 
-	if (!response.ok) {
-		const body = (await response.json().catch((): ErrorBody => ({}))) as ErrorBody;
-		throw new ApiError(response.status, body.error ?? response.statusText);
-	}
+    if (!response.ok) {
+        const body = (await response.json().catch((): ErrorBody => ({}))) as ErrorBody;
+        throw new ApiError(response.status, body.error ?? response.statusText);
+    }
 
-	return response.json() as Promise<T>;
+    return response.json() as Promise<T>;
 }

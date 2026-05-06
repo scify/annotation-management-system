@@ -5,19 +5,19 @@ import { type ReactNode } from 'react';
 import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 
 interface AppLayoutProps {
-	children: ReactNode;
-	breadcrumbs?: BreadcrumbItem[];
+    children: ReactNode;
+    breadcrumbs?: BreadcrumbItem[];
 }
 
 const AppLayout = ({ children, breadcrumbs, ...props }: AppLayoutProps) => {
-	useFlashMessages();
+    useFlashMessages();
 
-	return (
-		<AppLayoutTemplate breadcrumbs={breadcrumbs} {...props}>
-			{children}
-			<Toaster />
-		</AppLayoutTemplate>
-	);
+    return (
+        <AppLayoutTemplate breadcrumbs={breadcrumbs} {...props}>
+            {children}
+            <Toaster />
+        </AppLayoutTemplate>
+    );
 };
 
 AppLayout.displayName = 'AppLayout';

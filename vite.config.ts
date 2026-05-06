@@ -9,121 +9,121 @@ import tailwindcss from '@tailwindcss/vite';
 import { NodePackageImporter } from 'sass-embedded';
 
 interface ImportMetaEnv {
-	readonly VITE_DEV_URL: string;
-	readonly VITE_APP_PORT: string;
-	readonly VITE_DEV_PORT: string;
-	readonly APP_DEVELOPMENT_ENV: string;
-	readonly VITE_NOCAPTCHA_SITEKEY: string;
+    readonly VITE_DEV_URL: string;
+    readonly VITE_APP_PORT: string;
+    readonly VITE_DEV_PORT: string;
+    readonly APP_DEVELOPMENT_ENV: string;
+    readonly VITE_NOCAPTCHA_SITEKEY: string;
 }
 
 /**
  * Check if the additional environment file should be loaded.
  */
 function shouldLoadAdditionalEnv(mainEnv: Record<string, string>): boolean {
-	const isLocalEnv = mainEnv.APP_ENV === 'local';
-	return (
-		(mainEnv.APP_DEVELOPMENT_ENV && mainEnv.APP_DEVELOPMENT_ENV.length > 1 && isLocalEnv) ||
-		false
-	);
+    const isLocalEnv = mainEnv.APP_ENV === 'local';
+    return (
+        (mainEnv.APP_DEVELOPMENT_ENV && mainEnv.APP_DEVELOPMENT_ENV.length > 1 && isLocalEnv) ||
+        false
+    );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default defineConfig(({ mode, command }) => {
-	// Load the main .env file (Vite's built-in function)
-	const mainEnv = loadEnv(mode, process.cwd(), '');
+    // Load the main .env file (Vite's built-in function)
+    const mainEnv = loadEnv(mode, process.cwd(), '');
 
-	// Determine which additional .env file to load
-	const developmentEnv = mainEnv.APP_DEVELOPMENT_ENV ?? 'native'; // Default to .env.native
+    // Determine which additional .env file to load
+    const developmentEnv = mainEnv.APP_DEVELOPMENT_ENV ?? 'native'; // Default to .env.native
 
-	let additionalEnv: Record<string, string> = {};
-	if (shouldLoadAdditionalEnv(mainEnv)) {
-		const additionalEnvFile = path.resolve(process.cwd(), `.env.${developmentEnv}`);
-		if (fs.existsSync(additionalEnvFile)) {
-			console.log(`Loading additional environment variables from ${additionalEnvFile}`);
-			additionalEnv = dotenv.parse(fs.readFileSync(additionalEnvFile));
+    let additionalEnv: Record<string, string> = {};
+    if (shouldLoadAdditionalEnv(mainEnv)) {
+        const additionalEnvFile = path.resolve(process.cwd(), `.env.${developmentEnv}`);
+        if (fs.existsSync(additionalEnvFile)) {
+            console.log(`Loading additional environment variables from ${additionalEnvFile}`);
+            additionalEnv = dotenv.parse(fs.readFileSync(additionalEnvFile));
 
-			// Manually inject additionalEnv into process.env
-			for (const [key, value] of Object.entries(additionalEnv)) {
-				process.env[key] = value as string;
-			}
-		} else {
-			console.warn(`Additional environment file does not exist: ${additionalEnvFile}`);
-		}
-	}
+            // Manually inject additionalEnv into process.env
+            for (const [key, value] of Object.entries(additionalEnv)) {
+                process.env[key] = value as string;
+            }
+        } else {
+            console.warn(`Additional environment file does not exist: ${additionalEnvFile}`);
+        }
+    }
 
-	// Merge environment variables (additionalEnv **overrides** mainEnv)
-	const env: ImportMetaEnv = { ...mainEnv, ...additionalEnv } as unknown as ImportMetaEnv;
+    // Merge environment variables (additionalEnv **overrides** mainEnv)
+    const env: ImportMetaEnv = { ...mainEnv, ...additionalEnv } as unknown as ImportMetaEnv;
 
-	const DEV_URL = env.VITE_DEV_URL ?? 'http://localhost';
-	const APP_PORT = env.VITE_APP_PORT ?? '8000';
-	const DEV_PORT = env.VITE_DEV_PORT ?? '5179';
+    const DEV_URL = env.VITE_DEV_URL ?? 'http://localhost';
+    const APP_PORT = env.VITE_APP_PORT ?? '8000';
+    const DEV_PORT = env.VITE_DEV_PORT ?? '5179';
 
-	const origins = [
-		`${DEV_URL}`, // Laravel app URL
-		`${DEV_URL}:${APP_PORT}`, // Laravel served over HTTPS (DDEV)
-		`${DEV_URL}:${DEV_PORT}`, // Vite dev server
-	];
+    const origins = [
+        `${DEV_URL}`, // Laravel app URL
+        `${DEV_URL}:${APP_PORT}`, // Laravel served over HTTPS (DDEV)
+        `${DEV_URL}:${DEV_PORT}`, // Vite dev server
+    ];
 
-	if (DEV_URL.includes('localhost')) {
-		// Add 127.0.0.1 when DEV_URL is localhost
-		origins.push('http://127.0.0.1:' + APP_PORT);
-	}
+    if (DEV_URL.includes('localhost')) {
+        // Add 127.0.0.1 when DEV_URL is localhost
+        origins.push('http://127.0.0.1:' + APP_PORT);
+    }
 
-	// Determine WebSocket protocol based on DEV_URL
-	// Ensures Hot Module Reloading (HMR) works with HTTPS
-	const wsProtocol = DEV_URL.startsWith('https') ? 'wss' : 'ws';
+    // Determine WebSocket protocol based on DEV_URL
+    // Ensures Hot Module Reloading (HMR) works with HTTPS
+    const wsProtocol = DEV_URL.startsWith('https') ? 'wss' : 'ws';
 
-	return {
-		plugins: [
-			laravel({
-				input: 'resources/js/app.tsx',
-				refresh: true,
-			}),
-			inertia({ ssr: { entry: 'resources/js/ssr.tsx' } }),
-			react(),
-			tailwindcss(),
-		],
-		server: {
-			host: '0.0.0.0',
-			port: Number(DEV_PORT),
-			strictPort: true,
-			origin: `${DEV_URL}:${DEV_PORT}`,
-			cors: {
-				origin: origins,
-				methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-				allowedHeaders: ['Content-Type', 'Authorization'],
-				credentials: true,
-			},
-			hmr: {
-				protocol: wsProtocol,
-				host: new URL(DEV_URL).hostname, // Extracts the hostname
-				port: Number(DEV_PORT),
-			},
-		},
-		css: {
-			postcss: './postcss.config.js',
-			preprocessorOptions: {
-				scss: {
-					api: 'modern-compiler',
-					silenceDeprecations: [
-						'color-functions',
-						'import',
-						'global-builtin',
-						'if-function',
-					],
-					importers: [new NodePackageImporter()],
-				},
-			},
-			devSourcemap: true,
-		},
-		resolve: {
-			alias: {
-				'@fontsource-variable': path.resolve(
-					__dirname,
-					'node_modules/@fontsource-variable'
-				),
-				'ziggy-js': path.resolve(__dirname, 'vendor/tightenco/ziggy'),
-			},
-		},
-	};
+    return {
+        plugins: [
+            laravel({
+                input: 'resources/js/app.tsx',
+                refresh: true,
+            }),
+            inertia({ ssr: { entry: 'resources/js/ssr.tsx' } }),
+            react(),
+            tailwindcss(),
+        ],
+        server: {
+            host: '0.0.0.0',
+            port: Number(DEV_PORT),
+            strictPort: true,
+            origin: `${DEV_URL}:${DEV_PORT}`,
+            cors: {
+                origin: origins,
+                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+                allowedHeaders: ['Content-Type', 'Authorization'],
+                credentials: true,
+            },
+            hmr: {
+                protocol: wsProtocol,
+                host: new URL(DEV_URL).hostname, // Extracts the hostname
+                port: Number(DEV_PORT),
+            },
+        },
+        css: {
+            postcss: './postcss.config.js',
+            preprocessorOptions: {
+                scss: {
+                    api: 'modern-compiler',
+                    silenceDeprecations: [
+                        'color-functions',
+                        'import',
+                        'global-builtin',
+                        'if-function',
+                    ],
+                    importers: [new NodePackageImporter()],
+                },
+            },
+            devSourcemap: true,
+        },
+        resolve: {
+            alias: {
+                '@fontsource-variable': path.resolve(
+                    __dirname,
+                    'node_modules/@fontsource-variable'
+                ),
+                'ziggy-js': path.resolve(__dirname, 'vendor/tightenco/ziggy'),
+            },
+        },
+    };
 });

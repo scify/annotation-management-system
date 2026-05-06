@@ -14,105 +14,105 @@ import SettingsLayout from '@/layouts/settings/layout';
 import { useTranslations } from '@/hooks/use-translations';
 
 interface ProfileForm {
-	name: string;
-	email: string;
+    name: string;
+    email: string;
 }
 
 export default function Profile({
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	status,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    status,
 }: Readonly<{
-	status?: string;
+    status?: string;
 }>) {
-	const { t } = useTranslations();
-	const { auth } = usePage<SharedData>().props;
+    const { t } = useTranslations();
+    const { auth } = usePage<SharedData>().props;
 
-	const breadcrumbs: BreadcrumbItem[] = [
-		{
-			title: t('settings.profile.title'),
-			href: '/settings/profile',
-		},
-	];
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: t('settings.profile.title'),
+            href: '/settings/profile',
+        },
+    ];
 
-	const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<
-		Required<ProfileForm>
-	>({
-		name: auth.user?.name ?? '',
-		email: auth.user?.email ?? '',
-	});
+    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<
+        Required<ProfileForm>
+    >({
+        name: auth.user?.name ?? '',
+        email: auth.user?.email ?? '',
+    });
 
-	const submit: FormEventHandler = (e) => {
-		e.preventDefault();
+    const submit: FormEventHandler = (e) => {
+        e.preventDefault();
 
-		patch(route('profile.update'), {
-			preserveScroll: true,
-		});
-	};
+        patch(route('profile.update'), {
+            preserveScroll: true,
+        });
+    };
 
-	return (
-		<AppLayout breadcrumbs={breadcrumbs}>
-			<Head title={t('settings.profile.title')} />
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={t('settings.profile.title')} />
 
-			<SettingsLayout>
-				<div className="space-y-6">
-					<HeadingSmall
-						title={t('settings.profile.title')}
-						description={t('settings.profile.description')}
-					/>
+            <SettingsLayout>
+                <div className="space-y-6">
+                    <HeadingSmall
+                        title={t('settings.profile.title')}
+                        description={t('settings.profile.description')}
+                    />
 
-					<form onSubmit={submit} className="space-y-6">
-						<div className="grid gap-2">
-							<Label htmlFor="name">{t('settings.profile.name')}</Label>
+                    <form onSubmit={submit} className="space-y-6">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">{t('settings.profile.name')}</Label>
 
-							<Input
-								id="name"
-								className="mt-1 block w-full"
-								value={data.name}
-								onChange={(e) => setData('name', e.target.value)}
-								required
-								autoComplete="name"
-								placeholder={t('settings.profile.name_placeholder')}
-							/>
+                            <Input
+                                id="name"
+                                className="mt-1 block w-full"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                                required
+                                autoComplete="name"
+                                placeholder={t('settings.profile.name_placeholder')}
+                            />
 
-							<InputError className="mt-2" message={errors.name} />
-						</div>
+                            <InputError className="mt-2" message={errors.name} />
+                        </div>
 
-						<div className="grid gap-2">
-							<Label htmlFor="email">{t('settings.profile.email')}</Label>
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">{t('settings.profile.email')}</Label>
 
-							<Input
-								id="email"
-								type="email"
-								className="mt-1 block w-full"
-								value={data.email}
-								onChange={(e) => setData('email', e.target.value)}
-								required
-								autoComplete="username"
-								placeholder={t('settings.profile.email_placeholder')}
-							/>
+                            <Input
+                                id="email"
+                                type="email"
+                                className="mt-1 block w-full"
+                                value={data.email}
+                                onChange={(e) => setData('email', e.target.value)}
+                                required
+                                autoComplete="username"
+                                placeholder={t('settings.profile.email_placeholder')}
+                            />
 
-							<InputError className="mt-2" message={errors.email} />
-						</div>
+                            <InputError className="mt-2" message={errors.email} />
+                        </div>
 
-						<div className="flex items-center gap-4">
-							<Button disabled={processing}>
-								{t('settings.profile.save_button')}
-							</Button>
+                        <div className="flex items-center gap-4">
+                            <Button disabled={processing}>
+                                {t('settings.profile.save_button')}
+                            </Button>
 
-							<p
-								className={cn(
-									'text-sm text-neutral-600 transition-opacity duration-300 motion-safe:transition-opacity',
-									recentlySuccessful ? 'opacity-100' : 'opacity-0'
-								)}
-							>
-								{t('settings.profile.saved')}
-							</p>
-						</div>
-					</form>
-				</div>
+                            <p
+                                className={cn(
+                                    'text-sm text-neutral-600 transition-opacity duration-300 motion-safe:transition-opacity',
+                                    recentlySuccessful ? 'opacity-100' : 'opacity-0'
+                                )}
+                            >
+                                {t('settings.profile.saved')}
+                            </p>
+                        </div>
+                    </form>
+                </div>
 
-				<DeleteUser />
-			</SettingsLayout>
-		</AppLayout>
-	);
+                <DeleteUser />
+            </SettingsLayout>
+        </AppLayout>
+    );
 }

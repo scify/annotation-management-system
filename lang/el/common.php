@@ -16,4 +16,11 @@ return [
     ],
     'switch_to_english' => 'Εναλλαγή σε Αγγλικά',
     'switch_to_greek' => 'Εναλλαγή σε Ελληνικά',
+    'send_message' => [
+        'title' => 'Αποστολή Μηνύματος',
+        'description' => 'Γράψτε ένα μήνυμα στον/στην :username',
+        'send' => 'Αποστολή',
+        'cancel' => 'Ακύρωση',
+        'placeholder' => 'Γράψτε το μήνυμά σας…',
+    ],
 ];

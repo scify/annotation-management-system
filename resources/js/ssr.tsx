@@ -14,38 +14,38 @@ const appName = import.meta.env.VITE_APP_NAME ?? 'Laravel';
 const createBoundRoute = useRoute;
 
 createServer((page) =>
-	createInertiaApp({
-		page,
-		render: ReactDOMServer.renderToString,
-		title: (title) => `${title} - ${appName}`,
-		resolve: (name) => {
-			const pages = import.meta.glob<{ default: ComponentType }>('./pages/**/*.tsx');
-			return pages[`./pages/${name}.tsx`]().then((m) => m.default);
-		},
-		setup: ({ App, props }) => {
-			// page.props is SharedData at runtime. Inertia types it as Record<string,unknown>
-			// so a double cast via unknown is required — this is TypeScript's own recommended
-			// pattern for non-overlapping structural casts.
-			const { ziggy } = page.props as unknown as SharedData;
+    createInertiaApp({
+        page,
+        render: ReactDOMServer.renderToString,
+        title: (title) => `${title} - ${appName}`,
+        resolve: (name) => {
+            const pages = import.meta.glob<{ default: ComponentType }>('./pages/**/*.tsx');
+            return pages[`./pages/${name}.tsx`]().then((m) => m.default);
+        },
+        setup: ({ App, props }) => {
+            // page.props is SharedData at runtime. Inertia types it as Record<string,unknown>
+            // so a double cast via unknown is required — this is TypeScript's own recommended
+            // pattern for non-overlapping structural casts.
+            const { ziggy } = page.props as unknown as SharedData;
 
-			// Destructure location (string in SharedData) before spreading so we can pass
-			// a URL object as required by Ziggy's Config.location type.
-			const { location: locationString, ...ziggyConfig } = ziggy;
+            // Destructure location (string in SharedData) before spreading so we can pass
+            // a URL object as required by Ziggy's Config.location type.
+            const { location: locationString, ...ziggyConfig } = ziggy;
 
-			// createBoundRoute returns a fully-typed typeof route bound to the given config,
-			// which is assigned to global.route for use by components during SSR rendering.
-			globalThis.route = createBoundRoute({
-				...ziggyConfig,
-				location: new URL(locationString),
-			});
+            // createBoundRoute returns a fully-typed typeof route bound to the given config,
+            // which is assigned to global.route for use by components during SSR rendering.
+            globalThis.route = createBoundRoute({
+                ...ziggyConfig,
+                location: new URL(locationString),
+            });
 
-			// RouterProvider navigate is a no-op during SSR; client-side routing handles
-			// actual navigation after hydration.
-			return (
-				<RouterProvider navigate={() => {}}>
-					<App {...props} />
-				</RouterProvider>
-			);
-		},
-	})
+            // RouterProvider navigate is a no-op during SSR; client-side routing handles
+            // actual navigation after hydration.
+            return (
+                <RouterProvider navigate={() => {}}>
+                    <App {...props} />
+                </RouterProvider>
+            );
+        },
+    })
 );

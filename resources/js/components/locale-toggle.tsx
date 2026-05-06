@@ -5,36 +5,36 @@ import { router, usePage } from '@inertiajs/react';
 import { useCallback } from 'react';
 
 interface LocaleToggleProps {
-	className?: string;
+    className?: string;
 }
 
 export function LocaleToggle({ className }: LocaleToggleProps) {
-	const { app } = usePage<SharedData>().props;
-	const { t } = useTranslations();
-	const nextLocale = app.locale === 'el' ? 'en' : 'el';
+    const { app } = usePage<SharedData>().props;
+    const { t } = useTranslations();
+    const nextLocale = app.locale === 'el' ? 'en' : 'el';
 
-	const switchLocale = useCallback(() => {
-		router.put(
-			route('locale.update'),
-			{ locale: nextLocale },
-			{
-				preserveScroll: true,
-				preserveState: false,
-			}
-		);
-	}, [nextLocale]);
+    const switchLocale = useCallback(() => {
+        router.put(
+            route('locale.update'),
+            { locale: nextLocale },
+            {
+                preserveScroll: true,
+                preserveState: false,
+            }
+        );
+    }, [nextLocale]);
 
-	const label = app.locale === 'el' ? t('common.switch_to_english') : t('common.switch_to_greek');
+    const label = app.locale === 'el' ? t('common.switch_to_english') : t('common.switch_to_greek');
 
-	return (
-		<Button
-			variant="ghost"
-			size="sm"
-			className={className}
-			onPress={switchLocale}
-			aria-label={label}
-		>
-			{app.locale === 'el' ? 'GR' : 'EN'}
-		</Button>
-	);
+    return (
+        <Button
+            variant="ghost"
+            size="sm"
+            className={className}
+            onPress={switchLocale}
+            aria-label={label}
+        >
+            {app.locale === 'el' ? 'GR' : 'EN'}
+        </Button>
+    );
 }

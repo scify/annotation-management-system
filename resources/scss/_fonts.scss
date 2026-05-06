@@ -25,14 +25,14 @@
 // Inter (Variable, supports weights 100-900). Latin, Latin-extended and
 // Greek character sets included (Greek needed for the application's locale).
 @include Fontsource.faces(
-	$metadata: Inter.$metadata,
-	$family: 'Inter Variable',
-	$directory: '@fontsource-variable/inter/files',
-	$subsets: (
-		latin,
-		latin-ext,
-		greek,
-	)
+    $metadata: Inter.$metadata,
+    $family: 'Inter Variable',
+    $directory: '@fontsource-variable/inter/files',
+    $subsets: (
+        latin,
+        latin-ext,
+        greek,
+    )
 );
 
 // Open Sans (Variable, supports weights 300-800). By default, Latin,
@@ -40,13 +40,13 @@
 // & Math character sets are included. No italics. This include replaces:
 //  @link https://fontsource.org/fonts/open-sans/install
 @include Fontsource.faces(
-	$metadata: SourceSans.$metadata,
-	$family: 'Source Sans 3 Variable',
-	$directory: '@fontsource-variable/source-sans-3/files',
-	$subsets: (
-		latin,
-		latin-ext,
-	)
+    $metadata: SourceSans.$metadata,
+    $family: 'Source Sans 3 Variable',
+    $directory: '@fontsource-variable/source-sans-3/files',
+    $subsets: (
+        latin,
+        latin-ext,
+    )
 );
 
 // Quicksand (Variable, supports weights 300-700). By default, Latin,
@@ -54,13 +54,13 @@
 // & Math character sets are included. No italics. This include replaces:
 //  @link https://fontsource.org/fonts/quicksand/install
 @include Fontsource.faces(
-	$metadata: Quicksand.$metadata,
-	$family: 'Quicksand Variable',
-	$directory: '@fontsource-variable/quicksand/files',
-	$subsets: (
-		latin,
-		latin-ext,
-	)
+    $metadata: Quicksand.$metadata,
+    $family: 'Quicksand Variable',
+    $directory: '@fontsource-variable/quicksand/files',
+    $subsets: (
+        latin,
+        latin-ext,
+    )
 );
 
 // Montserrat (Variable, supports weights 100-900). By default, Latin,
@@ -68,13 +68,13 @@
 // & Math character sets are included. No italics. This include replaces:
 //  @link https://fontsource.org/fonts/montserrat/install
 @include Fontsource.faces(
-	$metadata: Montserrat.$metadata,
-	$family: 'Montserrat Variable',
-	$directory: '@fontsource-variable/montserrat/files',
-	$subsets: (
-		latin,
-		latin-ext,
-	)
+    $metadata: Montserrat.$metadata,
+    $family: 'Montserrat Variable',
+    $directory: '@fontsource-variable/montserrat/files',
+    $subsets: (
+        latin,
+        latin-ext,
+    )
 );
 
 // Fira Code (Variable, supports weights 300-700). By default, Latin,
@@ -82,11 +82,11 @@
 // & Math character sets are included. No italics. This include replaces:
 //  @link https://fontsource.org/fonts/fira-code/install
 @include Fontsource.faces(
-	$metadata: FiraCode.$metadata,
-	$family: 'Fira Code Variable',
-	$directory: '@fontsource-variable/fira-code/files',
-	$subsets: (
-		latin,
-		latin-ext,
-	)
+    $metadata: FiraCode.$metadata,
+    $family: 'Fira Code Variable',
+    $directory: '@fontsource-variable/fira-code/files',
+    $subsets: (
+        latin,
+        latin-ext,
+    )
 );

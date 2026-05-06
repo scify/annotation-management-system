@@ -8,18 +8,18 @@
 *,
 *::before,
 *::after {
-	box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 body {
-	line-height: 1.5;
-	-webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
 html {
-	text-size-adjust: none;
-	text-size-adjust: none;
-	text-size-adjust: none;
+    text-size-adjust: none;
+    text-size-adjust: none;
+    text-size-adjust: none;
 }
 
 p,
@@ -29,8 +29,8 @@ h3,
 h4,
 h5,
 h6 {
-	padding: 0;
-	overflow-wrap: break-word;
+    padding: 0;
+    overflow-wrap: break-word;
 }
 
 h1,
@@ -40,7 +40,7 @@ h4,
 button,
 input,
 label {
-	line-height: 1.1;
+    line-height: 1.1;
 }
 
 img,
@@ -48,26 +48,26 @@ picture,
 video,
 canvas,
 svg {
-	display: block;
-	max-width: 100%;
+    display: block;
+    max-width: 100%;
 }
 
 input,
 button,
 textarea,
 select {
-	font: inherit;
+    font: inherit;
 }
 
 /* Behaves disabled buttons */
 button:disabled,
 button.disabled {
-	cursor: default;
-	pointer-events: none;
+    cursor: default;
+    pointer-events: none;
 }
 
 /* Isolates app's z-index */
 #root,
 #app {
-	isolation: isolate;
+    isolation: isolate;
 }

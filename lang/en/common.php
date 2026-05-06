@@ -16,4 +16,11 @@ return [
     ],
     'switch_to_english' => 'Switch to English',
     'switch_to_greek' => 'Switch to Greek',
+    'send_message' => [
+        'title' => 'Send Message',
+        'description' => 'Write a message to :username',
+        'send' => 'Send',
+        'cancel' => 'Cancel',
+        'placeholder' => 'Type your message…',
+    ],
 ];

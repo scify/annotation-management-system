@@ -1,41 +1,41 @@
 /** @type {import("prettier").Config} */
 module.exports = {
-	// Maximum line length before wrapping
-	printWidth: 100,
+    // Maximum line length before wrapping
+    printWidth: 100,
 
-	// Use 4 spaces for indentation
-	tabWidth: 4,
+    // Use 4 spaces for indentation
+    tabWidth: 4,
 
-	// Use spaces instead of tabs
-	useTabs: true,
+    // Use spaces instead of tabs
+    useTabs: false,
 
-	// Add semicolons at the end of statements
-	semi: true,
+    // Add semicolons at the end of statements
+    semi: true,
 
-	// Use single quotes instead of double quotes
-	singleQuote: true,
+    // Use single quotes instead of double quotes
+    singleQuote: true,
 
-	// Object and array formatting
-	trailingComma: 'es5',
-	bracketSpacing: true,
+    // Object and array formatting
+    trailingComma: 'es5',
+    bracketSpacing: true,
 
-	// Always include parentheses around arrow function parameters
-	arrowParens: 'always',
+    // Always include parentheses around arrow function parameters
+    arrowParens: 'always',
 
-	// Line endings
-	endOfLine: 'lf',
+    // Line endings
+    endOfLine: 'lf',
 
-	// Vue files formatting
-	vueIndentScriptAndStyle: true,
-	singleAttributePerLine: false,
+    // Vue files formatting
+    vueIndentScriptAndStyle: true,
+    singleAttributePerLine: false,
 
-	// HTML formatting
-	htmlWhitespaceSensitivity: 'css',
-	bracketSameLine: false,
+    // HTML formatting
+    htmlWhitespaceSensitivity: 'css',
+    bracketSameLine: false,
 
-	// Handle embedded code formatting (like CSS-in-JS)
-	embeddedLanguageFormatting: 'auto',
+    // Handle embedded code formatting (like CSS-in-JS)
+    embeddedLanguageFormatting: 'auto',
 
-	// Plugins for additional formatting rules
-	plugins: ['prettier-plugin-tailwindcss'],
+    // Plugins for additional formatting rules
+    plugins: ['prettier-plugin-tailwindcss'],
 };
