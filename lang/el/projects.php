@@ -33,7 +33,7 @@ return [
     'card' => [
         'overall_progress' => 'Συνολική Πρόοδος',
         'owner' => 'Ιδιοκτήτης:',
-        'co_managers' => 'Συν-διαχειριστές:',
+        'co_managers' => 'Συνυπεύθυνοι:',
         'view_project' => 'Προβολή Έργου',
     ],
 
@@ -41,7 +41,7 @@ return [
         'overall_progress' => 'Συνολική Πρόοδος',
         'tab_subprojects' => 'Υποέργα',
         'tab_annotators' => 'Επισημειωτές',
-        'tab_managers' => 'Συνδιαχειριστές',
+        'tab_managers' => 'Συνυπεύθυνοι',
         'tab_export' => 'Εξαγωγή',
         'tag_task' => 'Εργασία:',
         'tag_dataset' => 'Σύνολο δεδομένων:',
@@ -59,7 +59,7 @@ return [
     ],
 
     'managers_tab' => [
-        'title' => 'Συνδιαχειριστές',
+        'title' => 'Συνυπεύθυνοι',
         'invite_placeholder' => 'Κείμενο…',
         'invite_button' => 'Πρόσκληση μέσω email',
         'table_username' => 'Όνομα χρήστη',
@@ -67,7 +67,7 @@ return [
         'table_ownership' => 'Ιδιοκτησία',
         'table_actions' => 'Ενέργειες',
         'role_owner' => 'Ιδιοκτήτης',
-        'role_co_manager' => 'Συνδιαχειριστής',
+        'role_co_manager' => 'Συνυπεύθυνος Επισημειωτών',
         'ownership_request_button' => 'Αίτημα Ιδιοκτησίας',
         'leave_button' => 'Αίτημα αποχώρησης',
         'dialog_ownership_title' => 'Αίτημα Ιδιοκτησίας',
@@ -105,7 +105,7 @@ return [
         'stats_heading' => 'Στατιστικά Πλατφόρμας',
         'stats_total_projects' => 'Σύνολο Έργων',
         'stats_total_annotators' => 'Σύνολο Επισημειωτών',
-        'stats_total_managers' => 'Σύνολο Διαχειριστών',
+        'stats_total_managers' => 'Σύνολο Υπεύθυνων Επισημειωτών',
         'stats_total_admins' => 'Σύνολο Διαχειριστών Συστήματος',
         'stats_subtitle_system_wide' => 'Σύνολο συστήματος',
         'stats_subtitle_active_users' => 'Ενεργοί χρήστες',
@@ -130,13 +130,13 @@ return [
         'step_select_task_type' => 'Επιλογή Τύπου Εργασίας',
         'step_configurations' => 'Ρυθμίσεις',
         'step_select_annotators' => 'Επιλογή Επισημειωτών',
-        'step_add_co_managers' => 'Προσθήκη Συν-Διαχειριστών',
+        'step_add_co_managers' => 'Προσθήκη Συν-Υπεύθυνων Επισημειωτών',
         'dialog_description' => 'Εισάγετε ένα όνομα για το έργο',
         'dialog_name_placeholder' => 'Όνομα έργου…',
     ],
 
     'select_co_managers' => [
-        'heading' => 'Προσθήκη Συν-Διαχειριστών',
+        'heading' => 'Προσθήκη Συν-Υπεύθυνων Επισημειωτών',
         'selected_count' => ':count επιλεγμένοι',
         'select_all' => 'Επιλογή όλων',
         'email_placeholder' => 'Εισάγετε e-mail',
@@ -145,7 +145,7 @@ return [
         'table_name' => 'Όνομα',
         'table_role' => 'Ρόλος',
         'role_admin' => 'Διαχειριστής',
-        'role_manager' => 'Υπεύθυνος',
+        'role_manager' => 'Υπεύθυνος Επισημειωτών',
     ],
 
     'select_task_type' => [

@@ -114,11 +114,19 @@ export interface Project {
     date_range_end: string | null;
 }
 
+export interface PlatformStats {
+    all_projects: number;
+    all_annotators: number;
+    all_managers: number;
+    all_admins: number;
+}
+
 export interface Annotator {
     id: number;
     name: string;
     annotator_progress: number;
     active_projects_count: number;
+    active_subprojects_count: number;
     workload: number;
 }
 
