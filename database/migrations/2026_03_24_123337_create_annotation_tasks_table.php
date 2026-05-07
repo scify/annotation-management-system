@@ -14,6 +14,7 @@ return new class() extends Migration {
         Schema::create('annotation_tasks', function (Blueprint $table): void {
             $table->id();
             $table->string('title');
+            $table->string('short_description', 100);
             $table->text('description')->nullable();
             $table->string('guidelines_url')->nullable();
             $table->unsignedTinyInteger('weight');

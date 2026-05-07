@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property-read int $id
  * @property string $title
+ * @property string $short_description
  * @property string|null $description
  * @property string|null $guidelines_url
  * @property int $weight
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 #[Fillable([
     'title',
+    'short_description',
     'description',
     'guidelines_url',
     'weight',
@@ -36,8 +38,19 @@ class AnnotationTask extends Model {
 
     use SoftDeletes;
 
+    /** @return BelongsToMany<User, $this> */
     public function connectedUsers(): BelongsToMany {
         return $this->belongsToMany(User::class, 'annotation_task_user', 'annotation_task_id', 'user_id');
+    }
+
+    /** @return BelongsToMany<TaskTag, $this> */
+    public function tags(): BelongsToMany {
+        return $this->belongsToMany(
+            TaskTag::class,
+            'annotation_task_task_tag',
+            'annotation_task_id',
+            'task_tag_id',
+        );
     }
 
     /**
