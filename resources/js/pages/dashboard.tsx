@@ -14,7 +14,7 @@ import {
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { RolesEnum } from '@/types';
-import type { Annotator, BreadcrumbItem, PageProps, Project } from '@/types';
+import type { Annotator, BreadcrumbItem, PageProps, PlatformStats, Project } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -24,6 +24,7 @@ interface Props {
     all_projects?: Project[];
     my_annotators: Annotator[];
     all_annotators?: Annotator[];
+    platform_stats?: PlatformStats;
 }
 
 function StatCard({ title, value, subtitle }: { title: string; value: string; subtitle: string }) {
@@ -74,6 +75,7 @@ export default function Dashboard({
     all_projects,
     my_annotators,
     all_annotators,
+    platform_stats,
 }: Props) {
     const { auth } = usePage<PageProps>().props;
     const isAdmin = auth.user.role === RolesEnum.ADMIN;
@@ -105,22 +107,22 @@ export default function Dashboard({
                         <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                             <StatCard
                                 title={t('projects.dashboard.stats_total_projects')}
-                                value="12"
+                                value={String(platform_stats?.all_projects ?? 0)}
                                 subtitle={t('projects.dashboard.stats_subtitle_system_wide')}
                             />
                             <StatCard
                                 title={t('projects.dashboard.stats_total_annotators')}
-                                value="24"
+                                value={String(platform_stats?.all_annotators ?? 0)}
                                 subtitle={t('projects.dashboard.stats_subtitle_active_users')}
                             />
                             <StatCard
                                 title={t('projects.dashboard.stats_total_managers')}
-                                value="5"
+                                value={String(platform_stats?.all_managers ?? 0)}
                                 subtitle={t('projects.dashboard.stats_subtitle_active_users')}
                             />
                             <StatCard
                                 title={t('projects.dashboard.stats_total_admins')}
-                                value="2"
+                                value={String(platform_stats?.all_admins ?? 0)}
                                 subtitle={t('projects.dashboard.stats_subtitle_active_users')}
                             />
                         </div>
@@ -218,8 +220,8 @@ export default function Dashboard({
                                                 <TableCell className="text-right text-sm text-slate-800">
                                                     {annotator.active_projects_count}
                                                 </TableCell>
-                                                <TableCell className="text-right text-sm text-slate-400">
-                                                    —
+                                                <TableCell className="text-right text-sm text-slate-800">
+                                                    {annotator.active_subprojects_count}
                                                 </TableCell>
                                                 <TableCell className="px-6">
                                                     <div className="flex justify-center">
