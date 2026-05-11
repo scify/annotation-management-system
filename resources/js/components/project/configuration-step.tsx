@@ -167,7 +167,7 @@ function LeftSidebar({ taskType }: Readonly<LeftSidebarProps>) {
                 <button
                     type="button"
                     onClick={() => setDescriptionOpen((o) => !o)}
-                    className="border-brand-blue-400 flex h-10 w-full items-center justify-between rounded-lg border bg-white px-4 text-base font-semibold text-slate-800"
+                    className="border-brand-blue-400 flex h-10 w-full items-center justify-between rounded-lg border bg-white px-4 text-base font-semibold text-slate-800 hover:cursor-pointer"
                     aria-expanded={descriptionOpen}
                 >
                     {t('projects.configuration.description_label')}
