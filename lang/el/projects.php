@@ -7,6 +7,7 @@ return [
     'create_button' => 'Δημιουργία Έργου',
     'filter' => 'Φίλτρο',
     'filter_clear' => 'Καθαρισμός',
+    'show_only_mine' => 'Εμφάνιση μόνο Έργων που συμμετέχω',
     'filter_tag_is' => 'είναι',
     'filter_task_section' => 'Εργασία',
     'filter_dataset_section' => 'Σύνολο δεδομένων',

@@ -7,6 +7,7 @@ return [
     'create_button' => 'Create Project',
     'filter' => 'Filter',
     'filter_clear' => 'Clear all',
+    'show_only_mine' => 'Show only Projects I participate',
     'filter_tag_is' => 'is',
     'filter_task_section' => 'Task',
     'filter_dataset_section' => 'Dataset',

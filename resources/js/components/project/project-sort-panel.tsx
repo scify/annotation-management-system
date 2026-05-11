@@ -72,6 +72,7 @@ export function ProjectSortPanel({
     state,
     onChange,
     hasActiveSort,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     onClear,
 }: ProjectSortPanelProps) {
     const { t } = useTranslations();
@@ -103,7 +104,7 @@ export function ProjectSortPanel({
                 aria-expanded={isOpen}
                 aria-haspopup="true"
                 className={cn(
-                    'flex h-10 w-full items-center justify-between rounded-lg border bg-white px-4 text-sm transition-colors hover:bg-slate-50',
+                    'flex h-9 min-w-62.5 items-center justify-between rounded-lg border bg-white px-4 text-sm transition-colors hover:cursor-pointer hover:bg-slate-50',
                     isOpen || hasActiveSort ? 'border-brand-blue-500' : 'border-slate-200',
                     hasActiveSort ? 'font-semibold text-slate-800' : 'font-medium text-slate-800'
                 )}
@@ -122,15 +123,6 @@ export function ProjectSortPanel({
                     )}
                     aria-hidden="true"
                 />
-            </button>
-
-            <button
-                type="button"
-                onClick={onClear}
-                disabled={!hasActiveSort}
-                className="enabled:bg-brand-yellow-400 enabled:text-brand-blue-700 enabled:hover:bg-brand-yellow-300 mt-3 h-10 w-full rounded-lg text-sm font-semibold transition-colors hover:cursor-pointer disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-white"
-            >
-                {t('projects.filter_clear')}
             </button>
 
             {isOpen && (

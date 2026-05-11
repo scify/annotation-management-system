@@ -18,10 +18,44 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
+import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
+
+function SectionToggle({
+    checked,
+    onChange,
+    label,
+}: {
+    checked: boolean;
+    onChange: (checked: boolean) => void;
+    label: string;
+}) {
+    return (
+        <div className="flex items-center gap-2">
+            <button
+                role="switch"
+                type="button"
+                aria-checked={checked}
+                onClick={() => onChange(!checked)}
+                className={cn(
+                    'focus-visible:ring-brand-blue-700 relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                    checked ? 'bg-brand-blue-700' : 'bg-slate-300'
+                )}
+            >
+                <span
+                    className={cn(
+                        'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm motion-safe:transition-transform motion-safe:duration-200',
+                        checked ? 'translate-x-5' : 'translate-x-0'
+                    )}
+                />
+            </button>
+            <span className="text-sm font-medium text-slate-800">{label}</span>
+        </div>
+    );
+}
 
 interface Props {
     projects?: ProjectCardData[];
@@ -126,6 +160,7 @@ export default function ProjectsIndex({ projects }: Props) {
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState<FilterState>({ tasks: [], datasets: [], states: [] });
     const [sortState, setSortState] = useState<SortState>(DEFAULT_SORT_STATE);
+    const [showOnlyMine, setShowOnlyMine] = useState(false);
 
     const filterSections = useMemo(
         () => [
@@ -292,58 +327,58 @@ export default function ProjectsIndex({ projects }: Props) {
                     </Button>
                 </div>
 
-                {/* Controls row: filter/sort triggers on the left, count + search on the right */}
-                <div className="flex items-start gap-4">
-                    {/* Left: floating dropdown triggers */}
-                    <div className="flex w-56 shrink-0 flex-col gap-10">
-                        <ProjectFilterPanel
-                            sections={filterSections}
-                            selected={filters}
-                            onToggle={toggleFilter}
-                            onClear={clearFilters}
-                            hasActiveFilters={hasActiveFilters}
+                {/* Toolbar: filter + sort on the left, toggle on the right */}
+                <div className="flex flex-wrap items-center gap-3">
+                    <ProjectFilterPanel
+                        sections={filterSections}
+                        selected={filters}
+                        onToggle={toggleFilter}
+                        onClear={clearFilters}
+                        hasActiveFilters={hasActiveFilters}
+                    />
+                    <ProjectSortPanel
+                        state={sortState}
+                        onChange={setSortState}
+                        hasActiveSort={
+                            sortState.progress !== '' ||
+                            sortState.dateCreated !== '' ||
+                            sortState.dueDate !== ''
+                        }
+                        onClear={() => setSortState(DEFAULT_SORT_STATE)}
+                    />
+                    <div className="flex-1" />
+                    <SectionToggle
+                        checked={showOnlyMine}
+                        onChange={setShowOnlyMine}
+                        label={t('projects.show_only_mine')}
+                    />
+                </div>
+
+                {/* Count + search row */}
+                <div className="flex items-center justify-between gap-4">
+                    <p className="text-base font-medium text-slate-800">
+                        {trans('projects.projects_count', { count: displayedProjects.length })}
+                    </p>
+                    <div className="relative w-64">
+                        <Search
+                            className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
+                            aria-hidden="true"
                         />
-                        <ProjectSortPanel
-                            state={sortState}
-                            onChange={setSortState}
-                            hasActiveSort={
-                                sortState.progress !== '' ||
-                                sortState.dateCreated !== '' ||
-                                sortState.dueDate !== ''
-                            }
-                            onClear={() => setSortState(DEFAULT_SORT_STATE)}
+                        <Input
+                            type="search"
+                            placeholder={t('projects.search_placeholder')}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-9"
+                            aria-label={t('projects.search_placeholder')}
                         />
-                    </div>
-
-                    {/* Right: active tags + count + search + project list */}
-                    <div className="flex min-w-0 flex-1 flex-col gap-4">
-                        <ProjectActiveFilters tags={activeTags} />
-
-                        <div className="flex items-center justify-between gap-4">
-                            <p className="text-base font-medium text-slate-800">
-                                {trans('projects.projects_count', {
-                                    count: displayedProjects.length,
-                                })}
-                            </p>
-                            <div className="relative w-64">
-                                <Search
-                                    className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
-                                    aria-hidden="true"
-                                />
-                                <Input
-                                    type="search"
-                                    placeholder={t('projects.search_placeholder')}
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-9"
-                                    aria-label={t('projects.search_placeholder')}
-                                />
-                            </div>
-                        </div>
-
-                        <ProjectList projects={displayedProjects} />
                     </div>
                 </div>
+
+                {/* Active filter/sort tags */}
+                <ProjectActiveFilters tags={activeTags} />
+
+                <ProjectList projects={displayedProjects} />
             </div>
         </AppLayout>
     );
