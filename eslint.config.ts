@@ -65,7 +65,6 @@ export default tseslint.config(
             'node_modules/**',
             'public/**',
             'bootstrap/ssr/**',
-            'tailwind.config.js',
             'postcss.config.js',
             'prettier.config.cjs',
             'eslint.config.ts',
