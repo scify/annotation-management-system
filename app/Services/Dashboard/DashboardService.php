@@ -4,32 +4,170 @@ declare(strict_types=1);
 
 namespace App\Services\Dashboard;
 
-use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
 use App\Enums\UserRelationsEnum;
-use App\Models\AnnotationAssignment;
-use App\Models\AnnotationTask;
-use App\Models\Dataset;
 use App\Models\Project;
-use App\Models\SubProject;
 use App\Models\User;
 use App\Models\UserRelation;
+use App\Queries\GetActiveAnnotatorsByIdsQuery;
+use App\Queries\GetActiveAnnotatorsQuery;
+use App\Queries\GetActiveSubProjectIdsQuery;
+use App\Queries\GetAnnotatorActiveProjectCountsQuery;
+use App\Queries\GetAnnotatorIdsByProjectsQuery;
+use App\Queries\GetAnnotatorSubprojectCountsQuery;
+use App\Queries\GetInProgressProjectsQuery;
+use App\Queries\GetUserInProgressProjectsQuery;
 use App\Services\User\UserService;
-use Illuminate\Database\Eloquent\Builder;
 
 readonly class DashboardService {
     public function __construct(
         private UserService $userService,
+        private GetInProgressProjectsQuery $inProgressProjectsQuery,
+        private GetUserInProgressProjectsQuery $userInProgressProjectsQuery,
+        private GetActiveAnnotatorsQuery $activeAnnotatorsQuery,
+        private GetActiveAnnotatorsByIdsQuery $activeAnnotatorsByIdsQuery,
+        private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
+        private GetAnnotatorActiveProjectCountsQuery $annotatorActiveProjectCountsQuery,
+        private GetActiveSubProjectIdsQuery $activeSubProjectIdsQuery,
+        private GetAnnotatorSubprojectCountsQuery $annotatorSubprojectCountsQuery,
     ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDataForDashboard(User $user): array {
+        if ($user->hasRole(RolesEnum::ADMIN->value)) {
+            $all_projects = $this->getAllInProgressProjects();
+            $all_annotators = $this->getAllAnnotators();
+            $my_projects = $this->getMyInProgressProjects($user->id, $all_projects);
+
+            return [
+                'platform_stats' => $this->getPlatformStats(),
+                'all_projects' => $all_projects,
+                'all_annotators' => $all_annotators,
+                'my_projects' => $my_projects,
+                'my_annotators' => $this->getMyAnnotators($my_projects, $all_annotators),
+            ];
+        }
+
+        $my_projects = $this->getMyInProgressProjects($user->id);
+
+        return [
+            'my_projects' => $my_projects,
+            'my_annotators' => $this->getMyAnnotators($my_projects),
+        ];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $dashboard_project_data
+     */
+    protected function augmentProjectsWithManagers(array &$dashboard_project_data): void {
+        foreach ($dashboard_project_data as &$project) {
+            $project['owner_name'] = $project['owner']['username'] ?? null;
+            $project['co_managers'] = array_values(array_filter(
+                array_map(
+                    fn (array $relation): ?array => isset($relation['user'])
+                        ? ['id' => $relation['user']['id'], 'username' => $relation['user']['username']]
+                        : null,
+                    $project['co_manager_relations'] ?? []
+                )
+            ));
+            unset($project['owner'], $project['co_manager_relations']);
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $dashboard_project_data
+     */
+    protected function augmentProjectsWithProgress(array &$dashboard_project_data): void {
+        foreach ($dashboard_project_data as &$project) {
+            $project['project_progress'] = 0.5;
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $dashboard_project_data
+     */
+    protected function augmentProjectsWithNotifications(array &$dashboard_project_data): void {
+        foreach ($dashboard_project_data as &$project) {
+            $project['notifications_count'] = 0;
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $dashboard_project_data
+     */
+    protected function augmentProjectsWithAnnotationTasks(array &$dashboard_project_data): void {
+        foreach ($dashboard_project_data as &$project) {
+            $project['annotation_task_title'] = $project['annotation_task']['title'] ?? null;
+            $project['dataset_name'] = $project['dataset']['name'] ?? null;
+            unset($project['annotation_task'], $project['dataset']);
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $dashboard_project_data
+     */
+    protected function augmentProjectsWithDateRange(array &$dashboard_project_data): void {
+        foreach ($dashboard_project_data as &$project) {
+            $project['date_range_start'] = $project['started_at'] ?? null;
+            $project['date_range_end'] = $project['deadline_at'] ?? null;
+            unset($project['started_at'], $project['deadline_at']);
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $annotators
+     */
+    protected function augmentAnnotatorsWithProgress(array &$annotators): void {
+        foreach ($annotators as &$annotator) {
+            $annotator['annotator_progress'] = 0.5;
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $annotators
+     */
+    protected function augmentAnnotatorsWithActiveProjects(array &$annotators): void {
+        $annotatorIds = array_column($annotators, 'id');
+
+        $counts = $this->annotatorActiveProjectCountsQuery->get($annotatorIds);
+        $activeSubProjectIds = $this->activeSubProjectIdsQuery->get();
+        $subProjectCounts = $this->annotatorSubprojectCountsQuery->get($annotatorIds, $activeSubProjectIds);
+
+        foreach ($annotators as &$annotator) {
+            $annotator['active_projects_count'] = (int) ($counts->get((int) $annotator['id']) ?? 0);
+            $annotator['active_subprojects_count'] = (int) ($subProjectCounts->get((int) $annotator['id']) ?? 0);
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $annotators
+     */
+    protected function augmentAnnotatorsWithWorkload(array &$annotators): void {
+        if ($annotators === []) {
+            return;
+        }
+
+        $workloads = $this->userService->getWorkloads(array_column($annotators, 'id'));
+        $values = array_values($workloads);
+        $min = min($values);
+        $max = max($values);
+        $range = $max - $min;
+
+        foreach ($annotators as &$annotator) {
+            $raw = $workloads[(int) $annotator['id']] ?? 0;
+            $annotator['workload'] = $range > 0
+                ? round(0.1 + (($raw - $min) / $range) * 0.8, 2)
+                : 0.5;
+        }
+    }
 
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function getAllInProgressProjects(): array {
-        $dashboard_project_data = Project::query()
-            ->where('status', ProjectStatusEnum::IN_PROGRESS)
-            ->select(['id', 'name', 'owner_user_id', 'annotation_task_id', 'status', 'dataset_id', 'started_at', 'deadline_at'])
-            ->get()
+    private function getAllInProgressProjects(): array {
+        $dashboard_project_data = $this->inProgressProjectsQuery->get()
             ->map(fn (Project $project) => $project->makeHidden(['is_delayed_to_start', 'is_delayed_to_end'])->toArray())
             ->values()
             ->all();
@@ -44,30 +182,25 @@ readonly class DashboardService {
      *
      * @return array<int, array<string, mixed>>
      */
-    public function getMyInProgressProjects(int $userId, ?array $my_projects = null): array {
-        $collaboratorOwnerIds = UserRelation::query()->where('related_user_id', $userId)
-            ->where('relation_type', UserRelationsEnum::COLLABORATOR_OF_USER)
-            ->select('user_id');
-
+    private function getMyInProgressProjects(int $userId, ?array $my_projects = null): array {
         if ($my_projects === null) {
-            $dashboard_project_data = Project::query()->where('status', ProjectStatusEnum::IN_PROGRESS)
-                ->where(function (Builder $query) use ($userId, $collaboratorOwnerIds): void {
-                    $query->where('owner_user_id', $userId)
-                        ->orWhereIn('owner_user_id', $collaboratorOwnerIds);
-                })
-                ->select(['id', 'name', 'owner_user_id', 'annotation_task_id', 'dataset_id', 'status', 'started_at', 'deadline_at'])
-                ->get()
+            $dashboard_project_data = $this->userInProgressProjectsQuery->get($userId)
                 ->map(fn (Project $project) => $project->makeHidden(['is_delayed_to_start', 'is_delayed_to_end'])->toArray())
                 ->values()
                 ->all();
 
             $this->augmentProjectData($dashboard_project_data);
         } else {
-            $collaboratorOwnerIdsArray = $collaboratorOwnerIds->pluck('user_id')->all();
+            $collaboratorOwnerIds = UserRelation::query()
+                ->where('related_user_id', $userId)
+                ->where('relation_type', UserRelationsEnum::COLLABORATOR_OF_USER)
+                ->pluck('user_id')
+                ->all();
+
             $dashboard_project_data = array_values(array_filter(
                 $my_projects,
                 fn (array $project): bool => (int) $project['owner_user_id'] === $userId
-                    || in_array((int) $project['owner_user_id'], $collaboratorOwnerIdsArray, true)
+                    || in_array((int) $project['owner_user_id'], $collaboratorOwnerIds, true)
             ));
         }
 
@@ -77,7 +210,7 @@ readonly class DashboardService {
     /**
      * @return array{all_projects: int, all_annotators: int, all_managers: int, all_admins: int}
      */
-    public function getPlatformStats(): array {
+    private function getPlatformStats(): array {
         $allProjects = Project::query()->count();
 
         $activeUsers = User::query()
@@ -111,12 +244,8 @@ readonly class DashboardService {
     /**
      * @return array<int, array<string, mixed>>
      */
-    public function getAllAnnotators(): array {
-        $annotators = User::query()
-            ->where('is_active', true)
-            ->whereHas('roles', fn (Builder $q) => $q->where('name', RolesEnum::ANNOTATOR->value))
-            ->select(['id', 'name'])
-            ->get()
+    private function getAllAnnotators(): array {
+        $annotators = $this->activeAnnotatorsQuery->get()
             ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
             ->values()
             ->all();
@@ -132,29 +261,20 @@ readonly class DashboardService {
      *
      * @return array<int, array<string, mixed>>
      */
-    public function getMyAnnotators(array $my_projects, ?array $all_annotators = null): array {
+    private function getMyAnnotators(array $my_projects, ?array $all_annotators = null): array {
         $projectIds = array_column($my_projects, 'id');
         if ($projectIds === []) {
             return [];
         }
 
-        $annotatorIds = UserRelation::query()
-            ->whereIn('project_id', $projectIds)
-            ->where('relation_type', UserRelationsEnum::ANNOTATOR_OF_MANAGER)
-            ->pluck('user_id')
-            ->unique()
-            ->all();
+        $annotatorIds = $this->annotatorIdsByProjectsQuery->get($projectIds);
 
-        if (empty($annotatorIds)) {
+        if ($annotatorIds === []) {
             return [];
         }
 
         if ($all_annotators === null) {
-            $annotators = User::query()
-                ->where('is_active', true)
-                ->whereIn('id', $annotatorIds)
-                ->select(['id', 'name'])
-                ->get()
+            $annotators = $this->activeAnnotatorsByIdsQuery->get($annotatorIds)
                 ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
                 ->values()
                 ->all();
@@ -174,210 +294,8 @@ readonly class DashboardService {
     /**
      * @param  array<int, array<string, mixed>>  $dashboard_project_data
      */
-    protected function augmentProjectsWithManagers(array &$dashboard_project_data): void {
-        $ownerIds = array_column($dashboard_project_data, 'owner_user_id');
-        $owners = User::query()->whereIn('id', $ownerIds)->get()->keyBy('id');
-
-        $projectIds = array_column($dashboard_project_data, 'id');
-        $coManagerRelations = UserRelation::query()
-            ->whereIn('project_id', $projectIds)
-            ->where('relation_type', UserRelationsEnum::COLLABORATOR_OF_USER)
-            ->get();
-
-        $coManagerUsers = User::query()
-            ->whereIn('id', $coManagerRelations->pluck('user_id')->unique()->toArray())
-            ->get()
-            ->keyBy('id');
-
-        $coManagersByProject = $coManagerRelations->groupBy('project_id');
-
-        foreach ($dashboard_project_data as &$project) {
-            $owner = $owners->get((int) $project['owner_user_id']);
-            $project['owner_name'] = $owner instanceof User ? $owner->username : null;
-
-            $project['co_managers'] = ($coManagersByProject->get((int) $project['id']) ?? collect())
-                ->map(function (UserRelation $relation) use ($coManagerUsers): ?array {
-                    $user = $coManagerUsers->get((int) $relation->user_id);
-
-                    return $user instanceof User
-                        ? ['id' => $user->id, 'username' => $user->username]
-                        : null;
-                })
-                ->filter()
-                ->values()
-                ->all();
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $dashboard_project_data
-     */
-    protected function augmentProjectsWithProgress(array &$dashboard_project_data): void {
-        foreach ($dashboard_project_data as &$project) {
-            $project['project_progress'] = 0.5;
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $dashboard_project_data
-     */
-    protected function augmentProjectsWithNotifications(array &$dashboard_project_data): void {
-        foreach ($dashboard_project_data as &$project) {
-            $project['notifications_count'] = 0;
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $dashboard_project_data
-     */
-    protected function augmentProjectsWithSubprojects(array &$dashboard_project_data): void {
-        $projectIds = array_column($dashboard_project_data, 'id');
-        $counts = SubProject::query()
-            ->whereIn('project_id', $projectIds)
-            ->selectRaw('project_id, COUNT(*) as count')
-            ->groupBy('project_id')
-            ->pluck('count', 'project_id');
-
-        foreach ($dashboard_project_data as &$project) {
-            $project['subprojects_count'] = (int) ($counts->get((int) $project['id']) ?? 0);
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $dashboard_project_data
-     */
-    protected function augmentProjectsWithAnnotators(array &$dashboard_project_data): void {
-        $projectIds = array_column($dashboard_project_data, 'id');
-        $counts = UserRelation::query()
-            ->whereIn('project_id', $projectIds)
-            ->where('relation_type', UserRelationsEnum::ANNOTATOR_OF_MANAGER)
-            ->selectRaw('project_id, COUNT(*) as count')
-            ->groupBy('project_id')
-            ->pluck('count', 'project_id');
-
-        foreach ($dashboard_project_data as &$project) {
-            $project['annotators_count'] = (int) ($counts->get((int) $project['id']) ?? 0);
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $dashboard_project_data
-     */
-    protected function augmentProjectsWithAnnotationTasks(array &$dashboard_project_data): void {
-        $taskIds = array_column($dashboard_project_data, 'annotation_task_id');
-        $tasks = AnnotationTask::query()->whereIn('id', $taskIds)->get()->keyBy('id');
-
-        $datasetIds = array_column($dashboard_project_data, 'dataset_id');
-        $datasets = Dataset::query()->whereIn('id', $datasetIds)->get()->keyBy('id');
-
-        foreach ($dashboard_project_data as &$project) {
-            $task = $tasks->get((int) $project['annotation_task_id']);
-            if ($task instanceof AnnotationTask) {
-                $project['annotation_task_title'] = $task->title;
-            }
-
-            $dataset = $datasets->get((int) $project['dataset_id']);
-            if ($dataset instanceof Dataset) {
-                $project['dataset_name'] = $dataset->name;
-            }
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $dashboard_project_data
-     */
-    protected function augmentProjectsWithDateRange(array &$dashboard_project_data): void {
-        foreach ($dashboard_project_data as &$project) {
-            $project['date_range_start'] = $project['started_at'] ?? null;
-            $project['date_range_end'] = $project['deadline_at'] ?? null;
-            unset($project['started_at'], $project['deadline_at']);
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $annotators
-     */
-    protected function augmentAnnotatorsWithProgress(array &$annotators): void {
-        foreach ($annotators as &$annotator) {
-            $annotator['annotator_progress'] = 0.5;
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $annotators
-     */
-    protected function augmentAnnotatorsWithActiveProjects(array &$annotators): void {
-        $annotatorIds = array_column($annotators, 'id');
-
-        $counts = UserRelation::query()
-            ->whereIn('user_relations.user_id', $annotatorIds)
-            ->where('user_relations.relation_type', UserRelationsEnum::ANNOTATOR_OF_MANAGER)
-            ->join('projects', 'projects.id', '=', 'user_relations.project_id')
-            ->where('projects.status', ProjectStatusEnum::IN_PROGRESS)
-            ->selectRaw('user_relations.user_id, COUNT(*) as count')
-            ->groupBy('user_relations.user_id')
-            ->pluck('count', 'user_relations.user_id');
-
-        $activeSubProjectIds = SubProject::query()
-            ->join('projects', 'projects.id', '=', 'sub_projects.project_id')
-            ->where('projects.status', ProjectStatusEnum::IN_PROGRESS)
-            ->where('sub_projects.status', ProjectStatusEnum::IN_PROGRESS)
-            ->pluck('sub_projects.id');
-
-        $subProjectCounts = AnnotationAssignment::query()
-            ->whereIn('user_id', $annotatorIds)
-            ->whereIn('sub_project_id', $activeSubProjectIds)
-            ->selectRaw('user_id, COUNT(*) as count')
-            ->groupBy('user_id')
-            ->pluck('count', 'user_id');
-
-        foreach ($annotators as &$annotator) {
-            $annotator['active_projects_count'] = (int) ($counts->get((int) $annotator['id']) ?? 0);
-            $annotator['active_subprojects_count'] = (int) ($subProjectCounts->get((int) $annotator['id']) ?? 0);
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $annotators
-     */
-    protected function augmentAnnotatorsWithWorkload(array &$annotators): void {
-        if ($annotators === []) {
-            return;
-        }
-
-        $userModels = User::query()
-            ->whereIn('id', array_column($annotators, 'id'))
-            ->get()
-            ->keyBy('id');
-
-        $workloads = [];
-        foreach ($annotators as $annotator) {
-            $user = $userModels->get((int) $annotator['id']);
-            $workloads[(int) $annotator['id']] = $user instanceof User
-                ? (float) $this->userService->getWorkload($user)
-                : 0.0;
-        }
-
-        $values = array_values($workloads);
-        $min = min($values);
-        $max = max($values);
-        $range = $max - $min;
-
-        foreach ($annotators as &$annotator) {
-            $raw = $workloads[(int) $annotator['id']];
-            $annotator['workload'] = $range > 0
-                ? round(0.1 + (($raw - $min) / $range) * 0.8, 2)
-                : 0.5;
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $dashboard_project_data
-     */
     private function augmentProjectData(array &$dashboard_project_data): void {
         $this->augmentProjectsWithAnnotationTasks($dashboard_project_data);
-        $this->augmentProjectsWithSubprojects($dashboard_project_data);
-        $this->augmentProjectsWithAnnotators($dashboard_project_data);
         $this->augmentProjectsWithNotifications($dashboard_project_data);
         $this->augmentProjectsWithManagers($dashboard_project_data);
         $this->augmentProjectsWithProgress($dashboard_project_data);

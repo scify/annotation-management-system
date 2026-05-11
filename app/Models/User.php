@@ -67,6 +67,11 @@ class User extends Authenticatable {
         return $this->hasMany(AnnotationTask::class);
     }
 
+    /** @return BelongsToMany<Dataset, $this> */
+    public function connectedDatasets(): BelongsToMany {
+        return $this->belongsToMany(Dataset::class, 'dataset_user', 'user_id', 'dataset_id');
+    }
+
     public function projects(): HasMany {
         return $this->hasMany(Project::class, 'owner_user_id');
     }

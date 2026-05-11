@@ -22,7 +22,8 @@ class ProjectController extends Controller {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data_for_create_project['annotation_tasks'] = $this->projectService->getAnnotationTasks($user);
+        $data_for_create_project = $this->projectService->getDataForCreateProject($user);
+
         Storage::disk('local')->put(
             'project-create-data.json',
             json_encode(

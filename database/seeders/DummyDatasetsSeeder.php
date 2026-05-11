@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\AnnotationTask;
 use App\Models\Dataset;
 use App\Models\DatasetInstance;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -115,6 +116,30 @@ class DummyDatasetsSeeder extends Seeder {
                     ]);
                 }
             }
+        }
+
+        $managerAssignments = [
+            'manager.carol@example.com' => ['News Articles EN', 'Social Media Posts'],
+            'manager.dave@example.com' => ['Medical Records Corpus'],
+        ];
+
+        $managers = User::query()
+            ->whereIn('email', array_keys($managerAssignments))
+            ->get()
+            ->keyBy('email');
+
+        foreach ($managerAssignments as $email => $datasetNames) {
+            $manager = $managers->get($email);
+            if (! $manager instanceof User) {
+                continue;
+            }
+
+            $datasetIds = collect($datasetNames)
+                ->map(fn (string $name): mixed => $datasetsByName->get($name)?->getKey())
+                ->filter()
+                ->values();
+
+            $manager->connectedDatasets()->sync($datasetIds);
         }
     }
 }

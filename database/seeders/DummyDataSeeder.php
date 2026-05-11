@@ -14,8 +14,8 @@ class DummyDataSeeder extends Seeder {
         $this->call([
             DatabaseSeeder::class,
             DummyAnnotationTasksSeeder::class,
-            DummyDatasetsSeeder::class,
             DummyUsersSeeder::class,
+            DummyDatasetsSeeder::class,
             DummyProjectSeeder::class,
         ]);
     }

@@ -14,6 +14,11 @@ use Illuminate\Database\Eloquent\Model;
     'sub_project_id',
     'shuffling_array',
 ])]
+/**
+ * @property int $id
+ * @property int $user_id
+ * @property int $sub_project_id
+ */
 class AnnotationAssignment extends Model {
     /** @use HasFactory<AnnotationAssignmentFactory> */
     use HasFactory;

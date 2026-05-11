@@ -8,6 +8,7 @@ use Database\Factories\UserRelationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
     'user_id',
@@ -18,4 +19,11 @@ use Illuminate\Database\Eloquent\Model;
 class UserRelation extends Model {
     /** @use HasFactory<UserRelationFactory> */
     use HasFactory;
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo {
+        return $this->belongsTo(User::class);
+    }
 }

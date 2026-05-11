@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string $name
  * @property string|null $description
  * @property bool $is_available
+ * @property-read Collection<int, User> $connectedManagers
  */
 class Dataset extends Model {
     /** @use HasFactory<DatasetFactory> */
@@ -29,9 +30,12 @@ class Dataset extends Model {
         'is_available' => 'boolean',
     ];
 
-    /**
-     * @return BelongsToMany<AnnotationTask, $this>
-     */
+    /** @return BelongsToMany<User, $this> */
+    public function connectedManagers(): BelongsToMany {
+        return $this->belongsToMany(User::class, 'dataset_user', 'dataset_id', 'user_id');
+    }
+
+    /** @return BelongsToMany<AnnotationTask, $this> */
     protected function connectedAnnotationTasks(): BelongsToMany {
         return $this->belongsToMany(AnnotationTask::class, 'dataset_annotation_tasks', 'dataset_id', 'annotation_task_id');
     }
