@@ -12,7 +12,7 @@ export interface TaskTypeCardData {
     guidelines: string;
     /** URL to the PDF guidelines document, opened in a new tab */
     guidelinesUrl?: string;
-    tag: string;
+    tags: string[];
 }
 
 export const MOCK_TASK_TYPES: TaskTypeCardData[] = [
@@ -24,7 +24,7 @@ export const MOCK_TASK_TYPES: TaskTypeCardData[] = [
         guidelines:
             'In this task, annotators listen to a series of audio clips ranging from 10 to 60 seconds. For each clip, they must select the predominant emotional mood from a predefined list of options. Pay close attention to tone, tempo, and vocal quality. Multiple listens are encouraged before making a final selection. All clips have been cleared for research use.',
         guidelinesUrl: '/guidelines/audio-annotation-mood.pdf',
-        tag: '#audio annotation',
+        tags: ['#audio annotation', '#emotion recognition'],
     },
     {
         id: 2,
@@ -34,7 +34,7 @@ export const MOCK_TASK_TYPES: TaskTypeCardData[] = [
         guidelines:
             'Read each pair of texts carefully. For each pair, you will be asked to identify references to English poets. Mark every explicit and implicit reference you find. Provide a brief rationale for implicit references. Do not confirm your findings with external sources — your independent judgment is the basis of this annotation task.',
         guidelinesUrl: '/guidelines/text-annotation-poets.pdf',
-        tag: '#text annotation',
+        tags: ['#text annotation', '#literature', '#english'],
     },
     {
         id: 3,
@@ -44,7 +44,7 @@ export const MOCK_TASK_TYPES: TaskTypeCardData[] = [
         guidelines:
             "You will be presented with the same text passage multiple times, each time with a different contextual framing. Read each version independently. After all readings, describe how your understanding of the text's meaning changed, if at all. Focus on subtle semantic shifts rather than surface-level changes.",
         guidelinesUrl: '/guidelines/text-annotation-meaning-changes.pdf',
-        tag: '#text annotation',
+        tags: ['#text annotation', '#semantics'],
     },
     {
         id: 4,
@@ -54,7 +54,7 @@ export const MOCK_TASK_TYPES: TaskTypeCardData[] = [
         guidelines:
             'For each provided excerpt from a medieval text, identify and annotate every occurrence of the word "knowledge" or its contextual equivalents. Consider the scholastic and theological context of each passage. Use the provided glossary of medieval Latin terms as a reference. Aim for consistency across all annotations.',
         guidelinesUrl: '/guidelines/medieval-knowledge-annotation.pdf',
-        tag: '#text annotation',
+        tags: ['#text annotation', '#medieval', '#vocabulary', '#nlp'],
     },
     {
         id: 5,
@@ -64,7 +64,7 @@ export const MOCK_TASK_TYPES: TaskTypeCardData[] = [
         guidelines:
             'Examine each historical document for recurring syntactic patterns, idiomatic expressions, and formulaic phrases. Tag each pattern using the provided schema. When uncertain, use the "uncertain" tag and add a note. Cross-referencing multiple documents is encouraged. Focus on patterns that appear at least twice across the document set.',
         guidelinesUrl: '/guidelines/linguistic-patterns.pdf',
-        tag: '#text annotation',
+        tags: ['#text annotation', '#linguistics', '#historical'],
     },
     {
         id: 6,
@@ -74,7 +74,7 @@ export const MOCK_TASK_TYPES: TaskTypeCardData[] = [
         guidelines:
             'Listen to each audio recording in full before beginning your transcription. Transcribe verbatim, including false starts, filler words, and hesitations. Use the provided notation guide for overlapping speech and unintelligible segments. Accuracy is prioritised over speed. Each recording may be replayed as many times as needed.',
         guidelinesUrl: '/guidelines/audio-transcription.pdf',
-        tag: '#audio annotation',
+        tags: ['#audio annotation', '#transcription'],
     },
 ];
 
@@ -157,34 +157,41 @@ function TaskTypeCard({ taskType, isSelected, onSelect }: Readonly<TaskTypeCardP
                 </div>
             )}
 
-            {/* Footer — tab dot switchers + tag */}
-            <div className="mt-3 flex shrink-0 items-center justify-between">
-                <div
-                    role="tablist"
-                    aria-label={t('projects.select_task_type.card_pages_label')}
-                    className="flex gap-2"
-                >
-                    {[0, 1].map((i) => (
-                        <button
-                            key={i}
-                            type="button"
-                            role="tab"
-                            aria-selected={tab === i}
-                            aria-label={`${t('projects.select_task_type.page_label')} ${i + 1}`}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setTab(i);
-                            }}
-                            className={cn(
-                                'focus-visible:outline-brand-blue-700 size-3 rounded-full transition-colors hover:cursor-pointer focus-visible:outline-2',
-                                tab === i
-                                    ? 'bg-brand-blue-700'
-                                    : 'border border-slate-300 bg-transparent'
-                            )}
-                        />
-                    ))}
+            {/* Footer — tags (tab 2) + dot switchers */}
+            <div className="mt-3 flex shrink-0 flex-col gap-1.5">
+                {tab === 1 && (
+                    <p className="text-right text-xs font-medium text-slate-500">
+                        {taskType.tags.slice(0, 3).join(' ')}
+                        {taskType.tags.length > 3 && ` +${taskType.tags.length - 3}`}
+                    </p>
+                )}
+                <div className="flex items-center justify-between">
+                    <div
+                        role="tablist"
+                        aria-label={t('projects.select_task_type.card_pages_label')}
+                        className="flex gap-2"
+                    >
+                        {[0, 1].map((i) => (
+                            <button
+                                key={i}
+                                type="button"
+                                role="tab"
+                                aria-selected={tab === i}
+                                aria-label={`${t('projects.select_task_type.page_label')} ${i + 1}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setTab(i);
+                                }}
+                                className={cn(
+                                    'focus-visible:outline-brand-blue-700 size-3 rounded-full transition-colors hover:cursor-pointer focus-visible:outline-2',
+                                    tab === i
+                                        ? 'bg-brand-blue-700'
+                                        : 'border border-slate-300 bg-transparent'
+                                )}
+                            />
+                        ))}
+                    </div>
                 </div>
-                <span className="text-xs text-slate-500">{taskType.tag}</span>
             </div>
         </div>
     );
@@ -209,7 +216,7 @@ export function SelectTaskTypeStep({
     const filtered = searchQuery
         ? displayTaskTypes.filter(
               (tt) =>
-                  tt.tag.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  tt.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
                   tt.name.toLowerCase().includes(searchQuery.toLowerCase())
           )
         : displayTaskTypes;
