@@ -42,7 +42,7 @@
         "stylelint-config-tailwindcss": "^1.0.1",
         "stylelint-prettier": "^5.0",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.59.1",
+        "typescript-eslint": "^8.59.2",
         "vite": "^8.0"
     },
     "dependencies": {
@@ -73,7 +73,7 @@
         "use-debounce": "^10.1.1"
     },
     "optionalDependencies": {
-        "@rollup/rollup-linux-x64-gnu": "4.60.2",
+        "@rollup/rollup-linux-x64-gnu": "4.60.3",
         "@tailwindcss/oxide-linux-x64-gnu": "^4.2.4",
         "lightningcss-linux-x64-gnu": "^1.32.0"
     },

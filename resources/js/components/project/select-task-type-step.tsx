@@ -1,82 +1,17 @@
 import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { ExternalLink, FileText, Search } from 'lucide-react';
+import { BookSearch, Container, Search } from 'lucide-react';
 import { useState } from 'react';
 
 export interface TaskTypeCardData {
     id: number;
-    name: string;
-    description: string;
-    /** Long-form guidelines shown on the second tab */
-    guidelines: string;
-    /** URL to the PDF guidelines document, opened in a new tab */
-    guidelinesUrl?: string;
-    tags: string[];
+    title: string;
+    short_description: string;
+    description: string | null;
+    guidelines_url: string | null;
+    tags: Array<{ id: number; name: string }>;
 }
-
-export const MOCK_TASK_TYPES: TaskTypeCardData[] = [
-    {
-        id: 1,
-        name: 'Audio Annotation – Recognise the mood',
-        description:
-            'Annotators will have to listen to audio clips and identify the emotional mood expressed in each recording.',
-        guidelines:
-            'In this task, annotators listen to a series of audio clips ranging from 10 to 60 seconds. For each clip, they must select the predominant emotional mood from a predefined list of options. Pay close attention to tone, tempo, and vocal quality. Multiple listens are encouraged before making a final selection. All clips have been cleared for research use.',
-        guidelinesUrl: '/guidelines/audio-annotation-mood.pdf',
-        tags: ['#audio annotation', '#emotion recognition'],
-    },
-    {
-        id: 2,
-        name: 'Text annotation referring to english poets without confirmation',
-        description:
-            'Annotators will have to read two texts and answer to a simple question about the author.',
-        guidelines:
-            'Read each pair of texts carefully. For each pair, you will be asked to identify references to English poets. Mark every explicit and implicit reference you find. Provide a brief rationale for implicit references. Do not confirm your findings with external sources — your independent judgment is the basis of this annotation task.',
-        guidelinesUrl: '/guidelines/text-annotation-poets.pdf',
-        tags: ['#text annotation', '#literature', '#english'],
-    },
-    {
-        id: 3,
-        name: 'Read Text multiple times – Recognise meaning changes',
-        description:
-            'Annotators will have to read two texts and answer to a simple question about meaning shifts.',
-        guidelines:
-            "You will be presented with the same text passage multiple times, each time with a different contextual framing. Read each version independently. After all readings, describe how your understanding of the text's meaning changed, if at all. Focus on subtle semantic shifts rather than surface-level changes.",
-        guidelinesUrl: '/guidelines/text-annotation-meaning-changes.pdf',
-        tags: ['#text annotation', '#semantics'],
-    },
-    {
-        id: 4,
-        name: 'Recognise the meaning of the word "Knowledge" in medieval textes',
-        description:
-            'Annotators will have to read two texts and answer to a simple question about medieval vocabulary.',
-        guidelines:
-            'For each provided excerpt from a medieval text, identify and annotate every occurrence of the word "knowledge" or its contextual equivalents. Consider the scholastic and theological context of each passage. Use the provided glossary of medieval Latin terms as a reference. Aim for consistency across all annotations.',
-        guidelinesUrl: '/guidelines/medieval-knowledge-annotation.pdf',
-        tags: ['#text annotation', '#medieval', '#vocabulary', '#nlp'],
-    },
-    {
-        id: 5,
-        name: 'Identify linguistic patterns in historical documents',
-        description:
-            'Annotators will have to read two texts and answer to a simple question about recurring linguistic structures.',
-        guidelines:
-            'Examine each historical document for recurring syntactic patterns, idiomatic expressions, and formulaic phrases. Tag each pattern using the provided schema. When uncertain, use the "uncertain" tag and add a note. Cross-referencing multiple documents is encouraged. Focus on patterns that appear at least twice across the document set.',
-        guidelinesUrl: '/guidelines/linguistic-patterns.pdf',
-        tags: ['#text annotation', '#linguistics', '#historical'],
-    },
-    {
-        id: 6,
-        name: 'Listen to audio and transcribe the text',
-        description:
-            'Annotators will have to listen to an audio recording and produce an accurate written transcription.',
-        guidelines:
-            'Listen to each audio recording in full before beginning your transcription. Transcribe verbatim, including false starts, filler words, and hesitations. Use the provided notation guide for overlapping speech and unintelligible segments. Accuracy is prioritised over speed. Each recording may be replayed as many times as needed.',
-        guidelinesUrl: '/guidelines/audio-transcription.pdf',
-        tags: ['#audio annotation', '#transcription'],
-    },
-];
 
 interface TaskTypeCardProps {
     taskType: TaskTypeCardData;
@@ -102,7 +37,7 @@ function TaskTypeCard({ taskType, isSelected, onSelect }: Readonly<TaskTypeCardP
                 }
             }}
             className={cn(
-                'focus-visible:ring-brand-blue-700 flex h-[343px] w-full cursor-pointer flex-col rounded-2xl border border-slate-200 px-5 pt-5 pb-3 transition-colors outline-none focus-visible:ring-2',
+                'focus-visible:ring-brand-blue-700 relative flex h-[343px] w-full cursor-pointer flex-col rounded-2xl border border-slate-200 px-5 pt-5 pb-3 transition-colors outline-none focus-visible:ring-2',
                 isSelected ? 'bg-brand-blue-50' : 'bg-white hover:bg-slate-50'
             )}
         >
@@ -119,52 +54,51 @@ function TaskTypeCard({ taskType, isSelected, onSelect }: Readonly<TaskTypeCardP
                 </span>
             </div>
 
-            {/* Tab 1 — icon + title + short description + guidelines button */}
+            {/* Guidelines icon button — top-right corner */}
+            <a
+                href={taskType.guidelines_url ?? '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                aria-label={t('projects.select_task_type.view_guidelines')}
+                className="bg-brand-blue-700 hover:bg-brand-blue-800 absolute top-5 right-5 flex size-10 items-center justify-center rounded-lg transition-colors"
+            >
+                <BookSearch className="size-6 text-white" aria-hidden="true" />
+            </a>
+
+            {/* Tab 1 — icon + title + short description */}
             {tab === 0 && (
                 <div className="flex min-h-0 flex-1 flex-col gap-3 pt-3">
-                    <FileText className="size-10 shrink-0 text-slate-400" aria-hidden="true" />
+                    <Container className="size-10 shrink-0 text-slate-400" aria-hidden="true" />
                     <div className="flex flex-col gap-4">
                         <p className="text-base leading-5 font-bold text-slate-800">
-                            {taskType.name}
+                            {taskType.title}
                         </p>
                         <p className="line-clamp-3 text-sm leading-5 text-slate-500">
-                            {taskType.description}
+                            {taskType.short_description}
                         </p>
-                    </div>
-                    <div className="mt-auto pt-4">
-                        <a
-                            href={taskType.guidelinesUrl ?? '#'}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="bg-brand-blue-700 hover:bg-brand-blue-800 flex h-[30px] w-full items-center justify-center gap-1.5 rounded-lg transition-colors"
-                        >
-                            <span className="text-sm font-semibold text-white">
-                                {t('projects.select_task_type.view_guidelines')}
-                            </span>
-                            <ExternalLink className="size-3.5 text-white" aria-hidden="true" />
-                        </a>
                     </div>
                 </div>
             )}
 
-            {/* Tab 2 — scrollable guidelines text, fills the same space as tab 1 */}
+            {/* Tab 2 — scrollable long description, fills the same space as tab 1 */}
             {tab === 1 && (
                 <div className="min-h-0 flex-1 pt-3">
                     <p className="h-full overflow-y-auto text-sm leading-5 text-slate-600 [scrollbar-color:theme(colors.slate.300)_transparent] [scrollbar-width:thin]">
-                        {taskType.guidelines}
+                        {taskType.description ?? '—'}
                     </p>
                 </div>
             )}
 
-            {/* Footer — tags (tab 2) + dot switchers */}
+            {/* Footer — tags (always) + dot switchers */}
             <div className="mt-3 flex shrink-0 flex-col gap-1.5">
-                {tab === 1 && (
-                    <p className="text-right text-xs font-medium text-slate-500">
-                        {taskType.tags.slice(0, 3).join(' ')}
-                        {taskType.tags.length > 3 && ` +${taskType.tags.length - 3}`}
-                    </p>
-                )}
+                <p className="text-right text-xs font-medium text-slate-500">
+                    {taskType.tags
+                        .slice(0, 3)
+                        .map((tag) => `#${tag.name}`)
+                        .join(' ')}
+                    {taskType.tags.length > 3 && ` +${taskType.tags.length - 3}`}
+                </p>
                 <div className="flex items-center justify-between">
                     <div
                         role="tablist"
@@ -198,8 +132,7 @@ function TaskTypeCard({ taskType, isSelected, onSelect }: Readonly<TaskTypeCardP
 }
 
 interface SelectTaskTypeStepProps {
-    /** Falls back to mock data when not provided */
-    taskTypes?: TaskTypeCardData[];
+    taskTypes: TaskTypeCardData[];
     selectedId: number | null;
     onSelectionChange: (id: number) => void;
 }
@@ -210,16 +143,16 @@ export function SelectTaskTypeStep({
     onSelectionChange,
 }: SelectTaskTypeStepProps) {
     const { t } = useTranslations();
-    const displayTaskTypes = taskTypes ?? MOCK_TASK_TYPES;
     const [searchQuery, setSearchQuery] = useState('');
 
     const filtered = searchQuery
-        ? displayTaskTypes.filter(
+        ? taskTypes.filter(
               (tt) =>
-                  tt.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                  tt.name.toLowerCase().includes(searchQuery.toLowerCase())
+                  tt.tags.some((tag) =>
+                      tag.name.toLowerCase().includes(searchQuery.toLowerCase())
+                  ) || tt.title.toLowerCase().includes(searchQuery.toLowerCase())
           )
-        : displayTaskTypes;
+        : taskTypes;
 
     return (
         <div className="flex flex-col gap-6">
