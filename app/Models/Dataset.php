@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'name',
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string|null $description
  * @property bool $is_available
  * @property-read Collection<int, User> $connectedManagers
+ * @property-read int|null $instances_count
  */
 class Dataset extends Model {
     /** @use HasFactory<DatasetFactory> */
@@ -29,6 +31,11 @@ class Dataset extends Model {
     protected $casts = [
         'is_available' => 'boolean',
     ];
+
+    /** @return HasMany<DatasetInstance, $this> */
+    public function instances(): HasMany {
+        return $this->hasMany(DatasetInstance::class);
+    }
 
     /** @return BelongsToMany<User, $this> */
     public function connectedManagers(): BelongsToMany {
