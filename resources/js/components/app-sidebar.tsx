@@ -1,54 +1,18 @@
 import AppLogoIconMinimal from '@/components/app-logo-icon-minimal';
+import { isNavItemActive, useNavItems } from '@/hooks/use-nav-items';
 import { cn } from '@/lib/utils';
-import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import {
-    BellRing,
-    Activity,
-    FolderDot,
-    LayoutDashboard,
-    PanelLeftClose,
-    PanelLeftOpen,
-    Captions,
-    Users,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { useTranslations } from '@/hooks/use-translations';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import type { SharedData } from '@/types';
 
 export interface AppSidebarProps {
     isCollapsed: boolean;
     onToggle: () => void;
 }
 
-interface SidebarItem {
-    title: string;
-    href: string;
-    icon: LucideIcon;
-    placeholder?: boolean;
-}
-
-function isActive(href: string, currentUrl: string): boolean {
-    if (href === '#') return false;
-    // route() returns absolute URLs; page.url is a pathname — normalise to pathname before comparing
-    const path = href.startsWith('http') ? new URL(href).pathname : href;
-    return currentUrl === path || currentUrl.startsWith(path + '/');
-}
-
 export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
     const page = usePage<SharedData>();
-    const { auth } = page.props;
-    const { t } = useTranslations();
-
-    const navItems: SidebarItem[] = [
-        { title: t('navbar.dashboard'), icon: LayoutDashboard, href: '/dashboard' },
-        { title: t('navbar.projects'), icon: FolderDot, href: route('projects.index') },
-        { title: t('navbar.monitor'), icon: Activity, href: route('monitor.index') },
-        ...(auth?.user?.can.view_users
-            ? [{ title: t('navbar.users'), icon: Users, href: route('users.index') }]
-            : []),
-        { title: t('navbar.notifications'), icon: BellRing, href: '#', placeholder: true },
-        { title: t('navbar.audit_log'), icon: Captions, href: '#', placeholder: true },
-    ];
+    const navItems = useNavItems();
 
     return (
         <aside
@@ -74,7 +38,7 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
                 {/* Navigation items */}
                 <nav className="flex flex-1 flex-col gap-1 px-2 py-2">
                     {navItems.map((item) => {
-                        const active = isActive(item.href, page.url);
+                        const active = isNavItemActive(item.href, page.url);
                         const itemClass = cn(
                             'flex items-center rounded-lg px-1 py-2 text-sm font-medium text-white transition-colors mb-2',
                             isCollapsed ? 'justify-center' : 'gap-1.5',

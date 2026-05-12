@@ -1,10 +1,5 @@
-function getLocale(): string {
-    return (typeof document !== 'undefined' && document.documentElement.lang) || 'en';
-}
+const LOCALE = (typeof document !== 'undefined' && document.documentElement.lang) || 'en';
 
-/**
- * Format a date string according to the current locale
- */
 export function formatDate(
     date: string | null,
     options: Intl.DateTimeFormatOptions = {
@@ -14,15 +9,11 @@ export function formatDate(
     }
 ): string {
     if (!date) return '';
-    return new Date(date).toLocaleDateString(getLocale(), options);
+    return new Date(date).toLocaleDateString(LOCALE, options);
 }
 
-/**
- * Format a date string to a relative time (e.g., "2 hours ago")
- */
 export function formatRelativeTime(date: string): string {
-    const locale = getLocale();
-    const rtf = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
+    const rtf = new Intl.RelativeTimeFormat(LOCALE, { numeric: 'auto' });
     const now = new Date();
     const diff = new Date(date).getTime() - now.getTime();
 

@@ -83,6 +83,7 @@ export interface SharedData {
     auth: Auth;
     ziggy: Config & { location: string };
     translations: TranslationMap;
+    errors?: Record<string, string>;
     [key: string]: unknown;
 }
 

@@ -12,36 +12,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { UserMenuContent } from '@/components/user-menu-content';
+import { isNavItemActive, useNavItems } from '@/hooks/use-nav-items';
 import { useInitials } from '@/hooks/use-initials';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import {
-    BellRing,
-    Activity,
-    FolderDot,
-    LayoutDashboard,
-    Menu,
-    Captions,
-    Users,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
-import { useState } from 'react';
+import { BellRing, Menu } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import type { PropsWithChildren } from 'react';
-
-interface MobileNavItem {
-    title: string;
-    href: string;
-    icon: LucideIcon;
-    placeholder?: boolean;
-}
-
-function isMobileItemActive(href: string, currentUrl: string): boolean {
-    if (href === '#') return false;
-    if (href === '/dashboard') return currentUrl === href;
-    return currentUrl.startsWith(href);
-}
 
 export default function AppSidebarLayout({
     children,
@@ -53,19 +32,9 @@ export default function AppSidebarLayout({
     const getInitials = useInitials();
     const { t } = useTranslations();
     const [isCollapsed, setIsCollapsed] = useState(false);
+    const mobileNavItems = useNavItems();
 
-    const toggleSidebar = () => setIsCollapsed((prev) => !prev);
-
-    const mobileNavItems: MobileNavItem[] = [
-        { title: t('navbar.dashboard'), icon: LayoutDashboard, href: '/dashboard' },
-        { title: t('navbar.projects'), icon: FolderDot, href: route('projects.index') },
-        { title: t('navbar.monitor'), icon: Activity, href: route('monitor.index') },
-        ...(auth?.user?.can.view_users
-            ? [{ title: t('navbar.users'), icon: Users, href: route('users.index') }]
-            : []),
-        { title: t('navbar.notifications'), icon: BellRing, href: '#', placeholder: true },
-        { title: t('navbar.audit_log'), icon: Captions, href: '#', placeholder: true },
-    ];
+    const toggleSidebar = useCallback(() => setIsCollapsed((prev) => !prev), []);
 
     return (
         <div className="flex min-h-screen w-full">
@@ -100,7 +69,7 @@ export default function AppSidebarLayout({
                                 aria-label="Mobile navigation"
                             >
                                 {mobileNavItems.map((item) => {
-                                    const active = isMobileItemActive(item.href, page.url);
+                                    const active = isNavItemActive(item.href, page.url);
                                     const itemClass = cn(
                                         'flex items-center gap-1.5 rounded-lg px-1 py-2 text-sm font-medium text-white transition-colors mb-2',
                                         active ? 'bg-slate-800' : 'hover:bg-white/10',
