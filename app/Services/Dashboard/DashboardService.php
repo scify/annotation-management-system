@@ -9,27 +9,17 @@ use App\Enums\UserRelationsEnum;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\UserRelation;
-use App\Queries\GetActiveAnnotatorsByIdsQuery;
-use App\Queries\GetActiveAnnotatorsQuery;
-use App\Queries\GetActiveSubProjectIdsQuery;
-use App\Queries\GetAnnotatorActiveProjectCountsQuery;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
-use App\Queries\GetAnnotatorSubprojectCountsQuery;
 use App\Queries\GetInProgressProjectsQuery;
 use App\Queries\GetUserInProgressProjectsQuery;
-use App\Services\User\UserService;
+use App\Services\Annotator\AnnotatorService;
 
 readonly class DashboardService {
     public function __construct(
-        private UserService $userService,
+        private AnnotatorService $annotatorService,
         private GetInProgressProjectsQuery $inProgressProjectsQuery,
         private GetUserInProgressProjectsQuery $userInProgressProjectsQuery,
-        private GetActiveAnnotatorsQuery $activeAnnotatorsQuery,
-        private GetActiveAnnotatorsByIdsQuery $activeAnnotatorsByIdsQuery,
         private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
-        private GetAnnotatorActiveProjectCountsQuery $annotatorActiveProjectCountsQuery,
-        private GetActiveSubProjectIdsQuery $activeSubProjectIdsQuery,
-        private GetAnnotatorSubprojectCountsQuery $annotatorSubprojectCountsQuery,
     ) {}
 
     /**
@@ -117,53 +107,6 @@ readonly class DashboardService {
     }
 
     /**
-     * @param  array<int, array<string, mixed>>  $annotators
-     */
-    protected function augmentAnnotatorsWithProgress(array &$annotators): void {
-        foreach ($annotators as &$annotator) {
-            $annotator['annotator_progress'] = 0.5;
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $annotators
-     */
-    protected function augmentAnnotatorsWithActiveProjects(array &$annotators): void {
-        $annotatorIds = array_column($annotators, 'id');
-
-        $counts = $this->annotatorActiveProjectCountsQuery->get($annotatorIds);
-        $activeSubProjectIds = $this->activeSubProjectIdsQuery->get();
-        $subProjectCounts = $this->annotatorSubprojectCountsQuery->get($annotatorIds, $activeSubProjectIds);
-
-        foreach ($annotators as &$annotator) {
-            $annotator['active_projects_count'] = (int) ($counts->get((int) $annotator['id']) ?? 0);
-            $annotator['active_subprojects_count'] = (int) ($subProjectCounts->get((int) $annotator['id']) ?? 0);
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $annotators
-     */
-    protected function augmentAnnotatorsWithWorkload(array &$annotators): void {
-        if ($annotators === []) {
-            return;
-        }
-
-        $workloads = $this->userService->getWorkloads(array_column($annotators, 'id'));
-        $values = array_values($workloads);
-        $min = min($values);
-        $max = max($values);
-        $range = $max - $min;
-
-        foreach ($annotators as &$annotator) {
-            $raw = $workloads[(int) $annotator['id']] ?? 0;
-            $annotator['workload'] = $range > 0
-                ? round(0.1 + (($raw - $min) / $range) * 0.8, 2)
-                : 0.5;
-        }
-    }
-
-    /**
      * @return array<int, array<string, mixed>>
      */
     private function getAllInProgressProjects(): array {
@@ -245,14 +188,7 @@ readonly class DashboardService {
      * @return array<int, array<string, mixed>>
      */
     private function getAllAnnotators(): array {
-        $annotators = $this->activeAnnotatorsQuery->get()
-            ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
-            ->values()
-            ->all();
-
-        $this->augmentAnnotatorData($annotators);
-
-        return $annotators;
+        return $this->annotatorService->getAllAnnotators();
     }
 
     /**
@@ -272,23 +208,15 @@ readonly class DashboardService {
         if ($annotatorIds === []) {
             return [];
         }
-
         if ($all_annotators === null) {
-            $annotators = $this->activeAnnotatorsByIdsQuery->get($annotatorIds)
-                ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
-                ->values()
-                ->all();
-
-            $this->augmentAnnotatorData($annotators);
-        } else {
-            $annotatorIds = array_map(fn (mixed $id): int => (int) $id, $annotatorIds);
-            $annotators = array_values(array_filter(
-                $all_annotators,
-                fn (array $annotator): bool => in_array((int) $annotator['id'], $annotatorIds, true)
-            ));
+            return $this->annotatorService->getAnnotatorsByIds($annotatorIds);
         }
+        $annotatorIds = array_map(fn (mixed $id): int => (int) $id, $annotatorIds);
 
-        return $annotators;
+        return array_values(array_filter(
+            $all_annotators,
+            fn (array $annotator): bool => in_array((int) $annotator['id'], $annotatorIds, true)
+        ));
     }
 
     /**
@@ -300,14 +228,5 @@ readonly class DashboardService {
         $this->augmentProjectsWithManagers($dashboard_project_data);
         $this->augmentProjectsWithProgress($dashboard_project_data);
         $this->augmentProjectsWithDateRange($dashboard_project_data);
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $annotators
-     */
-    private function augmentAnnotatorData(array &$annotators): void {
-        $this->augmentAnnotatorsWithProgress($annotators);
-        $this->augmentAnnotatorsWithActiveProjects($annotators);
-        $this->augmentAnnotatorsWithWorkload($annotators);
     }
 }

@@ -25,6 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read Carbon $updated_at
  * @property-read Carbon|null $deleted_at
  * @property-read Collection<int, TaskTag> $tags
+ * @property-read Collection<int, Dataset> $datasets
  */
 #[Fillable([
     'title',
@@ -39,6 +40,11 @@ class AnnotationTask extends Model {
     use HasFactory;
 
     use SoftDeletes;
+
+    /** @return BelongsToMany<Dataset, $this> */
+    public function datasets(): BelongsToMany {
+        return $this->belongsToMany(Dataset::class, 'dataset_annotation_tasks', 'annotation_task_id', 'dataset_id');
+    }
 
     /** @return BelongsToMany<User, $this> */
     public function connectedUsers(): BelongsToMany {

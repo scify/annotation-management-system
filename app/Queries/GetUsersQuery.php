@@ -12,7 +12,7 @@ final readonly class GetUsersQuery {
      * @return Collection<int, User>
      */
     public function get(?string $search = null): Collection {
-        return User::query()
+        return User::withTrashed()
             ->when($search, function ($query, $search): void {
                 $query->where(function ($query) use ($search): void {
                     $query->where('name', 'like', sprintf('%%%s%%', $search))
@@ -20,7 +20,6 @@ final readonly class GetUsersQuery {
                         ->orWhere('username', 'like', sprintf('%%%s%%', $search));
                 });
             })
-            ->withTrashed()
             ->with('roles')
             ->get();
     }
