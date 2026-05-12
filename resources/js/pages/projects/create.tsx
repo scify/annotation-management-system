@@ -6,7 +6,10 @@ import {
     type CoManagerCandidateRowData,
     SelectCoManagersStep,
 } from '@/components/project/select-co-managers-step';
-import { MOCK_TASK_TYPES, SelectTaskTypeStep } from '@/components/project/select-task-type-step';
+import {
+    type TaskTypeCardData,
+    SelectTaskTypeStep,
+} from '@/components/project/select-task-type-step';
 import { CreateSubprojectStepper } from '@/components/sub-project/create-subproject-stepper';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -97,10 +100,11 @@ const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
 ];
 
 interface Props {
+    annotation_tasks: TaskTypeCardData[];
     annotators?: ProjectAnnotatorRowData[];
 }
 
-export default function CreateProject({ annotators }: Props) {
+export default function CreateProject({ annotation_tasks, annotators }: Props) {
     const { t } = useTranslations();
     const displayAnnotators = annotators ?? MOCK_ANNOTATORS;
 
@@ -172,7 +176,7 @@ export default function CreateProject({ annotators }: Props) {
     const [allowNotSureAnswer, setAllowNotSureAnswer] = useState<'yes' | 'no'>('no');
     const [restrictVisibility, setRestrictVisibility] = useState(false);
 
-    const selectedTaskType = MOCK_TASK_TYPES.find((tt) => tt.id === selectedTaskTypeId) ?? null;
+    const selectedTaskType = annotation_tasks.find((tt) => tt.id === selectedTaskTypeId) ?? null;
 
     function handleNext() {
         if (currentStep < STEPS.length - 1) {
@@ -201,6 +205,7 @@ export default function CreateProject({ annotators }: Props) {
 
                 {currentStep === 0 && (
                     <SelectTaskTypeStep
+                        taskTypes={annotation_tasks}
                         selectedId={selectedTaskTypeId}
                         onSelectionChange={setSelectedTaskTypeId}
                     />

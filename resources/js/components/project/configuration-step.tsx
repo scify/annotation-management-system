@@ -146,12 +146,12 @@ function LeftSidebar({ taskType }: Readonly<LeftSidebarProps>) {
                 <p className="text-xl leading-9 font-bold text-slate-900">
                     {t('projects.configuration.task_type_label')}
                 </p>
-                <p className="text-xl leading-9 text-slate-900">{taskType?.name ?? '—'}</p>
+                <p className="text-xl leading-9 text-slate-900">{taskType?.title ?? '—'}</p>
             </div>
 
             {/* View Guidelines */}
             <a
-                href={taskType?.guidelinesUrl ?? '#'}
+                href={taskType?.guidelines_url ?? '#'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="bg-brand-blue-700 hover:bg-brand-blue-800 flex h-10 w-full items-center justify-center gap-1.5 rounded-lg transition-colors"
@@ -180,7 +180,7 @@ function LeftSidebar({ taskType }: Readonly<LeftSidebarProps>) {
                 {descriptionOpen && (
                     <div className="border-brand-blue-400 rounded-lg border bg-white px-4 py-5">
                         <p className="text-sm leading-5 text-slate-800">
-                            {taskType?.guidelines ?? '—'}
+                            {taskType?.description ?? '—'}
                         </p>
                     </div>
                 )}
@@ -361,7 +361,7 @@ export function ProjectConfigurationStep({
                     </h2>
 
                     <p className="text-sm leading-5 text-slate-800">
-                        {selectedTaskType?.guidelines ?? '—'}
+                        {selectedTaskType?.description ?? '—'}
                     </p>
 
                     {/* Allow confidence dropdown */}
