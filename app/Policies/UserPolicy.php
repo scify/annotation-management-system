@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Enums\RolesEnum;
-use App\Enums\UserRelationsEnum;
+use App\Models\AnnotatorOfManager;
+use App\Models\Comanager;
 use App\Models\User;
 
 class UserPolicy {
@@ -35,10 +36,19 @@ class UserPolicy {
         }
 
         if ($model->hasRole(RolesEnum::ANNOTATION_MANAGER)) {
-            return $user->relatedUsers()->where('related_user_id', $model->id)->wherePivot('relation_type', UserRelationsEnum::COLLABORATOR_OF_USER)->exists();
+            return Comanager::query()->where(function ($q) use ($user, $model): void {
+                $q->where('user_id', $user->id)
+                    ->whereHas('project', fn ($pq) => $pq->where('owner_user_id', $model->id));
+            })->orWhere(function ($q) use ($user, $model): void {
+                $q->where('user_id', $model->id)
+                    ->whereHas('project', fn ($pq) => $pq->where('owner_user_id', $user->id));
+            })->exists();
         }
 
-        return $user->relatedUsers()->where('related_user_id', $model->id)->wherePivot('relation_type', UserRelationsEnum::ANNOTATOR_OF_MANAGER)->exists();
+        return AnnotatorOfManager::query()
+            ->where('manager_id', $user->id)
+            ->where('annotator_id', $model->id)
+            ->exists();
     }
 
     public function create(User $user, ?string $targetRole = null): bool {
@@ -67,8 +77,10 @@ class UserPolicy {
             return false;
         }
 
-        return $user->relatedUsers()->where('related_user_id', $model->id)->wherePivot('relation_type', UserRelationsEnum::ANNOTATOR_OF_MANAGER)->exists();
-
+        return AnnotatorOfManager::query()
+            ->where('manager_id', $user->id)
+            ->where('annotator_id', $model->id)
+            ->exists();
     }
 
     public function delete(User $user, User $model): bool {

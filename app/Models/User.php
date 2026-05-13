@@ -82,30 +82,14 @@ class User extends Authenticatable {
             ->withTimestamps();
     }
 
-    public function relations(): HasMany {
-        return $this->hasMany(UserRelation::class, 'user_id');
+    /** @return HasMany<Comanager, $this> */
+    public function comanagements(): HasMany {
+        return $this->hasMany(Comanager::class, 'user_id');
     }
 
-    public function relatedToMe(): HasMany {
-        return $this->hasMany(UserRelation::class, 'related_user_id');
-    }
-
-    public function relatedUsers(): BelongsToMany {
-        return $this->belongsToMany(
-            self::class,
-            'user_relations',
-            'user_id',
-            'related_user_id'
-        )->withPivot('relation_type');
-    }
-
-    public function relatedByUsers(): BelongsToMany {
-        return $this->belongsToMany(
-            self::class,
-            'user_relations',
-            'related_user_id',
-            'user_id'
-        )->withPivot('relation_type');
+    /** @return HasMany<AnnotatorOfManager, $this> */
+    public function managedAnnotators(): HasMany {
+        return $this->hasMany(AnnotatorOfManager::class, 'manager_id');
     }
 
     /**

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ProjectStatusEnum;
-use App\Enums\UserRelationsEnum;
 use Carbon\Carbon;
 use Database\Factories\ProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -40,9 +39,7 @@ use Illuminate\Support\Facades\Date;
  * @property-read AnnotationTask $annotationTask
  * @property-read Dataset $dataset
  * @property-read Collection<int, SubProject> $subProjects
- * @property-read Collection<int, UserRelation> $annotatorRelations
- * @property-read Collection<int, UserRelation> $coManagerRelations
- * @property-read Collection<int, User> $managers
+ * @property-read Collection<int, Comanager> $comanagerRecords
  * @property-read bool $is_delayed_to_start
  * @property-read bool $is_delayed_to_end
  */
@@ -97,17 +94,10 @@ class Project extends Model {
     }
 
     /**
-     * @return HasMany<UserRelation, $this>
+     * @return HasMany<Comanager, $this>
      */
-    public function annotatorRelations(): HasMany {
-        return $this->hasMany(UserRelation::class)->where('relation_type', UserRelationsEnum::ANNOTATOR_OF_MANAGER);
-    }
-
-    /**
-     * @return HasMany<UserRelation, $this>
-     */
-    public function coManagerRelations(): HasMany {
-        return $this->hasMany(UserRelation::class)->where('relation_type', UserRelationsEnum::COLLABORATOR_OF_USER);
+    public function comanagerRecords(): HasMany {
+        return $this->hasMany(Comanager::class);
     }
 
     /**

@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Queries;
 
 use App\Enums\ProjectStatusEnum;
-use App\Enums\UserRelationsEnum;
-use App\Models\UserRelation;
+use App\Models\AnnotationAssignment;
 use Illuminate\Support\Collection;
 
 final readonly class GetAnnotatorActiveProjectCountsQuery {
@@ -16,13 +15,13 @@ final readonly class GetAnnotatorActiveProjectCountsQuery {
      * @return Collection<int|string, mixed>
      */
     public function get(array $annotatorIds): Collection {
-        return UserRelation::query()
-            ->whereIn('user_relations.user_id', $annotatorIds)
-            ->where('user_relations.relation_type', UserRelationsEnum::ANNOTATOR_OF_MANAGER)
-            ->join('projects', 'projects.id', '=', 'user_relations.project_id')
+        return AnnotationAssignment::query()
+            ->whereIn('annotation_assignments.user_id', $annotatorIds)
+            ->join('sub_projects', 'sub_projects.id', '=', 'annotation_assignments.sub_project_id')
+            ->join('projects', 'projects.id', '=', 'sub_projects.project_id')
             ->where('projects.status', ProjectStatusEnum::IN_PROGRESS)
-            ->selectRaw('user_relations.user_id, COUNT(*) as count')
-            ->groupBy('user_relations.user_id')
-            ->pluck('count', 'user_relations.user_id');
+            ->selectRaw('annotation_assignments.user_id, COUNT(DISTINCT projects.id) as count')
+            ->groupBy('annotation_assignments.user_id')
+            ->pluck('count', 'annotation_assignments.user_id');
     }
 }

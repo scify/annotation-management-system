@@ -6,15 +6,15 @@ namespace Database\Seeders;
 
 use App\Enums\ProjectStatusEnum;
 use App\Enums\SubProjectPriorityEnum;
-use App\Enums\UserRelationsEnum;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotationTask;
+use App\Models\AnnotatorOfManager;
+use App\Models\Comanager;
 use App\Models\Dataset;
 use App\Models\InstanceShuffleMapper;
 use App\Models\Project;
 use App\Models\SubProject;
 use App\Models\User;
-use App\Models\UserRelation;
 use App\Services\Dataset\DatasetService;
 use Illuminate\Database\Seeder;
 
@@ -223,22 +223,17 @@ class DummyProjectSeeder extends Seeder {
                 $entry['project'],
             );
 
-            UserRelation::query()->firstOrCreate([
-                'user_id' => $entry['collaborator_id'],
+            Comanager::query()->firstOrCreate([
                 'project_id' => $project->id,
-                'related_user_id' => $project->owner_user_id,
-                'relation_type' => UserRelationsEnum::COLLABORATOR_OF_USER,
+                'user_id' => $entry['collaborator_id'],
             ]);
 
             foreach ($entry['annotator_emails'] as $email) {
                 $annotator = User::query()->where('email', $email)->firstOrFail();
-                UserRelation::query()->firstOrCreate([
-                    'user_id' => $annotator->id,
-                    'project_id' => $project->id,
-                    'related_user_id' => $project->owner_user_id,
-                    'relation_type' => UserRelationsEnum::ANNOTATOR_OF_MANAGER,
+                AnnotatorOfManager::query()->firstOrCreate([
+                    'manager_id' => $project->owner_user_id,
+                    'annotator_id' => $annotator->id,
                 ]);
-
             }
 
             if ($entry['project']['is_instance_shuffled']) {

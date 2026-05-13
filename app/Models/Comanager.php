@@ -4,21 +4,26 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Database\Factories\UserRelationFactory;
+use Database\Factories\ComanagerFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Fillable([
-    'user_id',
     'project_id',
-    'related_user_id',
-    'relation_type',
+    'user_id',
 ])]
-class UserRelation extends Model {
-    /** @use HasFactory<UserRelationFactory> */
+class Comanager extends Model {
+    /** @use HasFactory<ComanagerFactory> */
     use HasFactory;
+
+    /**
+     * @return BelongsTo<Project, $this>
+     */
+    public function project(): BelongsTo {
+        return $this->belongsTo(Project::class);
+    }
 
     /**
      * @return BelongsTo<User, $this>

@@ -3,7 +3,11 @@
 declare(strict_types=1);
 
 use App\Enums\RolesEnum;
-use App\Enums\UserRelationsEnum;
+use App\Models\AnnotationTask;
+use App\Models\AnnotatorOfManager;
+use App\Models\Comanager;
+use App\Models\Dataset;
+use App\Models\Project;
 use App\Models\User;
 use App\Policies\UserPolicy;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -18,8 +22,19 @@ describe('userpolicy', function (): void {
         $this->manager_non_collaborator = User::factory()->create()->assignRole(RolesEnum::ANNOTATION_MANAGER);
         $this->annotator = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR);
         $this->other_annotator = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR);
-        $this->manager->relatedUsers()->attach($this->annotator->id, ['relation_type' => UserRelationsEnum::ANNOTATOR_OF_MANAGER->value]);
-        $this->manager->relatedUsers()->attach($this->manager_collaborator->id, ['relation_type' => UserRelationsEnum::COLLABORATOR_OF_USER->value]);
+        AnnotatorOfManager::query()->create(['manager_id' => $this->manager->id, 'annotator_id' => $this->annotator->id]);
+
+        $annotationTask = AnnotationTask::query()->create(['title' => 'Test', 'short_description' => 'Test', 'weight' => 1]);
+        $dataset = Dataset::query()->create(['name' => 'Test Dataset', 'description' => 'Test', 'is_available' => true]);
+        $project = Project::query()->create([
+            'name' => 'Test Project',
+            'description' => 'Test',
+            'owner_user_id' => $this->manager->id,
+            'annotation_task_id' => $annotationTask->id,
+            'dataset_id' => $dataset->id,
+        ]);
+        Comanager::query()->create(['project_id' => $project->id, 'user_id' => $this->manager_collaborator->id]);
+
         $this->policy = new UserPolicy();
     });
 

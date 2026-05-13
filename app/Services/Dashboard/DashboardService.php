@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Dashboard;
 
 use App\Enums\RolesEnum;
-use App\Enums\UserRelationsEnum;
+use App\Models\Comanager;
 use App\Models\Project;
 use App\Models\User;
-use App\Models\UserRelation;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
 use App\Queries\GetInProgressProjectsQuery;
 use App\Queries\GetUserInProgressProjectsQuery;
@@ -59,10 +58,10 @@ readonly class DashboardService {
                     fn (array $relation): ?array => isset($relation['user'])
                         ? ['id' => $relation['user']['id'], 'username' => $relation['user']['username']]
                         : null,
-                    $project['co_manager_relations'] ?? []
+                    $project['comanager_records'] ?? []
                 )
             ));
-            unset($project['owner'], $project['co_manager_relations']);
+            unset($project['owner'], $project['comanager_records']);
         }
     }
 
@@ -134,16 +133,12 @@ readonly class DashboardService {
 
             $this->augmentProjectData($dashboard_project_data);
         } else {
-            $collaboratorOwnerIds = UserRelation::query()
-                ->where('related_user_id', $userId)
-                ->where('relation_type', UserRelationsEnum::COLLABORATOR_OF_USER)
-                ->pluck('user_id')
-                ->all();
+            $myComanagerProjectIds = Comanager::query()->where('user_id', $userId)->pluck('project_id')->all();
 
             $dashboard_project_data = array_values(array_filter(
                 $my_projects,
                 fn (array $project): bool => (int) $project['owner_user_id'] === $userId
-                    || in_array((int) $project['owner_user_id'], $collaboratorOwnerIds, true)
+                    || in_array((int) $project['id'], $myComanagerProjectIds, true)
             ));
         }
 

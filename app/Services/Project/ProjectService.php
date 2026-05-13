@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Services\Project;
 
 use App\Enums\RolesEnum;
-use App\Enums\UserRelationsEnum;
 use App\Models\AnnotationTask;
+use App\Models\Comanager;
 use App\Models\Dataset;
+use App\Models\Project;
 use App\Models\TaskTag;
 use App\Models\User;
-use App\Models\UserRelation;
 use App\Queries\GetActiveCoManagersQuery;
 use App\Queries\GetAnnotationTasksQuery;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
@@ -112,15 +112,14 @@ readonly class ProjectService {
             ];
         }
 
-        $collaboratorIds = UserRelation::query()
-            ->where('relation_type', UserRelationsEnum::COLLABORATOR_OF_USER)
-            ->where(function ($q) use ($user): void {
-                $q->where('related_user_id', $user->id)
-                    ->orWhere('user_id', $user->id);
-            })
-            ->selectRaw('CASE WHEN user_id = ? THEN related_user_id ELSE user_id END AS collaborator_id', [$user->id])
-            ->distinct()
-            ->pluck('collaborator_id')
+        $myProjectIds = Project::query()->where('owner_user_id', $user->id)->pluck('id');
+        $comanagerIds = Comanager::query()->whereIn('project_id', $myProjectIds)->pluck('user_id');
+
+        $myCoProjectIds = Comanager::query()->where('user_id', $user->id)->pluck('project_id');
+        $ownerIds = Project::query()->whereIn('id', $myCoProjectIds)->pluck('owner_user_id');
+
+        $collaboratorIds = $comanagerIds->merge($ownerIds)
+            ->unique()
             ->reject(fn (mixed $id): bool => (int) $id === $user->id)
             ->values()
             ->all();
