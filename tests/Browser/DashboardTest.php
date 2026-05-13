@@ -13,18 +13,18 @@ use Illuminate\Support\Facades\Hash;
  * The Altcha captcha is disabled server-side in APP_ENV=testing (only 'required' applies).
  * We bypass the frontend JavaScript guard by dispatching a synthetic statechange event.
  */
-function loginViaForm(string $email, string $password = 'password'): mixed {
+function loginViaForm(string $username, string $password = 'password'): mixed {
     $page = visit('/login');
 
     // Fail early if JS errors prevent the page from loading correctly.
     $page->assertNoJavascriptErrors();
 
-    $page->type('email', $email)
-        ->type('password', $password);
+    $page->type('#username', $username)
+        ->type('#password', $password);
 
     // Debug: confirm typing worked — if this fails, the input isn't receiving text.
-    $emailValue = $page->script("document.getElementById('email')?.value ?? 'NOT FOUND'");
-    expect($emailValue)->toBe($email, 'email input was not filled — check if React mounted and controlled inputs are wired');
+    $usernameValue = $page->script("document.getElementById('username')?.value ?? 'NOT FOUND'");
+    expect($usernameValue)->toBe($username, 'username input was not filled — check if React mounted and controlled inputs are wired');
 
     // script() returns the JS evaluation result, not $this — call it separately.
     // wait(0.1) lets React flush the captcha state update before pressing.
@@ -49,7 +49,7 @@ describe('Dashboard', function (): void {
             'password' => Hash::make('password'),
         ])->assignRole(RolesEnum::ADMIN);
 
-        loginViaForm($admin->email)
+        loginViaForm($admin->username)
             ->assertRoute('dashboard')
             ->assertSee('Dashboard')
             ->assertNoJavascriptErrors();
@@ -60,7 +60,7 @@ describe('Dashboard', function (): void {
             'password' => Hash::make('password'),
         ])->assignRole(RolesEnum::ANNOTATION_MANAGER);
 
-        loginViaForm($manager->email)
+        loginViaForm($manager->username)
             ->assertRoute('dashboard')
             ->assertSee('Dashboard')
             ->assertNoJavascriptErrors();

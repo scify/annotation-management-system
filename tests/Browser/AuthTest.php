@@ -23,8 +23,8 @@ describe('Authentication', function (): void {
         $page = visit('/login');
         $page->assertNoJavascriptErrors();
 
-        $page->type('username', $user->username)
-            ->type('password', 'password');
+        $page->type('#username', $user->username)
+            ->type('#password', 'password');
 
         $usernameValue = $page->script("document.getElementById('username')?.value ?? 'NOT FOUND'");
         expect($usernameValue)->toBe($user->username, 'username input was not filled');
@@ -52,8 +52,8 @@ describe('Authentication', function (): void {
         ])->assignRole(RolesEnum::ADMIN);
 
         $page = visit('/login')
-            ->type('username', $user->username)
-            ->type('password', 'wrong-password');
+            ->type('#username', $user->username)
+            ->type('#password', 'wrong-password');
 
         $page->script("
             const widget = document.getElementById('altcha-widget');
