@@ -208,9 +208,11 @@ readonly class DashboardService {
         if ($annotatorIds === []) {
             return [];
         }
+
         if ($all_annotators === null) {
             return $this->annotatorService->getAnnotatorsByIds($annotatorIds);
         }
+
         $annotatorIds = array_map(fn (mixed $id): int => (int) $id, $annotatorIds);
 
         return array_values(array_filter(

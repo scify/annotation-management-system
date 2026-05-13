@@ -18,70 +18,21 @@ import {
     Minus,
     Plus,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export interface DatasetCardData {
-    id: number;
-    name: string;
-    instanceCount: number;
-    description: string;
-}
-
 export interface ProjectConfigurationStepProps {
     selectedTaskType: TaskTypeCardData | null;
-    datasets?: DatasetCardData[];
     selectedDatasetId: number | null;
     shuffleInstances: boolean;
-    allowMarkConfidence: 'yes' | 'no';
-    allowNotSureAnswer: 'yes' | 'no';
+    customizationAnswers: Record<number, string>;
     restrictVisibility: boolean;
     onDatasetChange: (id: number) => void;
     onShuffleChange: (enabled: boolean) => void;
-    onAllowMarkConfidenceChange: (value: 'yes' | 'no') => void;
-    onAllowNotSureAnswerChange: (value: 'yes' | 'no') => void;
+    onCustomizationAnswerChange: (id: number, answer: string) => void;
     onVisibilityChange: (restricted: boolean) => void;
 }
-
-const MOCK_DATASETS: DatasetCardData[] = [
-    {
-        id: 1,
-        name: 'Text Dataset A',
-        instanceCount: 10_000,
-        description: 'Description of the Dataset',
-    },
-    {
-        id: 2,
-        name: 'Text Dataset B',
-        instanceCount: 2_356,
-        description: 'Description of the Dataset',
-    },
-    {
-        id: 3,
-        name: 'Text Dataset C',
-        instanceCount: 3_290,
-        description: 'Description of the Dataset',
-    },
-    {
-        id: 4,
-        name: 'Audio Dataset D',
-        instanceCount: 5_100,
-        description: 'Description of the Dataset',
-    },
-    {
-        id: 5,
-        name: 'Audio Dataset E',
-        instanceCount: 1_800,
-        description: 'Description of the Dataset',
-    },
-    {
-        id: 6,
-        name: 'Text Dataset F',
-        instanceCount: 7_450,
-        description: 'Description of the Dataset',
-    },
-];
 
 const PAGE_SIZE = 3;
 
@@ -191,8 +142,10 @@ function LeftSidebar({ taskType }: Readonly<LeftSidebarProps>) {
 
 // ── Dataset card ──────────────────────────────────────────────────────────────
 
+type DatasetItem = TaskTypeCardData['datasets'][number];
+
 interface DatasetCardProps {
-    dataset: DatasetCardData;
+    dataset: DatasetItem;
     isSelected: boolean;
     onSelect: () => void;
 }
@@ -240,7 +193,7 @@ function DatasetCard({ dataset, isSelected, onSelect }: Readonly<DatasetCardProp
                     )}
                 >
                     {trans('projects.configuration.dataset_instances', {
-                        count: dataset.instanceCount.toLocaleString(),
+                        count: dataset.instances_count.toLocaleString(),
                     })}
                 </p>
                 <p className="text-sm leading-5 text-slate-500">{dataset.description}</p>
@@ -253,24 +206,28 @@ function DatasetCard({ dataset, isSelected, onSelect }: Readonly<DatasetCardProp
 
 export function ProjectConfigurationStep({
     selectedTaskType,
-    datasets,
     selectedDatasetId,
     shuffleInstances,
-    allowMarkConfidence,
-    allowNotSureAnswer,
+    customizationAnswers,
     restrictVisibility,
     onDatasetChange,
     onShuffleChange,
-    onAllowMarkConfidenceChange,
-    onAllowNotSureAnswerChange,
+    onCustomizationAnswerChange,
     onVisibilityChange,
 }: ProjectConfigurationStepProps) {
     const { t } = useTranslations();
-    const displayDatasets = datasets ?? MOCK_DATASETS;
+    const datasets = selectedTaskType?.datasets ?? [];
+    const customizationOptions = selectedTaskType?.customization_options ?? [];
+    const hasAnyCustomization = customizationOptions.length > 0;
+
     const [page, setPage] = useState(0);
 
-    const totalPages = Math.ceil(displayDatasets.length / PAGE_SIZE);
-    const visibleDatasets = displayDatasets.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+    useEffect(() => {
+        setPage(0);
+    }, [selectedTaskType?.id]);
+
+    const totalPages = Math.ceil(datasets.length / PAGE_SIZE);
+    const visibleDatasets = datasets.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
     return (
         <div className="flex gap-6">
@@ -351,67 +308,50 @@ export function ProjectConfigurationStep({
                     </div>
                 </section>
 
-                {/* Annotation card */}
-                <section
-                    aria-labelledby="annotation-heading"
-                    className="flex flex-col gap-11 rounded-2xl border border-slate-200 bg-white px-6 pt-7 pb-6"
-                >
-                    <h2 id="annotation-heading" className="text-lg font-semibold text-slate-800">
-                        {t('projects.configuration.annotation_section')}
-                    </h2>
-
-                    <p className="text-sm leading-5 text-slate-800">
-                        {selectedTaskType?.description ?? '—'}
-                    </p>
-
-                    {/* Allow confidence dropdown */}
-                    <div className="flex flex-col gap-4">
-                        <p className="text-base font-semibold text-black">
-                            {t('projects.configuration.allow_confidence_question')}
-                        </p>
-                        <Select
-                            aria-label={t('projects.configuration.allow_confidence_question')}
-                            value={allowMarkConfidence}
-                            onValueChange={(v) => onAllowMarkConfidenceChange(v as 'yes' | 'no')}
+                {/* Annotation card — only shown when there are customization options */}
+                {hasAnyCustomization && (
+                    <section
+                        aria-labelledby="annotation-heading"
+                        className="flex flex-col gap-11 rounded-2xl border border-slate-200 bg-white px-6 pt-7 pb-6"
+                    >
+                        <h2
+                            id="annotation-heading"
+                            className="text-lg font-semibold text-slate-800"
                         >
-                            <SelectTrigger className="w-44">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="yes">
-                                    {t('projects.configuration.answer_yes')}
-                                </SelectItem>
-                                <SelectItem value="no">
-                                    {t('projects.configuration.answer_no')}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
+                            {t('projects.configuration.annotation_section')}
+                        </h2>
 
-                    {/* Allow not sure dropdown */}
-                    <div className="flex flex-col gap-4">
-                        <p className="text-base font-semibold text-black">
-                            {t('projects.configuration.allow_not_sure_question')}
+                        <p className="text-sm leading-5 text-slate-800">
+                            {selectedTaskType?.description ?? '—'}
                         </p>
-                        <Select
-                            aria-label={t('projects.configuration.allow_not_sure_question')}
-                            value={allowNotSureAnswer}
-                            onValueChange={(v) => onAllowNotSureAnswerChange(v as 'yes' | 'no')}
-                        >
-                            <SelectTrigger className="w-44">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="yes">
-                                    {t('projects.configuration.answer_yes')}
-                                </SelectItem>
-                                <SelectItem value="no">
-                                    {t('projects.configuration.answer_no')}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                </section>
+
+                        {customizationOptions.map((option) => (
+                            <div key={option.id} className="flex flex-col gap-4">
+                                <p className="text-base font-semibold text-black">
+                                    {option.question}
+                                </p>
+                                <Select
+                                    aria-label={option.question}
+                                    value={customizationAnswers[option.id] ?? option.answers[0]}
+                                    onValueChange={(answer) =>
+                                        onCustomizationAnswerChange(option.id, answer)
+                                    }
+                                >
+                                    <SelectTrigger className="w-44">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {option.answers.map((answer) => (
+                                            <SelectItem key={answer} value={answer}>
+                                                {answer}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        ))}
+                    </section>
+                )}
 
                 {/* Project Visibility card */}
                 <section

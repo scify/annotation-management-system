@@ -15,12 +15,11 @@ import { CircleMinus } from 'lucide-react';
 
 export interface ProjectAnnotatorRowData {
     id: number;
-    initials: string;
-    username: string;
-    projects: number;
-    subprojects: number;
+    name: string;
+    annotator_progress: number;
+    active_projects_count: number;
+    active_subprojects_count: number;
     workload: number;
-    progress: number;
 }
 
 type AnnotatorsTableProps =
@@ -74,79 +73,90 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {annotators.map((annotator) => (
-                        <TableRow
-                            key={annotator.id}
-                            className="hover:bg-brand-blue-50 h-14 border-b border-slate-300 bg-white"
-                        >
-                            {mode === 'selectable' && (
+                    {annotators.map((annotator) => {
+                        const initials = annotator.name
+                            .split(' ')
+                            .map((w) => w[0] ?? '')
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase();
+                        const workloadPct = Math.round(annotator.workload * 100);
+                        const progressPct = Math.round(annotator.annotator_progress * 100);
+
+                        return (
+                            <TableRow
+                                key={annotator.id}
+                                className="hover:bg-brand-blue-50 h-14 border-b border-slate-300 bg-white"
+                            >
+                                {mode === 'selectable' && (
+                                    <TableCell className="pl-4">
+                                        <label className="flex cursor-pointer">
+                                            <Checkbox
+                                                checked={props.selectedIds.has(annotator.id)}
+                                                onCheckedChange={(checked) =>
+                                                    props.onSelectionChange(annotator.id, checked)
+                                                }
+                                                aria-label={`Select ${annotator.name}`}
+                                            />
+                                        </label>
+                                    </TableCell>
+                                )}
                                 <TableCell className="pl-4">
-                                    <label className="flex cursor-pointer">
-                                        <Checkbox
-                                            checked={props.selectedIds.has(annotator.id)}
-                                            onCheckedChange={(checked) =>
-                                                props.onSelectionChange(annotator.id, checked)
-                                            }
-                                            aria-label={`Select ${annotator.username}`}
-                                        />
-                                    </label>
+                                    <UserTableCell
+                                        initials={initials}
+                                        username={annotator.name}
+                                        showMessageButton={mode === 'remove'}
+                                    />
                                 </TableCell>
-                            )}
-                            <TableCell className="pl-4">
-                                <UserTableCell
-                                    initials={annotator.initials}
-                                    username={annotator.username}
-                                    showMessageButton={mode === 'remove'}
-                                />
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <span className="text-base font-medium text-slate-800">
-                                    {annotator.projects}
-                                </span>
-                            </TableCell>
-                            <TableCell className="text-right">
-                                <span className="text-base font-medium text-slate-800">
-                                    {annotator.subprojects}
-                                </span>
-                            </TableCell>
-                            <TableCell className="text-center">
-                                <div className="flex justify-center">
-                                    <WorkloadGauge value={annotator.workload} />
-                                </div>
-                            </TableCell>
-                            <TableCell>
-                                <div className="flex flex-col items-end gap-1.5">
+                                <TableCell className="text-right">
                                     <span className="text-base font-medium text-slate-800">
-                                        {annotator.progress}%
+                                        {annotator.active_projects_count}
                                     </span>
-                                    <div className="bg-brand-blue-100 h-[5px] w-full overflow-hidden rounded-full">
-                                        <div
-                                            className="bg-brand-blue-800 h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500 motion-safe:ease-out"
-                                            style={{ width: `${annotator.progress}%` }}
-                                            role="progressbar"
-                                            aria-valuenow={annotator.progress}
-                                            aria-valuemin={0}
-                                            aria-valuemax={100}
-                                            aria-label={`Progress: ${annotator.progress}%`}
-                                        />
-                                    </div>
-                                </div>
-                            </TableCell>
-                            {mode === 'remove' && (
-                                <TableCell className="text-center">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 rounded-lg"
-                                        aria-label={`Remove ${annotator.username} from project`}
-                                        onClick={() => props.onAnnotatorRemoved?.(annotator.id)}
-                                    >
-                                        <CircleMinus className="size-6" aria-hidden="true" />
-                                    </Button>
                                 </TableCell>
-                            )}
-                        </TableRow>
-                    ))}
+                                <TableCell className="text-right">
+                                    <span className="text-base font-medium text-slate-800">
+                                        {annotator.active_subprojects_count}
+                                    </span>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                    <div className="flex justify-center">
+                                        <WorkloadGauge value={workloadPct} />
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex flex-col items-end gap-1.5">
+                                        <span className="text-base font-medium text-slate-800">
+                                            {progressPct}%
+                                        </span>
+                                        <div className="bg-brand-blue-100 h-[5px] w-full overflow-hidden rounded-full">
+                                            <div
+                                                className="bg-brand-blue-800 h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500 motion-safe:ease-out"
+                                                style={{ width: `${progressPct}%` }}
+                                                role="progressbar"
+                                                aria-valuenow={progressPct}
+                                                aria-valuemin={0}
+                                                aria-valuemax={100}
+                                                aria-label={`Progress: ${progressPct}%`}
+                                            />
+                                        </div>
+                                    </div>
+                                </TableCell>
+                                {mode === 'remove' && (
+                                    <TableCell className="text-center">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 rounded-lg"
+                                            aria-label={`Remove ${annotator.name} from project`}
+                                            onClick={() => props.onAnnotatorRemoved?.(annotator.id)}
+                                        >
+                                            <CircleMinus className="size-6" aria-hidden="true" />
+                                        </Button>
+                                    </TableCell>
+                                )}
+                            </TableRow>
+                        );
+                    })}
                 </TableBody>
             </Table>
         </div>

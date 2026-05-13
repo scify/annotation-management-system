@@ -147,6 +147,7 @@ return [
         'table_role' => 'Role',
         'role_admin' => 'Admin',
         'role_manager' => 'Manager',
+        'role_annotation_manager' => 'Annotation Manager',
     ],
 
     'select_annotators' => [
@@ -160,6 +161,7 @@ return [
         'sort_desc_workload' => 'High → Low',
         'search_placeholder' => 'Search Annotators…',
         'select_all' => 'Select all',
+        'show_my_annotators' => 'Show only my annotators',
         'min_one_required' => 'Select at least 1 annotator to continue.',
     ],
 
@@ -182,10 +184,6 @@ return [
         'shuffle_instances' => 'Shuffle instances',
         'shuffle_instances_hint' => 'Randomise the order instances are presented to annotators',
         'annotation_section' => 'Annotation',
-        'allow_confidence_question' => 'Do you want to allow the annotators to mark their confidence?',
-        'allow_not_sure_question' => 'Do you want to allow the answer "I am not sure"?',
-        'answer_yes' => 'Yes',
-        'answer_no' => 'No',
         'visibility_section' => 'Project Visibility',
         'visibility_description' => "Restrict other managers from viewing Project's data",
         'visibility_toggle_label' => 'Allow viewing only to Co-Managers',

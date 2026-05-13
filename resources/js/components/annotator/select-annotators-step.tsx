@@ -15,6 +15,8 @@ import { useMemo, useState } from 'react';
 
 interface SelectAnnotatorsStepProps {
     annotators: ProjectAnnotatorRowData[];
+    /** When present (even as []), shows the "show only my annotators" toggle */
+    myAnnotators?: ProjectAnnotatorRowData[];
     selectedIds: Set<number>;
     onSelectionChange: (id: number, checked: boolean) => void;
     onSelectAllChange: (ids: number[], checked: boolean) => void;
@@ -24,6 +26,7 @@ interface SelectAnnotatorsStepProps {
 
 export function SelectAnnotatorsStep({
     annotators,
+    myAnnotators,
     selectedIds,
     onSelectionChange,
     onSelectAllChange,
@@ -33,24 +36,27 @@ export function SelectAnnotatorsStep({
     const [sortByName, setSortByName] = useState('');
     const [sortByWorkload, setSortByWorkload] = useState('');
     const [search, setSearch] = useState('');
+    const [showMyOnly, setShowMyOnly] = useState(false);
 
     const ns = `${translationNamespace}.select_annotators` as const;
+    const hasMyAnnotatorsToggle = myAnnotators !== undefined;
+    const baseAnnotators = hasMyAnnotatorsToggle && showMyOnly ? myAnnotators : annotators;
 
     const filteredAnnotators = useMemo(() => {
-        let result = [...annotators];
+        let result = [...baseAnnotators];
 
         if (search.trim()) {
             const query = search.toLowerCase();
-            result = result.filter((a) => a.username.toLowerCase().includes(query));
+            result = result.filter((a) => a.name.toLowerCase().includes(query));
         }
 
-        if (sortByName === 'asc') result.sort((a, b) => a.username.localeCompare(b.username));
-        if (sortByName === 'desc') result.sort((a, b) => b.username.localeCompare(a.username));
+        if (sortByName === 'asc') result.sort((a, b) => a.name.localeCompare(b.name));
+        if (sortByName === 'desc') result.sort((a, b) => b.name.localeCompare(a.name));
         if (sortByWorkload === 'asc') result.sort((a, b) => a.workload - b.workload);
         if (sortByWorkload === 'desc') result.sort((a, b) => b.workload - a.workload);
 
         return result;
-    }, [annotators, search, sortByName, sortByWorkload]);
+    }, [baseAnnotators, search, sortByName, sortByWorkload]);
 
     const allFilteredSelected =
         filteredAnnotators.length > 0 && filteredAnnotators.every((a) => selectedIds.has(a.id));
@@ -114,6 +120,32 @@ export function SelectAnnotatorsStep({
                         </SelectContent>
                     </Select>
                 </div>
+
+                {hasMyAnnotatorsToggle && (
+                    <label className="flex cursor-pointer items-center gap-2">
+                        <span className="relative inline-flex shrink-0">
+                            <input
+                                type="checkbox"
+                                role="switch"
+                                aria-checked={showMyOnly}
+                                checked={showMyOnly}
+                                onChange={(e) => setShowMyOnly(e.target.checked)}
+                                className="peer sr-only"
+                            />
+                            <span
+                                aria-hidden="true"
+                                className={`peer-focus-visible:ring-brand-blue-700/30 flex h-6 w-11 items-center rounded-full border-2 border-transparent transition-colors peer-focus-visible:ring-4 ${showMyOnly ? 'bg-brand-blue-700' : 'bg-slate-200'}`}
+                            >
+                                <span
+                                    className={`size-4 rounded-full bg-white shadow-sm transition-transform ${showMyOnly ? 'translate-x-5' : 'translate-x-1'}`}
+                                />
+                            </span>
+                        </span>
+                        <span className="text-sm font-medium text-slate-800">
+                            {t(`${ns}.show_my_annotators`)}
+                        </span>
+                    </label>
+                )}
 
                 <div className="relative ml-auto">
                     <Search

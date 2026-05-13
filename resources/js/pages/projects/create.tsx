@@ -18,95 +18,22 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, FolderDot } from 'lucide-react';
-import { useState } from 'react';
-
-const MOCK_CO_MANAGER_CANDIDATES: CoManagerCandidateRowData[] = [
-    {
-        id: 1,
-        initials: 'G',
-        username: '@ggiannakopoulos',
-        name: 'George Giannakopoulos',
-        role: 'admin',
-    },
-    {
-        id: 2,
-        initials: 'A',
-        username: '@akosmo',
-        name: 'Aris Kosmopoulos',
-        role: 'manager',
-    },
-    {
-        id: 3,
-        initials: 'P',
-        username: '@paulisar',
-        name: 'Paul Isaris',
-        role: 'manager',
-    },
-    {
-        id: 4,
-        initials: 'N',
-        username: '@NelliSav',
-        name: 'Nelly Savrani',
-        role: 'manager',
-    },
-];
-
-const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
-    {
-        id: 1,
-        initials: 'G',
-        username: '@ggiannakopulos',
-        projects: 23,
-        subprojects: 23,
-        workload: 85,
-        progress: 75,
-    },
-    {
-        id: 2,
-        initials: 'N',
-        username: '@nellisavrani',
-        projects: 12,
-        subprojects: 4,
-        workload: 30,
-        progress: 75,
-    },
-    {
-        id: 3,
-        initials: 'P',
-        username: '@pisaris',
-        projects: 5,
-        subprojects: 10,
-        workload: 60,
-        progress: 40,
-    },
-    {
-        id: 4,
-        initials: 'A',
-        username: '@apapadopoulos',
-        projects: 8,
-        subprojects: 16,
-        workload: 50,
-        progress: 55,
-    },
-    {
-        id: 5,
-        initials: 'M',
-        username: '@mkonstantinou',
-        projects: 15,
-        subprojects: 30,
-        workload: 70,
-        progress: 90,
-    },
-];
+import { useEffect, useState } from 'react';
 
 interface Props {
     annotation_tasks: TaskTypeCardData[];
-    annotators?: ProjectAnnotatorRowData[];
+    all_annotators: ProjectAnnotatorRowData[];
+    my_annotators?: ProjectAnnotatorRowData[];
+    co_managers: CoManagerCandidateRowData[];
 }
 
-export default function CreateProject({ annotation_tasks, annotators }: Props) {
+export default function CreateProject({
+    annotation_tasks,
+    all_annotators,
+    my_annotators,
+    co_managers,
+}: Props) {
     const { t } = useTranslations();
-    const displayAnnotators = annotators ?? MOCK_ANNOTATORS;
 
     const STEPS = [
         { label: t('projects.create.step_select_task_type') },
@@ -172,9 +99,17 @@ export default function CreateProject({ annotation_tasks, annotators }: Props) {
     // Step 2 — configuration state
     const [selectedDatasetId, setSelectedDatasetId] = useState<number | null>(null);
     const [shuffleInstances, setShuffleInstances] = useState(true);
-    const [allowMarkConfidence, setAllowMarkConfidence] = useState<'yes' | 'no'>('yes');
-    const [allowNotSureAnswer, setAllowNotSureAnswer] = useState<'yes' | 'no'>('no');
+    const [customizationAnswers, setCustomizationAnswers] = useState<Record<number, string>>({});
     const [restrictVisibility, setRestrictVisibility] = useState(false);
+
+    useEffect(() => {
+        setCustomizationAnswers({});
+        setSelectedDatasetId(null);
+    }, [selectedTaskTypeId]);
+
+    function handleCustomizationAnswerChange(id: number, answer: string) {
+        setCustomizationAnswers((prev) => ({ ...prev, [id]: answer }));
+    }
 
     const selectedTaskType = annotation_tasks.find((tt) => tt.id === selectedTaskTypeId) ?? null;
 
@@ -216,20 +151,19 @@ export default function CreateProject({ annotation_tasks, annotators }: Props) {
                         selectedTaskType={selectedTaskType}
                         selectedDatasetId={selectedDatasetId}
                         shuffleInstances={shuffleInstances}
-                        allowMarkConfidence={allowMarkConfidence}
-                        allowNotSureAnswer={allowNotSureAnswer}
+                        customizationAnswers={customizationAnswers}
                         restrictVisibility={restrictVisibility}
                         onDatasetChange={setSelectedDatasetId}
                         onShuffleChange={setShuffleInstances}
-                        onAllowMarkConfidenceChange={setAllowMarkConfidence}
-                        onAllowNotSureAnswerChange={setAllowNotSureAnswer}
+                        onCustomizationAnswerChange={handleCustomizationAnswerChange}
                         onVisibilityChange={setRestrictVisibility}
                     />
                 )}
 
                 {currentStep === 2 && (
                     <SelectAnnotatorsStep
-                        annotators={displayAnnotators}
+                        annotators={all_annotators}
+                        myAnnotators={my_annotators}
                         selectedIds={selectedAnnotatorIds}
                         onSelectionChange={handleSelectionChange}
                         onSelectAllChange={handleSelectAllChange}
@@ -239,7 +173,7 @@ export default function CreateProject({ annotation_tasks, annotators }: Props) {
 
                 {currentStep === 3 && (
                     <SelectCoManagersStep
-                        candidates={MOCK_CO_MANAGER_CANDIDATES}
+                        candidates={co_managers}
                         selectedIds={selectedCoManagerIds}
                         inviteEmail={coManagerInviteEmail}
                         onSelectionChange={handleCoManagerSelectionChange}

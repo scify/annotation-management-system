@@ -15,10 +15,9 @@ import { cn } from '@/lib/utils';
 
 export interface CoManagerCandidateRowData {
     id: number;
-    initials: string;
     username: string;
     name: string;
-    role: 'admin' | 'manager';
+    role: 'admin' | 'annotation-manager';
 }
 
 interface SelectCoManagersStepProps {
@@ -33,7 +32,7 @@ interface SelectCoManagersStepProps {
 
 const ROLE_BADGE_CLASSES: Record<CoManagerCandidateRowData['role'], string> = {
     admin: 'border-fuchsia-300 bg-fuchsia-50 text-fuchsia-600',
-    manager: 'border-sky-300 bg-sky-50 text-sky-600',
+    'annotation-manager': 'border-sky-300 bg-sky-50 text-sky-600',
 };
 
 export function SelectCoManagersStep({
@@ -114,46 +113,60 @@ export function SelectCoManagersStep({
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {candidates.map((candidate) => (
-                            <TableRow
-                                key={candidate.id}
-                                className="hover:bg-brand-blue-50 h-[76px] cursor-pointer border-b border-slate-300 bg-white"
-                                onClick={() =>
-                                    onSelectionChange(candidate.id, !selectedIds.has(candidate.id))
-                                }
-                            >
-                                <TableCell className="w-12 pl-4">
-                                    <Checkbox
-                                        checked={selectedIds.has(candidate.id)}
-                                        onCheckedChange={(checked) =>
-                                            onSelectionChange(candidate.id, checked)
-                                        }
-                                        aria-label={`Select ${candidate.username}`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    />
-                                </TableCell>
-                                <TableCell className="pl-4">
-                                    <UserTableCell
-                                        initials={candidate.initials}
-                                        username={candidate.username}
-                                        showMessageButton={false}
-                                    />
-                                </TableCell>
-                                <TableCell className="text-sm font-medium text-slate-800">
-                                    {candidate.name}
-                                </TableCell>
-                                <TableCell>
-                                    <span
-                                        className={cn(
-                                            'inline-flex items-center rounded border px-2.5 py-0.5 text-xs font-semibold',
-                                            ROLE_BADGE_CLASSES[candidate.role]
-                                        )}
-                                    >
-                                        {t(`projects.select_co_managers.role_${candidate.role}`)}
-                                    </span>
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                        {candidates.map((candidate) => {
+                            const initials = candidate.name
+                                .split(' ')
+                                .map((w) => w[0] ?? '')
+                                .join('')
+                                .slice(0, 2)
+                                .toUpperCase();
+
+                            return (
+                                <TableRow
+                                    key={candidate.id}
+                                    className="hover:bg-brand-blue-50 h-[76px] cursor-pointer border-b border-slate-300 bg-white"
+                                    onClick={() =>
+                                        onSelectionChange(
+                                            candidate.id,
+                                            !selectedIds.has(candidate.id)
+                                        )
+                                    }
+                                >
+                                    <TableCell className="w-12 pl-4">
+                                        <Checkbox
+                                            checked={selectedIds.has(candidate.id)}
+                                            onCheckedChange={(checked) =>
+                                                onSelectionChange(candidate.id, checked)
+                                            }
+                                            aria-label={`Select ${candidate.username}`}
+                                            onClick={(e) => e.stopPropagation()}
+                                        />
+                                    </TableCell>
+                                    <TableCell className="pl-4">
+                                        <UserTableCell
+                                            initials={initials}
+                                            username={candidate.username}
+                                            showMessageButton={false}
+                                        />
+                                    </TableCell>
+                                    <TableCell className="text-sm font-medium text-slate-800">
+                                        {candidate.name}
+                                    </TableCell>
+                                    <TableCell>
+                                        <span
+                                            className={cn(
+                                                'inline-flex items-center rounded border px-2.5 py-0.5 text-xs font-semibold',
+                                                ROLE_BADGE_CLASSES[candidate.role]
+                                            )}
+                                        >
+                                            {t(
+                                                `projects.select_co_managers.role_${candidate.role.replace('-', '_')}`
+                                            )}
+                                        </span>
+                                    </TableCell>
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
             </div>

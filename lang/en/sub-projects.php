@@ -55,6 +55,7 @@ return [
         'sort_desc_workload' => 'High → Low',
         'search_placeholder' => 'Search Annotators…',
         'select_all' => 'Select all',
+        'show_my_annotators' => 'Show only my annotators',
         'min_one_required' => 'Select at least 1 annotator to continue.',
     ],
 

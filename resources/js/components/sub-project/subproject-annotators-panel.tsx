@@ -54,7 +54,7 @@ export function SubprojectAnnotatorsPanel({
                 icon={<UserMinus />}
                 title={t('sub-projects.annotators_panel.remove_dialog_title')}
                 description={trans('sub-projects.annotators_panel.remove_dialog_description', {
-                    username: annotatorToRemove?.username ?? '',
+                    username: annotatorToRemove?.name ?? '',
                 })}
                 cancelLabel={t('sub-projects.create.cancel')}
                 actionLabel={t('sub-projects.annotators_panel.remove_confirm')}

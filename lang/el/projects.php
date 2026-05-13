@@ -147,6 +147,22 @@ return [
         'table_role' => 'Ρόλος',
         'role_admin' => 'Διαχειριστής',
         'role_manager' => 'Υπεύθυνος Επισημειωτών',
+        'role_annotation_manager' => 'Υπεύθυνος Επισημειωτών',
+    ],
+
+    'select_annotators' => [
+        'heading' => 'Επιλογή Επισημειωτών',
+        'selected_count' => ':count επιλεγμένοι',
+        'sort_by_name' => 'Ταξινόμηση κατά Όνομα',
+        'sort_by_workload' => 'Ταξινόμηση κατά Φόρτο',
+        'sort_asc_name' => 'Α → Ω',
+        'sort_desc_name' => 'Ω → Α',
+        'sort_asc_workload' => 'Χαμηλός → Υψηλός',
+        'sort_desc_workload' => 'Υψηλός → Χαμηλός',
+        'search_placeholder' => 'Αναζήτηση Επισημειωτών…',
+        'select_all' => 'Επιλογή όλων',
+        'show_my_annotators' => 'Εμφάνιση μόνο των επισημειωτών μου',
+        'min_one_required' => 'Επιλέξτε τουλάχιστον 1 επισημειωτή για να συνεχίσετε.',
     ],
 
     'select_task_type' => [
@@ -168,10 +184,6 @@ return [
         'shuffle_instances' => 'Τυχαία σειρά στιγμιοτύπων',
         'shuffle_instances_hint' => 'Τυχαία σειρά παρουσίασης στιγμιοτύπων στους επισημειωτές',
         'annotation_section' => 'Επισημείωση',
-        'allow_confidence_question' => 'Θέλετε να επιτρέψετε στους επισημειωτές να σημειώνουν την εμπιστοσύνη τους;',
-        'allow_not_sure_question' => 'Θέλετε να επιτρέψετε την απάντηση "Δεν είμαι σίγουρος/η";',
-        'answer_yes' => 'Ναι',
-        'answer_no' => 'Όχι',
         'visibility_section' => 'Ορατότητα Έργου',
         'visibility_description' => 'Περιορισμός πρόσβασης άλλων διαχειριστών στα δεδομένα του Έργου',
         'visibility_toggle_label' => 'Επιτρέψτε προβολή μόνο στους Συν-Διαχειριστές',

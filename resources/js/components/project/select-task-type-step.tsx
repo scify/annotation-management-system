@@ -11,6 +11,8 @@ export interface TaskTypeCardData {
     description: string | null;
     guidelines_url: string | null;
     tags: Array<{ id: number; name: string }>;
+    datasets: Array<{ id: number; name: string; description: string; instances_count: number }>;
+    customization_options: Array<{ id: number; question: string; answers: string[] }>;
 }
 
 interface TaskTypeCardProps {
