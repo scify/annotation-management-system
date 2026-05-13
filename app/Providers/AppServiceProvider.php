@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Enums\RolesEnum;
+use App\Models\Project;
 use App\Models\User;
+use App\Policies\ProjectPolicy;
 use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -25,6 +27,7 @@ class AppServiceProvider extends ServiceProvider {
      * @var array<class-string, class-string>
      */
     protected array $policies = [
+        Project::class => ProjectPolicy::class,
         User::class => UserPolicy::class,
     ];
 

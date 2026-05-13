@@ -4,20 +4,28 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\User;
 use App\Services\Project\ProjectService;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProjectController extends Controller {
+    use AuthorizesRequests;
+
     public function __construct(private readonly ProjectService $projectService) {}
 
     public function index(): Response {
+        $this->authorize('viewAny', Project::class);
+
         return Inertia::render('projects/index');
     }
 
     public function create(): Response {
+        $this->authorize('create', Project::class);
+
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
@@ -35,6 +43,8 @@ class ProjectController extends Controller {
     }
 
     public function show(int $id): Response {
+        $this->authorize('viewAny', Project::class);
+
         return Inertia::render('projects/show');
     }
 }
