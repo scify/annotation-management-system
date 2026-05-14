@@ -28,7 +28,6 @@ describe('userpolicy', function (): void {
         $dataset = Dataset::query()->create(['name' => 'Test Dataset', 'description' => 'Test', 'is_available' => true]);
         $project = Project::query()->create([
             'name' => 'Test Project',
-            'description' => 'Test',
             'owner_user_id' => $this->manager->id,
             'annotation_task_id' => $annotationTask->id,
             'dataset_id' => $dataset->id,

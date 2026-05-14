@@ -8,6 +8,7 @@ use App\Enums\RolesEnum;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfManager;
 use App\Models\Dataset;
+use App\Models\InstanceShuffleMapper;
 use App\Models\Project;
 use App\Models\ProjectManager;
 use App\Models\TaskTag;
@@ -16,20 +17,87 @@ use App\Queries\GetActiveCoManagersQuery;
 use App\Queries\GetAnnotationTasksQuery;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
 use App\Queries\GetCoManagersByIdsQuery;
+use App\Queries\GetInProgressProjectsQuery;
+use App\Queries\GetProjectIdsByManagerQuery;
 use App\Queries\GetUserInProgressProjectsQuery;
 use App\Services\Annotator\AnnotatorService;
+use App\Services\Dataset\DatasetService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 readonly class ProjectService {
     public function __construct(
         private AnnotatorService $annotatorService,
+        private DatasetService $datasetService,
         private GetActiveCoManagersQuery $activeCoManagersQuery,
         private GetAnnotationTasksQuery $getAnnotationTasksQuery,
         private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
         private GetCoManagersByIdsQuery $coManagersByIdsQuery,
+        private GetInProgressProjectsQuery $inProgressProjectsQuery,
+        private GetProjectIdsByManagerQuery $projectIdsByManagerQuery,
         private GetUserInProgressProjectsQuery $userInProgressProjectsQuery,
     ) {}
+
+    /**
+     * Creates a project with its manager assignments and annotator snapshot.
+     *
+     * @param  array<string, mixed>  $data  Validated data from ProjectStoreRequest
+     *
+     * @throws Throwable
+     */
+    public function createProject(User $owner, array $data): Project {
+        return DB::transaction(function () use ($owner, $data): Project {
+            /** @var array<int, int> $annotatorIds */
+            $annotatorIds = $data['annotator_ids'];
+            /** @var array<int, int> $coManagerIds */
+            $coManagerIds = $data['co_manager_ids'] ?? [];
+
+            $project = Project::query()->create([
+                'name' => $data['name'],
+                'owner_user_id' => $owner->id,
+                'annotation_task_id' => $data['annotation_task_id'],
+                'dataset_id' => $data['dataset_id'],
+                'is_instance_shuffled' => $data['is_instance_shuffled'],
+                'annotation_task_configuration' => $data['annotation_task_configuration'] ?? null,
+                'restricted_visibility' => $data['restricted_visibility'],
+            ]);
+
+            ProjectManager::query()->create([
+                'project_id' => $project->id,
+                'user_id' => $owner->id,
+            ]);
+
+            foreach ($coManagerIds as $managerId) {
+                ProjectManager::query()->firstOrCreate([
+                    'project_id' => $project->id,
+                    'user_id' => $managerId,
+                ]);
+            }
+
+            if ($project->is_instance_shuffled) {
+                $shuffled = $this->datasetService->generateShuffledIndexArray($project->dataset_id);
+                $now = now();
+                $rows = [];
+                foreach ($shuffled as $newIndex => $oldIndex) {
+                    $rows[] = [
+                        'project_id' => $project->id,
+                        'new_index' => $newIndex,
+                        'old_index' => $oldIndex,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+
+                InstanceShuffleMapper::query()->insert($rows);
+            }
+
+            $project->annotators()->sync($annotatorIds);
+
+            return $project;
+        });
+    }
 
     /**
      * Snapshots the annotators of the given managers into annotator_of_project.
@@ -54,12 +122,101 @@ readonly class ProjectService {
     /**
      * @return array<string, mixed>
      */
+    public function getDataForProjects(User $user, bool $withFilters = true): array {
+        $roleName = $user->getRoleNames()->first();
+
+        if ($roleName === RolesEnum::ANNOTATOR->value) {
+            return [];
+        }
+
+        if ($roleName === RolesEnum::ADMIN->value) {
+            $allProjects = $this->getAllInProgressProjects();
+            $myProjects = $this->getMyInProgressProjects($user->id, $allProjects);
+
+            $data = [
+                'all_projects' => $allProjects,
+                'my_projects' => $myProjects,
+            ];
+
+            if ($withFilters) {
+                $data['all_data_filter'] = [
+                    'tasks_filter' => $this->extractTaskFilters($allProjects),
+                    'datasets_filter' => $this->extractDatasetFilters($allProjects),
+                ];
+                $data['my_data_filter'] = [
+                    'tasks_filter' => $this->extractTaskFilters($myProjects),
+                    'datasets_filter' => $this->extractDatasetFilters($myProjects),
+                ];
+            }
+
+            return $data;
+        }
+
+        $myProjects = $this->getMyInProgressProjects($user->id);
+
+        $data = ['my_projects' => $myProjects];
+
+        if ($withFilters) {
+            $data['my_data_filter'] = [
+                'tasks_filter' => $this->extractTaskFilters($myProjects),
+                'datasets_filter' => $this->extractDatasetFilters($myProjects),
+            ];
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
     public function getDataForCreateProject(User $user): array {
         return [
             'annotation_tasks' => $this->getAnnotationTasks($user),
             ...$this->getAnnotatorData($user),
             ...$this->getCoManagerData($user),
         ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getAllInProgressProjects(): array {
+        $data = $this->inProgressProjectsQuery->get()
+            ->map(fn (Project $project) => $project->makeHidden(['is_delayed_to_start', 'is_delayed_to_end'])->toArray())
+            ->values()
+            ->all();
+
+        $this->augmentProjectData($data);
+
+        return $data;
+    }
+
+    /**
+     * When $allProjects is provided (admin case), filters from the already-loaded set
+     * instead of issuing a second query.
+     *
+     * @param  array<int, array<string, mixed>>|null  $allProjects
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getMyInProgressProjects(int $userId, ?array $allProjects = null): array {
+        if ($allProjects === null) {
+            $data = $this->userInProgressProjectsQuery->get($userId)
+                ->map(fn (Project $project) => $project->makeHidden(['is_delayed_to_start', 'is_delayed_to_end'])->toArray())
+                ->values()
+                ->all();
+
+            $this->augmentProjectData($data);
+
+            return $data;
+        }
+
+        $myProjectIds = $this->projectIdsByManagerQuery->get($userId);
+
+        return array_values(array_filter(
+            $allProjects,
+            fn (array $project): bool => in_array((int) $project['id'], $myProjectIds, true),
+        ));
     }
 
     /**
@@ -225,5 +382,113 @@ readonly class ProjectService {
             ->map(fn (TaskTag $tag): array => ['id' => $tag->id, 'name' => $tag->name])
             ->values()
             ->all();
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $projects
+     *
+     * @return array<int, array{id: mixed, title: mixed}>
+     */
+    private function extractTaskFilters(array $projects): array {
+        $seen = [];
+        $tasks = [];
+        foreach ($projects as $project) {
+            $id = $project['annotation_task_id'];
+            if (! isset($seen[$id])) {
+                $seen[$id] = true;
+                $tasks[] = ['id' => $id, 'title' => $project['annotation_task_title']];
+            }
+        }
+
+        return $tasks;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $projects
+     *
+     * @return array<int, array{id: mixed, name: mixed}>
+     */
+    private function extractDatasetFilters(array $projects): array {
+        $seen = [];
+        $datasets = [];
+        foreach ($projects as $project) {
+            $id = $project['dataset_id'];
+            if (! isset($seen[$id])) {
+                $seen[$id] = true;
+                $datasets[] = ['id' => $id, 'name' => $project['dataset_name']];
+            }
+        }
+
+        return $datasets;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $data
+     */
+    private function augmentProjectData(array &$data): void {
+        $this->augmentProjectsWithAnnotationTasks($data);
+        $this->augmentProjectsWithNotifications($data);
+        $this->augmentProjectsWithManagers($data);
+        $this->augmentProjectsWithProgress($data);
+        $this->augmentProjectsWithDateRange($data);
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $data
+     */
+    private function augmentProjectsWithManagers(array &$data): void {
+        foreach ($data as &$project) {
+            $ownerId = (int) $project['owner_user_id'];
+            $project['owner_name'] = $project['owner']['username'] ?? null;
+            $project['co_managers'] = array_values(array_filter(
+                array_map(
+                    fn (array $relation): ?array => isset($relation['user']) && (int) $relation['user']['id'] !== $ownerId
+                        ? ['id' => $relation['user']['id'], 'username' => $relation['user']['username']]
+                        : null,
+                    $project['project_managers'] ?? [],
+                ),
+            ));
+            unset($project['owner'], $project['project_managers']);
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $data
+     */
+    private function augmentProjectsWithProgress(array &$data): void {
+        foreach ($data as &$project) {
+            $project['project_progress'] = 0.5;
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $data
+     */
+    private function augmentProjectsWithNotifications(array &$data): void {
+        foreach ($data as &$project) {
+            $project['notifications_count'] = 0;
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $data
+     */
+    private function augmentProjectsWithAnnotationTasks(array &$data): void {
+        foreach ($data as &$project) {
+            $project['annotation_task_title'] = $project['annotation_task']['title'] ?? null;
+            $project['dataset_name'] = $project['dataset']['name'] ?? null;
+            unset($project['annotation_task'], $project['dataset']);
+        }
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $data
+     */
+    private function augmentProjectsWithDateRange(array &$data): void {
+        foreach ($data as &$project) {
+            $project['date_range_start'] = $project['started_at'] ?? null;
+            $project['date_range_end'] = $project['deadline_at'] ?? null;
+            unset($project['started_at'], $project['deadline_at']);
+        }
     }
 }

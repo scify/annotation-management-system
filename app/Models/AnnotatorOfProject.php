@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Database\Factories\AnnotatorOfProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'project_id',
     'user_id',
 ])]
+#[Table(name: 'annotator_of_project')]
 class AnnotatorOfProject extends Model {
     /** @use HasFactory<AnnotatorOfProjectFactory> */
     use HasFactory;

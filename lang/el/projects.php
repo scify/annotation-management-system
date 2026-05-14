@@ -121,6 +121,21 @@ return [
         'no_annotators' => 'Δεν βρέθηκαν επισημειωτές.',
     ],
 
+    'labels' => [
+        'name' => 'Όνομα έργου',
+        'annotation_task_id' => 'Εργασία επισημείωσης',
+        'dataset_id' => 'Σύνολο δεδομένων',
+        'is_instance_shuffled' => 'Τυχαία σειρά στιγμιοτύπων',
+        'annotation_task_configuration' => 'Ρυθμίσεις επισημείωσης',
+        'restricted_visibility' => 'Περιορισμένη ορατότητα',
+        'annotator_ids' => 'Επισημειωτές',
+        'co_manager_ids' => 'Συνυπεύθυνοι',
+    ],
+
+    'messages' => [
+        'created' => 'Το έργο δημιουργήθηκε επιτυχώς.',
+    ],
+
     'create' => [
         'page_title' => 'Δημιουργία Έργου',
         'heading' => 'Δημιουργία Έργου',

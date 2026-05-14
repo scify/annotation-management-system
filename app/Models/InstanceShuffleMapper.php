@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 #[Fillable([
     'new_index',
+    'old_index',
     'dataset_instance_id',
     'project_id',
 ])]

@@ -63,6 +63,7 @@ class User extends Authenticatable {
         'roles',
     ];
 
+    /** @return HasMany<AnnotationTask, $this> */
     public function annotationTasks(): HasMany {
         return $this->hasMany(AnnotationTask::class);
     }
@@ -72,10 +73,12 @@ class User extends Authenticatable {
         return $this->belongsToMany(Dataset::class, 'dataset_user', 'user_id', 'dataset_id');
     }
 
+    /** @return HasMany<Project, $this> */
     public function projects(): HasMany {
         return $this->hasMany(Project::class, 'owner_user_id');
     }
 
+    /** @return BelongsToMany<Project, $this> */
     public function managedProjects(): BelongsToMany {
         return $this->belongsToMany(Project::class, 'project_user')
             ->withPivot('role')

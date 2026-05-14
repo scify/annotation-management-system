@@ -41,7 +41,7 @@ class DummyProjectSeeder extends Seeder {
                 'annotator_emails' => ['annotator.eva@example.com', 'annotator.grace@example.com', 'annotator.frank@example.com'],
                 'project' => [
                     'name' => 'NER – English News',
-                    'description' => 'Named entity recognition on English-language news articles.',
+
                     'owner_user_id' => $managerCarol->getKey(),
                     'annotation_task_id' => $nerTask->getKey(),
                     'dataset_id' => $newsEN->getKey(),
@@ -90,7 +90,6 @@ class DummyProjectSeeder extends Seeder {
                 'annotator_emails' => ['annotator.ivy@example.com', 'annotator.jack@example.com', 'annotator.karen@example.com'],
                 'project' => [
                     'name' => 'NER – Greek News',
-                    'description' => 'Named entity recognition on Greek-language news articles.',
                     'owner_user_id' => $managerDave->getKey(),
                     'annotation_task_id' => $nerTask->getKey(),
                     'dataset_id' => $newsEL->getKey(),
@@ -136,7 +135,6 @@ class DummyProjectSeeder extends Seeder {
                 'annotator_emails' => ['annotator.frank@example.com', 'annotator.grace@example.com'],
                 'project' => [
                     'name' => 'Sentiment – Product Reviews',
-                    'description' => 'Sentiment analysis on e-commerce product reviews.',
                     'owner_user_id' => $adminAlice->getKey(),
                     'annotation_task_id' => $sentimentTask->getKey(),
                     'dataset_id' => $productReviews->getKey(),
@@ -171,7 +169,6 @@ class DummyProjectSeeder extends Seeder {
                 'annotator_emails' => ['annotator.henry@example.com', 'annotator.ivy@example.com', 'annotator.jack@example.com'],
                 'project' => [
                     'name' => 'Toxic Content – Social Media',
-                    'description' => 'Toxic content detection on social media posts.',
                     'owner_user_id' => $adminBob->getKey(),
                     'annotation_task_id' => $toxicTask->getKey(),
                     'dataset_id' => $socialMedia->getKey(),

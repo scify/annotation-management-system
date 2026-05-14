@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Date;
 /**
  * @property-read int $id
  * @property string $name
- * @property string $description
  * @property int $owner_user_id
  * @property int $annotation_task_id
  * @property int $dataset_id
@@ -48,7 +47,6 @@ use Illuminate\Support\Facades\Date;
 #[Appends(['is_delayed_to_start', 'is_delayed_to_end'])]
 #[Fillable([
     'name',
-    'description',
     'owner_user_id',
     'annotation_task_id',
     'dataset_id',

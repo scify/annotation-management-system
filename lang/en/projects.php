@@ -121,6 +121,21 @@ return [
         'no_annotators' => 'No annotators found.',
     ],
 
+    'labels' => [
+        'name' => 'Project name',
+        'annotation_task_id' => 'Annotation task',
+        'dataset_id' => 'Dataset',
+        'is_instance_shuffled' => 'Shuffle instances',
+        'annotation_task_configuration' => 'Annotation configuration',
+        'restricted_visibility' => 'Restricted visibility',
+        'annotator_ids' => 'Annotators',
+        'co_manager_ids' => 'Co-managers',
+    ],
+
+    'messages' => [
+        'created' => 'Project created successfully.',
+    ],
+
     'create' => [
         'page_title' => 'Create Project',
         'heading' => 'Create Project',

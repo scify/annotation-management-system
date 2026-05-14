@@ -45,8 +45,9 @@ class DummyUsersSeeder extends Seeder {
             ]);
             $user->syncRoles([RolesEnum::ANNOTATION_MANAGER->value]);
 
-            if ($allTasks->isNotEmpty()) {
-                $count = random_int(1, min(5, $allTasks->count()));
+            $taskCount = $allTasks->count();
+            if ($taskCount > 0) {
+                $count = random_int(1, min(5, $taskCount));
                 foreach ($allTasks->shuffle()->take($count) as $task) {
                     /** @var AnnotationTask $task */
                     $task->connectedUsers()->syncWithoutDetaching([$user->id]);

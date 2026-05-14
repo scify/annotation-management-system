@@ -15,7 +15,7 @@ class DatasetInstanceService {
             $mapper = InstanceShuffleMapper::with('datasetInstance')
                 ->where('project_id', $project->id)
                 ->where('new_index', $index)
-                ->first();
+                ->firstOrFail();
             $final_index = $mapper->old_index;
         }
 
