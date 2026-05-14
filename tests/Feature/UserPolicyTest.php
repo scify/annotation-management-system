@@ -5,9 +5,9 @@ declare(strict_types=1);
 use App\Enums\RolesEnum;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfManager;
-use App\Models\Comanager;
 use App\Models\Dataset;
 use App\Models\Project;
+use App\Models\ProjectManager;
 use App\Models\User;
 use App\Policies\UserPolicy;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -33,7 +33,8 @@ describe('userpolicy', function (): void {
             'annotation_task_id' => $annotationTask->id,
             'dataset_id' => $dataset->id,
         ]);
-        Comanager::query()->create(['project_id' => $project->id, 'user_id' => $this->manager_collaborator->id]);
+        ProjectManager::query()->create(['project_id' => $project->id, 'user_id' => $this->manager->id]);
+        ProjectManager::query()->create(['project_id' => $project->id, 'user_id' => $this->manager_collaborator->id]);
 
         $this->policy = new UserPolicy();
     });

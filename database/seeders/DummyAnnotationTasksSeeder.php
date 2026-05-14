@@ -4,13 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Enums\RolesEnum;
 use App\Models\AnnotationTask;
 use App\Models\TaskTag;
-use App\Models\User;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class DummyAnnotationTasksSeeder extends Seeder {
     /**
@@ -97,35 +93,6 @@ class DummyAnnotationTasksSeeder extends Seeder {
                 ->all();
 
             $annotationTask->tags()->sync($tagIds);
-        }
-
-        $managers = User::query()
-            ->whereHas('roles', fn (Builder $q) => $q->where('name', RolesEnum::ANNOTATION_MANAGER->value))
-            ->get();
-
-        $allTaskIds = AnnotationTask::query()->pluck('id')->all();
-
-        DB::table('annotation_task_user')
-            ->whereIn('user_id', $managers->pluck('id'))
-            ->delete();
-
-        $rows = [];
-        foreach ($managers as $manager) {
-            $count = random_int(1, min(5, count($allTaskIds)));
-            $selectedTaskIds = collect($allTaskIds)->shuffle()->take($count);
-
-            foreach ($selectedTaskIds as $taskId) {
-                $rows[] = [
-                    'annotation_task_id' => (int) $taskId,
-                    'user_id' => $manager->id,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            }
-        }
-
-        if ($rows !== []) {
-            DB::table('annotation_task_user')->insert($rows);
         }
     }
 }

@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class() extends Migration {
     public function up(): void {
-        Schema::create('project_managers', function (Blueprint $table): void {
+        Schema::create('annotator_of_project', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
@@ -18,6 +18,6 @@ return new class() extends Migration {
     }
 
     public function down(): void {
-        Schema::dropIfExists('project_managers');
+        Schema::dropIfExists('annotator_of_project');
     }
 };

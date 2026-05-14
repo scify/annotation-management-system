@@ -9,10 +9,10 @@ use App\Enums\SubProjectPriorityEnum;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfManager;
-use App\Models\Comanager;
 use App\Models\Dataset;
 use App\Models\InstanceShuffleMapper;
 use App\Models\Project;
+use App\Models\ProjectManager;
 use App\Models\SubProject;
 use App\Models\User;
 use App\Services\Dataset\DatasetService;
@@ -37,6 +37,7 @@ class DummyProjectSeeder extends Seeder {
         $projects = [
             [
                 'collaborator_id' => $adminAlice->getKey(),
+                'extra_manager_ids' => [$managerDave->getKey()],
                 'annotator_emails' => ['annotator.eva@example.com', 'annotator.grace@example.com', 'annotator.frank@example.com'],
                 'project' => [
                     'name' => 'NER – English News',
@@ -223,10 +224,22 @@ class DummyProjectSeeder extends Seeder {
                 $entry['project'],
             );
 
-            Comanager::query()->firstOrCreate([
+            ProjectManager::query()->firstOrCreate([
+                'project_id' => $project->id,
+                'user_id' => $project->owner_user_id,
+            ]);
+
+            ProjectManager::query()->firstOrCreate([
                 'project_id' => $project->id,
                 'user_id' => $entry['collaborator_id'],
             ]);
+
+            foreach ($entry['extra_manager_ids'] ?? [] as $managerId) {
+                ProjectManager::query()->firstOrCreate([
+                    'project_id' => $project->id,
+                    'user_id' => $managerId,
+                ]);
+            }
 
             foreach ($entry['annotator_emails'] as $email) {
                 $annotator = User::query()->where('email', $email)->firstOrFail();
@@ -248,6 +261,8 @@ class DummyProjectSeeder extends Seeder {
                 }
             }
 
+            $projectAnnotatorIds = [];
+
             foreach ($entry['subprojects'] as $spData) {
                 $annotatorEmails = $spData['annotators'];
                 unset($spData['annotators']);
@@ -262,8 +277,11 @@ class DummyProjectSeeder extends Seeder {
                     AnnotationAssignment::query()->firstOrCreate(
                         ['user_id' => $annotator->getKey(), 'sub_project_id' => $subProject->getKey()],
                     );
+                    $projectAnnotatorIds[] = $annotator->getKey();
                 }
             }
+
+            $project->annotators()->syncWithoutDetaching(array_values(array_unique($projectAnnotatorIds)));
         }
     }
 }

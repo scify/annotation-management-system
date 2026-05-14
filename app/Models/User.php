@@ -82,9 +82,9 @@ class User extends Authenticatable {
             ->withTimestamps();
     }
 
-    /** @return HasMany<Comanager, $this> */
-    public function comanagements(): HasMany {
-        return $this->hasMany(Comanager::class, 'user_id');
+    /** @return HasMany<ProjectManager, $this> */
+    public function projectManagements(): HasMany {
+        return $this->hasMany(ProjectManager::class, 'user_id');
     }
 
     /** @return HasMany<AnnotatorOfManager, $this> */

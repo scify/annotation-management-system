@@ -6,7 +6,7 @@ namespace App\Policies;
 
 use App\Enums\RolesEnum;
 use App\Models\AnnotatorOfManager;
-use App\Models\Comanager;
+use App\Models\ProjectManager;
 use App\Models\User;
 
 class UserPolicy {
@@ -36,13 +36,12 @@ class UserPolicy {
         }
 
         if ($model->hasRole(RolesEnum::ANNOTATION_MANAGER)) {
-            return Comanager::query()->where(function ($q) use ($user, $model): void {
-                $q->where('user_id', $user->id)
-                    ->whereHas('project', fn ($pq) => $pq->where('owner_user_id', $model->id));
-            })->orWhere(function ($q) use ($user, $model): void {
-                $q->where('user_id', $model->id)
-                    ->whereHas('project', fn ($pq) => $pq->where('owner_user_id', $user->id));
-            })->exists();
+            return ProjectManager::query()
+                ->whereIn('project_id',
+                    ProjectManager::query()->where('user_id', $user->id)->select('project_id')
+                )
+                ->where('user_id', $model->id)
+                ->exists();
         }
 
         return AnnotatorOfManager::query()

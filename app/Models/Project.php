@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Date;
@@ -39,7 +40,8 @@ use Illuminate\Support\Facades\Date;
  * @property-read AnnotationTask $annotationTask
  * @property-read Dataset $dataset
  * @property-read Collection<int, SubProject> $subProjects
- * @property-read Collection<int, Comanager> $comanagerRecords
+ * @property-read Collection<int, ProjectManager> $projectManagers
+ * @property-read Collection<int, User> $annotators
  * @property-read bool $is_delayed_to_start
  * @property-read bool $is_delayed_to_end
  */
@@ -94,10 +96,17 @@ class Project extends Model {
     }
 
     /**
-     * @return HasMany<Comanager, $this>
+     * @return HasMany<ProjectManager, $this>
      */
-    public function comanagerRecords(): HasMany {
-        return $this->hasMany(Comanager::class);
+    public function projectManagers(): HasMany {
+        return $this->hasMany(ProjectManager::class);
+    }
+
+    /**
+     * @return BelongsToMany<User, $this>
+     */
+    public function annotators(): BelongsToMany {
+        return $this->belongsToMany(User::class, 'annotator_of_project', 'project_id', 'user_id');
     }
 
     /**

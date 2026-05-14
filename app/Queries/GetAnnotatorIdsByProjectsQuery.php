@@ -5,8 +5,7 @@ declare(strict_types=1);
 namespace App\Queries;
 
 use App\Models\AnnotatorOfManager;
-use App\Models\Comanager;
-use App\Models\Project;
+use App\Models\ProjectManager;
 
 final readonly class GetAnnotatorIdsByProjectsQuery {
     /**
@@ -19,10 +18,12 @@ final readonly class GetAnnotatorIdsByProjectsQuery {
             return [];
         }
 
-        $ownerIds = Project::query()->whereIn('id', $projectIds)->pluck('owner_user_id');
-        $comanagerIds = Comanager::query()->whereIn('project_id', $projectIds)->pluck('user_id');
-
-        $managerIds = $ownerIds->merge($comanagerIds)->unique()->values()->all();
+        $managerIds = ProjectManager::query()
+            ->whereIn('project_id', $projectIds)
+            ->pluck('user_id')
+            ->unique()
+            ->values()
+            ->all();
 
         if ($managerIds === []) {
             return [];

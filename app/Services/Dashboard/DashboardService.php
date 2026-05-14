@@ -5,11 +5,12 @@ declare(strict_types=1);
 namespace App\Services\Dashboard;
 
 use App\Enums\RolesEnum;
-use App\Models\Comanager;
 use App\Models\Project;
 use App\Models\User;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
 use App\Queries\GetInProgressProjectsQuery;
+use App\Queries\GetPlatformStatsQuery;
+use App\Queries\GetProjectIdsByManagerQuery;
 use App\Queries\GetUserInProgressProjectsQuery;
 use App\Services\Annotator\AnnotatorService;
 
@@ -19,6 +20,8 @@ readonly class DashboardService {
         private GetInProgressProjectsQuery $inProgressProjectsQuery,
         private GetUserInProgressProjectsQuery $userInProgressProjectsQuery,
         private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
+        private GetPlatformStatsQuery $platformStatsQuery,
+        private GetProjectIdsByManagerQuery $projectIdsByManagerQuery,
     ) {}
 
     /**
@@ -52,16 +55,17 @@ readonly class DashboardService {
      */
     protected function augmentProjectsWithManagers(array &$dashboard_project_data): void {
         foreach ($dashboard_project_data as &$project) {
+            $ownerId = (int) $project['owner_user_id'];
             $project['owner_name'] = $project['owner']['username'] ?? null;
             $project['co_managers'] = array_values(array_filter(
                 array_map(
-                    fn (array $relation): ?array => isset($relation['user'])
+                    fn (array $relation): ?array => isset($relation['user']) && (int) $relation['user']['id'] !== $ownerId
                         ? ['id' => $relation['user']['id'], 'username' => $relation['user']['username']]
                         : null,
-                    $project['comanager_records'] ?? []
+                    $project['project_managers'] ?? []
                 )
             ));
-            unset($project['owner'], $project['comanager_records']);
+            unset($project['owner'], $project['project_managers']);
         }
     }
 
@@ -133,12 +137,11 @@ readonly class DashboardService {
 
             $this->augmentProjectData($dashboard_project_data);
         } else {
-            $myComanagerProjectIds = Comanager::query()->where('user_id', $userId)->pluck('project_id')->all();
+            $myProjectIds = $this->projectIdsByManagerQuery->get($userId);
 
             $dashboard_project_data = array_values(array_filter(
                 $my_projects,
-                fn (array $project): bool => (int) $project['owner_user_id'] === $userId
-                    || in_array((int) $project['id'], $myComanagerProjectIds, true)
+                fn (array $project): bool => in_array((int) $project['id'], $myProjectIds, true)
             ));
         }
 
@@ -149,34 +152,7 @@ readonly class DashboardService {
      * @return array{all_projects: int, all_annotators: int, all_managers: int, all_admins: int}
      */
     private function getPlatformStats(): array {
-        $allProjects = Project::query()->count();
-
-        $activeUsers = User::query()
-            ->where('is_active', true)
-            ->with('roles')
-            ->get();
-
-        $allAnnotators = 0;
-        $allManagers = 0;
-        $allAdmins = 0;
-
-        foreach ($activeUsers as $user) {
-            $roleName = $user->getRoleNames()->first();
-            if ($roleName === RolesEnum::ANNOTATOR->value) {
-                $allAnnotators++;
-            } elseif ($roleName === RolesEnum::ANNOTATION_MANAGER->value) {
-                $allManagers++;
-            } elseif ($roleName === RolesEnum::ADMIN->value) {
-                $allAdmins++;
-            }
-        }
-
-        return [
-            'all_projects' => $allProjects,
-            'all_annotators' => $allAnnotators,
-            'all_managers' => $allManagers,
-            'all_admins' => $allAdmins,
-        ];
+        return $this->platformStatsQuery->get();
     }
 
     /**

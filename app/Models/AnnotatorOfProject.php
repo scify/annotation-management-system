@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Database\Factories\ComanagerFactory;
+use Database\Factories\AnnotatorOfProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -14,8 +14,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'project_id',
     'user_id',
 ])]
-class Comanager extends Model {
-    /** @use HasFactory<ComanagerFactory> */
+class AnnotatorOfProject extends Model {
+    /** @use HasFactory<AnnotatorOfProjectFactory> */
     use HasFactory;
 
     /**

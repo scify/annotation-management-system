@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Project\ProjectService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,13 +32,13 @@ class ProjectController extends Controller {
 
         $data_for_create_project = $this->projectService->getDataForCreateProject($user);
 
-        //        Storage::disk('local')->put(
-        //            'project-create-data.json',
-        //            json_encode(
-        //                $data_for_create_project,
-        //                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
-        //            )
-        //        );
+        Storage::disk('local')->put(
+            'project-create-data.json',
+            json_encode(
+                $data_for_create_project,
+                JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+            )
+        );
 
         return Inertia::render('projects/create', $data_for_create_project);
     }

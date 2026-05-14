@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\RolesEnum;
+use App\Models\AnnotationTask;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -33,6 +34,8 @@ class DummyUsersSeeder extends Seeder {
             ['name' => 'Manager Dave', 'username' => 'manager_dave', 'email' => 'manager.dave@example.com'],
         ];
 
+        $allTasks = AnnotationTask::query()->get();
+
         foreach ($managers as $data) {
             $user = User::query()->updateOrCreate(['email' => $data['email']], [
                 'name' => $data['name'],
@@ -41,6 +44,14 @@ class DummyUsersSeeder extends Seeder {
                 'password' => Hash::make($password),
             ]);
             $user->syncRoles([RolesEnum::ANNOTATION_MANAGER->value]);
+
+            if ($allTasks->isNotEmpty()) {
+                $count = random_int(1, min(5, $allTasks->count()));
+                foreach ($allTasks->shuffle()->take($count) as $task) {
+                    /** @var AnnotationTask $task */
+                    $task->connectedUsers()->syncWithoutDetaching([$user->id]);
+                }
+            }
         }
 
         $annotators = [

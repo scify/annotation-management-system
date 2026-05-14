@@ -6,9 +6,10 @@ namespace App\Services\Project;
 
 use App\Enums\RolesEnum;
 use App\Models\AnnotationTask;
-use App\Models\Comanager;
+use App\Models\AnnotatorOfManager;
 use App\Models\Dataset;
 use App\Models\Project;
+use App\Models\ProjectManager;
 use App\Models\TaskTag;
 use App\Models\User;
 use App\Queries\GetActiveCoManagersQuery;
@@ -29,6 +30,26 @@ readonly class ProjectService {
         private GetCoManagersByIdsQuery $coManagersByIdsQuery,
         private GetUserInProgressProjectsQuery $userInProgressProjectsQuery,
     ) {}
+
+    /**
+     * Snapshots the annotators of the given managers into annotator_of_project.
+     * Called during project creation after managers are assigned.
+     *
+     * @param  array<int, int>  $managerIds
+     */
+    public function assignAnnotatorsFromManagers(Project $project, array $managerIds): void {
+        if ($managerIds === []) {
+            return;
+        }
+
+        $annotatorIds = AnnotatorOfManager::query()
+            ->whereIn('manager_id', $managerIds)
+            ->distinct()
+            ->pluck('annotator_id')
+            ->all();
+
+        $project->annotators()->sync($annotatorIds);
+    }
 
     /**
      * @return array<string, mixed>
@@ -112,13 +133,10 @@ readonly class ProjectService {
             ];
         }
 
-        $myProjectIds = Project::query()->where('owner_user_id', $user->id)->pluck('id');
-        $comanagerIds = Comanager::query()->whereIn('project_id', $myProjectIds)->pluck('user_id');
-
-        $myCoProjectIds = Comanager::query()->where('user_id', $user->id)->pluck('project_id');
-        $ownerIds = Project::query()->whereIn('id', $myCoProjectIds)->pluck('owner_user_id');
-
-        $collaboratorIds = $comanagerIds->merge($ownerIds)
+        $myProjectIds = ProjectManager::query()->where('user_id', $user->id)->pluck('project_id');
+        $collaboratorIds = ProjectManager::query()
+            ->whereIn('project_id', $myProjectIds)
+            ->pluck('user_id')
             ->unique()
             ->reject(fn (mixed $id): bool => (int) $id === $user->id)
             ->values()
