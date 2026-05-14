@@ -11,6 +11,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $project_id
+ * @property int $user_id
+ * @property-read Project $project
+ * @property-read User $user
+ */
 #[Fillable([
     'project_id',
     'user_id',
