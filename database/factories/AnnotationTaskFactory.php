@@ -18,7 +18,9 @@ class AnnotationTaskFactory extends Factory {
      */
     public function definition(): array {
         return [
-            //
+            'title' => fake()->words(3, true),
+            'short_description' => fake()->sentence(),
+            'weight' => fake()->numberBetween(1, 5),
         ];
     }
 }

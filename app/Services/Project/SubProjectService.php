@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\SubProject;
+namespace App\Services\Project;
 
 use App\Models\SubProject;
 

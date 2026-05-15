@@ -18,13 +18,15 @@ use App\Queries\GetAssignmentsBySubProjectsAndAnnotatorsQuery;
 use App\Queries\GetInProgressProjectsByIdsQuery;
 use App\Queries\GetInProgressSubProjectsByProjectsQuery;
 use App\Queries\GetProjectIdsByManagerQuery;
-use App\Services\SubProject\SubProjectService;
+use App\Services\Annotator\WorkloadService;
+use App\Services\Project\SubProjectService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 
 readonly class MonitorService {
     public function __construct(
         private SubProjectService $subProjectService,
+        private WorkloadService $workloadService,
         private GetAllAnnotatorsQuery $allAnnotatorsQuery,
         private GetAnnotatorsByManagerQuery $annotatorsByManagerQuery,
         private GetAnnotatorProjectLinksByAnnotatorsQuery $annotatorProjectLinksQuery,
@@ -141,6 +143,10 @@ readonly class MonitorService {
         /** @var SupportCollection<int|string, Collection<int, AnnotatorOfProject>> $linksByAnnotator */
         $linksByAnnotator = $annotatorProjectLinks->groupBy('user_id');
 
+        /** @var array<int, mixed> $annotatorIds */
+        $annotatorIds = $annotators->pluck('id')->all();
+        $workloadsByAnnotator = $this->workloadService->computeNormalizedWorkloads($annotatorIds);
+
         $result = [];
 
         foreach ($annotators as $annotator) {
@@ -172,7 +178,11 @@ readonly class MonitorService {
                 if ($project->restricted_visibility) {
                     $hiddenProjectsData[] = $this->formatHiddenProject($project, $annotatorSubProjects->count());
                 } else {
-                    $projectsData[] = $this->formatProject($project, $annotatorSubProjects);
+                    $projectsData[] = $this->formatProject(
+                        $project,
+                        $annotatorSubProjects,
+                        $workloadsByAnnotator[$annotator->id]['per_subproject'] ?? [],
+                    );
                 }
             }
 
@@ -182,7 +192,7 @@ readonly class MonitorService {
                 'status' => $annotator->is_active,
                 'active_subprojects' => count($mySubProjectIds),
                 'active_projects' => $myProjects->count(),
-                'workload' => 0.5,
+                'workload' => $workloadsByAnnotator[$annotator->id]['total'] ?? 0.5,
                 'progress' => 0.5,
                 'projects' => $projectsData,
                 'hidden_projects' => $hiddenProjectsData,
@@ -194,10 +204,11 @@ readonly class MonitorService {
 
     /**
      * @param  Collection<int, SubProject>  $subProjects
+     * @param  array<int, float>  $subprojectWorkloads  Normalized workload keyed by sub_project_id
      *
      * @return array<string, mixed>
      */
-    private function formatProject(Project $project, Collection $subProjects): array {
+    private function formatProject(Project $project, Collection $subProjects, array $subprojectWorkloads): array {
         $ownerId = $project->owner_user_id;
 
         $coManagers = $project->projectManagers
@@ -223,7 +234,7 @@ readonly class MonitorService {
                     'id' => $sp->id,
                     'name' => $sp->name,
                     'status' => $sp->status,
-                    'workload' => $this->subProjectService->getWorkload($sp),
+                    'workload' => $subprojectWorkloads[$sp->id] ?? 0.5,
                     'progress' => $this->subProjectService->getProgress($sp),
                 ])
                 ->values()

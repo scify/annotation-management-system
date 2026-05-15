@@ -19,8 +19,9 @@ class DatasetInstanceFactory extends Factory {
      */
     public function definition(): array {
         return [
-            'index' => $this->faker->numberBetween(1, 10),
+            'index' => fake()->unique()->numberBetween(0, 999999),
             'dataset_id' => Dataset::factory(),
+            'content' => [],
         ];
     }
 }

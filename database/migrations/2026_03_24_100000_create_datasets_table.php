@@ -11,11 +11,12 @@ return new class() extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('datasets', function (Blueprint $table) {
+        Schema::create('datasets', function (Blueprint $table): void {
             $table->id();
             $table->string('name')->unique();
             $table->string('description');
             $table->boolean('is_available')->default(true);
+            $table->unsignedInteger('size')->default(0);
             $table->timestamps();
         });
     }

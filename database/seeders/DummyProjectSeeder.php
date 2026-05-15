@@ -139,7 +139,7 @@ class DummyProjectSeeder extends Seeder {
                     'annotation_task_id' => $sentimentTask->getKey(),
                     'dataset_id' => $productReviews->getKey(),
                     'status' => ProjectStatusEnum::IN_PROGRESS,
-                    'restricted_visibility' => false,
+                    'restricted_visibility' => true,
                     'is_instance_shuffled' => false,
                     'scheduled_at' => '2026-02-15',
                     'started_at' => '2026-03-10 09:00:00',

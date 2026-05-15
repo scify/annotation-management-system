@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Annotation;
+use App\Models\AnnotationAssignment;
+use App\Models\DatasetInstance;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +20,10 @@ class AnnotationFactory extends Factory {
      */
     public function definition(): array {
         return [
-            //
+            'annotation_assignment_id' => AnnotationAssignment::factory(),
+            'dataset_instance_id' => DatasetInstance::factory(),
+            'index' => 0,
+            'annotations' => [],
         ];
     }
 }

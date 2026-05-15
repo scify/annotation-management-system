@@ -10,11 +10,10 @@ use App\Queries\GetActiveAnnotatorsQuery;
 use App\Queries\GetActiveSubProjectIdsQuery;
 use App\Queries\GetAnnotatorActiveProjectCountsQuery;
 use App\Queries\GetAnnotatorSubprojectCountsQuery;
-use App\Services\User\UserService;
 
 readonly class AnnotatorService {
     public function __construct(
-        private UserService $userService,
+        private WorkloadService $workloadService,
         private GetActiveAnnotatorsQuery $activeAnnotatorsQuery,
         private GetActiveAnnotatorsByIdsQuery $activeAnnotatorsByIdsQuery,
         private GetAnnotatorActiveProjectCountsQuery $annotatorActiveProjectCountsQuery,
@@ -94,26 +93,10 @@ readonly class AnnotatorService {
             return;
         }
 
-        $workloads = $this->userService->getWorkloads(array_column($annotators, 'id'));
-        $values = array_values($workloads);
-
-        if ($values === []) {
-            foreach ($annotators as &$annotator) {
-                $annotator['workload'] = 0.5;
-            }
-
-            return;
-        }
-
-        $min = min($values);
-        $max = max($values);
-        $range = $max - $min;
+        $workloads = $this->workloadService->computeNormalizedWorkloads(array_column($annotators, 'id'));
 
         foreach ($annotators as &$annotator) {
-            $raw = $workloads[(int) $annotator['id']] ?? 0;
-            $annotator['workload'] = $range > 0
-                ? round(0.1 + (($raw - $min) / $range) * 0.8, 2)
-                : 0.5;
+            $annotator['workload'] = $workloads[(int) $annotator['id']]['total'] ?? 0.5;
         }
     }
 }

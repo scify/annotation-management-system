@@ -15,12 +15,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'name',
     'description',
     'is_available',
+    'size',
 ])]
 /**
  * @property-read int $id
  * @property string $name
  * @property string|null $description
  * @property bool $is_available
+ * @property int $size
  * @property-read Collection<int, User> $connectedManagers
  * @property-read int|null $instances_count
  */

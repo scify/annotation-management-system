@@ -13,7 +13,7 @@ final readonly class GetUserWorkloadsQuery {
     /**
      * @param  array<int, mixed>  $userIds
      *
-     * @return array<int, int>
+     * @return array<int, array{total_workload: int, workload_per_subproject: array<int, int>}>
      */
     public function get(array $userIds): array {
         if ($userIds === []) {
@@ -49,6 +49,7 @@ final readonly class GetUserWorkloadsQuery {
             $userAssignments = $assignmentsByUser->get($userId, collect());
             $sumEffort = 0;
             $sumWorkDone = 0;
+            $workloadPerSubproject = [];
 
             foreach ($userAssignments as $assignment) {
                 /** @var AnnotationAssignment $assignment */
@@ -59,12 +60,17 @@ final readonly class GetUserWorkloadsQuery {
 
                 $weight = $subProject->project->annotationTask->weight;
                 $effort = ($subProject->last_instance_index - $subProject->first_instance_index) * $weight;
+                $workDone = (int) $annotationCountsByAssignment->get($assignment->getKey(), 0) * $weight;
+
                 $sumEffort += $effort;
-                $workDone = (int) $annotationCountsByAssignment->get($assignment->getKey(), 0);
-                $sumWorkDone += ($workDone * $weight);
+                $sumWorkDone += $workDone;
+                $workloadPerSubproject[$assignment->sub_project_id] = $effort - $workDone;
             }
 
-            $workloads[(int) $userId] = $sumEffort - $sumWorkDone;
+            $workloads[(int) $userId] = [
+                'total_workload' => $sumEffort - $sumWorkDone,
+                'workload_per_subproject' => $workloadPerSubproject,
+            ];
         }
 
         return $workloads;

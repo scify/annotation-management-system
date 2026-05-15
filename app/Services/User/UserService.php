@@ -57,7 +57,7 @@ readonly class UserService {
     /**
      * @param  array<int, mixed>  $userIds
      *
-     * @return array<int, int>
+     * @return array<int, array{total_workload: int, workload_per_subproject: array<int, int>}>
      */
     public function getWorkloads(array $userIds): array {
         return $this->getUserWorkloadsQuery->get($userIds);

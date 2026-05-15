@@ -18,9 +18,10 @@ class DatasetFactory extends Factory {
      */
     public function definition(): array {
         return [
-            'name' => fake()->title(),
-            'desciption' => fake()->text(),
+            'name' => fake()->unique()->words(5, true),
+            'description' => fake()->text(),
             'is_available' => true,
+            'size' => 0,
         ];
     }
 }
