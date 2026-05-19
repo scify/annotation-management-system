@@ -29,17 +29,17 @@ export interface ProjectCardData {
     coManagers: Array<{ initials: string; username: string }>;
 }
 
-const STATUS_VARIANT: Record<ProjectStatus, StatusVariant> = {
+export const STATUS_VARIANT: Record<ProjectStatus, StatusVariant> = {
     in_progress: 'yellow',
     pending: 'slate',
     completed: 'lime',
 };
 
-function toInitials(username: string): string {
+export function toInitials(username: string): string {
     return username.charAt(0).toUpperCase();
 }
 
-function buildDateRange(start: string | null, end: string | null): string {
+export function buildDateRange(start: string | null, end: string | null): string {
     const opts: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
     const startStr = formatDate(start, opts);
     if (!startStr) return '';
@@ -78,7 +78,10 @@ export function ProjectCard({ project }: { project: Project }) {
                 <div className="flex flex-col gap-3">
                     <div className="flex items-start justify-between">
                         <div className="project-icon flex size-[42px] items-center justify-start rounded-lg bg-transparent">
-                            <FolderDot className="text-brand-blue-500" aria-hidden="true" />
+                            <FolderDot
+                                className="text-brand-blue-500 h-[29.75px] w-[39px]"
+                                aria-hidden="true"
+                            />
                         </div>
                         <Badge variant={statusVariant}>{statusLabel}</Badge>
                     </div>

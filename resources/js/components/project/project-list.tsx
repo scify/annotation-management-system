@@ -1,8 +1,8 @@
-import { type ProjectCardData } from './project-card';
+import type { Project } from '@/types';
 import { ProjectListItem } from './project-list-item';
 
 interface ProjectListProps {
-    projects: ProjectCardData[];
+    projects: Project[];
 }
 
 export function ProjectList({ projects }: ProjectListProps) {

@@ -2,7 +2,6 @@ import {
     ProjectActiveFilters,
     type ActiveFilterTag,
 } from '@/components/project/project-active-filters';
-import { type ProjectCardData } from '@/components/project/project-card';
 import {
     ProjectFilterPanel,
     type FilterState,
@@ -19,10 +18,22 @@ import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem } from '@/types';
+import { type BreadcrumbItem, type Project } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
+
+interface DataFilter {
+    tasks_filter: Array<{ id: number; title: string }>;
+    datasets_filter: Array<{ id: number; name: string }>;
+}
+
+interface Props {
+    all_projects: Project[];
+    my_projects: Project[];
+    all_data_filter: DataFilter;
+    my_data_filter: DataFilter;
+}
 
 function SectionToggle({
     checked,
@@ -57,95 +68,6 @@ function SectionToggle({
     );
 }
 
-interface Props {
-    projects?: ProjectCardData[];
-}
-
-const MOCK_PROJECTS: ProjectCardData[] = [
-    {
-        id: 1,
-        name: 'Project New Nov_26',
-        dateRange: 'Jan 15, 2026 – Feb 28, 2026',
-        status: 'yellow',
-        statusLabel: 'In Progress',
-        tags: ["Explore word's meaning in medieval textes", 'Text Dataset B'],
-        subprojects: 3,
-        annotators: 3,
-        notifications: 3,
-        progress: 75,
-        owner: { initials: 'A', username: '@akosmo' },
-        coManagers: [
-            { initials: 'N', username: '@nellysav' },
-            { initials: 'N', username: '@nazpapadaki' },
-            { initials: 'M', username: '@mgiannis' },
-            { initials: 'P', username: '@ppetros' },
-        ],
-    },
-    {
-        id: 2,
-        name: 'Medieval Texts Vol. 1',
-        dateRange: 'Feb 1, 2026 – Mar 15, 2026',
-        status: 'lime',
-        statusLabel: 'Complete',
-        tags: ['Manuscript annotation', 'Latin Corpus A'],
-        subprojects: 2,
-        annotators: 5,
-        notifications: 1,
-        progress: 40,
-        owner: { initials: 'N', username: '@nellysav' },
-        coManagers: [{ initials: 'A', username: '@akosmo' }],
-    },
-    {
-        id: 3,
-        name: 'Sentiment Analysis Q1',
-        dateRange: 'Jan 20, 2026 – Apr 30, 2026',
-        status: 'slate',
-        statusLabel: 'Pending',
-        tags: ['Sentiment labeling', 'News Dataset C'],
-        subprojects: 4,
-        annotators: 8,
-        notifications: 0,
-        progress: 90,
-        owner: { initials: 'P', username: '@ppetros' },
-        coManagers: [
-            { initials: 'A', username: '@akosmo' },
-            { initials: 'N', username: '@nellysav' },
-        ],
-    },
-    {
-        id: 4,
-        name: 'Named Entity Tagging',
-        dateRange: 'Mar 1, 2026 – Mar 31, 2026',
-        status: 'yellow',
-        statusLabel: 'In Progress',
-        tags: ['NER annotation', 'Bio Medical Set'],
-        subprojects: 1,
-        annotators: 2,
-        notifications: 2,
-        progress: 25,
-        owner: { initials: 'M', username: '@mgiannis' },
-        coManagers: [{ initials: 'N', username: '@nazpapadaki' }],
-    },
-    {
-        id: 5,
-        name: 'Image Labelling Batch3',
-        dateRange: 'Feb 15, 2026 – May 15, 2026',
-        status: 'yellow',
-        statusLabel: 'In Progress',
-        tags: ['Object detection', 'Visual Dataset D'],
-        subprojects: 3,
-        annotators: 6,
-        notifications: 4,
-        progress: 60,
-        owner: { initials: 'N', username: '@nazpapadaki' },
-        coManagers: [
-            { initials: 'P', username: '@ppetros' },
-            { initials: 'M', username: '@mgiannis' },
-            { initials: 'A', username: '@akosmo' },
-        ],
-    },
-];
-
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Projects',
@@ -153,37 +75,44 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
-export default function ProjectsIndex({ projects }: Props) {
+export default function ProjectsIndex({
+    all_projects,
+    my_projects,
+    all_data_filter,
+    my_data_filter,
+}: Props) {
     const { t, trans } = useTranslations();
-    const allProjects = projects ?? MOCK_PROJECTS;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState<FilterState>({ tasks: [], datasets: [], states: [] });
     const [sortState, setSortState] = useState<SortState>(DEFAULT_SORT_STATE);
     const [showOnlyMine, setShowOnlyMine] = useState(false);
 
+    const projects = showOnlyMine ? my_projects : all_projects;
+    const dataFilter = showOnlyMine ? my_data_filter : all_data_filter;
+
     const filterSections = useMemo(
         () => [
             {
                 key: 'tasks' as const,
                 label: t('projects.filter_task_section'),
-                items: [...new Set(allProjects.map((p) => p.tags[0]))],
+                items: dataFilter.tasks_filter.map((f) => f.title),
                 searchable: true,
             },
             {
                 key: 'datasets' as const,
                 label: t('projects.filter_dataset_section'),
-                items: [...new Set(allProjects.map((p) => p.tags[1]))],
+                items: dataFilter.datasets_filter.map((f) => f.name),
                 searchable: true,
             },
             {
                 key: 'states' as const,
                 label: t('projects.filter_state_section'),
-                items: [...new Set(allProjects.map((p) => p.statusLabel))],
+                items: [...new Set(projects.map((p) => t(`projects.status.${p.status}`)))],
                 searchable: false,
             },
         ],
-        [allProjects, t]
+        [dataFilter, projects, t]
     );
 
     const toggleFilter = (section: FilterSectionKey, value: string) =>
@@ -198,6 +127,11 @@ export default function ProjectsIndex({ projects }: Props) {
         });
 
     const clearFilters = () => setFilters({ tasks: [], datasets: [], states: [] });
+
+    const handleToggleMine = (value: boolean) => {
+        setShowOnlyMine(value);
+        clearFilters();
+    };
 
     const hasActiveFilters =
         filters.tasks.length > 0 || filters.datasets.length > 0 || filters.states.length > 0;
@@ -266,21 +200,23 @@ export default function ProjectsIndex({ projects }: Props) {
         return tags;
     }, [filters, sortState, t]);
 
-    const displayedProjects = useMemo(() => {
-        let result = allProjects;
+    const displayedProjects: Project[] = useMemo(() => {
+        let result = projects;
 
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
             result = result.filter((p) => p.name.toLowerCase().includes(q));
         }
         if (filters.tasks.length > 0) {
-            result = result.filter((p) => filters.tasks.includes(p.tags[0]));
+            result = result.filter((p) => filters.tasks.includes(p.annotation_task_title ?? ''));
         }
         if (filters.datasets.length > 0) {
-            result = result.filter((p) => filters.datasets.includes(p.tags[1]));
+            result = result.filter((p) => filters.datasets.includes(p.dataset_name ?? ''));
         }
         if (filters.states.length > 0) {
-            result = result.filter((p) => filters.states.includes(p.statusLabel));
+            result = result.filter((p) =>
+                filters.states.includes(t(`projects.status.${p.status}`))
+            );
         }
 
         const hasSort =
@@ -289,19 +225,19 @@ export default function ProjectsIndex({ projects }: Props) {
         if (hasSort) {
             result = [...result].sort((a, b) => {
                 if (sortState.progress !== '') {
-                    const diff = a.progress - b.progress;
+                    const diff = a.project_progress - b.project_progress;
                     if (diff !== 0) return sortState.progress === 'ascending' ? diff : -diff;
                 }
                 if (sortState.dateCreated !== '') {
-                    const aDate = new Date(a.dateRange.split('–')[0].trim());
-                    const bDate = new Date(b.dateRange.split('–')[0].trim());
-                    const diff = aDate.getTime() - bDate.getTime();
+                    const diff =
+                        new Date(a.date_range_start ?? '').getTime() -
+                        new Date(b.date_range_start ?? '').getTime();
                     if (diff !== 0) return sortState.dateCreated === 'recent_first' ? -diff : diff;
                 }
                 if (sortState.dueDate !== '') {
-                    const aDate = new Date(a.dateRange.split('–')[1].trim());
-                    const bDate = new Date(b.dateRange.split('–')[1].trim());
-                    const diff = aDate.getTime() - bDate.getTime();
+                    const diff =
+                        new Date(a.date_range_end ?? '').getTime() -
+                        new Date(b.date_range_end ?? '').getTime();
                     if (diff !== 0) return sortState.dueDate === 'recent_first' ? -diff : diff;
                 }
                 return 0;
@@ -309,7 +245,7 @@ export default function ProjectsIndex({ projects }: Props) {
         }
 
         return result;
-    }, [allProjects, searchQuery, filters, sortState]);
+    }, [projects, searchQuery, filters, sortState, t]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -349,7 +285,7 @@ export default function ProjectsIndex({ projects }: Props) {
                     <div className="flex-1" />
                     <SectionToggle
                         checked={showOnlyMine}
-                        onChange={setShowOnlyMine}
+                        onChange={handleToggleMine}
                         label={t('projects.show_only_mine')}
                     />
                 </div>
