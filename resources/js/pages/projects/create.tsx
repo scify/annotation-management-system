@@ -239,11 +239,12 @@ export default function CreateProject({
                     actionLabel={t('projects.create.create_action')}
                     actionDisabled={projectName.trim() === '' || processing}
                     onAction={() => {
+                        const customizationOptions = selectedTaskType?.customization_options ?? [];
                         const annotationTaskConfiguration =
-                            Object.keys(customizationAnswers).length > 0
-                                ? Object.entries(customizationAnswers).map(([id, answer]) => ({
-                                      id: Number(id),
-                                      answer,
+                            customizationOptions.length > 0
+                                ? customizationOptions.map((option) => ({
+                                      id: option.id,
+                                      answer: customizationAnswers[option.id] ?? option.answers[0],
                                   }))
                                 : null;
 
