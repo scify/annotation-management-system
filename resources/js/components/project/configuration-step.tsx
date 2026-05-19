@@ -1,5 +1,9 @@
 import { type TaskTypeCardData } from '@/components/project/select-task-type-step';
 import {
+    DateRangePickerButton,
+    type DateRangeValue,
+} from '@/components/ui/date-range-picker-button';
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -28,10 +32,12 @@ export interface ProjectConfigurationStepProps {
     shuffleInstances: boolean;
     customizationAnswers: Record<number, string>;
     restrictVisibility: boolean;
+    dateRange: DateRangeValue | null;
     onDatasetChange: (id: number) => void;
     onShuffleChange: (enabled: boolean) => void;
     onCustomizationAnswerChange: (id: number, answer: string) => void;
     onVisibilityChange: (restricted: boolean) => void;
+    onDateRangeChange: (value: DateRangeValue | null) => void;
 }
 
 const PAGE_SIZE = 3;
@@ -210,10 +216,12 @@ export function ProjectConfigurationStep({
     shuffleInstances,
     customizationAnswers,
     restrictVisibility,
+    dateRange,
     onDatasetChange,
     onShuffleChange,
     onCustomizationAnswerChange,
     onVisibilityChange,
+    onDateRangeChange,
 }: ProjectConfigurationStepProps) {
     const { t } = useTranslations();
     const datasets = selectedTaskType?.datasets ?? [];
@@ -306,6 +314,23 @@ export function ProjectConfigurationStep({
                             />
                         </button>
                     </div>
+                </section>
+
+                {/* Date Range card */}
+                <section
+                    aria-labelledby="date-range-heading"
+                    className="flex flex-col gap-2 rounded-2xl border border-slate-200 bg-white px-6 pt-7 pb-6"
+                >
+                    <h2 id="date-range-heading" className="text-lg font-semibold text-slate-800">
+                        {t('projects.configuration.date_range_section')}
+                    </h2>
+                    <DateRangePickerButton
+                        value={dateRange}
+                        onChange={onDateRangeChange}
+                        placeholder={t('projects.configuration.date_range_placeholder')}
+                        aria-label={t('projects.configuration.date_range_section')}
+                        className="w-full"
+                    />
                 </section>
 
                 {/* Annotation card — only shown when there are customization options */}

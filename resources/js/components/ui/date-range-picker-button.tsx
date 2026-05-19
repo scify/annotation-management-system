@@ -9,10 +9,10 @@ import {
     CalendarGridHeader,
     CalendarHeaderCell,
     DateRangePicker,
-    Dialog,
+    Dialog as AriaDialog,
     Group,
     Heading,
-    Popover,
+    Popover as AriaPopover,
     RangeCalendar,
 } from 'react-aria-components';
 
@@ -55,7 +55,7 @@ export function DateRangePickerButton({
             minValue={today(getLocalTimeZone())}
         >
             <Group className="w-full">
-                <Button className="focus-visible:ring-brand-blue-700/50 flex h-10 w-full items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-left text-sm focus-visible:ring-2 focus-visible:outline-none">
+                <Button className="focus-visible:ring-brand-blue-700/50 flex h-10 w-full cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-left text-sm focus-visible:ring-2 focus-visible:outline-none">
                     <Calendar className="size-4 shrink-0 text-slate-800" aria-hidden="true" />
                     {formatted ? (
                         <span className="flex-1 text-slate-800">{formatted}</span>
@@ -69,14 +69,14 @@ export function DateRangePickerButton({
                 </Button>
             </Group>
 
-            <Popover
+            <AriaPopover
                 className={cn(
                     'z-50 mt-1 rounded-2xl border border-slate-200 bg-white p-4 shadow-md',
                     'data-[entering]:animate-in data-[entering]:fade-in-0 data-[entering]:zoom-in-95',
                     'data-[exiting]:animate-out data-[exiting]:fade-out-0 data-[exiting]:zoom-out-95',
                 )}
             >
-                <Dialog className="outline-none">
+                <AriaDialog className="outline-none">
                     <RangeCalendar aria-label={ariaLabel} className="w-[294px]">
                         <header className="mb-3 flex items-center justify-between">
                             <Button
@@ -136,8 +136,8 @@ export function DateRangePickerButton({
                             </CalendarGridBody>
                         </CalendarGrid>
                     </RangeCalendar>
-                </Dialog>
-            </Popover>
+                </AriaDialog>
+            </AriaPopover>
         </DateRangePicker>
     );
 }

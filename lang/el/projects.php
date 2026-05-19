@@ -199,6 +199,8 @@ return [
         'dataset_instances' => ':count Στιγμιότυπα',
         'shuffle_instances' => 'Τυχαία σειρά στιγμιοτύπων',
         'shuffle_instances_hint' => 'Τυχαία σειρά παρουσίασης στιγμιοτύπων στους επισημειωτές',
+        'date_range_section' => 'Εύρος Ημερομηνιών',
+        'date_range_placeholder' => 'Επιλέξτε Εύρος Ημερομηνιών',
         'annotation_section' => 'Επισημείωση',
         'visibility_section' => 'Ορατότητα Έργου',
         'visibility_description' => 'Περιορισμός πρόσβασης άλλων διαχειριστών στα δεδομένα του Έργου',

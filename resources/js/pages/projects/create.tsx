@@ -17,6 +17,7 @@ import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
+import { type DateRangeValue } from '@/components/ui/date-range-picker-button';
 import { ChevronLeft, ChevronRight, FolderDot } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -101,6 +102,7 @@ export default function CreateProject({
     const [shuffleInstances, setShuffleInstances] = useState(true);
     const [customizationAnswers, setCustomizationAnswers] = useState<Record<number, string>>({});
     const [restrictVisibility, setRestrictVisibility] = useState(false);
+    const [dateRange, setDateRange] = useState<DateRangeValue | null>(null);
 
     useEffect(() => {
         setCustomizationAnswers({});
@@ -153,10 +155,12 @@ export default function CreateProject({
                         shuffleInstances={shuffleInstances}
                         customizationAnswers={customizationAnswers}
                         restrictVisibility={restrictVisibility}
+                        dateRange={dateRange}
                         onDatasetChange={setSelectedDatasetId}
                         onShuffleChange={setShuffleInstances}
                         onCustomizationAnswerChange={handleCustomizationAnswerChange}
                         onVisibilityChange={setRestrictVisibility}
+                        onDateRangeChange={setDateRange}
                     />
                 )}
 

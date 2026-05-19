@@ -199,6 +199,8 @@ return [
         'dataset_instances' => ':count Instances',
         'shuffle_instances' => 'Shuffle instances',
         'shuffle_instances_hint' => 'Randomise the order instances are presented to annotators',
+        'date_range_section' => 'Date Range',
+        'date_range_placeholder' => 'Select Date Range',
         'annotation_section' => 'Annotation',
         'visibility_section' => 'Project Visibility',
         'visibility_description' => "Restrict other managers from viewing Project's data",
