@@ -15,11 +15,13 @@ use App\Models\ProjectManager;
 use App\Models\TaskTag;
 use App\Models\User;
 use App\Queries\GetActiveCoManagersQuery;
+use App\Queries\GetAllProjectsQuery;
 use App\Queries\GetAnnotationTasksQuery;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
 use App\Queries\GetCoManagersByIdsQuery;
 use App\Queries\GetInProgressProjectsQuery;
 use App\Queries\GetProjectIdsByManagerQuery;
+use App\Queries\GetUserAllProjectsQuery;
 use App\Queries\GetUserInProgressProjectsQuery;
 use App\Services\Annotator\AnnotatorService;
 use App\Services\Dataset\DatasetService;
@@ -33,11 +35,13 @@ readonly class ProjectService {
         private AnnotatorService $annotatorService,
         private DatasetService $datasetService,
         private GetActiveCoManagersQuery $activeCoManagersQuery,
+        private GetAllProjectsQuery $allProjectsQuery,
         private GetAnnotationTasksQuery $getAnnotationTasksQuery,
         private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
         private GetCoManagersByIdsQuery $coManagersByIdsQuery,
         private GetInProgressProjectsQuery $inProgressProjectsQuery,
         private GetProjectIdsByManagerQuery $projectIdsByManagerQuery,
+        private GetUserAllProjectsQuery $userAllProjectsQuery,
         private GetUserInProgressProjectsQuery $userInProgressProjectsQuery,
     ) {}
 
@@ -60,7 +64,7 @@ readonly class ProjectService {
                 'owner_user_id' => $owner->id,
                 'annotation_task_id' => $data['annotation_task_id'],
                 'dataset_id' => $data['dataset_id'],
-                'status' => ProjectStatusEnum::IN_PROGRESS,
+                'status' => ProjectStatusEnum::PENDING,
                 'is_instance_shuffled' => $data['is_instance_shuffled'],
                 'annotation_task_configuration' => $data['annotation_task_configuration'] ?? null,
                 'restricted_visibility' => $data['restricted_visibility'],
@@ -136,8 +140,8 @@ readonly class ProjectService {
         }
 
         if ($roleName === RolesEnum::ADMIN->value) {
-            $allProjects = $this->getAllInProgressProjects();
-            $myProjects = $this->getMyInProgressProjects($user->id, $allProjects);
+            $allProjects = $this->getAllProjects();
+            $myProjects = $this->getMyProjects($user->id, $allProjects);
 
             $data = [
                 'all_projects' => $allProjects,
@@ -158,7 +162,7 @@ readonly class ProjectService {
             return $data;
         }
 
-        $myProjects = $this->getMyInProgressProjects($user->id);
+        $myProjects = $this->getMyProjects($user->id);
 
         $data = ['my_projects' => $myProjects];
 
@@ -211,6 +215,54 @@ readonly class ProjectService {
     public function getMyInProgressProjects(int $userId, ?array $allProjects = null): array {
         if ($allProjects === null) {
             $data = $this->userInProgressProjectsQuery->get($userId)
+                ->map(fn (Project $project): array => array_merge(
+                    $project->toArray(),
+                    ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
+                ))
+                ->values()
+                ->all();
+
+            $this->augmentProjectData($data);
+
+            return $data;
+        }
+
+        $myProjectIds = $this->projectIdsByManagerQuery->get($userId);
+
+        return array_values(array_filter(
+            $allProjects,
+            fn (array $project): bool => in_array((int) $project['id'], $myProjectIds, true),
+        ));
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function getAllProjects(): array {
+        $data = $this->allProjectsQuery->get()
+            ->map(fn (Project $project): array => array_merge(
+                $project->toArray(),
+                ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
+            ))
+            ->values()
+            ->all();
+
+        $this->augmentProjectData($data);
+
+        return $data;
+    }
+
+    /**
+     * When $allProjects is provided (admin case), filters from the already-loaded set
+     * instead of issuing a second query.
+     *
+     * @param  array<int, array<string, mixed>>|null  $allProjects
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function getMyProjects(int $userId, ?array $allProjects = null): array {
+        if ($allProjects === null) {
+            $data = $this->userAllProjectsQuery->get($userId)
                 ->map(fn (Project $project): array => array_merge(
                     $project->toArray(),
                     ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
