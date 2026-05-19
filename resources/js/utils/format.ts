@@ -12,6 +12,22 @@ export function formatDate(
     return new Date(date).toLocaleDateString(LOCALE, options);
 }
 
+export function formatDateDMY(date: string | null): string {
+    if (!date) return '';
+    const d = new Date(date);
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    return `${day}/${month}/${d.getFullYear()}`;
+}
+
+export function formatDateDMYShort(date: string | null): string {
+    if (!date) return '';
+    const d = new Date(date);
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    return `${day}/${month}/${d.getFullYear().toString().slice(-2)}`;
+}
+
 export function formatRelativeTime(date: string): string {
     const rtf = new Intl.RelativeTimeFormat(LOCALE, { numeric: 'auto' });
     const now = new Date();

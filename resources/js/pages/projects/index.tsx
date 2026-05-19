@@ -230,14 +230,14 @@ export default function ProjectsIndex({
                 }
                 if (sortState.dateCreated !== '') {
                     const diff =
-                        new Date(a.date_range_start ?? '').getTime() -
-                        new Date(b.date_range_start ?? '').getTime();
+                        new Date(a.started_at ?? '').getTime() -
+                        new Date(b.started_at ?? '').getTime();
                     if (diff !== 0) return sortState.dateCreated === 'recent_first' ? -diff : diff;
                 }
                 if (sortState.dueDate !== '') {
                     const diff =
-                        new Date(a.date_range_end ?? '').getTime() -
-                        new Date(b.date_range_end ?? '').getTime();
+                        new Date(a.deadline_at ?? '').getTime() -
+                        new Date(b.deadline_at ?? '').getTime();
                     if (diff !== 0) return sortState.dueDate === 'recent_first' ? -diff : diff;
                 }
                 return 0;

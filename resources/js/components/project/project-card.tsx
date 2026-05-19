@@ -3,10 +3,18 @@ import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import type { Project, ProjectStatus } from '@/types';
-import { formatDate } from '@/utils/format';
+import { formatDateDMY, formatDateDMYShort } from '@/utils/format';
 import { Link } from '@inertiajs/react';
 import { type VariantProps } from 'class-variance-authority';
-import { BellRing, Container, Database, FolderDot, FolderOpenDot, UserRound } from 'lucide-react';
+import {
+    BellRing,
+    CircleAlert,
+    Container,
+    Database,
+    FolderDot,
+    FolderOpenDot,
+    UserRound,
+} from 'lucide-react';
 
 export type StatusVariant = Extract<
     NonNullable<VariantProps<typeof badgeVariants>['variant']>,
@@ -39,14 +47,6 @@ export function toInitials(username: string): string {
     return username.charAt(0).toUpperCase();
 }
 
-export function buildDateRange(start: string | null, end: string | null): string {
-    const opts: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
-    const startStr = formatDate(start, opts);
-    if (!startStr) return '';
-    const endStr = formatDate(end, opts);
-    return endStr ? `${startStr} – ${endStr}` : startStr;
-}
-
 export function UserAvatar({ initials }: { initials: string }) {
     return (
         <Avatar className="size-[22px] shrink-0">
@@ -62,7 +62,6 @@ export function ProjectCard({ project }: { project: Project }) {
 
     const statusVariant = STATUS_VARIANT[project.status];
     const statusLabel = t(`projects.status.${project.status}`);
-    const dateRange = buildDateRange(project.started_at, project.deadline_at);
     const progress = Math.round(project.project_progress * 100);
     const ownerInitials = toInitials(project.owner_name ?? '?');
     const ownerUsername = project.owner_name ? `@${project.owner_name}` : '—';
@@ -89,7 +88,35 @@ export function ProjectCard({ project }: { project: Project }) {
                         <p className="text-xl leading-9 font-medium text-slate-800">
                             {project.name}
                         </p>
-                        <p className="text-sm text-slate-600">{dateRange}</p>
+                        <div className="flex items-center gap-1 text-sm">
+                            <span className="text-slate-800">
+                                {formatDateDMY(project.started_at)}
+                            </span>
+                            {project.is_delayed_to_start && (
+                                <CircleAlert
+                                    className="size-[15px] shrink-0 text-red-500"
+                                    aria-label="Delayed"
+                                />
+                            )}
+                            <span className="text-slate-500">–</span>
+                            <span className="text-slate-800">
+                                {project.completed_at
+                                    ? formatDateDMY(project.completed_at)
+                                    : t('projects.card.ongoing')}
+                            </span>
+                            {project.is_delayed_to_end && (
+                                <CircleAlert
+                                    className="size-[15px] shrink-0 text-red-500"
+                                    aria-label="Overdue"
+                                />
+                            )}
+                            {(project.scheduled_at || project.deadline_at) && (
+                                <span className="ml-auto text-xs text-slate-400 tabular-nums">
+                                    ({formatDateDMYShort(project.scheduled_at)}–
+                                    {formatDateDMYShort(project.deadline_at)})
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
 

@@ -33,6 +33,7 @@ return [
 
     'card' => [
         'overall_progress' => 'Overall Progress',
+        'ongoing' => 'Ongoing',
         'owner' => 'Owner:',
         'co_managers' => 'Co-managers:',
         'view_project' => 'View Project',

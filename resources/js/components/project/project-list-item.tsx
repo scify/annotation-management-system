@@ -2,16 +2,24 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import type { Project } from '@/types';
+import { formatDateDMY, formatDateDMYShort } from '@/utils/format';
 import { Link } from '@inertiajs/react';
-import { BellRing, Container, Database, FolderDot, FolderOpenDot, UserRound } from 'lucide-react';
-import { buildDateRange, STATUS_VARIANT, toInitials, UserAvatar } from './project-card';
+import {
+    BellRing,
+    CircleAlert,
+    Container,
+    Database,
+    FolderDot,
+    FolderOpenDot,
+    UserRound,
+} from 'lucide-react';
+import { STATUS_VARIANT, toInitials, UserAvatar } from './project-card';
 
 export function ProjectListItem({ project }: { project: Project }) {
     const { t } = useTranslations();
 
     const statusVariant = STATUS_VARIANT[project.status];
     const statusLabel = t(`projects.status.${project.status}`);
-    const dateRange = buildDateRange(project.date_range_start, project.date_range_end);
     const progress = Math.round(project.project_progress * 100);
     const ownerInitials = toInitials(project.owner_name ?? '?');
     const ownerUsername = project.owner_name ? `@${project.owner_name}` : '—';
@@ -34,7 +42,35 @@ export function ProjectListItem({ project }: { project: Project }) {
                         <p className="text-xl leading-9 font-medium text-slate-800">
                             {project.name}
                         </p>
-                        <p className="text-sm text-slate-600">{dateRange}</p>
+                        <div className="flex items-center gap-1 text-sm">
+                            <span className="text-slate-800">
+                                {formatDateDMY(project.started_at)}
+                            </span>
+                            {project.is_delayed_to_start && (
+                                <CircleAlert
+                                    className="size-[15px] shrink-0 text-red-500"
+                                    aria-label="Delayed"
+                                />
+                            )}
+                            <span className="text-slate-500">–</span>
+                            <span className="text-slate-800">
+                                {project.completed_at
+                                    ? formatDateDMY(project.completed_at)
+                                    : t('projects.card.ongoing')}
+                            </span>
+                            {project.is_delayed_to_end && (
+                                <CircleAlert
+                                    className="size-[15px] shrink-0 text-red-500"
+                                    aria-label="Overdue"
+                                />
+                            )}
+                            {(project.scheduled_at || project.deadline_at) && (
+                                <span className="ml-auto text-xs text-slate-400 tabular-nums">
+                                    ({formatDateDMYShort(project.scheduled_at)}–
+                                    {formatDateDMYShort(project.deadline_at)})
+                                </span>
+                            )}
+                        </div>
                         <Badge variant={statusVariant}>{statusLabel}</Badge>
                     </div>
                 </div>
@@ -60,7 +96,7 @@ export function ProjectListItem({ project }: { project: Project }) {
 
             {/* Row 2: tags | indicators — indented to align with text */}
             <div className="flex items-center justify-between gap-4 pl-[54px]">
-                <div className="flex min-w-0 flex-1 gap-2.5 overflow-hidden">
+                <div className="flex min-w-0 gap-2.5 overflow-hidden">
                     {project.annotation_task_title && (
                         <div className="bg-brand-blue-100 flex h-8 min-w-0 flex-1 items-center gap-[10px] rounded-lg px-[10px]">
                             <Container
