@@ -1,13 +1,12 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tag } from '@/components/ui/tag';
 import { useTranslations } from '@/hooks/use-translations';
 import type { Project, ProjectStatus } from '@/types';
 import { formatDate } from '@/utils/format';
 import { Link } from '@inertiajs/react';
 import { type VariantProps } from 'class-variance-authority';
-import { BellRing, FolderDot, FolderOpenDot, UserRound } from 'lucide-react';
+import { BellRing, Container, Database, FolderDot, FolderOpenDot, UserRound } from 'lucide-react';
 
 export type StatusVariant = Extract<
     NonNullable<VariantProps<typeof badgeVariants>['variant']>,
@@ -93,14 +92,28 @@ export function ProjectCard({ project }: { project: Project }) {
 
                 {/* Tag chips */}
                 {(project.annotation_task_title || project.dataset_name) && (
-                    <div className="flex gap-2.5">
+                    <div className="flex flex-col gap-1">
                         {project.annotation_task_title && (
-                            <Tag className="min-w-0 flex-1 truncate">
-                                {project.annotation_task_title}
-                            </Tag>
+                            <div className="bg-brand-blue-100 flex h-8 w-fit max-w-full items-center gap-[10px] rounded-lg px-[10px]">
+                                <Container
+                                    className="size-5 shrink-0 text-slate-600"
+                                    aria-hidden="true"
+                                />
+                                <span className="min-w-0 truncate text-sm font-medium text-slate-800">
+                                    {project.annotation_task_title}
+                                </span>
+                            </div>
                         )}
                         {project.dataset_name && (
-                            <Tag className="shrink-0 whitespace-nowrap">{project.dataset_name}</Tag>
+                            <div className="bg-brand-blue-100 flex h-8 w-fit max-w-full items-center gap-[10px] rounded-lg px-[10px]">
+                                <Database
+                                    className="size-5 shrink-0 text-slate-600"
+                                    aria-hidden="true"
+                                />
+                                <span className="min-w-0 truncate text-sm font-medium text-slate-800">
+                                    {project.dataset_name}
+                                </span>
+                            </div>
                         )}
                     </div>
                 )}
@@ -168,7 +181,7 @@ export function ProjectCard({ project }: { project: Project }) {
 
                 {/* Owner + Co-managers */}
                 <div className="flex gap-7">
-                    <div className="flex flex-col gap-2">
+                    <div className="flex shrink-0 flex-col gap-2">
                         <span className="text-xs font-semibold text-slate-600">
                             {t('projects.card.owner')}
                         </span>
@@ -178,15 +191,15 @@ export function ProjectCard({ project }: { project: Project }) {
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
+                    <div className="flex min-w-0 flex-col gap-2">
                         <span className="text-xs font-semibold text-slate-600">
                             {t('projects.card.co_managers')}
                         </span>
-                        <div className="flex flex-wrap items-center gap-1">
+                        <div className="flex items-center gap-1">
                             {visibleCoManagers.map((cm) => (
-                                <div key={cm.username} className="flex items-center gap-1">
+                                <div key={cm.username} className="flex min-w-0 items-center gap-1">
                                     <UserAvatar initials={toInitials(cm.username)} />
-                                    <span className="text-[0.75rem] text-slate-600">
+                                    <span className="truncate text-[0.75rem] text-slate-600">
                                         @{cm.username}
                                     </span>
                                 </div>
@@ -199,8 +212,8 @@ export function ProjectCard({ project }: { project: Project }) {
                 </div>
 
                 {/* View Project */}
-                <Link href={route('projects.show', project.id)}>
-                    <Button className="hover:bg-brand-blue-800 h-10 font-semibold text-white">
+                <Link href={route('projects.show', project.id)} className="w-full">
+                    <Button className="hover:bg-brand-blue-800 h-10 w-full font-semibold text-white">
                         {t('projects.card.view_project')}
                     </Button>
                 </Link>

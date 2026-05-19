@@ -86,7 +86,7 @@ function TaskTypeCard({ taskType, isSelected, onSelect }: Readonly<TaskTypeCardP
             {/* Tab 2 — scrollable long description, fills the same space as tab 1 */}
             {tab === 1 && (
                 <div className="min-h-0 flex-1 pt-3">
-                    <p className="h-full overflow-y-auto text-sm leading-5 text-slate-600 [scrollbar-color:theme(colors.slate.300)_transparent] [scrollbar-width:thin]">
+                    <p className="h-full [scrollbar-width:thin] [scrollbar-color:theme(colors.slate.300)_transparent] overflow-y-auto text-sm leading-5 text-slate-600">
                         {taskType.description ?? '—'}
                     </p>
                 </div>
