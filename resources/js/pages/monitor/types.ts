@@ -10,7 +10,12 @@ export interface SubProject {
 export interface MonitorProject {
     id: number;
     name: string;
-    dateRange: string;
+    started_at: string | null;
+    completed_at: string | null;
+    scheduled_at: string | null;
+    deadline_at: string | null;
+    is_delayed_to_start: boolean;
+    is_delayed_to_end: boolean;
     status: 'in_progress' | 'completed' | 'pending';
     owner: string;
     coManagers: string[];

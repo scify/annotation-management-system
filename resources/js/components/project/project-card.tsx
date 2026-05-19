@@ -63,7 +63,7 @@ export function ProjectCard({ project }: { project: Project }) {
 
     const statusVariant = STATUS_VARIANT[project.status];
     const statusLabel = t(`projects.status.${project.status}`);
-    const dateRange = buildDateRange(project.date_range_start, project.date_range_end);
+    const dateRange = buildDateRange(project.started_at, project.deadline_at);
     const progress = Math.round(project.project_progress * 100);
     const ownerInitials = toInitials(project.owner_name ?? '?');
     const ownerUsername = project.owner_name ? `@${project.owner_name}` : '—';

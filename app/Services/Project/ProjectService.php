@@ -182,7 +182,10 @@ readonly class ProjectService {
      */
     public function getAllInProgressProjects(): array {
         $data = $this->inProgressProjectsQuery->get()
-            ->map(fn (Project $project) => $project->makeHidden(['is_delayed_to_start', 'is_delayed_to_end'])->toArray())
+            ->map(fn (Project $project): array => array_merge(
+                $project->toArray(),
+                ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
+            ))
             ->values()
             ->all();
 
@@ -202,7 +205,10 @@ readonly class ProjectService {
     public function getMyInProgressProjects(int $userId, ?array $allProjects = null): array {
         if ($allProjects === null) {
             $data = $this->userInProgressProjectsQuery->get($userId)
-                ->map(fn (Project $project) => $project->makeHidden(['is_delayed_to_start', 'is_delayed_to_end'])->toArray())
+                ->map(fn (Project $project): array => array_merge(
+                    $project->toArray(),
+                    ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
+                ))
                 ->values()
                 ->all();
 
@@ -430,7 +436,6 @@ readonly class ProjectService {
         $this->augmentProjectsWithNotifications($data);
         $this->augmentProjectsWithManagers($data);
         $this->augmentProjectsWithProgress($data);
-        $this->augmentProjectsWithDateRange($data);
     }
 
     /**
@@ -478,17 +483,6 @@ readonly class ProjectService {
             $project['annotation_task_title'] = $project['annotation_task']['title'] ?? null;
             $project['dataset_name'] = $project['dataset']['name'] ?? null;
             unset($project['annotation_task'], $project['dataset']);
-        }
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $data
-     */
-    private function augmentProjectsWithDateRange(array &$data): void {
-        foreach ($data as &$project) {
-            $project['date_range_start'] = $project['started_at'] ?? null;
-            $project['date_range_end'] = $project['deadline_at'] ?? null;
-            unset($project['started_at'], $project['deadline_at']);
         }
     }
 }
