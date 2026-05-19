@@ -94,19 +94,6 @@ export function SelectDatasetSubsetStep({
                                     })}
                                 </p>
                             </div>
-                            <div className="pl-8">
-                                <button
-                                    type="button"
-                                    className="text-sm font-semibold text-slate-800 underline"
-                                    onClick={() =>
-                                        onFromInstanceChange(dataset.previousEndInstance ?? +1)
-                                    }
-                                >
-                                    {trans('sub-projects.select_dataset.start_from', {
-                                        instance: dataset.previousEndInstance + 1,
-                                    })}
-                                </button>
-                            </div>
                         </div>
                     )}
 
