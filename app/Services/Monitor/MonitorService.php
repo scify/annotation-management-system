@@ -227,8 +227,12 @@ readonly class MonitorService {
             'co_managers' => $coManagers,
             'project_progress' => 0.5,
             'notifications_count' => 0,
-            'date_range_start' => $project->started_at,
-            'date_range_end' => $project->deadline_at,
+            'started_at' => $project->started_at,
+            'completed_at' => $project->completed_at,
+            'scheduled_at' => $project->scheduled_at,
+            'deadline_at' => $project->deadline_at,
+            'is_delayed_to_start' => $project->isDelayedToStart(),
+            'is_delayed_to_end' => $project->isDelayedToEnd(),
             'subprojects' => $subProjects
                 ->map(fn (SubProject $sp): array => [
                     'id' => $sp->id,

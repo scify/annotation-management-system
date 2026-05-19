@@ -111,8 +111,12 @@ export interface Project {
     owner_name: string | null;
     co_managers: Array<{ id: number; username: string }> | null;
     project_progress: number;
-    date_range_start: string | null;
-    date_range_end: string | null;
+    started_at: string | null;
+    completed_at: string | null;
+    scheduled_at: string | null;
+    deadline_at: string | null;
+    is_delayed_to_start: boolean;
+    is_delayed_to_end: boolean;
 }
 
 export interface PlatformStats {

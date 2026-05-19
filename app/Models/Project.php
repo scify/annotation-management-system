@@ -7,7 +7,6 @@ namespace App\Models;
 use App\Enums\ProjectStatusEnum;
 use Carbon\Carbon;
 use Database\Factories\ProjectFactory;
-use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -41,10 +40,7 @@ use Illuminate\Support\Facades\Date;
  * @property-read Collection<int, SubProject> $subProjects
  * @property-read Collection<int, ProjectManager> $projectManagers
  * @property-read Collection<int, User> $annotators
- * @property-read bool $is_delayed_to_start
- * @property-read bool $is_delayed_to_end
  */
-#[Appends(['is_delayed_to_start', 'is_delayed_to_end'])]
 #[Fillable([
     'name',
     'owner_user_id',
@@ -107,6 +103,18 @@ class Project extends Model {
         return $this->belongsToMany(User::class, 'annotator_of_project', 'project_id', 'user_id');
     }
 
+    public function isDelayedToStart(): bool {
+        return $this->scheduled_at !== null
+            && Date::now()->gt($this->scheduled_at)
+            && $this->status === ProjectStatusEnum::PENDING;
+    }
+
+    public function isDelayedToEnd(): bool {
+        return $this->deadline_at !== null
+            && Date::now()->gt($this->deadline_at)
+            && $this->status !== ProjectStatusEnum::COMPLETED;
+    }
+
     /**
      * @return array<string, string|class-string>
      */
@@ -121,17 +129,5 @@ class Project extends Model {
             'started_at' => 'datetime',
             'completed_at' => 'datetime',
         ];
-    }
-
-    protected function getIsDelayedToStartAttribute(): bool {
-        $now = Date::now();
-
-        return $this->scheduled_at !== null && $now->gt($this->scheduled_at) && $this->status === ProjectStatusEnum::PENDING;
-    }
-
-    protected function getIsDelayedToEndAttribute(): bool {
-        $now = Date::now();
-
-        return $this->deadline_at !== null && $now->gt($this->deadline_at) && $this->status !== ProjectStatusEnum::COMPLETED;
     }
 }

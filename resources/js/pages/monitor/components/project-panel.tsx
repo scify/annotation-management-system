@@ -127,7 +127,9 @@ export function ProjectPanel({ project }: ProjectPanelProps) {
                             </p>
                             {/* Row 2: date + status badge */}
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-slate-400">{project.dateRange}</span>
+                                <span className="text-sm text-slate-400">
+                                    {project.scheduled_at ?? '…'} – {project.deadline_at ?? '…'}
+                                </span>
                                 <StatusBadge status={project.status} />
                             </div>
                         </div>
