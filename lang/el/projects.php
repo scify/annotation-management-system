@@ -131,6 +131,8 @@ return [
         'restricted_visibility' => 'Περιορισμένη ορατότητα',
         'annotator_ids' => 'Επισημειωτές',
         'co_manager_ids' => 'Συνυπεύθυνοι',
+        'scheduled_at' => 'Ημερομηνία προγραμματισμού',
+        'deadline_at' => 'Ημερομηνία λήξης',
     ],
 
     'messages' => [

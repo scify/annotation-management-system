@@ -27,7 +27,7 @@ class ProjectController extends Controller {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data_for_projects = $this->projectService->getDataForProjects($user);
+        $data_for_projects = $this->projectService->getDataForProjectsPage($user);
 
         $json = json_encode($data_for_projects, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if (is_string($json)) {
@@ -60,7 +60,7 @@ class ProjectController extends Controller {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $this->projectService->createProject($user, $request->validated());
+        $this->projectService->storeProject($user, $request->validated());
 
         return to_route('projects.index')
             ->with('success', __('projects.messages.created'));

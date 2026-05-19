@@ -131,6 +131,8 @@ return [
         'restricted_visibility' => 'Restricted visibility',
         'annotator_ids' => 'Annotators',
         'co_manager_ids' => 'Co-managers',
+        'scheduled_at' => 'Scheduled date',
+        'deadline_at' => 'Deadline date',
     ],
 
     'messages' => [

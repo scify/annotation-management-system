@@ -53,6 +53,8 @@ export default function CreateProject({
     const [selectedAnnotatorIds, setSelectedAnnotatorIds] = useState<Set<number>>(new Set());
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [projectName, setProjectName] = useState('');
+    const [processing, setProcessing] = useState(false);
+    const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 
     function handleSelectionChange(id: number, checked: boolean) {
         setSelectedAnnotatorIds((prev) => {
@@ -93,7 +95,6 @@ export default function CreateProject({
     }
 
     function handleCoManagerInvite() {
-        // TODO: submit invite with coManagerInviteEmail
         setCoManagerInviteEmail('');
     }
 
@@ -236,19 +237,86 @@ export default function CreateProject({
                     description={t('projects.create.dialog_description')}
                     cancelLabel={t('projects.create.back')}
                     actionLabel={t('projects.create.create_action')}
+                    actionDisabled={projectName.trim() === '' || processing}
                     onAction={() => {
+                        const annotationTaskConfiguration =
+                            Object.keys(customizationAnswers).length > 0
+                                ? Object.entries(customizationAnswers).map(([id, answer]) => ({
+                                      id: Number(id),
+                                      answer,
+                                  }))
+                                : null;
+
+                        setServerErrors({});
                         setConfirmOpen(false);
-                        // TODO: submit form with projectName and selectedTaskTypeId
+                        router.post(
+                            route('projects.store'),
+                            {
+                                name: projectName.trim(),
+                                annotation_task_id: selectedTaskTypeId,
+                                dataset_id: selectedDatasetId,
+                                is_instance_shuffled: shuffleInstances,
+                                annotation_task_configuration: annotationTaskConfiguration,
+                                restricted_visibility: restrictVisibility,
+                                annotator_ids: Array.from(selectedAnnotatorIds),
+                                co_manager_ids: Array.from(selectedCoManagerIds),
+                                scheduled_at: dateRange?.start.toString() ?? null,
+                                deadline_at: dateRange?.end.toString() ?? null,
+                            },
+                            {
+                                preserveState: true,
+                                preserveScroll: true,
+                                onStart: () => setProcessing(true),
+                                onFinish: () => setProcessing(false),
+                                onError: (errors) => {
+                                    setServerErrors(errors);
+                                    setConfirmOpen(true);
+                                },
+                            }
+                        );
                     }}
                 >
-                    <Input
-                        type="text"
-                        value={projectName}
-                        onChange={(e) => setProjectName(e.target.value)}
-                        placeholder={t('projects.create.dialog_name_placeholder')}
-                        className="mb-12 h-10 bg-white px-3 py-3"
-                        aria-label={t('projects.create.dialog_description')}
-                    />
+                    <div className="mb-4 flex flex-col gap-1">
+                        <Input
+                            type="text"
+                            value={projectName}
+                            onChange={(e) => {
+                                setProjectName(e.target.value);
+                                if (serverErrors.name) {
+                                    setServerErrors((prev) => {
+                                        const next = { ...prev };
+                                        delete next.name;
+                                        return next;
+                                    });
+                                }
+                            }}
+                            placeholder={t('projects.create.dialog_name_placeholder')}
+                            className="h-10 bg-white px-3 py-3"
+                            aria-label={t('projects.create.dialog_description')}
+                            aria-invalid={!!serverErrors.name}
+                            aria-describedby={serverErrors.name ? 'project-name-error' : undefined}
+                        />
+                        {serverErrors.name && (
+                            <p
+                                id="project-name-error"
+                                role="alert"
+                                className="text-sm text-red-600"
+                            >
+                                {serverErrors.name}
+                            </p>
+                        )}
+                    </div>
+                    {Object.entries(serverErrors).filter(([key]) => key !== 'name').length > 0 && (
+                        <div role="alert" className="mb-4 rounded-md bg-red-50 p-3">
+                            <ul className="list-inside list-disc space-y-1 text-sm text-red-700">
+                                {Object.entries(serverErrors)
+                                    .filter(([key]) => key !== 'name')
+                                    .map(([key, msg]) => (
+                                        <li key={key}>{msg}</li>
+                                    ))}
+                            </ul>
+                        </div>
+                    )}
                 </ProjectDialog>
             </div>
         </AppLayout>

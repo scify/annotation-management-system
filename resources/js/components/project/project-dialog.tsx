@@ -25,6 +25,8 @@ export interface ProjectDialogProps {
     /** Optional icon rendered to the right of the action label */
     actionIcon?: React.ReactNode;
     onAction: () => void;
+    /** Disables the action button when true */
+    actionDisabled?: boolean;
     /**
      * - `standard`    → solid brand-blue-700 (e.g. Send message)
      * - `highlighted` → brand-blue-800 + 4px cyan-400 ring (e.g. Approve, Send Request)
@@ -44,6 +46,7 @@ export function ProjectDialog({
     actionLabel,
     actionIcon,
     onAction,
+    actionDisabled = false,
     actionStyle = 'standard',
 }: ProjectDialogProps) {
     return (
@@ -82,8 +85,9 @@ export function ProjectDialog({
                     <button
                         type="button"
                         onClick={onAction}
+                        disabled={actionDisabled}
                         className={cn(
-                            'flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg text-base font-semibold text-white transition-colors',
+                            'flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
                             actionStyle === 'highlighted'
                                 ? 'bg-brand-blue-800 hover:bg-brand-blue-900 border-4 border-cyan-400'
                                 : 'bg-brand-blue-700 hover:bg-brand-blue-800'

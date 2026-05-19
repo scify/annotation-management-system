@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Project;
 
+use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfManager;
@@ -47,7 +48,7 @@ readonly class ProjectService {
      *
      * @throws Throwable
      */
-    public function createProject(User $owner, array $data): Project {
+    public function storeProject(User $owner, array $data): Project {
         return DB::transaction(function () use ($owner, $data): Project {
             /** @var array<int, int> $annotatorIds */
             $annotatorIds = $data['annotator_ids'];
@@ -59,9 +60,12 @@ readonly class ProjectService {
                 'owner_user_id' => $owner->id,
                 'annotation_task_id' => $data['annotation_task_id'],
                 'dataset_id' => $data['dataset_id'],
+                'status' => ProjectStatusEnum::IN_PROGRESS,
                 'is_instance_shuffled' => $data['is_instance_shuffled'],
                 'annotation_task_configuration' => $data['annotation_task_configuration'] ?? null,
                 'restricted_visibility' => $data['restricted_visibility'],
+                'scheduled_at' => $data['scheduled_at'] ?? null,
+                'deadline_at' => $data['deadline_at'] ?? null,
             ]);
 
             ProjectManager::query()->create([
@@ -122,9 +126,11 @@ readonly class ProjectService {
     /**
      * @return array<string, mixed>
      */
-    public function getDataForProjects(User $user, bool $withFilters = true): array {
+    public function getDataForProjectsPage(User $user, bool $withFilters = true): array {
         $roleName = $user->getRoleNames()->first();
 
+        // TODO Aris: this if should not happen
+        // because this route should be "gated" and no annotators should be able to access it.
         if ($roleName === RolesEnum::ANNOTATOR->value) {
             return [];
         }

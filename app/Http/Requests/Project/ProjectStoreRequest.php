@@ -31,6 +31,8 @@ class ProjectStoreRequest extends FormRequest {
             'annotator_ids.*' => ['integer', 'exists:users,id'],
             'co_manager_ids' => ['nullable', 'array'],
             'co_manager_ids.*' => ['integer', 'exists:users,id'],
+            'scheduled_at' => ['nullable', 'date'],
+            'deadline_at' => ['nullable', 'date', 'after_or_equal:scheduled_at'],
         ];
     }
 
@@ -47,6 +49,8 @@ class ProjectStoreRequest extends FormRequest {
             'restricted_visibility' => __('projects.labels.restricted_visibility'),
             'annotator_ids' => __('projects.labels.annotator_ids'),
             'co_manager_ids' => __('projects.labels.co_manager_ids'),
+            'scheduled_at' => __('projects.labels.scheduled_at'),
+            'deadline_at' => __('projects.labels.deadline_at'),
         ];
     }
 }
