@@ -30,6 +30,29 @@ export interface HiddenProject {
     assignedTo: string;
 }
 
+export interface HistoryAnnotatorSubproject {
+    project: string;
+    subproject: string;
+    annotations: number;
+    flags: number;
+    velocity: number;
+    confidence: 'High' | 'Medium' | 'Low';
+    dateCompleted: string;
+}
+
+export interface HistoryAnnotator {
+    id: number;
+    username: string;
+    initials: string;
+    status: 'active' | 'inactive';
+    totalProjects: number;
+    totalSubprojects: number;
+    totalAnnotations: number;
+    totalFlags: number;
+    averageVelocity: number;
+    subprojects: HistoryAnnotatorSubproject[];
+}
+
 export interface MonitorAnnotator {
     id: number;
     username: string;
