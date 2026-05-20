@@ -240,7 +240,7 @@ readonly class MonitorService {
                     'name' => $sp->name,
                     'status' => $sp->status,
                     'workload' => $subprojectWorkloads[$sp->id] ?? 0.5,
-                    'progress' => $this->subProjectService->getProgress($sp),
+                    'progress' => $this->subProjectService->getProgress($sp)['progress'],
                 ])
                 ->values()
                 ->all(),

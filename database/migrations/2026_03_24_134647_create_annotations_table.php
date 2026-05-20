@@ -18,6 +18,7 @@ return new class() extends Migration {
             $table->unsignedMediumInteger('index');
             $table->unique(['annotation_assignment_id', 'dataset_instance_id']);
             $table->json('annotations');
+            $table->boolean('pending')->default(false);
             $table->timestamps();
         });
     }
