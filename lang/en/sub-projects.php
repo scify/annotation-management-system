@@ -77,6 +77,8 @@ return [
         'browsing_label' => 'Browsing and Submission',
         'flexible_browsing_label' => 'Flexible Browsing',
         'flexible_browsing_description' => 'Allows annotator to go back and forth through instances',
+        'toggle_on' => 'On',
+        'toggle_off' => 'Off',
         'submission_auto' => 'Automatically per instance',
         'submission_auto_description' => 'Annotation is submitted by continuing to the next instance',
         'submission_manual' => "By Annotator's Confirmation",

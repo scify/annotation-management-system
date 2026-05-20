@@ -3,13 +3,7 @@ import {
     type DateRangeValue,
 } from '@/components/ui/date-range-picker-button';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { ArrowDown, ArrowUp, CircleAlert, Ellipsis } from 'lucide-react';
@@ -89,40 +83,46 @@ export function ToggleSwitch({
     label,
     description,
 }: Readonly<ToggleSwitchProps>) {
+    const { t } = useTranslations();
+
     return (
-        <label htmlFor={id} className="flex cursor-pointer items-start gap-3">
-            {/* Pill track */}
-            <span className="relative mt-0.5 inline-flex shrink-0">
-                <input
-                    id={id}
-                    type="checkbox"
-                    role="switch"
-                    aria-checked={checked}
-                    checked={checked}
-                    onChange={(e) => onChange(e.target.checked)}
-                    className="peer sr-only"
-                />
-                <span
-                    aria-hidden="true"
-                    className={cn(
-                        'flex h-6 w-11 items-center rounded-full border-2 border-transparent transition-colors',
-                        'peer-focus-visible:ring-brand-blue-700/30 peer-focus-visible:ring-4',
-                        checked ? 'bg-brand-blue-700' : 'bg-slate-200'
-                    )}
-                >
-                    <span
-                        className={cn(
-                            'size-4 rounded-full bg-white shadow-sm transition-transform',
-                            checked ? 'translate-x-5' : 'translate-x-1'
-                        )}
-                    />
-                </span>
-            </span>
-            <span className="flex flex-col gap-0.5">
+        <div className="flex flex-col gap-0.5">
+            <label htmlFor={id} className="flex cursor-pointer items-center gap-3">
                 <span className="text-sm font-semibold text-slate-800">{label}</span>
-                {description && <span className="text-sm text-slate-500">{description}</span>}
-            </span>
-        </label>
+                <span className="relative inline-flex shrink-0">
+                    <input
+                        id={id}
+                        type="checkbox"
+                        role="switch"
+                        aria-checked={checked}
+                        checked={checked}
+                        onChange={(e) => onChange(e.target.checked)}
+                        className="peer sr-only"
+                    />
+                    <span
+                        aria-hidden="true"
+                        className={cn(
+                            'flex h-6 w-11 items-center rounded-full border-2 border-transparent transition-colors',
+                            'peer-focus-visible:ring-brand-blue-700/30 peer-focus-visible:ring-4',
+                            checked ? 'bg-brand-blue-700' : 'bg-slate-200'
+                        )}
+                    >
+                        <span
+                            className={cn(
+                                'size-4 rounded-full bg-white shadow-sm transition-transform',
+                                checked ? 'translate-x-5' : 'translate-x-1'
+                            )}
+                        />
+                    </span>
+                </span>
+                <span className="text-sm font-medium text-slate-600">
+                    {checked
+                        ? t('sub-projects.configuration.toggle_on')
+                        : t('sub-projects.configuration.toggle_off')}
+                </span>
+            </label>
+            {description && <span className="text-sm text-slate-500">{description}</span>}
+        </div>
     );
 }
 
@@ -143,7 +143,7 @@ export function ConfigurationStep({
     onFlexibleBrowsingChange,
     onSubmissionModeChange,
 }: Readonly<ConfigurationStepProps>) {
-    const { t, trans } = useTranslations();
+    const { t } = useTranslations();
 
     return (
         <section aria-labelledby="step-config-heading" className="flex flex-col gap-5">
@@ -182,15 +182,14 @@ export function ConfigurationStep({
                                     ) : (
                                         <span className="flex flex-1 items-center gap-2">
                                             <CircleAlert
-                                                className="size-4 text-slate-800"
+                                                className="size-4 text-slate-400"
                                                 aria-hidden="true"
                                             />
-                                            <SelectValue
-                                                placeholder={t(
+                                            <span className="text-sm text-slate-500">
+                                                {t(
                                                     'sub-projects.configuration.priority_placeholder'
                                                 )}
-                                                className="text-sm hover:cursor-pointer"
-                                            />
+                                            </span>
                                         </span>
                                     )}
                                 </SelectTrigger>
@@ -242,9 +241,8 @@ export function ConfigurationStep({
                                 checked={minAnnotationsEnabled}
                                 onChange={onMinAnnotationsEnabledChange}
                                 label={t('sub-projects.configuration.min_annotations_label')}
-                                description={trans(
-                                    'sub-projects.configuration.min_annotations_placeholder',
-                                    { max: annotatorCount }
+                                description={t(
+                                    'sub-projects.configuration.min_annotations_description'
                                 )}
                             />
 
@@ -262,19 +260,16 @@ export function ConfigurationStep({
                                     max={annotatorCount || undefined}
                                     value={minAnnotationsEnabled ? minAnnotations : ''}
                                     placeholder={
-                                        minAnnotationsEnabled
-                                            ? trans(
-                                                  'sub-projects.configuration.min_annotations_placeholder',
-                                                  { max: annotatorCount }
-                                              )
-                                            : t(
+                                        !minAnnotationsEnabled
+                                            ? t(
                                                   'sub-projects.configuration.min_annotations_inactive'
                                               )
+                                            : undefined
                                     }
                                     disabled={!minAnnotationsEnabled}
                                     onChange={(e) => onMinAnnotationsChange(Number(e.target.value))}
                                     aria-label={t(
-                                        'sub-projects.configuration.min_annotations_placeholder'
+                                        'sub-projects.configuration.min_annotations_label'
                                     )}
                                     className="h-10 bg-white px-3"
                                 />
