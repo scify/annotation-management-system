@@ -9,9 +9,11 @@ use App\Enums\SubProjectPriorityEnum;
 use Carbon\Carbon;
 use Database\Factories\SubProjectFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property-read int $id
@@ -31,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
  * @property-read Project $project
+ * @property-read Collection<int, AnnotationAssignment> $annotationAssignments
  */
 #[Fillable([
     'project_id',
@@ -56,6 +59,13 @@ class SubProject extends Model {
      */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
+    }
+
+    /**
+     * @return HasMany<AnnotationAssignment, $this>
+     */
+    public function annotationAssignments(): HasMany {
+        return $this->hasMany(AnnotationAssignment::class);
     }
 
     /**
