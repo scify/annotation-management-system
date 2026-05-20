@@ -8,13 +8,13 @@ use App\Enums\RolesEnum;
 use App\Models\User;
 use App\Queries\FindUserByEmailQuery;
 use App\Queries\GetUsersQuery;
-use App\Queries\GetUserWorkloadsQuery;
+use App\Queries\GetWorkloadsByAnnotatorsQuery;
 use Illuminate\Support\Collection;
 
 readonly class UserService {
     public function __construct(
         private FindUserByEmailQuery $findUserByEmailQuery,
-        private GetUserWorkloadsQuery $getUserWorkloadsQuery,
+        private GetWorkloadsByAnnotatorsQuery $getUserWorkloadsQuery,
         private GetUsersQuery $getUsersQuery,
     ) {}
 

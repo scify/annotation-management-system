@@ -7,7 +7,7 @@ namespace App\Queries;
 use App\Models\AnnotationAssignment;
 use Illuminate\Support\Collection;
 
-final readonly class GetAnnotatorSubprojectCountsQuery {
+final readonly class GetCountsOfSubprojectsPerAnnotatorQuery {
     /**
      * @param  array<int, mixed>  $annotatorIds
      * @param  Collection<int, mixed>  $subProjectIds

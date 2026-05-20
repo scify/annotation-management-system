@@ -5,27 +5,25 @@ declare(strict_types=1);
 namespace App\Services\Annotator;
 
 use App\Models\User;
-use App\Queries\GetActiveAnnotatorsByIdsQuery;
-use App\Queries\GetActiveAnnotatorsQuery;
 use App\Queries\GetActiveSubProjectIdsQuery;
-use App\Queries\GetAnnotatorActiveProjectCountsQuery;
-use App\Queries\GetAnnotatorSubprojectCountsQuery;
+use App\Queries\GetAnnotatorsQuery;
+use App\Queries\GetCountsOfActiveProjectsPerAnnotatorQuery;
+use App\Queries\GetCountsOfSubprojectsPerAnnotatorQuery;
 
 readonly class AnnotatorService {
     public function __construct(
         private WorkloadService $workloadService,
-        private GetActiveAnnotatorsQuery $activeAnnotatorsQuery,
-        private GetActiveAnnotatorsByIdsQuery $activeAnnotatorsByIdsQuery,
-        private GetAnnotatorActiveProjectCountsQuery $annotatorActiveProjectCountsQuery,
+        private GetAnnotatorsQuery $activeAnnotatorsQuery,
+        private GetCountsOfActiveProjectsPerAnnotatorQuery $annotatorActiveProjectCountsQuery,
         private GetActiveSubProjectIdsQuery $activeSubProjectIdsQuery,
-        private GetAnnotatorSubprojectCountsQuery $annotatorSubprojectCountsQuery,
+        private GetCountsOfSubprojectsPerAnnotatorQuery $annotatorSubprojectCountsQuery,
     ) {}
 
     /**
      * @return array<int, array<string, mixed>>
      */
     public function getAllAnnotators(): array {
-        $annotators = $this->activeAnnotatorsQuery->get()
+        $annotators = $this->activeAnnotatorsQuery->getActive()
             ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
             ->values()
             ->all();
@@ -41,7 +39,7 @@ readonly class AnnotatorService {
      * @return array<int, array<string, mixed>>
      */
     public function getAnnotatorsByIds(array $ids): array {
-        $annotators = $this->activeAnnotatorsByIdsQuery->get($ids)
+        $annotators = $this->activeAnnotatorsQuery->getActive($ids)
             ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
             ->values()
             ->all();

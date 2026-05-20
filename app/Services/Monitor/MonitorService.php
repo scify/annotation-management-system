@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Monitor;
 
+use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotatorOfProject;
@@ -11,13 +12,13 @@ use App\Models\Project;
 use App\Models\ProjectManager;
 use App\Models\SubProject;
 use App\Models\User;
-use App\Queries\GetAllAnnotatorsQuery;
 use App\Queries\GetAnnotatorProjectLinksByAnnotatorsQuery;
 use App\Queries\GetAnnotatorsByManagerQuery;
+use App\Queries\GetAnnotatorsQuery;
 use App\Queries\GetAssignmentsBySubProjectsAndAnnotatorsQuery;
-use App\Queries\GetInProgressProjectsByIdsQuery;
-use App\Queries\GetInProgressSubProjectsByProjectsQuery;
-use App\Queries\GetProjectIdsByManagerQuery;
+use App\Queries\GetProjectIdsManagedByUserQuery;
+use App\Queries\GetProjectsByIdsQuery;
+use App\Queries\GetSubProjectsOfProjectsQuery;
 use App\Services\Annotator\WorkloadService;
 use App\Services\Project\SubProjectService;
 use Illuminate\Database\Eloquent\Collection;
@@ -27,13 +28,13 @@ readonly class MonitorService {
     public function __construct(
         private SubProjectService $subProjectService,
         private WorkloadService $workloadService,
-        private GetAllAnnotatorsQuery $allAnnotatorsQuery,
+        private GetAnnotatorsQuery $allAnnotatorsQuery,
         private GetAnnotatorsByManagerQuery $annotatorsByManagerQuery,
         private GetAnnotatorProjectLinksByAnnotatorsQuery $annotatorProjectLinksQuery,
-        private GetInProgressProjectsByIdsQuery $inProgressProjectsByIdsQuery,
-        private GetInProgressSubProjectsByProjectsQuery $inProgressSubProjectsByProjectsQuery,
+        private GetProjectsByIdsQuery $inProgressProjectsByIdsQuery,
+        private GetSubProjectsOfProjectsQuery $inProgressSubProjectsByProjectsQuery,
         private GetAssignmentsBySubProjectsAndAnnotatorsQuery $assignmentsBySubProjectsAndAnnotatorsQuery,
-        private GetProjectIdsByManagerQuery $projectIdsByManagerQuery,
+        private GetProjectIdsManagedByUserQuery $projectIdsByManagerQuery,
     ) {}
 
     /**
@@ -47,7 +48,7 @@ readonly class MonitorService {
         }
 
         if ($roleName === RolesEnum::ADMIN->value) {
-            $allAnnotators = $this->allAnnotatorsQuery->get();
+            $allAnnotators = $this->allAnnotatorsQuery->getAll();
             $preloaded = $this->preloadData($allAnnotators->pluck('id')->all());
 
             $myAnnotatorIds = $this->resolveAdminMyAnnotatorIds($user->id, $preloaded);
@@ -105,12 +106,12 @@ readonly class MonitorService {
         $projectIds = $annotatorProjectLinks->pluck('project_id')->unique()->all();
 
         /** @var Collection<int, Project> $projects */
-        $projects = $this->inProgressProjectsByIdsQuery->get($projectIds);
+        $projects = $this->inProgressProjectsByIdsQuery->get($projectIds, ProjectStatusEnum::IN_PROGRESS);
 
         $loadedProjectIds = $projects->pluck('id')->all();
 
         /** @var Collection<int, SubProject> $subProjects */
-        $subProjects = $this->inProgressSubProjectsByProjectsQuery->get($loadedProjectIds);
+        $subProjects = $this->inProgressSubProjectsByProjectsQuery->get($loadedProjectIds, ProjectStatusEnum::IN_PROGRESS);
 
         $subProjectIds = $subProjects->pluck('id')->all();
 

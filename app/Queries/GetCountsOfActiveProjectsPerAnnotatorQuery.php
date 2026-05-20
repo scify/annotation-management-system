@@ -8,7 +8,7 @@ use App\Enums\ProjectStatusEnum;
 use App\Models\AnnotationAssignment;
 use Illuminate\Support\Collection;
 
-final readonly class GetAnnotatorActiveProjectCountsQuery {
+final readonly class GetCountsOfActiveProjectsPerAnnotatorQuery {
     /**
      * @param  array<int, mixed>  $annotatorIds
      *

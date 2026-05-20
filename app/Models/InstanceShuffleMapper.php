@@ -13,28 +13,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property-read int $id
  * @property int $new_index
- * @property int $old_index
  * @property int $project_id
+ * @property int $old_index
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
- * @property-read DatasetInstance $datasetInstance
  * @property-read Project $project
  */
 #[Fillable([
     'new_index',
-    'old_index',
-    'dataset_instance_id',
     'project_id',
+    'old_index',
 ])]
 class InstanceShuffleMapper extends Model {
     use HasFactory;
-
-    /**
-     * @return BelongsTo<DatasetInstance, $this>
-     */
-    public function datasetInstance(): BelongsTo {
-        return $this->belongsTo(DatasetInstance::class);
-    }
 
     /**
      * @return BelongsTo<Project, $this>

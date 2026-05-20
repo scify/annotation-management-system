@@ -9,20 +9,20 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
-final readonly class GetCoManagersByIdsQuery {
+final readonly class GetCoManagersQuery {
     /**
-     * @param  array<int, mixed>  $ids
+     * @param  array<int, mixed>|null  $ids  Restrict to specific IDs; null returns all active co-managers.
      *
      * @return Collection<int, User>
      */
-    public function get(array $ids): Collection {
+    public function get(?array $ids = null): Collection {
         return User::query()
-            ->whereIn('id', $ids)
             ->where('is_active', true)
             ->whereHas('roles', fn (Builder $q) => $q->whereIn('name', [
                 RolesEnum::ADMIN->value,
                 RolesEnum::ANNOTATION_MANAGER->value,
             ]))
+            ->when($ids !== null, fn ($q) => $q->whereIn('id', $ids))
             ->select(['id', 'username', 'name'])
             ->get();
     }
