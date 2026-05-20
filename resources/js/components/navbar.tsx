@@ -9,7 +9,11 @@ export default function Navbar() {
     const { auth } = usePage<PageProps>().props;
     const { t } = useTranslations();
     const { post } = useForm();
-    const canAccessDashboard = auth.user?.can['create_users'];
+    const canAccessDashboard =
+        auth.user?.can?.create_admins ||
+        auth.user?.can?.create_annotators ||
+        auth.user?.can?.manage_admins ||
+        auth.user?.can?.manage_annotators;
 
     const handleLogout = (e: React.FormEvent) => {
         e.preventDefault();

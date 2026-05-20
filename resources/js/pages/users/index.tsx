@@ -58,7 +58,13 @@ export default function UsersIndex({ users, filters, abilities }: Props) {
         );
     }, 300);
 
-    const hasActions = auth.user.can.update_users || auth.user.can.delete_users;
+    const hasActions =
+        auth.user.can.update_admins ||
+        auth.user.can.update_annotators ||
+        auth.user.can.delete_admins ||
+        auth.user.can.delete_annotators ||
+        auth.user.can.restore_admins ||
+        auth.user.can.restore_annotators;
 
     return (
         <AppLayout

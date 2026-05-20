@@ -2,8 +2,16 @@ import type { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
 import type { MouseEventHandler } from 'react';
 
-type PermissionAction = 'view' | 'create' | 'update' | 'delete' | 'restore';
-type PermissionResource = 'users' /* | 'posts' | 'comments' etc */;
+type PermissionAction = 'view' | 'create' | 'update' | 'delete' | 'restore' | 'connect' | 'manage';
+type PermissionResource =
+    | 'admins'
+    | 'annotators'
+    | 'managers'
+    | 'projects'
+    | 'annotators_to_managers'
+    | 'annotators_to_projects'
+    | 'managers_to_projects'
+    | 'managers_to_tasks';
 type Permission = `${PermissionAction}_${PermissionResource}`;
 
 export interface User {
