@@ -159,7 +159,7 @@ return [
         'selected_count' => ':count επιλεγμένοι',
         'select_all' => 'Επιλογή όλων',
         'email_placeholder' => 'Εισάγετε e-mail',
-        'invite_button' => 'Πρόσκληση Συν-Διαχειριστή μέσω email',
+        'invite_button' => 'Πρόσκληση Συν-Υπεύθυνου μέσω email',
         'table_username' => 'Όνομα χρήστη',
         'table_name' => 'Όνομα',
         'table_role' => 'Ρόλος',
@@ -206,7 +206,7 @@ return [
         'annotation_section' => 'Επισημείωση',
         'visibility_section' => 'Ορατότητα Έργου',
         'visibility_description' => 'Περιορισμός πρόσβασης άλλων διαχειριστών στα δεδομένα του Έργου',
-        'visibility_toggle_label' => 'Επιτρέψτε προβολή μόνο στους Συν-Διαχειριστές',
+        'visibility_toggle_label' => 'Επιτρέψτε προβολή μόνο στους Συν-Υπεύθυνους',
         'min_one_dataset_required' => 'Επιλέξτε ένα σύνολο δεδομένων για να συνεχίσετε.',
     ],
 ];

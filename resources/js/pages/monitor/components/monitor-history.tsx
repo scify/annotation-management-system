@@ -238,7 +238,7 @@ export function MonitorHistory() {
                             setLastSort('name');
                         }}
                     >
-                        <SelectTrigger className="w-[200px] hover:cursor-pointer">
+                        <SelectTrigger className="hover:cursor-pointer">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -262,7 +262,7 @@ export function MonitorHistory() {
                             setLastSort('velocity');
                         }}
                     >
-                        <SelectTrigger className="w-[200px] hover:cursor-pointer">
+                        <SelectTrigger className="hover:cursor-pointer">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>

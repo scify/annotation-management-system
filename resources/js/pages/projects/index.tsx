@@ -18,8 +18,8 @@ import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem, type Project } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { type BreadcrumbItem, type PageProps, type Project, RolesEnum } from '@/types';
+import { Head, router, usePage } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -29,9 +29,9 @@ interface DataFilter {
 }
 
 interface Props {
-    all_projects: Project[];
+    all_projects?: Project[];
     my_projects: Project[];
-    all_data_filter: DataFilter;
+    all_data_filter?: DataFilter;
     my_data_filter: DataFilter;
 }
 
@@ -82,14 +82,16 @@ export default function ProjectsIndex({
     my_data_filter,
 }: Props) {
     const { t, trans } = useTranslations();
+    const { auth } = usePage<PageProps>().props;
+    const isAnnotationManager = auth.user.role === RolesEnum.ANNOTATION_MANAGER;
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState<FilterState>({ tasks: [], datasets: [], states: [] });
     const [sortState, setSortState] = useState<SortState>(DEFAULT_SORT_STATE);
     const [showOnlyMine, setShowOnlyMine] = useState(false);
 
-    const projects = showOnlyMine ? my_projects : all_projects;
-    const dataFilter = showOnlyMine ? my_data_filter : all_data_filter;
+    const projects = !showOnlyMine && all_projects ? all_projects : my_projects;
+    const dataFilter = !showOnlyMine && all_data_filter ? all_data_filter : my_data_filter;
 
     const filterSections = useMemo(
         () => [
@@ -283,11 +285,13 @@ export default function ProjectsIndex({
                         onClear={() => setSortState(DEFAULT_SORT_STATE)}
                     />
                     <div className="flex-1" />
-                    <SectionToggle
-                        checked={showOnlyMine}
-                        onChange={handleToggleMine}
-                        label={t('projects.show_only_mine')}
-                    />
+                    {!isAnnotationManager && (
+                        <SectionToggle
+                            checked={showOnlyMine}
+                            onChange={handleToggleMine}
+                            label={t('projects.show_only_mine')}
+                        />
+                    )}
                 </div>
 
                 {/* Count + search row */}

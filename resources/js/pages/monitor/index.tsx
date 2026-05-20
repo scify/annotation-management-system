@@ -399,7 +399,7 @@ export default function MonitorIndex() {
                                         setLastSort('name');
                                     }}
                                 >
-                                    <SelectTrigger className="w-[200px] hover:cursor-pointer">
+                                    <SelectTrigger className="hover:cursor-pointer">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -423,7 +423,7 @@ export default function MonitorIndex() {
                                         setLastSort('workload');
                                     }}
                                 >
-                                    <SelectTrigger className="w-[200px]">
+                                    <SelectTrigger className="hover:cursor-pointer">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
