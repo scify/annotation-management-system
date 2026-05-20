@@ -79,7 +79,7 @@ export default function UsersIndex({ users, filters, abilities }: Props) {
             <div className="p-6">
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">{t('users.title')}</h1>
-                    {auth.user.can.create_users && (
+                    {(auth.user.can.create_admins || auth.user.can.create_annotators) && (
                         <Link href={route('users.create')} variant="default">
                             <Plus className="mr-2 h-4 w-4" />
                             {t('users.actions.new_big_button')}
