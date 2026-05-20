@@ -59,7 +59,7 @@ The hook runs automatically on every `git commit`. If it finds a potential secre
 
 ## 3. Environment Configuration
 
-Annotation Management System uses different environment configurations based on whether you are running with **DDEV** or **Native**.
+annotrAIn uses different environment configurations based on whether you are running with **DDEV** or **Native**.
 The application automatically loads the appropriate environment variables, based on the `APP_DEVELOPMENT_ENV`
 environment variable.
 

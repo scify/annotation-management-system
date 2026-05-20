@@ -1,6 +1,6 @@
 # REST API
 
-The Annotation Management System exposes a versioned REST API at `/api/v1/`. It supports two client types:
+The annotrAIn exposes a versioned REST API at `/api/v1/`. It supports two client types:
 
 - **Inertia SPA** — authenticated via the existing session cookie, no tokens required.
 - **External integrations** — authenticated via a Bearer token issued to a service account.

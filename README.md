@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# Annotation Management System - Development Setup
+# annotrAIn - Development Setup
 
 [![Tests](https://github.com/scify/annotation-management-system/actions/workflows/tests.yml/badge.svg)](https://github.com/scify/annotation-management-system/actions/workflows/tests.yml)
 [![Linter](https://github.com/scify/annotation-management-system/actions/workflows/lint.yml/badge.svg)](https://github.com/scify/annotation-management-system/actions/workflows/lint.yml)
@@ -8,7 +8,7 @@
 <!-- omit in toc -->
 ## Table of Contents
 
-- [About Annotation Management System](#about-annotation-management-system)
+- [About annotrAIn](#about-annotation-management-system)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Installation - Local Development](#installation---local-development)
@@ -34,9 +34,9 @@
 - [License](#license)
 - [Credits](#credits)
 
-## About Annotation Management System
+## About annotrAIn
 
-**Annotation Management System** is a Laravel-based annotation management system. The application manages annotators (users), their roles, and permissions via an Inertia/React SPA.
+**annotrAIn** is a Laravel-based annotation management system. The application manages annotators (users), their roles, and permissions via an Inertia/React SPA.
 
 It includes a complete setup for both the backend and frontend, with support for both **DDEV** and **Native** (PHP, Composer, etc. running locally) development environments.
 
@@ -77,7 +77,7 @@ It includes a complete setup for both the backend and frontend, with support for
 
 ## Installation - Local Development
 
-In order to start developing with **Annotation Management System**, you will need to read the guide in
+In order to start developing with **annotrAIn**, you will need to read the guide in
 the [LOCAL-DEVELOPMENT.md](docs/LOCAL-DEVELOPMENT.md) file.
 
 ## Development Environment

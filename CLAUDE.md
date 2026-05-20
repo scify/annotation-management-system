@@ -10,7 +10,7 @@ You are working with a team of senior software engineers who are well-versed in 
 
 ## Project Overview
 
-**Annotation Management System** is a Laravel-based annotation management system. The application manages annotators (users), their roles, and permissions via an Inertia/React SPA.
+**annotrAIn** is a Laravel-based annotation management system. The application manages annotators (users), their roles, and permissions via an Inertia/React SPA.
 
 ### Architecture
 

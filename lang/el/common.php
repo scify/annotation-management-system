@@ -3,13 +3,13 @@
 declare(strict_types=1);
 
 return [
-    'app_name' => 'Annotation Management System',
+    'app_name' => 'annotrAIn',
     'cancel' => 'Ακύρωση',
     'navigation_menu_label' => 'Μενού Πλοήγησης',
     'actions' => 'Ενέργειες',
     'log_out' => 'Έξοδος',
     'settings' => 'Ρυθμίσεις',
-    'welcome_title' => 'Καλώς ήρθατε στο Annotation Management System',
+    'welcome_title' => 'Καλώς ήρθατε στο annotrAIn',
     'welcome_subtitle' => 'Ενδυνάμωση της Λήψης Αποφάσεων των Δήμων με Τεχνητή Νοημοσύνη',
     'sidebar' => [
         'title' => 'Backoffice',
