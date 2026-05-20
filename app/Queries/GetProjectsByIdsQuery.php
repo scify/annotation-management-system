@@ -8,20 +8,20 @@ use App\Enums\ProjectStatusEnum;
 use App\Models\Project;
 use Illuminate\Database\Eloquent\Collection;
 
-final readonly class GetInProgressProjectsByIdsQuery {
+final readonly class GetProjectsByIdsQuery {
     /**
      * @param  array<int, mixed>  $projectIds
      *
      * @return Collection<int, Project>
      */
-    public function get(array $projectIds): Collection {
+    public function get(array $projectIds, ?ProjectStatusEnum $status = null): Collection {
         if ($projectIds === []) {
             return new Collection();
         }
 
         return Project::query()
             ->whereIn('id', $projectIds)
-            ->where('status', ProjectStatusEnum::IN_PROGRESS)
+            ->when($status instanceof ProjectStatusEnum, fn ($q) => $q->where('status', $status))
             ->with([
                 'owner:id,username',
                 'annotationTask:id,title',

@@ -55,7 +55,7 @@ class AnnotationTask extends Model {
     public function tags(): BelongsToMany {
         return $this->belongsToMany(
             TaskTag::class,
-            'annotation_task_task_tag',
+            'annotation_task_tag',
             'annotation_task_id',
             'task_tag_id',
         );

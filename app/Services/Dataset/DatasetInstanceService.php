@@ -12,7 +12,7 @@ class DatasetInstanceService {
     public function getDatasetInstance(Project $project, int $index): ?DatasetInstance {
         $final_index = $index;
         if ($project->is_instance_shuffled) {
-            $mapper = InstanceShuffleMapper::with('datasetInstance')
+            $mapper = InstanceShuffleMapper::query()
                 ->where('project_id', $project->id)
                 ->where('new_index', $index)
                 ->firstOrFail();

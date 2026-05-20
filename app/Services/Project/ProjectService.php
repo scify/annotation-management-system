@@ -14,15 +14,12 @@ use App\Models\Project;
 use App\Models\ProjectManager;
 use App\Models\TaskTag;
 use App\Models\User;
-use App\Queries\GetActiveCoManagersQuery;
-use App\Queries\GetAllProjectsQuery;
 use App\Queries\GetAnnotationTasksQuery;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
-use App\Queries\GetCoManagersByIdsQuery;
-use App\Queries\GetInProgressProjectsQuery;
-use App\Queries\GetProjectIdsByManagerQuery;
-use App\Queries\GetUserAllProjectsQuery;
-use App\Queries\GetUserInProgressProjectsQuery;
+use App\Queries\GetCoManagersQuery;
+use App\Queries\GetProjectIdsManagedByUserQuery;
+use App\Queries\GetProjectsManagedByUserQuery;
+use App\Queries\GetProjectsQuery;
 use App\Services\Annotator\AnnotatorService;
 use App\Services\Dataset\DatasetService;
 use Illuminate\Database\Eloquent\Collection;
@@ -34,15 +31,12 @@ readonly class ProjectService {
     public function __construct(
         private AnnotatorService $annotatorService,
         private DatasetService $datasetService,
-        private GetActiveCoManagersQuery $activeCoManagersQuery,
-        private GetAllProjectsQuery $allProjectsQuery,
+        private GetCoManagersQuery $coManagersQuery,
         private GetAnnotationTasksQuery $getAnnotationTasksQuery,
         private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
-        private GetCoManagersByIdsQuery $coManagersByIdsQuery,
-        private GetInProgressProjectsQuery $inProgressProjectsQuery,
-        private GetProjectIdsByManagerQuery $projectIdsByManagerQuery,
-        private GetUserAllProjectsQuery $userAllProjectsQuery,
-        private GetUserInProgressProjectsQuery $userInProgressProjectsQuery,
+        private GetProjectIdsManagedByUserQuery $projectIdsByManagerQuery,
+        private GetProjectsQuery $projectsQuery,
+        private GetProjectsManagedByUserQuery $userProjectsQuery,
     ) {}
 
     /**
@@ -191,7 +185,7 @@ readonly class ProjectService {
      * @return array<int, array<string, mixed>>
      */
     public function getAllInProgressProjects(): array {
-        $data = $this->inProgressProjectsQuery->get()
+        $data = $this->projectsQuery->get(ProjectStatusEnum::IN_PROGRESS)
             ->map(fn (Project $project): array => array_merge(
                 $project->toArray(),
                 ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
@@ -214,7 +208,7 @@ readonly class ProjectService {
      */
     public function getMyInProgressProjects(int $userId, ?array $allProjects = null): array {
         if ($allProjects === null) {
-            $data = $this->userInProgressProjectsQuery->get($userId)
+            $data = $this->userProjectsQuery->get($userId, ProjectStatusEnum::IN_PROGRESS)
                 ->map(fn (Project $project): array => array_merge(
                     $project->toArray(),
                     ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
@@ -239,7 +233,7 @@ readonly class ProjectService {
      * @return array<int, array<string, mixed>>
      */
     private function getAllProjects(): array {
-        $data = $this->allProjectsQuery->get()
+        $data = $this->projectsQuery->get()
             ->map(fn (Project $project): array => array_merge(
                 $project->toArray(),
                 ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
@@ -262,7 +256,7 @@ readonly class ProjectService {
      */
     private function getMyProjects(int $userId, ?array $allProjects = null): array {
         if ($allProjects === null) {
-            $data = $this->userAllProjectsQuery->get($userId)
+            $data = $this->userProjectsQuery->get($userId)
                 ->map(fn (Project $project): array => array_merge(
                     $project->toArray(),
                     ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
@@ -293,7 +287,7 @@ readonly class ProjectService {
             return [];
         }
 
-        $myProjectIds = $this->userInProgressProjectsQuery->get($user->id)->pluck('id')->all();
+        $myProjectIds = $this->userProjectsQuery->get($user->id, ProjectStatusEnum::IN_PROGRESS)->pluck('id')->all();
 
         if ($roleName === RolesEnum::ADMIN->value) {
             $allAnnotators = $this->annotatorService->getAllAnnotators();
@@ -350,7 +344,7 @@ readonly class ProjectService {
 
         if ($roleName === RolesEnum::ADMIN->value) {
             return [
-                'co_managers' => $this->formatCoManagers($this->activeCoManagersQuery->get()),
+                'co_managers' => $this->formatCoManagers($this->coManagersQuery->get()),
             ];
         }
 
@@ -368,7 +362,7 @@ readonly class ProjectService {
         }
 
         return [
-            'co_managers' => $this->formatCoManagers($this->coManagersByIdsQuery->get($collaboratorIds)),
+            'co_managers' => $this->formatCoManagers($this->coManagersQuery->get($collaboratorIds)),
         ];
     }
 

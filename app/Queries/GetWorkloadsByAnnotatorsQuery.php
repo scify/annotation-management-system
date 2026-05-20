@@ -9,7 +9,7 @@ use App\Models\Annotation;
 use App\Models\AnnotationAssignment;
 use App\Models\SubProject;
 
-final readonly class GetUserWorkloadsQuery {
+final readonly class GetWorkloadsByAnnotatorsQuery {
     /**
      * @param  array<int, mixed>  $userIds
      *

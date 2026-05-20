@@ -6,7 +6,7 @@ namespace App\Queries;
 
 use App\Models\ProjectManager;
 
-final readonly class GetProjectIdsByManagerQuery {
+final readonly class GetProjectIdsManagedByUserQuery {
     /**
      * @return array<int, mixed>
      */
