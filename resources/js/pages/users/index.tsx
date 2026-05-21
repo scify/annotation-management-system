@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { User } from '@/types/index';
-import { Head, usePage, useForm, router } from '@inertiajs/react';
+import { Head, useForm, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/components/ui/link';
 import {
@@ -12,6 +12,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Plus, Pencil, Trash, MoreHorizontal, Eye, ArrowUpCircle } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 import { useTranslations } from '@/hooks/use-translations';
 import {
     DropdownMenu,
@@ -26,7 +27,6 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { useDebouncedCallback } from 'use-debounce';
 import { formatDate } from '@/utils/format';
-import { PageProps } from '@/types';
 
 interface Props {
     users: User[];
@@ -38,7 +38,7 @@ interface Props {
 
 export default function UsersIndex({ users, filters, abilities }: Props) {
     const { t } = useTranslations();
-    const { auth } = usePage<PageProps>().props;
+    const { can } = useAuth();
     const [userToDelete, setUserToDelete] = useState<User | null>(null);
     const [userToRestore, setUserToRestore] = useState<User | null>(null);
 
@@ -58,13 +58,7 @@ export default function UsersIndex({ users, filters, abilities }: Props) {
         );
     }, 300);
 
-    const hasActions =
-        auth.user.can.update_admins ||
-        auth.user.can.update_annotators ||
-        auth.user.can.delete_admins ||
-        auth.user.can.delete_annotators ||
-        auth.user.can.restore_admins ||
-        auth.user.can.restore_annotators;
+    const hasActions = can('manage_admins') || can('manage_annotators');
 
     return (
         <AppLayout
@@ -79,7 +73,7 @@ export default function UsersIndex({ users, filters, abilities }: Props) {
             <div className="p-6">
                 <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">{t('users.title')}</h1>
-                    {(auth.user.can.create_admins || auth.user.can.create_annotators) && (
+                    {(can('create_admins') || can('create_annotators')) && (
                         <Link href={route('users.create')} variant="default">
                             <Plus className="mr-2 h-4 w-4" />
                             {t('users.actions.new_big_button')}

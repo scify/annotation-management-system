@@ -154,10 +154,11 @@ export function SelectAnnotatorsStep({
                     />
                     <Input
                         type="search"
+                        name="annotators_search"
                         placeholder={t(`${ns}.search_placeholder`)}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-[220px] pr-9 pl-4"
+                        className="pr-9 pl-4"
                         aria-label={t(`${ns}.search_placeholder`)}
                     />
                 </div>

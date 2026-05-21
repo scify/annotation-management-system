@@ -286,6 +286,7 @@ export function MonitorHistory() {
                     />
                     <Input
                         type="search"
+                        name="search"
                         placeholder={t('monitor.search_placeholder')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}

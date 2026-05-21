@@ -2,18 +2,24 @@ import type { LucideIcon } from 'lucide-react';
 import type { Config } from 'ziggy-js';
 import type { MouseEventHandler } from 'react';
 
-type PermissionAction = 'view' | 'create' | 'update' | 'delete' | 'restore' | 'connect' | 'manage';
-type PermissionResource =
-    | 'admins'
-    | 'annotators'
-    | 'managers'
-    | 'projects'
-    | 'annotators_to_managers'
-    | 'annotators_to_projects'
-    | 'managers_to_projects'
-    | 'managers_to_tasks';
-type Permission = `${PermissionAction}_${PermissionResource}`;
+export type ServerPermission =
+    | 'connect_annotators_to_managers'
+    | 'connect_annotators_to_projects'
+    | 'connect_managers_to_projects'
+    | 'connect_managers_to_tasks'
+    | 'create_admins'
+    | 'create_annotators'
+    | 'create_managers'
+    | 'create_projects'
+    | 'manage_admins'
+    | 'manage_annotators'
+    | 'manage_managers'
+    | 'manage_projects';
 
+/**
+ * User represents a data record: a user from the database as returned by the API.
+ * It has no "can" attribute, because arbitrary user records don't carry the current session's permission context.
+ */
 export interface User {
     id: number;
     name: string;
@@ -25,8 +31,14 @@ export interface User {
     avatar: string | null;
 }
 
+/**
+ * AuthUser represents the authenticated principal: the currently logged-in user,
+ * which the server enriches with the can permissions map in HandleInertiaRequests.
+ * That can property only makes sense for the session user — it answers "what can I do", not
+  "what can this person do".
+ */
 export type AuthUser = User & {
-    can: Record<Permission, boolean>;
+    can: Record<ServerPermission, boolean>;
 };
 
 export interface Auth {

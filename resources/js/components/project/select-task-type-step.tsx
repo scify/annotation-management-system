@@ -169,6 +169,7 @@ export function SelectTaskTypeStep({
                     />
                     <Input
                         type="search"
+                        name="search"
                         placeholder={t('projects.select_task_type.search_placeholder')}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}

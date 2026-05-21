@@ -200,11 +200,12 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                         />
                         <Input
                             type="search"
+                            name="search_input"
                             placeholder={t('sub-projects.annotations.search_placeholder')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             aria-label={t('sub-projects.annotations.search_placeholder')}
-                            className="w-[294px] pr-9 pl-4"
+                            className="pr-9 pl-4"
                         />
                     </div>
                 </div>

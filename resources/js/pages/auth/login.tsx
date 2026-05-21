@@ -75,7 +75,7 @@ export default function Login({
         return () => {
             node.removeEventListener('statechange', handleAltchaStateChange as EventListener);
         };
-    }, [handleAltchaStateChange]);
+    }, [handleAltchaStateChange, mounted]);
 
     useEffect(() => {
         if (token && redirectTo) {

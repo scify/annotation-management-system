@@ -11,11 +11,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useAuth } from '@/hooks/use-auth';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { RolesEnum } from '@/types';
-import type { Annotator, BreadcrumbItem, PageProps, PlatformStats, Project } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import type { Annotator, BreadcrumbItem, PlatformStats, Project } from '@/types';
+import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
@@ -77,8 +77,8 @@ export default function Dashboard({
     all_annotators,
     platform_stats,
 }: Props) {
-    const { auth } = usePage<PageProps>().props;
-    const isAdmin = auth.user.role === RolesEnum.ADMIN;
+    const { isAdmin: checkIsAdmin } = useAuth();
+    const isAdmin = checkIsAdmin();
     const [showOnlyMineProjects, setShowOnlyMineProjects] = useState(false);
     const [showOnlyMineAnnotators, setShowOnlyMineAnnotators] = useState(false);
     const [messageAnnotator, setMessageAnnotator] = useState<Annotator | null>(null);

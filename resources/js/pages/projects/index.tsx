@@ -15,11 +15,12 @@ import {
 } from '@/components/project/project-sort-panel';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/use-auth';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
-import { type BreadcrumbItem, type PageProps, type Project, RolesEnum } from '@/types';
-import { Head, router, usePage } from '@inertiajs/react';
+import { type BreadcrumbItem, type Project } from '@/types';
+import { Head, router } from '@inertiajs/react';
 import { Plus, Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
@@ -82,8 +83,8 @@ export default function ProjectsIndex({
     my_data_filter,
 }: Props) {
     const { t, trans } = useTranslations();
-    const { auth } = usePage<PageProps>().props;
-    const isAnnotationManager = auth.user.role === RolesEnum.ANNOTATION_MANAGER;
+    const { isAnnotationManager: checkIsAnnotationManager } = useAuth();
+    const isAnnotationManager = checkIsAnnotationManager();
 
     const [searchQuery, setSearchQuery] = useState('');
     const [filters, setFilters] = useState<FilterState>({ tasks: [], datasets: [], states: [] });
@@ -306,6 +307,7 @@ export default function ProjectsIndex({
                         />
                         <Input
                             type="search"
+                            name="search"
                             placeholder={t('projects.search_placeholder')}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
