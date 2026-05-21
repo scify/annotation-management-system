@@ -69,6 +69,13 @@ class ProjectController extends Controller {
     public function show(int $id): Response {
         $this->authorize('viewAny', Project::class);
 
+        $data_for_show_project = $this->projectService->getDataForShowProject($id);
+
+        $json = json_encode($data_for_show_project, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (is_string($json)) {
+            Storage::disk('local')->put('project-show-data.json', $json);
+        }
+
         return Inertia::render('projects/show');
     }
 }

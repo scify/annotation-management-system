@@ -18,6 +18,7 @@ use App\Queries\GetAnnotationTasksQuery;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
 use App\Queries\GetCoManagersQuery;
 use App\Queries\GetProjectIdsManagedByUserQuery;
+use App\Queries\GetProjectsByIdsQuery;
 use App\Queries\GetProjectsManagedByUserQuery;
 use App\Queries\GetProjectsQuery;
 use App\Services\Annotator\AnnotatorService;
@@ -31,10 +32,12 @@ readonly class ProjectService {
     public function __construct(
         private AnnotatorService $annotatorService,
         private DatasetService $datasetService,
+        private SubProjectService $subProjectService,
         private GetCoManagersQuery $coManagersQuery,
         private GetAnnotationTasksQuery $getAnnotationTasksQuery,
         private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
         private GetProjectIdsManagedByUserQuery $projectIdsByManagerQuery,
+        private GetProjectsByIdsQuery $projectsByIdsQuery,
         private GetProjectsQuery $projectsQuery,
         private GetProjectsManagedByUserQuery $userProjectsQuery,
     ) {}
@@ -122,21 +125,13 @@ readonly class ProjectService {
     }
 
     /**
-     * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
-     *
      * @return array<string, mixed>
      */
-    public function getDataForProjectsPage(User $user, bool $withFilters = true, array $progressBySubProject = []): array {
+    public function getDataForProjectsPage(User $user, bool $withFilters = true): array {
         $roleName = $user->getRoleNames()->first();
 
-        // TODO Aris: this if should not happen
-        // because this route should be "gated" and no annotators should be able to access it.
-        if ($roleName === RolesEnum::ANNOTATOR->value) {
-            return [];
-        }
-
         if ($roleName === RolesEnum::ADMIN->value) {
-            $allProjects = $this->getAllProjects($progressBySubProject);
+            $allProjects = $this->getAllProjects();
             $myProjects = $this->getMyProjects($user->id, $allProjects);
 
             $data = [
@@ -158,7 +153,7 @@ readonly class ProjectService {
             return $data;
         }
 
-        $myProjects = $this->getMyProjects($user->id, null, $progressBySubProject);
+        $myProjects = $this->getMyProjects($user->id);
 
         $data = ['my_projects' => $myProjects];
 
@@ -184,11 +179,34 @@ readonly class ProjectService {
     }
 
     /**
-     * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
-     *
+     * @return array<string, mixed>
+     */
+    public function getDataForShowProject(int $id): array {
+        $project = $this->projectsByIdsQuery->get([$id])->firstOrFail();
+
+        $subProjectIds = $project->subProjects->pluck('id')->all();
+        $progressBySubProject = $this->subProjectService->getProgress($subProjectIds);
+
+        $subProjectCount = count($subProjectIds);
+        $progress = $subProjectCount > 0
+            ? (float) (array_sum(array_column($progressBySubProject, 'progress')) / $subProjectCount)
+            : 0.0;
+
+        return [
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'annotation_task_title' => $project->annotationTask->title,
+                'dataset_name' => $project->dataset->name,
+                'project_progress' => $progress,
+            ],
+        ];
+    }
+
+    /**
      * @return array<int, array<string, mixed>>
      */
-    public function getAllInProgressProjects(array $progressBySubProject = []): array {
+    public function getAllInProgressProjects(): array {
         $data = $this->projectsQuery->get(ProjectStatusEnum::IN_PROGRESS)
             ->map(fn (Project $project): array => array_merge(
                 $project->toArray(),
@@ -197,6 +215,7 @@ readonly class ProjectService {
             ->values()
             ->all();
 
+        $progressBySubProject = $this->subProjectService->getProgress($this->extractSubProjectIds($data));
         $this->augmentProjectData($data, $progressBySubProject);
 
         return $data;
@@ -207,11 +226,10 @@ readonly class ProjectService {
      * instead of issuing a second query.
      *
      * @param  array<int, array<string, mixed>>|null  $allProjects
-     * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
      *
      * @return array<int, array<string, mixed>>
      */
-    public function getMyInProgressProjects(int $userId, ?array $allProjects = null, array $progressBySubProject = []): array {
+    public function getMyInProgressProjects(int $userId, ?array $allProjects = null): array {
         if ($allProjects === null) {
             $data = $this->userProjectsQuery->get($userId, ProjectStatusEnum::IN_PROGRESS)
                 ->map(fn (Project $project): array => array_merge(
@@ -221,6 +239,7 @@ readonly class ProjectService {
                 ->values()
                 ->all();
 
+            $progressBySubProject = $this->subProjectService->getProgress($this->extractSubProjectIds($data));
             $this->augmentProjectData($data, $progressBySubProject);
 
             return $data;
@@ -235,11 +254,9 @@ readonly class ProjectService {
     }
 
     /**
-     * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
-     *
      * @return array<int, array<string, mixed>>
      */
-    private function getAllProjects(array $progressBySubProject = []): array {
+    private function getAllProjects(): array {
         $data = $this->projectsQuery->get()
             ->map(fn (Project $project): array => array_merge(
                 $project->toArray(),
@@ -248,6 +265,7 @@ readonly class ProjectService {
             ->values()
             ->all();
 
+        $progressBySubProject = $this->subProjectService->getProgress($this->extractSubProjectIds($data));
         $this->augmentProjectData($data, $progressBySubProject);
 
         return $data;
@@ -258,11 +276,10 @@ readonly class ProjectService {
      * instead of issuing a second query.
      *
      * @param  array<int, array<string, mixed>>|null  $allProjects
-     * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
      *
      * @return array<int, array<string, mixed>>
      */
-    private function getMyProjects(int $userId, ?array $allProjects = null, array $progressBySubProject = []): array {
+    private function getMyProjects(int $userId, ?array $allProjects = null): array {
         if ($allProjects === null) {
             $data = $this->userProjectsQuery->get($userId)
                 ->map(fn (Project $project): array => array_merge(
@@ -272,6 +289,7 @@ readonly class ProjectService {
                 ->values()
                 ->all();
 
+            $progressBySubProject = $this->subProjectService->getProgress($this->extractSubProjectIds($data));
             $this->augmentProjectData($data, $progressBySubProject);
 
             return $data;
@@ -486,6 +504,20 @@ readonly class ProjectService {
         }
 
         return $datasets;
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $data
+     *
+     * @return array<int, mixed>
+     */
+    private function extractSubProjectIds(array $data): array {
+        $ids = [];
+        foreach ($data as $project) {
+            array_push($ids, ...array_column($project['sub_projects'] ?? [], 'id'));
+        }
+
+        return array_unique($ids);
     }
 
     /**

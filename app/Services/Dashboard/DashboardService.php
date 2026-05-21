@@ -38,7 +38,7 @@ readonly class DashboardService {
             $activeSubProjectIds = $this->subProjectIdsQuery->get($projectIds, ProjectStatusEnum::IN_PROGRESS);
             $progressBySubProject = $this->subProjectService->getProgress($activeSubProjectIds->all());
 
-            $all_projects = $this->projectService->getAllInProgressProjects($progressBySubProject);
+            $all_projects = $this->projectService->getAllInProgressProjects();
             $all_annotators = $this->getAllAnnotators($progressBySubProject, $activeSubProjectIds);
             $my_projects = $this->projectService->getMyInProgressProjects($user->id, $all_projects);
 
@@ -55,7 +55,7 @@ readonly class DashboardService {
         $activeSubProjectIds = $this->subProjectIdsQuery->get($projectIds, ProjectStatusEnum::IN_PROGRESS);
         $progressBySubProject = $this->subProjectService->getProgress($activeSubProjectIds->all());
 
-        $my_projects = $this->projectService->getMyInProgressProjects($user->id, null, $progressBySubProject);
+        $my_projects = $this->projectService->getMyInProgressProjects($user->id);
 
         return [
             'my_projects' => $my_projects,
