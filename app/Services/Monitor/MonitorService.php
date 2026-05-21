@@ -218,6 +218,8 @@ readonly class MonitorService {
             ->values()
             ->all();
 
+        $progressBySubProject = $this->subProjectService->getProgress($subProjects->pluck('id')->all());
+
         return [
             'id' => $project->id,
             'name' => $project->name,
@@ -240,7 +242,7 @@ readonly class MonitorService {
                     'name' => $sp->name,
                     'status' => $sp->status,
                     'workload' => $subprojectWorkloads[$sp->id] ?? 0.5,
-                    'progress' => $this->subProjectService->getProgress($sp)['progress'],
+                    'progress' => $progressBySubProject[$sp->id]['progress'] ?? 0.0,
                 ])
                 ->values()
                 ->all(),

@@ -38,6 +38,7 @@ final readonly class GetWorkloadsByAnnotatorsQuery {
 
         $annotationCountsByAssignment = Annotation::query()
             ->whereIn('annotation_assignment_id', $annotationAssignments->pluck('id'))
+            ->where('pending', false)
             ->selectRaw('annotation_assignment_id, COUNT(*) as count')
             ->groupBy('annotation_assignment_id')
             ->pluck('count', 'annotation_assignment_id');
@@ -59,7 +60,7 @@ final readonly class GetWorkloadsByAnnotatorsQuery {
                 }
 
                 $weight = $subProject->project->annotationTask->weight;
-                $effort = ($subProject->last_instance_index - $subProject->first_instance_index) * $weight;
+                $effort = ($subProject->last_instance_index - $subProject->first_instance_index + 1) * $weight;
                 $workDone = (int) $annotationCountsByAssignment->get($assignment->getKey(), 0) * $weight;
 
                 $sumEffort += $effort;

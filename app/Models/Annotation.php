@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $annotation_assignment_id
  * @property int $dataset_instance_id
  * @property int $index
- * @property array $annotations
+ * @property array<string, mixed> $annotations
  * @property bool $pending
  */
 #[Fillable([

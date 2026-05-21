@@ -20,7 +20,7 @@ final readonly class GetProjectsManagedByUserQuery {
             ->select(['id', 'name', 'owner_user_id', 'annotation_task_id', 'dataset_id', 'status', 'started_at', 'completed_at', 'scheduled_at', 'deadline_at'])
             ->withCount(['annotators as annotators_count'])
             ->with(['annotationTask:id,title', 'dataset:id,name', 'owner:id,username', 'projectManagers.user:id,username'])
-            ->withCount(['subProjects as subprojects_count'])
+            ->with(['subProjects:id,project_id'])
             ->get();
     }
 }

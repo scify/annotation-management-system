@@ -6,10 +6,12 @@ namespace Database\Seeders;
 
 use App\Enums\ProjectStatusEnum;
 use App\Enums\SubProjectPriorityEnum;
+use App\Models\Annotation;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfManager;
 use App\Models\Dataset;
+use App\Models\DatasetInstance;
 use App\Models\InstanceShuffleMapper;
 use App\Models\Project;
 use App\Models\ProjectManager;
@@ -269,12 +271,36 @@ class DummyProjectSeeder extends Seeder {
                     array_merge($spData, ['project_id' => $project->getKey()]),
                 );
 
+                $datasetInstances = DatasetInstance::query()
+                    ->where('dataset_id', $entry['project']['dataset_id'])
+                    ->whereBetween('index', [$spData['first_instance_index'], $spData['last_instance_index']])
+                    ->orderBy('index')
+                    ->select('id')
+                    ->get();
+
+                $now = now();
+
                 foreach ($annotatorEmails as $email) {
                     $annotator = User::query()->where('email', $email)->firstOrFail();
-                    AnnotationAssignment::query()->firstOrCreate(
+                    $assignment = AnnotationAssignment::query()->firstOrCreate(
                         ['user_id' => $annotator->getKey(), 'sub_project_id' => $subProject->getKey()],
                     );
                     $projectAnnotatorIds[] = $annotator->getKey();
+
+                    $rows = [];
+                    foreach ($datasetInstances as $localIndex => $instance) {
+                        $rows[] = [
+                            'annotation_assignment_id' => $assignment->getKey(),
+                            'dataset_instance_id' => $instance->getKey(),
+                            'index' => $localIndex,
+                            'annotations' => '{}',
+                            'pending' => (bool) random_int(0, 1),
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ];
+                    }
+
+                    Annotation::query()->insertOrIgnore($rows);
                 }
             }
 
