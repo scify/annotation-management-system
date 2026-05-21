@@ -1,3 +1,4 @@
+import { useAuth } from '@/hooks/use-auth';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -294,6 +295,7 @@ const GRID_COLS = 'grid-cols-[52px_194px_150px_1fr_1fr_156px_195px_56px]';
 
 export default function MonitorIndex() {
     const { t } = useTranslations();
+    const isAnnotationManager = useAuth().isAnnotationManager();
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('navbar.dashboard'), href: '/dashboard' },
@@ -344,49 +346,51 @@ export default function MonitorIndex() {
                 </hgroup>
 
                 {/* Tabs + Toggle row */}
-                <div className="mb-6 flex items-center justify-between">
-                    <div
-                        role="tablist"
-                        aria-label={t('monitor.page_title')}
-                        className="flex h-[50px] w-[390px] items-center rounded-lg border border-slate-200 bg-white px-1.5 py-1"
-                    >
-                        <button
-                            role="tab"
-                            aria-selected={activeTab === 'active_work'}
-                            aria-controls="monitor-active-work"
-                            onClick={() => setActiveTab('active_work')}
-                            className={cn(
-                                'flex h-10 flex-1 items-center justify-center border-r border-slate-200 px-3 text-sm transition-colors hover:cursor-pointer',
-                                activeTab === 'active_work'
-                                    ? 'bg-white font-semibold text-slate-800'
-                                    : 'bg-slate-100 font-medium text-slate-500'
-                            )}
+                {!isAnnotationManager && (
+                    <div className="mb-6 flex items-center justify-between">
+                        <div
+                            role="tablist"
+                            aria-label={t('monitor.page_title')}
+                            className="flex h-[50px] w-[390px] items-center rounded-lg border border-slate-200 bg-white px-1.5 py-1"
                         >
-                            {t('monitor.tab_active_work')}
-                        </button>
-                        <button
-                            role="tab"
-                            aria-selected={activeTab === 'history'}
-                            aria-controls="monitor-history"
-                            onClick={() => setActiveTab('history')}
-                            className={cn(
-                                'flex h-10 flex-1 items-center justify-center px-3 text-sm transition-colors hover:cursor-pointer',
-                                activeTab === 'history'
-                                    ? 'bg-white font-semibold text-slate-800'
-                                    : 'bg-slate-100 font-medium text-slate-500'
-                            )}
-                        >
-                            {t('monitor.tab_history')}
-                        </button>
+                            <button
+                                role="tab"
+                                aria-selected={activeTab === 'active_work'}
+                                aria-controls="monitor-active-work"
+                                onClick={() => setActiveTab('active_work')}
+                                className={cn(
+                                    'flex h-10 flex-1 items-center justify-center border-r border-slate-200 px-3 text-sm transition-colors hover:cursor-pointer',
+                                    activeTab === 'active_work'
+                                        ? 'bg-white font-semibold text-slate-800'
+                                        : 'bg-slate-100 font-medium text-slate-500'
+                                )}
+                            >
+                                {t('monitor.tab_active_work')}
+                            </button>
+                            <button
+                                role="tab"
+                                aria-selected={activeTab === 'history'}
+                                aria-controls="monitor-history"
+                                onClick={() => setActiveTab('history')}
+                                className={cn(
+                                    'flex h-10 flex-1 items-center justify-center px-3 text-sm transition-colors hover:cursor-pointer',
+                                    activeTab === 'history'
+                                        ? 'bg-white font-semibold text-slate-800'
+                                        : 'bg-slate-100 font-medium text-slate-500'
+                                )}
+                            >
+                                {t('monitor.tab_history')}
+                            </button>
+                        </div>
+                        <SectionToggle
+                            checked={showOnlyMine}
+                            onChange={setShowOnlyMine}
+                            label={t('monitor.show_only_mine')}
+                        />
                     </div>
-                    <SectionToggle
-                        checked={showOnlyMine}
-                        onChange={setShowOnlyMine}
-                        label={t('monitor.show_only_mine')}
-                    />
-                </div>
+                )}
 
-                {activeTab === 'active_work' ? (
+                {activeTab === 'active_work' || isAnnotationManager ? (
                     <div id="monitor-active-work" role="tabpanel">
                         {/* Filter bar */}
                         <div className="mb-4 flex items-center justify-between gap-4">

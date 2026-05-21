@@ -1,203 +1,53 @@
 import AppLayout from '@/layouts/app-layout';
-import { User } from '@/types/index';
-import { Head, useForm, router } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Link } from '@/components/ui/link';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
-import { Plus, Pencil, Trash, MoreHorizontal, Eye, ArrowUpCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslations } from '@/hooks/use-translations';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+import { type User, RolesEnum } from '@/types';
+import { Head } from '@inertiajs/react';
 import { useState } from 'react';
-import { DeleteUserModal } from './components/delete-user-modal';
-import { RestoreUserModal } from './components/restore-user-modal';
-import { cn } from '@/lib/utils';
-import { Input } from '@/components/ui/input';
-import { useDebouncedCallback } from 'use-debounce';
-import { formatDate } from '@/utils/format';
+import { AdminsTab } from './components/admins-tab';
+import { AnnotatorsTab } from './components/annotators-tab';
+import { ManagersTab } from './components/managers-tab';
+import { UsersTabs, type UserTab } from './components/users-tabs';
 
 interface Props {
     users: User[];
     filters: {
         search: string | null;
     };
-    abilities: Record<number, { update: boolean; delete: boolean; restore: boolean }>;
 }
 
-export default function UsersIndex({ users, filters, abilities }: Props) {
+export default function UsersIndex({ users }: Props) {
     const { t } = useTranslations();
-    const { can } = useAuth();
-    const [userToDelete, setUserToDelete] = useState<User | null>(null);
-    const [userToRestore, setUserToRestore] = useState<User | null>(null);
+    const { isAnnotationManager } = useAuth();
+    const [activeTab, setActiveTab] = useState<UserTab>('managers');
 
-    const { data, setData, get } = useForm<{ search: string }>({
-        search: filters.search ?? '',
-    });
-
-    const debouncedSearch = useDebouncedCallback<(value: string) => void>((value: string) => {
-        void get(
-            route('users.index', {
-                search: value || undefined,
-            } as const),
-            {
-                preserveState: true,
-                preserveScroll: true,
-            }
-        );
-    }, 300);
-
-    const hasActions = can('manage_admins') || can('manage_annotators');
+    const counts = {
+        admins: users.filter((u) => u.role === RolesEnum.ADMIN).length,
+        managers: users.filter((u) => u.role === RolesEnum.ANNOTATION_MANAGER).length,
+        annotators: users.filter((u) => u.role === RolesEnum.ANNOTATOR).length,
+    };
 
     return (
         <AppLayout
             breadcrumbs={[
-                {
-                    title: t('users.title'),
-                    href: route('users.index'),
-                },
+                { title: t('users.title'), href: route('users.index') },
+                { title: t(`users.tabs.${activeTab}`), href: '#' },
             ]}
         >
             <Head title={t('users.index_page_title')} />
-            <div className="p-6">
-                <div className="mb-6 flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold">{t('users.title')}</h1>
-                    {(can('create_admins') || can('create_annotators')) && (
-                        <Link href={route('users.create')} variant="default">
-                            <Plus className="mr-2 h-4 w-4" />
-                            {t('users.actions.new_big_button')}
-                        </Link>
-                    )}
+            <div className="flex flex-col gap-6 p-6">
+                <h1 className="text-3xl font-light text-slate-800">{t('users.title')}</h1>
+                <UsersTabs activeTab={activeTab} counts={counts} onChange={setActiveTab} />
+                <div
+                    role="tabpanel"
+                    id={`tabpanel-${activeTab}`}
+                    aria-labelledby={`tab-${activeTab}`}
+                >
+                    {activeTab === 'managers' && <ManagersTab />}
+                    {activeTab === 'admins' && !isAnnotationManager() && <AdminsTab />}
+                    {activeTab === 'annotators' && <AnnotatorsTab />}
                 </div>
-
-                <div className="mb-4">
-                    <Input
-                        type="search"
-                        placeholder={t('users.placeholders.search')}
-                        value={data.search}
-                        onChange={(e) => {
-                            setData('search', e.target.value);
-                            debouncedSearch(e.target.value);
-                        }}
-                        className="max-w-sm"
-                    />
-                </div>
-
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>{t('users.labels.name')}</TableHead>
-                            <TableHead>{t('users.labels.email')}</TableHead>
-                            <TableHead>{t('users.labels.role')}</TableHead>
-                            <TableHead>{t('users.labels.created_at')}</TableHead>
-                            <TableHead>{t('users.labels.status')}</TableHead>
-                            {hasActions && (
-                                <TableHead className="w-[100px]">
-                                    {t('users.labels.actions')}
-                                </TableHead>
-                            )}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {users.map((user) => (
-                            <TableRow key={user.id}>
-                                <TableCell>{user.name}</TableCell>
-                                <TableCell>{user.email}</TableCell>
-                                <TableCell>{user.role ? t(`roles.${user.role}`) : '—'}</TableCell>
-                                <TableCell>{formatDate(user.created_at)}</TableCell>
-                                <TableCell>
-                                    <span
-                                        className={cn(
-                                            'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium',
-                                            user.deleted_at
-                                                ? 'bg-red-50 text-red-700'
-                                                : 'bg-green-50 text-green-700'
-                                        )}
-                                    >
-                                        {user.deleted_at
-                                            ? t('users.status.inactive')
-                                            : t('users.status.active')}
-                                    </span>
-                                </TableCell>
-                                {hasActions && (
-                                    <TableCell>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button variant="ghost" size="icon">
-                                                    <MoreHorizontal className="h-4 w-4" />
-                                                    <span className="sr-only">
-                                                        {t('common.actions')}
-                                                    </span>
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end">
-                                                <DropdownMenuItem
-                                                    onAction={() =>
-                                                        router.visit(route('users.show', user.id))
-                                                    }
-                                                >
-                                                    <Eye className="mr-2 h-4 w-4" />
-                                                    {t('users.actions.show')}
-                                                </DropdownMenuItem>
-                                                {abilities[user.id]?.update && (
-                                                    <DropdownMenuItem
-                                                        onAction={() =>
-                                                            router.visit(
-                                                                route('users.edit', user.id)
-                                                            )
-                                                        }
-                                                    >
-                                                        <Pencil className="mr-2 h-4 w-4" />
-                                                        {t('users.actions.edit')}
-                                                    </DropdownMenuItem>
-                                                )}
-                                                {abilities[user.id]?.delete && !user.deleted_at && (
-                                                    <DropdownMenuItem
-                                                        onAction={() => setUserToDelete(user)}
-                                                    >
-                                                        <Trash className="mr-2 h-4 w-4" />
-                                                        {t('users.actions.delete')}
-                                                    </DropdownMenuItem>
-                                                )}
-                                                {abilities[user.id]?.restore && user.deleted_at && (
-                                                    <DropdownMenuItem
-                                                        onAction={() => setUserToRestore(user)}
-                                                    >
-                                                        <ArrowUpCircle className="mr-2 h-4 w-4" />
-                                                        {t('users.actions.restore')}
-                                                    </DropdownMenuItem>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                )}
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
             </div>
-
-            <DeleteUserModal
-                user={userToDelete}
-                open={userToDelete !== null}
-                onClose={() => setUserToDelete(null)}
-            />
-            <RestoreUserModal
-                user={userToRestore}
-                open={userToRestore !== null}
-                onClose={() => setUserToRestore(null)}
-            />
         </AppLayout>
     );
 }
