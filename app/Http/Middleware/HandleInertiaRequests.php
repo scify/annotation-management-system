@@ -67,10 +67,14 @@ class HandleInertiaRequests extends Middleware {
                     'updated_at' => $request->user()->updated_at,
                     'deleted_at' => $request->user()->deleted_at,
                     'can' => collect(PermissionsEnum::cases())
-                        ->mapWithKeys(fn (PermissionsEnum $permissionsEnum): array => [
-                            str_replace(' ', '_', $permissionsEnum->value) => $request->user()->can($permissionsEnum->value),
-                            str_replace('-', '_', $permissionsEnum->value) => $request->user()->can($permissionsEnum->value),
-                        ])
+                        ->mapWithKeys(function (PermissionsEnum $permissionsEnum) use ($request): array {
+                            $result = $request->user()->can($permissionsEnum->value);
+
+                            return [
+                                str_replace(' ', '_', $permissionsEnum->value) => $result,
+                                str_replace('-', '_', $permissionsEnum->value) => $result,
+                            ];
+                        })
                         ->all(),
                 ] : null,
             ],
