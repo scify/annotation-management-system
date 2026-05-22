@@ -9,38 +9,39 @@ use App\Enums\RolesEnum;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotatorOfProject;
 use App\Models\Project;
-use App\Models\ProjectManager;
 use App\Models\SubProject;
 use App\Models\User;
 use App\Queries\GetAnnotatorProjectLinksByAnnotatorsQuery;
 use App\Queries\GetAnnotatorsByManagerQuery;
 use App\Queries\GetAnnotatorsQuery;
 use App\Queries\GetAssignmentsBySubProjectsAndAnnotatorsQuery;
+use App\Queries\GetAverageConfidencePerSubProjectQuery;
+use App\Queries\GetCountsOfFlagsQuery;
 use App\Queries\GetProjectIdsManagedByUserQuery;
 use App\Queries\GetProjectsByIdsQuery;
 use App\Queries\GetSubProjectsOfProjectsQuery;
-use App\Services\Annotator\WorkloadService;
 use App\Services\Project\SubProjectService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 
-readonly class MonitorService {
+readonly class MonitorHistoryTabService {
     public function __construct(
         private SubProjectService $subProjectService,
-        private WorkloadService $workloadService,
         private GetAnnotatorsQuery $allAnnotatorsQuery,
         private GetAnnotatorsByManagerQuery $annotatorsByManagerQuery,
         private GetAnnotatorProjectLinksByAnnotatorsQuery $annotatorProjectLinksQuery,
-        private GetProjectsByIdsQuery $inProgressProjectsByIdsQuery,
-        private GetSubProjectsOfProjectsQuery $inProgressSubProjectsByProjectsQuery,
+        private GetProjectsByIdsQuery $projectsByIdsQuery,
+        private GetSubProjectsOfProjectsQuery $subProjectsByProjectsQuery,
         private GetAssignmentsBySubProjectsAndAnnotatorsQuery $assignmentsBySubProjectsAndAnnotatorsQuery,
         private GetProjectIdsManagedByUserQuery $projectIdsByManagerQuery,
+        private GetCountsOfFlagsQuery $flagsQuery,
+        private GetAverageConfidencePerSubProjectQuery $avgConfidenceQuery,
     ) {}
 
     /**
      * @return array<string, mixed>
      */
-    public function getDataForMonitor(User $user): array {
+    public function getData(User $user): array {
         $roleName = $user->getRoleNames()->first();
 
         if ($roleName === RolesEnum::ANNOTATOR->value) {
@@ -50,7 +51,6 @@ readonly class MonitorService {
         if ($roleName === RolesEnum::ADMIN->value) {
             $allAnnotators = $this->allAnnotatorsQuery->getAll();
             $preloaded = $this->preloadData($allAnnotators->pluck('id')->all());
-
             $myAnnotatorIds = $this->resolveAdminMyAnnotatorIds($user->id, $preloaded);
             /** @var Collection<int, User> $myAnnotators */
             $myAnnotators = $allAnnotators
@@ -68,6 +68,47 @@ readonly class MonitorService {
 
         return [
             'my_annotators' => $this->buildAnnotatorsData($myAnnotators, $preloaded),
+        ];
+    }
+
+    /**
+     * Loads all projects and subprojects regardless of status; buildAnnotatorsData filters
+     * to IN_PROGRESS and COMPLETED only.
+     *
+     * @param  array<int, mixed>  $annotatorIds
+     *
+     * @return array<string, mixed>
+     */
+    private function preloadData(array $annotatorIds): array {
+        $annotatorProjectLinks = $this->annotatorProjectLinksQuery->get($annotatorIds);
+
+        $projectIds = $annotatorProjectLinks->pluck('project_id')->unique()->all();
+
+        /** @var Collection<int, Project> $projects */
+        $projects = $this->projectsByIdsQuery->get($projectIds);
+
+        $loadedProjectIds = $projects->pluck('id')->all();
+
+        /** @var Collection<int, SubProject> $subProjects */
+        $subProjects = $this->subProjectsByProjectsQuery->get($loadedProjectIds);
+
+        /** @var array<int, int> $subProjectIds */
+        $subProjectIds = $subProjects->pluck('id')->all();
+
+        $assignments = $this->assignmentsBySubProjectsAndAnnotatorsQuery->get($subProjectIds, $annotatorIds);
+
+        $progressBySubProject = $this->subProjectService->getProgress($subProjectIds);
+        $flagsByUserAndSp = $this->flagsQuery->get($annotatorIds);
+        $avgConfidenceByUserAndSp = $this->avgConfidenceQuery->get($annotatorIds);
+
+        return [
+            'annotator_project_links' => $annotatorProjectLinks,
+            'projects_by_id' => $projects->keyBy('id'),
+            'subprojects_by_project' => $subProjects->groupBy('project_id'),
+            'assignments_by_annotator' => $assignments->groupBy('user_id'),
+            'progress_by_subproject' => $progressBySubProject,
+            'flags_by_user_and_sp' => $flagsByUserAndSp,
+            'avg_confidence_by_user_and_sp' => $avgConfidenceByUserAndSp,
         ];
     }
 
@@ -93,39 +134,6 @@ readonly class MonitorService {
     }
 
     /**
-     * Pre-loads all in-progress projects, subprojects, and annotation assignments for the
-     * given annotator IDs so that per-annotator data building requires no further DB queries.
-     *
-     * @param  array<int, mixed>  $annotatorIds
-     *
-     * @return array<string, mixed>
-     */
-    private function preloadData(array $annotatorIds): array {
-        $annotatorProjectLinks = $this->annotatorProjectLinksQuery->get($annotatorIds);
-
-        $projectIds = $annotatorProjectLinks->pluck('project_id')->unique()->all();
-
-        /** @var Collection<int, Project> $projects */
-        $projects = $this->inProgressProjectsByIdsQuery->get($projectIds, ProjectStatusEnum::IN_PROGRESS);
-
-        $loadedProjectIds = $projects->pluck('id')->all();
-
-        /** @var Collection<int, SubProject> $subProjects */
-        $subProjects = $this->inProgressSubProjectsByProjectsQuery->get($loadedProjectIds, ProjectStatusEnum::IN_PROGRESS);
-
-        $subProjectIds = $subProjects->pluck('id')->all();
-
-        $assignments = $this->assignmentsBySubProjectsAndAnnotatorsQuery->get($subProjectIds, $annotatorIds);
-
-        return [
-            'annotator_project_links' => $annotatorProjectLinks,
-            'projects_by_id' => $projects->keyBy('id'),
-            'subprojects_by_project' => $subProjects->groupBy('project_id'),
-            'assignments_by_annotator' => $assignments->groupBy('user_id'),
-        ];
-    }
-
-    /**
      * @param  Collection<int, User>  $annotators
      * @param  array<string, mixed>  $preloaded
      *
@@ -140,13 +148,27 @@ readonly class MonitorService {
         $subProjectsByProject = $preloaded['subprojects_by_project'];
         /** @var SupportCollection<int|string, Collection<int, AnnotationAssignment>> $assignmentsByAnnotator */
         $assignmentsByAnnotator = $preloaded['assignments_by_annotator'];
+        /** @var array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}> $progressBySubProject */
+        $progressBySubProject = $preloaded['progress_by_subproject'];
+        /** @var array<int, array<int, int>> $flagsByUserAndSp */
+        $flagsByUserAndSp = $preloaded['flags_by_user_and_sp'];
+        /** @var array<int, array<int, float>> $avgConfidenceByUserAndSp */
+        $avgConfidenceByUserAndSp = $preloaded['avg_confidence_by_user_and_sp'];
 
         /** @var SupportCollection<int|string, Collection<int, AnnotatorOfProject>> $linksByAnnotator */
         $linksByAnnotator = $annotatorProjectLinks->groupBy('user_id');
 
-        /** @var array<int, int> $annotatorIds */
-        $annotatorIds = $annotators->pluck('id')->all();
-        $workloadsByAnnotator = $this->workloadService->computeNormalizedWorkloads($annotatorIds);
+        $historyStatuses = [ProjectStatusEnum::IN_PROGRESS, ProjectStatusEnum::COMPLETED];
+
+        // Pre-build [spId][userId] => annotations_done to avoid per-iteration scanning.
+        /** @var array<int, array<int, int>> $doneBySpAndUser */
+        $doneBySpAndUser = [];
+        foreach ($progressBySubProject as $spId => $spData) {
+            foreach ($spData['assignments'] as $assignment) {
+                $uid = $assignment['user_id'];
+                $doneBySpAndUser[$spId][$uid] = ($doneBySpAndUser[$spId][$uid] ?? 0) + $assignment['annotations_done'];
+            }
+        }
 
         $result = [];
 
@@ -162,10 +184,10 @@ readonly class MonitorService {
             /** @var Collection<int, Project> $myProjects */
             $myProjects = $projectsById->filter(
                 fn (Project $p): bool => in_array($p->id, $myProjectIds, true)
+                    && in_array($p->status, $historyStatuses, true)
             );
 
-            $projectsData = [];
-            $hiddenProjectsData = [];
+            $subprojectsData = [];
 
             foreach ($myProjects as $project) {
                 /** @var Collection<int, SubProject> $allProjectSubProjects */
@@ -174,90 +196,46 @@ readonly class MonitorService {
                 /** @var Collection<int, SubProject> $annotatorSubProjects */
                 $annotatorSubProjects = $allProjectSubProjects->filter(
                     fn (SubProject $sp): bool => in_array($sp->id, $mySubProjectIds, true)
+                        && in_array($sp->status, $historyStatuses, true)
                 );
 
-                if ($project->restricted_visibility) {
-                    $hiddenProjectsData[] = $this->formatHiddenProject($project, $annotatorSubProjects->count());
-                } else {
-                    $projectsData[] = $this->formatProject(
-                        $project,
-                        $annotatorSubProjects,
-                        $workloadsByAnnotator[$annotator->id]['per_subproject'] ?? [],
-                    );
+                foreach ($annotatorSubProjects as $subProject) {
+                    $rawAvg = $avgConfidenceByUserAndSp[$annotator->id][$subProject->id] ?? null;
+                    $subprojectsData[] = [
+                        'project_name' => $project->name,
+                        'subproject_name' => $subProject->name,
+                        'completed_at' => $subProject->completed_at,
+                        'annotations' => $doneBySpAndUser[$subProject->id][$annotator->id] ?? 0,
+                        'flags' => $flagsByUserAndSp[$annotator->id][$subProject->id] ?? 0,
+                        'avg_confidence' => $rawAvg !== null ? $this->resolveConfidenceLabel($rawAvg) : null,
+                    ];
                 }
             }
 
             $result[] = [
                 'id' => $annotator->id,
                 'username' => $annotator->username,
-                'status' => $annotator->is_active,
-                'active_subprojects' => count($mySubProjectIds),
-                'active_projects' => $myProjects->count(),
-                'workload' => $workloadsByAnnotator[$annotator->id]['total'] ?? 0.5,
-                'progress' => 0.5,
-                'projects' => $projectsData,
-                'hidden_projects' => $hiddenProjectsData,
+                'is_active' => $annotator->is_active,
+                'total_projects' => $myProjects->count(),
+                'total_subprojects' => count($subprojectsData),
+                'total_annotations' => array_sum(array_column($subprojectsData, 'annotations')),
+                'total_flags' => array_sum(array_column($subprojectsData, 'flags')),
+                'subprojects' => $subprojectsData,
             ];
         }
 
         return $result;
     }
 
-    /**
-     * @param  Collection<int, SubProject>  $subProjects
-     * @param  array<int, float>  $subprojectWorkloads  Normalized workload keyed by sub_project_id
-     *
-     * @return array<string, mixed>
-     */
-    private function formatProject(Project $project, Collection $subProjects, array $subprojectWorkloads): array {
-        $ownerId = $project->owner_user_id;
+    private function resolveConfidenceLabel(float $avg): string {
+        if ($avg < 0.3) {
+            return 'low';
+        }
 
-        $coManagers = $project->projectManagers
-            ->filter(fn (ProjectManager $pm): bool => $pm->user_id !== $ownerId)
-            ->map(fn (ProjectManager $pm): array => ['id' => $pm->user->id, 'username' => $pm->user->username])
-            ->values()
-            ->all();
+        if ($avg > 0.7) {
+            return 'high';
+        }
 
-        /** @var array<int, int> $subProjectIds */
-        $subProjectIds = $subProjects->pluck('id')->all();
-        $progressBySubProject = $this->subProjectService->getProgress($subProjectIds);
-
-        return [
-            'id' => $project->id,
-            'name' => $project->name,
-            'status' => $project->status,
-            'annotation_task_title' => $project->annotationTask->title,
-            'dataset_name' => $project->dataset->name,
-            'owner_name' => $project->owner->username,
-            'co_managers' => $coManagers,
-            'project_progress' => 0.5,
-            'notifications_count' => 0,
-            'started_at' => $project->started_at,
-            'completed_at' => $project->completed_at,
-            'scheduled_at' => $project->scheduled_at,
-            'deadline_at' => $project->deadline_at,
-            'is_delayed_to_start' => $project->isDelayedToStart(),
-            'is_delayed_to_end' => $project->isDelayedToEnd(),
-            'subprojects' => $subProjects
-                ->map(fn (SubProject $sp): array => [
-                    'id' => $sp->id,
-                    'name' => $sp->name,
-                    'status' => $sp->status,
-                    'workload' => $subprojectWorkloads[$sp->id] ?? 0.5,
-                    'progress' => $progressBySubProject[$sp->id]['progress'] ?? 0.0,
-                ])
-                ->values()
-                ->all(),
-        ];
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function formatHiddenProject(Project $project, int $activeSubprojectsCount): array {
-        return [
-            'owner_name' => $project->owner->username,
-            'active_subprojects_count' => $activeSubprojectsCount,
-        ];
+        return 'medium';
     }
 }

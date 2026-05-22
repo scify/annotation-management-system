@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $index
  * @property array<string, mixed> $annotations
  * @property bool $pending
+ * @property bool $is_flagged
  */
 #[Fillable([
     'annotation_assignment_id',
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Model;
     'index',
     'annotations',
     'pending',
+    'is_flagged',
 ])]
 class Annotation extends Model {
     /** @use HasFactory<AnnotationFactory> */
@@ -31,5 +33,6 @@ class Annotation extends Model {
     protected $casts = [
         'annotations' => 'array',
         'pending' => 'boolean',
+        'is_flagged' => 'boolean',
     ];
 }

@@ -19,6 +19,7 @@ return new class() extends Migration {
             $table->unique(['annotation_assignment_id', 'dataset_instance_id']);
             $table->json('annotations');
             $table->boolean('pending')->default(false);
+            $table->boolean('is_flagged')->default(false);
             $table->timestamps();
         });
     }
