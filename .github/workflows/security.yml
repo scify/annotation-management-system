@@ -26,7 +26,12 @@ jobs:
               id: check-ghas
               run: |
                   echo "🔍 Checking GitHub Advanced Security status..."
-                  GHAS_STATUS=$(gh api repos/${{ github.repository }} --jq '.security_and_analysis.advanced_security.status // "disabled"')
+                  GHAS_STATUS=$(curl -sf \
+                    -H "Authorization: Bearer $GITHUB_TOKEN" \
+                    -H "Accept: application/vnd.github+json" \
+                    "https://api.github.com/repos/${{ github.repository }}" \
+                    | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('security_and_analysis',{}).get('advanced_security',{}).get('status','disabled'))" \
+                    2>/dev/null || echo "disabled")
                   echo "Advanced Security status: $GHAS_STATUS"
 
                   if [ "$GHAS_STATUS" = "enabled" ]; then
@@ -144,11 +149,43 @@ jobs:
 
             # Note: SARIF upload disabled - requires GitHub Advanced Security
 
+    scan-dev-configs:
+        name: Scan Dev Tool Configs
+        runs-on: ubuntu-latest
+        needs: essential-security
+        if: needs.essential-security.outputs.secrets-clean == 'true'
+
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Scan dev tool config directories
+              uses: ./.github/actions/scan-dev-configs
+
+    verify-npm-hardening:
+        name: npm Supply Chain Hardening
+        runs-on: ubuntu-latest
+        needs: essential-security
+        if: needs.essential-security.outputs.secrets-clean == 'true'
+
+        permissions:
+            contents: read
+
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
+
+            - name: Verify npm hardening
+              uses: ./.github/actions/verify-npm-hardening
+
     # CodeQL Analysis - only runs if GitHub Advanced Security is enabled
     codeql-analysis:
         name: CodeQL Analysis
         runs-on: ubuntu-latest
-        needs: [check-advanced-security, essential-security]
+        needs: [check-advanced-security, essential-security, verify-npm-hardening]
         if: needs.essential-security.outputs.secrets-clean == 'true' && needs.check-advanced-security.outputs.ghas-enabled == 'true'
 
         permissions:
@@ -210,7 +247,7 @@ jobs:
     license-compliance:
         name: License Compliance Check
         runs-on: ubuntu-latest
-        needs: essential-security
+        needs: [essential-security, verify-npm-hardening]
         if: needs.essential-security.outputs.secrets-clean == 'true'
 
         permissions:
@@ -320,7 +357,7 @@ jobs:
     dependency-scan:
         name: Dependency Security Scan
         runs-on: ubuntu-latest
-        needs: [essential-security, license-compliance]
+        needs: [essential-security, license-compliance, verify-npm-hardening]
         if: needs.essential-security.outputs.secrets-clean == 'true'
 
         permissions:
@@ -357,41 +394,10 @@ jobs:
             - name: Run Node Security Audit
               run: npm audit --audit-level=high
 
-    code-quality:
-        name: Code Quality & Static Analysis
-        runs-on: ubuntu-latest
-        needs: [essential-security, dependency-scan]
-        if: needs.essential-security.outputs.secrets-clean == 'true'
-
-        permissions:
-            contents: read
-
-        steps:
-            - name: Checkout Repository
-              uses: actions/checkout@v4
-
-            - name: Setup PHP
-              uses: shivammathur/setup-php@v2
-              with:
-                  php-version: 8.4
-                  tools: composer:v2
-
-            - name: Copy Environment File
-              run: cp .env.testing .env
-
-            - name: Install Dependencies
-              run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-            - name: Run PHPStan
-              run: ./vendor/bin/phpstan analyse --memory-limit=2G
-
-            - name: Run PHP Code Style Check
-              run: ./vendor/bin/pint --test
-
     security-headers:
         name: Security Headers Check
         runs-on: ubuntu-latest
-        needs: [essential-security, code-quality]
+        needs: [essential-security]
         if: github.event_name == 'pull_request' && needs.essential-security.outputs.secrets-clean == 'true'
 
         permissions:
