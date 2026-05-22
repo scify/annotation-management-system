@@ -2,7 +2,7 @@
 # annotrAIn - Development Setup
 
 [![Tests](https://github.com/scify/annotation-management-system/actions/workflows/tests.yml/badge.svg)](https://github.com/scify/annotation-management-system/actions/workflows/tests.yml)
-[![Linter](https://github.com/scify/annotation-management-system/actions/workflows/lint.yml/badge.svg)](https://github.com/scify/annotation-management-system/actions/workflows/lint.yml)
+[![Check](https://github.com/scify/annotation-management-system/actions/workflows/check.yml/badge.svg)](https://github.com/scify/annotation-management-system/actions/workflows/check.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 <!-- omit in toc -->

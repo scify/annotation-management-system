@@ -1,4 +1,4 @@
-name: linter
+name: check
 
 on:
     push:
