@@ -22,7 +22,7 @@ readonly class WorkloadService {
      *
      * Falls back to 0.5 when there is no data or no variance across the annotator set.
      *
-     * @param  array<int, mixed>  $annotatorIds
+     * @param  array<int, int>  $annotatorIds
      *
      * @return array<int, array{total: float, per_subproject: array<int, float>}>
      */
@@ -89,7 +89,8 @@ readonly class WorkloadService {
     private function computeSubprojectWorkloadMax(): int {
         $avgWeight = $this->computeAvgAnnotationTaskWeight();
 
-        $largestCount = (int) DB::table('datasets')->max('size');
+        $maxSize = DB::table('datasets')->max('size');
+        $largestCount = is_numeric($maxSize) ? (int) $maxSize : 0;
 
         $effectiveCount = max($largestCount, self::SUBPROJECT_INSTANCE_CEILING);
 
@@ -103,7 +104,8 @@ readonly class WorkloadService {
     private function computeSubprojectWorkloadMin(): int {
         $avgWeight = $this->computeAvgAnnotationTaskWeight();
 
-        $shortestCount = (int) DB::table('datasets')->min('size');
+        $minSize = DB::table('datasets')->min('size');
+        $shortestCount = is_numeric($minSize) ? (int) $minSize : 0;
 
         $effectiveCount = min($shortestCount, self::SUBPROJECT_INSTANCE_FLOOR);
 

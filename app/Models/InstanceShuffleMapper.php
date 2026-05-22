@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use Carbon\Carbon;
+use Database\Factories\InstanceShuffleMapperFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'old_index',
 ])]
 class InstanceShuffleMapper extends Model {
+    /** @use HasFactory<InstanceShuffleMapperFactory> */
     use HasFactory;
 
     /**

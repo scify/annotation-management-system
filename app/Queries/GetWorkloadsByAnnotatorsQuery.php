@@ -8,10 +8,11 @@ use App\Enums\ProjectStatusEnum;
 use App\Models\Annotation;
 use App\Models\AnnotationAssignment;
 use App\Models\SubProject;
+use Illuminate\Support\Collection;
 
 final readonly class GetWorkloadsByAnnotatorsQuery {
     /**
-     * @param  array<int, mixed>  $userIds
+     * @param  array<int, int>  $userIds
      *
      * @return array<int, array{total_workload: int, workload_per_subproject: array<int, int>}>
      */
@@ -36,6 +37,7 @@ final readonly class GetWorkloadsByAnnotatorsQuery {
             ->whereIn('sub_project_id', $subProjects->keys())
             ->get();
 
+        /** @var Collection<int|string, string|int> $annotationCountsByAssignment */
         $annotationCountsByAssignment = Annotation::query()
             ->whereIn('annotation_assignment_id', $annotationAssignments->pluck('id'))
             ->where('pending', false)
@@ -61,7 +63,7 @@ final readonly class GetWorkloadsByAnnotatorsQuery {
 
                 $weight = $subProject->project->annotationTask->weight;
                 $effort = ($subProject->last_instance_index - $subProject->first_instance_index + 1) * $weight;
-                $workDone = (int) $annotationCountsByAssignment->get($assignment->getKey(), 0) * $weight;
+                $workDone = (int) $annotationCountsByAssignment->get($assignment->id, 0) * $weight;
 
                 $sumEffort += $effort;
                 $sumWorkDone += $workDone;

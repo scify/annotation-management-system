@@ -10,16 +10,19 @@ use Illuminate\Support\Collection;
 final readonly class GetCountsOfSubprojectsPerAnnotatorQuery {
     /**
      * @param  array<int, mixed>  $annotatorIds
-     * @param  Collection<int, mixed>  $subProjectIds
+     * @param  Collection<int, int>  $subProjectIds
      *
-     * @return Collection<int|string, mixed>
+     * @return Collection<int|string, string|int>
      */
     public function get(array $annotatorIds, Collection $subProjectIds): Collection {
-        return AnnotationAssignment::query()
+        /** @var Collection<int|string, string|int> $result */
+        $result = AnnotationAssignment::query()
             ->whereIn('user_id', $annotatorIds)
             ->whereIn('sub_project_id', $subProjectIds)
             ->selectRaw('user_id, COUNT(*) as count')
             ->groupBy('user_id')
             ->pluck('count', 'user_id');
+
+        return $result;
     }
 }

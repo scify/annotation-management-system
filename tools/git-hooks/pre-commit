@@ -21,7 +21,7 @@ STAGED_PHP=$(git diff --cached --name-only --diff-filter=d | grep ".php$" || tru
 STAGED_JS_TS=$(git diff --cached --name-only --diff-filter=d | grep -E "\.(js|jsx|ts|tsx)$" || true)
 STAGED_SCSS=$(git diff --cached --name-only --diff-filter=d | grep -E "\.scss|\.css$" || true)
 
-# Refactor + format PHP files (Rector first, then Pint — same order as lint:backend)
+# Refactor + format PHP files (Rector first, then Pint — same order as fix:backend)
 if [ -n "$STAGED_PHP" ]; then
     echo "🔍 Running Rector on PHP files..."
     echo "$STAGED_PHP" | xargs -d '\n' ./vendor/bin/rector process --no-progress-bar

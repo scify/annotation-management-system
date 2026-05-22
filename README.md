@@ -111,8 +111,9 @@ To contribute to the application, follow these steps:
 After making changes, follow this workflow:
 
 ```shell
-composer lint   # format everything (Rector + Pint + ESLint + Prettier)
-composer test   # verify nothing broke (lint + types + Pest)
+composer fix    # auto-fix everything (Rector + Pint + ESLint + Prettier)
+composer check  # verify style/lint rules — no file mutations (CI-safe)
+composer test   # run the Pest test suite
 ```
 
 ### PHP code style - Laravel Pint
@@ -121,8 +122,9 @@ This application uses [Laravel Pint](https://laravel.com/docs/12.x/pint) for PHP
 managed via Composer scripts.
 
 ```shell
-composer lint       # format all code — fix mode (Rector + Pint + ESLint + Prettier)
-composer test:lint  # dry-run checks only — no modifications (CI-friendly)
+composer fix          # apply all auto-fixes (Rector + Pint + ESLint + Prettier)
+composer fix:backend  # backend only — no Node required (Rector + Pint)
+composer check        # dry-run checks — no modifications (CI-safe)
 ```
 
 ### Running tests
@@ -198,10 +200,11 @@ The in-process server serves compiled assets from `public/build/`. Without them,
 
 ### Code Scanning
 
-Static analysis runs as part of `composer test:types`:
+Static analysis runs as part of `composer check:types`:
 
 ```shell
-composer test:types  # PHPStan (level 8) + TypeScript tsc --noEmit
+composer check:types          # PHPStan (level 8) + TypeScript tsc --noEmit
+composer check:types:backend  # PHPStan only (no Node required)
 ```
 
 ### Git Hooks
@@ -246,11 +249,17 @@ bash tools/git-hooks/install.sh
 
 | Script | Description |
 | --- | --- |
-| `composer run dev` | Start dev server (auto-detects environment) |
-| `composer lint` | Format all code — fix mode (Rector + Pint + ESLint + Prettier) |
-| `composer test:lint` | Dry-run lint checks without modifying files |
-| `composer test:types` | Type analysis (PHPStan level 8 + TypeScript tsc) |
-| `composer test` | Full test suite (lint + types + Pest) |
+| `composer dev` | Start dev server (auto-detects environment) |
+| `composer fix` | Apply all auto-fixes — Rector + Pint + ESLint + Prettier (mutates files) |
+| `composer fix:backend` | Backend fixes only — Rector + Pint (no Node required) |
+| `composer fix:frontend` | Frontend fixes only — ESLint + Stylelint + Prettier |
+| `composer check` | Verify style/lint rules — no file mutations (CI-safe) |
+| `composer check:backend` | Backend checks only — Pint + Rector dry-run (no Node required) |
+| `composer check:frontend` | Frontend checks only — ESLint + Stylelint + Prettier |
+| `composer check:types` | Type analysis — PHPStan level 8 + TypeScript tsc |
+| `composer check:types:backend` | PHPStan only (no Node required) |
+| `composer test` | Run the Pest test suite (excludes browser tests) |
+| `composer test:all` | Full CI suite: check + check:types + test:backend + test:browser |
 | `composer test:coverage` | Pest with code coverage (requires Xdebug) |
 | `composer update:requirements` | Bump Composer + npm dependencies to latest |
 
@@ -260,12 +269,14 @@ bash tools/git-hooks/install.sh
 | --- | --- |
 | `npm run dev` | Start Vite development server |
 | `npm run build` | Build frontend assets for production |
-| `npm run lint` | ESLint check |
-| `npm run lint:fix` | ESLint auto-fix |
-| `npm run lint:styles` | Stylelint check |
-| `npm run lint:styles:fix` | Stylelint auto-fix |
-| `npm run format` | Prettier formatting (fix mode) |
-| `npm run format:check` | Prettier dry-run |
+| `npm run fix` | Apply all frontend auto-fixes (ESLint + Stylelint + Prettier) |
+| `npm run fix:js` | ESLint auto-fix |
+| `npm run fix:styles` | Stylelint auto-fix |
+| `npm run fix:format` | Prettier write |
+| `npm run check` | Verify all frontend rules — no file mutations (CI-safe) |
+| `npm run check:js` | ESLint check |
+| `npm run check:styles` | Stylelint check |
+| `npm run check:format` | Prettier dry-run |
 | `npm run types` | TypeScript type-check (`tsc --noEmit`) |
 
 ### Database commands

@@ -249,6 +249,7 @@ class DummyProjectSeeder extends Seeder {
             }
 
             if ($entry['project']['is_instance_shuffled']) {
+                /** @var int $datasetId */
                 $datasetId = $entry['project']['dataset_id'];
                 $shuffled = new DatasetService()->generateShuffledIndexArray($datasetId);
                 $counter = count($shuffled);
@@ -260,6 +261,7 @@ class DummyProjectSeeder extends Seeder {
                 }
             }
 
+            /** @var array<int, int|string> $projectAnnotatorIds */
             $projectAnnotatorIds = [];
 
             foreach ($entry['subprojects'] as $spData) {
@@ -285,7 +287,9 @@ class DummyProjectSeeder extends Seeder {
                     $assignment = AnnotationAssignment::query()->firstOrCreate(
                         ['user_id' => $annotator->getKey(), 'sub_project_id' => $subProject->getKey()],
                     );
-                    $projectAnnotatorIds[] = $annotator->getKey();
+                    /** @var int|string $annotatorKey */
+                    $annotatorKey = $annotator->getKey();
+                    $projectAnnotatorIds[] = $annotatorKey;
 
                     $rows = [];
                     foreach ($datasetInstances as $localIndex => $instance) {

@@ -101,8 +101,12 @@ class DummyDatasetsSeeder extends Seeder {
             $task = $tasksByTitle->get($taskTitle);
 
             if ($dataset !== null && $task !== null) {
-                $datasetId = (int) $dataset->getKey();
-                $taskId = (int) $task->getKey();
+                /** @var int|string $datasetKey */
+                $datasetKey = $dataset->getKey();
+                /** @var int|string $taskKey */
+                $taskKey = $task->getKey();
+                $datasetId = (int) $datasetKey;
+                $taskId = (int) $taskKey;
 
                 $alreadyLinked = DB::table('dataset_annotation_tasks')
                     ->where('dataset_id', $datasetId)

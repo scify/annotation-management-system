@@ -55,7 +55,7 @@ readonly class UserService {
     }
 
     /**
-     * @param  array<int, mixed>  $userIds
+     * @param  array<int, int>  $userIds
      *
      * @return array<int, array{total_workload: int, workload_per_subproject: array<int, int>}>
      */

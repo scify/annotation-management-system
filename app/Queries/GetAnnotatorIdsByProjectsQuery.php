@@ -11,7 +11,7 @@ final readonly class GetAnnotatorIdsByProjectsQuery {
     /**
      * @param  array<int, mixed>  $projectIds
      *
-     * @return array<int, mixed>
+     * @return array<int, int>
      */
     public function get(array $projectIds): array {
         if ($projectIds === []) {
@@ -29,10 +29,13 @@ final readonly class GetAnnotatorIdsByProjectsQuery {
             return [];
         }
 
-        return AnnotatorOfManager::query()
+        /** @var array<int, int> $result */
+        $result = AnnotatorOfManager::query()
             ->whereIn('manager_id', $managerIds)
             ->pluck('annotator_id')
             ->unique()
             ->all();
+
+        return $result;
     }
 }

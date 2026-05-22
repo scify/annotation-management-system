@@ -86,39 +86,48 @@
             "composer bump",
             "npx npm-check-updates -u"
         ],
-        "lint": [
-            "composer lint:backend",
-            "composer lint:frontend"
+        "fix": [
+            "@fix:backend",
+            "@fix:frontend"
         ],
-        "lint:backend": [
+        "fix:backend": [
             "rector",
             "pint --parallel"
         ],
-        "lint:frontend": [
-            "npm run lint:fix",
-            "npm run lint:styles:fix",
-            "npm run format"
+        "fix:frontend": [
+            "npm run fix"
         ],
-        "test:lint": [
+        "check": [
+            "@check:backend",
+            "@check:frontend"
+        ],
+        "check:backend": [
             "pint --parallel --test",
-            "rector --dry-run",
-            "npm run lint",
-            "npm run lint:styles",
-            "npm run format:check"
+            "rector --dry-run"
         ],
-        "test:types": [
+        "check:frontend": [
+            "npm run check"
+        ],
+        "check:types": [
             "phpstan analyse --memory-limit=2G",
             "npm run types"
         ],
+        "check:types:backend": [
+            "phpstan analyse --memory-limit=2G"
+        ],
+        "check:types:frontend": [
+            "npm run types"
+        ],
         "test:all": [
-            "@test:types",
+            "@check",
+            "@check:types",
             "@test:backend",
             "@test:browser"
         ],
         "test": "pest --exclude-testsuite=Browser",
         "test:backend": "pest --exclude-testsuite=Browser",
         "test:browser": "pest --testsuite=Browser",
-        "test:coverage": "pest --coverage --parallel"
+        "test:coverage": "pest --coverage --parallel --exclude-testsuite=Browser"
     },
     "extra": {
         "laravel": {

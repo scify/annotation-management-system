@@ -20,7 +20,7 @@ readonly class AnnotatorService {
 
     /**
      * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
-     * @param  Collection<int, mixed>|null  $activeSubProjectIds
+     * @param  Collection<int, int>|null  $activeSubProjectIds
      *
      * @return array<int, array<string, mixed>>
      */
@@ -38,7 +38,7 @@ readonly class AnnotatorService {
     /**
      * @param  array<int, mixed>  $ids
      * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
-     * @param  Collection<int, mixed>|null  $activeSubProjectIds
+     * @param  Collection<int, int>|null  $activeSubProjectIds
      *
      * @return array<int, array<string, mixed>>
      */
@@ -56,7 +56,7 @@ readonly class AnnotatorService {
     /**
      * @param  array<int, array<string, mixed>>  $annotators
      * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
-     * @param  Collection<int, mixed>|null  $activeSubProjectIds
+     * @param  Collection<int, int>|null  $activeSubProjectIds
      */
     private function augmentAnnotatorData(array &$annotators, array $progressBySubProject, ?Collection $activeSubProjectIds = null): void {
         $this->augmentAnnotatorsWithProgress($annotators, $progressBySubProject);
@@ -80,7 +80,8 @@ readonly class AnnotatorService {
         }
 
         foreach ($annotators as &$annotator) {
-            $uid = (int) $annotator['id'];
+            /** @var int $uid */
+            $uid = $annotator['id'];
             $done = $userTotals[$uid]['done'] ?? 0;
             $all = $userTotals[$uid]['all'] ?? 0;
             $annotator['annotator_progress'] = $all > 0 ? $done / $all : 0.0;
@@ -89,7 +90,7 @@ readonly class AnnotatorService {
 
     /**
      * @param  array<int, array<string, mixed>>  $annotators
-     * @param  Collection<int, mixed>  $activeSubProjectIds
+     * @param  Collection<int, int>  $activeSubProjectIds
      */
     private function augmentAnnotatorsWithActiveProjects(array &$annotators, Collection $activeSubProjectIds): void {
         $annotatorIds = array_column($annotators, 'id');
@@ -98,8 +99,10 @@ readonly class AnnotatorService {
         $subProjectCounts = $this->annotatorSubprojectCountsQuery->get($annotatorIds, $activeSubProjectIds);
 
         foreach ($annotators as &$annotator) {
-            $annotator['active_projects_count'] = (int) ($counts->get((int) $annotator['id']) ?? 0);
-            $annotator['active_subprojects_count'] = (int) ($subProjectCounts->get((int) $annotator['id']) ?? 0);
+            /** @var int $annotatorId */
+            $annotatorId = $annotator['id'];
+            $annotator['active_projects_count'] = (int) ($counts->get($annotatorId) ?? 0);
+            $annotator['active_subprojects_count'] = (int) ($subProjectCounts->get($annotatorId) ?? 0);
         }
     }
 
@@ -111,10 +114,14 @@ readonly class AnnotatorService {
             return;
         }
 
-        $workloads = $this->workloadService->computeNormalizedWorkloads(array_column($annotators, 'id'));
+        /** @var array<int, int> $annotatorIds */
+        $annotatorIds = array_column($annotators, 'id');
+        $workloads = $this->workloadService->computeNormalizedWorkloads($annotatorIds);
 
         foreach ($annotators as &$annotator) {
-            $annotator['workload'] = $workloads[(int) $annotator['id']]['total'] ?? 0.5;
+            /** @var int $annotatorId */
+            $annotatorId = $annotator['id'];
+            $annotator['workload'] = $workloads[$annotatorId]['total'] ?? 0.5;
         }
     }
 }

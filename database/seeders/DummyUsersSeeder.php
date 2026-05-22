@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Hash;
 
 class DummyUsersSeeder extends Seeder {
     public function run(): void {
-        $password = config('app.default_user_password_for_seeder');
+        $password = config()->string('app.default_user_password_for_seeder');
 
         $admins = [
             ['name' => 'Admin Alice', 'username' => 'admin_alice', 'email' => 'admin.alice@example.com'],

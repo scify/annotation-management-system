@@ -184,6 +184,7 @@ readonly class ProjectService {
     public function getDataForShowProject(int $id): array {
         $project = $this->projectsByIdsQuery->get([$id])->firstOrFail();
 
+        /** @var array<int, int> $subProjectIds */
         $subProjectIds = $project->subProjects->pluck('id')->all();
         $progressBySubProject = $this->subProjectService->getProgress($subProjectIds);
 
@@ -249,7 +250,7 @@ readonly class ProjectService {
 
         return array_values(array_filter(
             $allProjects,
-            fn (array $project): bool => in_array((int) $project['id'], $myProjectIds, true),
+            fn (array $project): bool => is_int($project['id']) && in_array($project['id'], $myProjectIds, true),
         ));
     }
 
@@ -299,7 +300,7 @@ readonly class ProjectService {
 
         return array_values(array_filter(
             $allProjects,
-            fn (array $project): bool => in_array((int) $project['id'], $myProjectIds, true),
+            fn (array $project): bool => is_int($project['id']) && in_array($project['id'], $myProjectIds, true),
         ));
     }
 
@@ -347,11 +348,9 @@ readonly class ProjectService {
         }
 
         if ($allAnnotators !== null) {
-            $annotatorIds = array_map(fn (mixed $id): int => (int) $id, $annotatorIds);
-
             return array_values(array_filter(
                 $allAnnotators,
-                fn (array $annotator): bool => in_array((int) $annotator['id'], $annotatorIds, true),
+                fn (array $annotator): bool => is_int($annotator['id']) && in_array($annotator['id'], $annotatorIds, true),
             ));
         }
 
@@ -379,7 +378,7 @@ readonly class ProjectService {
             ->whereIn('project_id', $myProjectIds)
             ->pluck('user_id')
             ->unique()
-            ->reject(fn (mixed $id): bool => (int) $id === $user->id)
+            ->reject(fn (mixed $id): bool => is_numeric($id) && (int) $id === $user->id)
             ->values()
             ->all();
 
@@ -477,6 +476,7 @@ readonly class ProjectService {
         $seen = [];
         $tasks = [];
         foreach ($projects as $project) {
+            /** @var int|string $id */
             $id = $project['annotation_task_id'];
             if (! isset($seen[$id])) {
                 $seen[$id] = true;
@@ -496,6 +496,7 @@ readonly class ProjectService {
         $seen = [];
         $datasets = [];
         foreach ($projects as $project) {
+            /** @var int|string $id */
             $id = $project['dataset_id'];
             if (! isset($seen[$id])) {
                 $seen[$id] = true;
@@ -509,15 +510,21 @@ readonly class ProjectService {
     /**
      * @param  array<int, array<string, mixed>>  $data
      *
-     * @return array<int, mixed>
+     * @return array<int, int>
      */
     private function extractSubProjectIds(array $data): array {
         $ids = [];
         foreach ($data as $project) {
-            array_push($ids, ...array_column($project['sub_projects'] ?? [], 'id'));
+            $subProjects = $project['sub_projects'] ?? [];
+            if (is_array($subProjects)) {
+                array_push($ids, ...array_column($subProjects, 'id'));
+            }
         }
 
-        return array_unique($ids);
+        /** @var array<int, int> $unique */
+        $unique = array_unique($ids);
+
+        return $unique;
     }
 
     /**
@@ -536,14 +543,24 @@ readonly class ProjectService {
      */
     private function augmentProjectsWithManagers(array &$data): void {
         foreach ($data as &$project) {
-            $ownerId = (int) $project['owner_user_id'];
-            $project['owner_name'] = $project['owner']['username'] ?? null;
+            /** @var int|string $ownerUserId */
+            $ownerUserId = $project['owner_user_id'];
+            $ownerId = (int) $ownerUserId;
+            $owner = $project['owner'];
+            $project['owner_name'] = is_array($owner) ? ($owner['username'] ?? null) : null;
+            /** @var array<int, array<string, mixed>> $projectManagers */
+            $projectManagers = $project['project_managers'] ?? [];
             $project['co_managers'] = array_values(array_filter(
                 array_map(
-                    fn (array $relation): ?array => isset($relation['user']) && (int) $relation['user']['id'] !== $ownerId
-                        ? ['id' => $relation['user']['id'], 'username' => $relation['user']['username']]
-                        : null,
-                    $project['project_managers'] ?? [],
+                    function (array $relation) use ($ownerId): ?array {
+                        /** @var array{id: int|string, username: string}|null $user */
+                        $user = $relation['user'] ?? null;
+
+                        return is_array($user) && (int) $user['id'] !== $ownerId
+                            ? ['id' => $user['id'], 'username' => $user['username']]
+                            : null;
+                    },
+                    $projectManagers,
                 ),
             ));
             unset($project['owner'], $project['project_managers']);
@@ -558,7 +575,8 @@ readonly class ProjectService {
         $subProjectIdsByIndex = [];
 
         foreach ($data as $i => $project) {
-            $ids = array_column($project['sub_projects'] ?? [], 'id');
+            $subProjects = $project['sub_projects'] ?? [];
+            $ids = is_array($subProjects) ? array_column($subProjects, 'id') : [];
             $subProjectIdsByIndex[$i] = $ids;
         }
 
@@ -596,8 +614,10 @@ readonly class ProjectService {
      */
     private function augmentProjectsWithAnnotationTasks(array &$data): void {
         foreach ($data as &$project) {
-            $project['annotation_task_title'] = $project['annotation_task']['title'] ?? null;
-            $project['dataset_name'] = $project['dataset']['name'] ?? null;
+            $task = $project['annotation_task'];
+            $dataset = $project['dataset'];
+            $project['annotation_task_title'] = is_array($task) ? ($task['title'] ?? null) : null;
+            $project['dataset_name'] = is_array($dataset) ? ($dataset['name'] ?? null) : null;
             unset($project['annotation_task'], $project['dataset']);
         }
     }

@@ -103,11 +103,27 @@ Commands in this document are shown in **native form**. DDEV users: add the `dde
 - `npm run build` — Build frontend assets for production
 - `npm run build:ssr` — Build both client and SSR bundles (required before production deployment)
 
+## Fix & Check (Code Quality)
+
+Commands are split by *what they do to your repo*:
+
+| Command | Mutates files? | Use when |
+|---|---|---|
+| `composer fix` | Yes | Before committing — apply all auto-fixes |
+| `composer fix:backend` | Yes | Backend dev — Rector + Pint, no Node required |
+| `composer check` | No | CI-safe style/lint verification |
+| `composer check:backend` | No | Backend dev — Pint + Rector dry-run, no Node |
+| `composer check:types` | No | PHPStan level 8 + TypeScript tsc |
+| `composer check:types:backend` | No | PHPStan only, no Node required |
+| `npm run fix` | Yes | Frontend dev — ESLint + Stylelint + Prettier |
+| `npm run check` | No | Frontend dev — CI-safe verification |
+| `npm run types` | No | TypeScript type-check only |
+
 ## Testing
 
 **Recommended (via Composer):**
 
-- `composer test:all` — Full suite (lint + types + Pest)
+- `composer test:all` — Full CI suite (check + check:types + Pest backend + browser)
 - `composer test:coverage` — Pest with coverage
 
 **Coverage (requires Xdebug):**
@@ -144,6 +160,7 @@ ddev xdebug off
 
 - PSR-12 with Laravel conventions (see `pint.json`)
 - Strict typing: `declare(strict_types=1)` in all files
+- After a file edit, always run `vendor/bin/phpstan analyse path/to/file.php --no-progress 2>&1` to check for static analysis errors (DDEV: `ddev exec vendor/bin/phpstan analyse path/to/file.php --no-progress 2>&1`)
 - Use typed properties and return types
 - Organize imports alphabetically
 - No inline FQCNs: always use imports, never `\Namespace\Class::class` inline (enforced by Pint's `global_namespace_import` rule)

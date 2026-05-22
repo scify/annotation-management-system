@@ -73,7 +73,7 @@ readonly class DashboardService {
 
     /**
      * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
-     * @param  Collection<int, mixed>|null  $activeSubProjectIds
+     * @param  Collection<int, int>|null  $activeSubProjectIds
      *
      * @return array<int, array<string, mixed>>
      */
@@ -85,7 +85,7 @@ readonly class DashboardService {
      * @param  array<int, array<string, mixed>>  $my_projects
      * @param  array<int, array<string, mixed>>|null  $all_annotators
      * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
-     * @param  Collection<int, mixed>|null  $activeSubProjectIds
+     * @param  Collection<int, int>|null  $activeSubProjectIds
      *
      * @return array<int, array<string, mixed>>
      */
@@ -105,11 +105,11 @@ readonly class DashboardService {
             return $this->annotatorService->getAnnotatorsByIds($annotatorIds, $progressBySubProject, $activeSubProjectIds);
         }
 
-        $annotatorIds = array_map(fn (mixed $id): int => (int) $id, $annotatorIds);
+        $annotatorIds = array_map(fn (mixed $id): int => $id, $annotatorIds);
 
         return array_values(array_filter(
             $all_annotators,
-            fn (array $annotator): bool => in_array((int) $annotator['id'], $annotatorIds, true),
+            fn (array $annotator): bool => is_int($annotator['id']) && in_array($annotator['id'], $annotatorIds, true),
         ));
     }
 }

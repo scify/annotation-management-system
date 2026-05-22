@@ -144,7 +144,7 @@ readonly class MonitorService {
         /** @var SupportCollection<int|string, Collection<int, AnnotatorOfProject>> $linksByAnnotator */
         $linksByAnnotator = $annotatorProjectLinks->groupBy('user_id');
 
-        /** @var array<int, mixed> $annotatorIds */
+        /** @var array<int, int> $annotatorIds */
         $annotatorIds = $annotators->pluck('id')->all();
         $workloadsByAnnotator = $this->workloadService->computeNormalizedWorkloads($annotatorIds);
 
@@ -218,7 +218,9 @@ readonly class MonitorService {
             ->values()
             ->all();
 
-        $progressBySubProject = $this->subProjectService->getProgress($subProjects->pluck('id')->all());
+        /** @var array<int, int> $subProjectIds */
+        $subProjectIds = $subProjects->pluck('id')->all();
+        $progressBySubProject = $this->subProjectService->getProgress($subProjectIds);
 
         return [
             'id' => $project->id,

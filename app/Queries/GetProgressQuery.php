@@ -17,7 +17,7 @@ final readonly class GetProgressQuery {
             return [];
         }
 
-        /** @var array<int, array<string, mixed>> $rows */
+        /** @var array<int, array{annotation_assignment_id: int|string, annotations_all: int|string, annotations_done: int|string|null}> $rows */
         $rows = Annotation::query()
             ->whereIn('annotation_assignment_id', $annotationAssignmentIds)
             ->selectRaw('

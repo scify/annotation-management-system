@@ -22,7 +22,8 @@ class RestrictApiAccess {
         $origin = $request->header('origin');
         $referer = $request->header('referer');
 
-        $appUrl = mb_rtrim((string) config('app.url'), '/');
+        $appUrl = mb_rtrim(config()->string('app.url'), '/');
+
         $allowedOrigins = [$appUrl];
 
         $originAllowed = $origin && in_array($origin, $allowedOrigins);

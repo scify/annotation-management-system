@@ -14,7 +14,7 @@ class UsersSeeder extends Seeder {
      * Run the database seeds.
      */
     public function run(): void {
-        $password = config('app.default_user_password_for_seeder');
+        $password = config()->string('app.default_user_password_for_seeder');
 
         // Create or update the admin user
         $admin = User::query()->updateOrCreate(['email' => 'admin@scify.org'], [
