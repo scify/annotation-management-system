@@ -99,7 +99,8 @@
         ],
         "check": [
             "@check:backend",
-            "@check:frontend"
+            "@check:frontend",
+            "@check:types"
         ],
         "check:backend": [
             "pint --parallel --test",
