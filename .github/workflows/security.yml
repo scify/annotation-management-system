@@ -4,11 +4,6 @@ permissions:
     contents: read
 
 on:
-    pull_request:
-        branches:
-            - main
-            - release
-            - develop
     schedule:
         # Run every week on Monday at 2 AM UTC (3 AM EST)
         - cron: '0 2 * * 1'
