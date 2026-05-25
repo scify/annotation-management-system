@@ -23,6 +23,7 @@ import { RolesEnum } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Mail, Plus } from 'lucide-react';
 import { useState } from 'react';
+import { CreateAnnotatorForm } from '../create-annotator/create-annotator-form';
 import { RoleBadge } from '../shared/role-badge';
 import { StatusBadge } from '../shared/status-badge';
 
@@ -70,10 +71,15 @@ type StatusFilter = 'all' | 'active' | 'inactive';
 export function AnnotatorsTab() {
     const { t } = useTranslations();
     const { can } = useAuth();
+    const [showCreateForm, setShowCreateForm] = useState(false);
     const [showOnlyMine, setShowOnlyMine] = useState(false);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [search, setSearch] = useState('');
     const [messageTarget, setMessageTarget] = useState<MockAnnotator | null>(null);
+
+    if (showCreateForm) {
+        return <CreateAnnotatorForm onCancel={() => setShowCreateForm(false)} />;
+    }
 
     const filtered = MOCK_ANNOTATORS.filter((a) => {
         if (statusFilter !== 'all' && a.status !== statusFilter) return false;
@@ -122,13 +128,14 @@ export function AnnotatorsTab() {
                 </div>
 
                 {can('create_annotators') && (
-                    <Link
-                        href={route('users.create')}
-                        className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    <button
+                        type="button"
+                        onClick={() => setShowCreateForm(true)}
+                        className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         {t('users.actions.create_annotator')}
                         <Plus className="h-4 w-4" aria-hidden="true" />
-                    </Link>
+                    </button>
                 )}
             </div>
 

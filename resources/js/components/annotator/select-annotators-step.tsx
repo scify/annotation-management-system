@@ -21,7 +21,7 @@ interface SelectAnnotatorsStepProps {
     onSelectionChange: (id: number, checked: boolean) => void;
     onSelectAllChange: (ids: number[], checked: boolean) => void;
     /** @default 'sub-projects' */
-    translationNamespace?: 'sub-projects' | 'projects';
+    translationNamespace?: 'sub-projects' | 'projects' | 'users';
 }
 
 export function SelectAnnotatorsStep({

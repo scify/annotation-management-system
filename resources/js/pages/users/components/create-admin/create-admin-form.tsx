@@ -1,57 +1,49 @@
 import { useTranslations } from '@/hooks/use-translations';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useState } from 'react';
-import { CreateManagerStepper } from './create-manager-stepper';
-import { ConnectAnnotatorsStep } from './steps/connect-annotators-step';
-import { ConnectProjectsStep } from './steps/connect-projects-step';
-import { DatasetsStep } from './steps/datasets-step';
-import { PersonalInfoStep } from './steps/personal-info-step';
-import { MOCK_TASK_TYPES, TasksAccessStep } from './steps/tasks-access-step';
+import { CreateManagerStepper } from '../create-manager/create-manager-stepper';
+import { ConnectAnnotatorsStep } from '../create-manager/steps/connect-annotators-step';
+import { ConnectProjectsStep } from '../create-manager/steps/connect-projects-step';
+import { PersonalInfoStep } from '../create-manager/steps/personal-info-step';
 
-export interface CreateManagerFormData {
+export interface CreateAdminFormData {
     name: string;
     username: string;
     email: string;
     password: string;
     password_confirmation: string;
     status: 'active' | 'inactive';
-    task_type_ids: number[];
-    dataset_ids: number[];
     project_ids: number[];
     annotator_ids: number[];
 }
 
-interface CreateManagerFormProps {
+interface CreateAdminFormProps {
     onCancel: () => void;
 }
 
-const LAST_STEP = 4;
+const LAST_STEP = 2;
 
-export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
+export function CreateAdminForm({ onCancel }: CreateAdminFormProps) {
     const { t } = useTranslations();
     const [currentStep, setCurrentStep] = useState(0);
-    const [formData, setFormData] = useState<CreateManagerFormData>({
+    const [formData, setFormData] = useState<CreateAdminFormData>({
         name: '',
         username: '',
         email: '',
         password: '',
         password_confirmation: '',
         status: 'active',
-        task_type_ids: [],
-        dataset_ids: [],
         project_ids: [],
         annotator_ids: [],
     });
 
     const steps = [
         { label: t('users.steps.personal_info') },
-        { label: t('users.steps.tasks_access') },
-        { label: t('users.steps.datasets') },
         { label: t('users.steps.connect_projects') },
         { label: t('users.steps.connect_annotators') },
     ];
 
-    function handleChange(updates: Partial<CreateManagerFormData>) {
+    function handleChange(updates: Partial<CreateAdminFormData>) {
         setFormData((prev) => ({ ...prev, ...updates }));
     }
 
@@ -68,9 +60,9 @@ export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
     }
 
     return (
-        <section aria-label={t('users.actions.create_manager')} className="flex flex-col gap-6">
+        <section aria-label={t('users.actions.create_admin')} className="flex flex-col gap-6">
             <h1 className="text-3xl font-light text-slate-800">
-                {t('users.actions.create_manager')}
+                {t('users.actions.create_admin')}
             </h1>
 
             <CreateManagerStepper currentStep={currentStep} steps={steps} />
@@ -83,27 +75,12 @@ export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
                     />
                 )}
                 {currentStep === 1 && (
-                    <TasksAccessStep
-                        selectedIds={formData.task_type_ids}
-                        onSelectionChange={(ids) => handleChange({ task_type_ids: ids })}
-                    />
-                )}
-                {currentStep === 2 && (
-                    <DatasetsStep
-                        taskTypes={MOCK_TASK_TYPES.filter((tt) =>
-                            formData.task_type_ids.includes(tt.id)
-                        )}
-                        selectedDatasetIds={formData.dataset_ids}
-                        onSelectionChange={(ids) => handleChange({ dataset_ids: ids })}
-                    />
-                )}
-                {currentStep === 3 && (
                     <ConnectProjectsStep
                         selectedProjectIds={formData.project_ids}
                         onSelectionChange={(ids) => handleChange({ project_ids: ids })}
                     />
                 )}
-                {currentStep === 4 && (
+                {currentStep === 2 && (
                     <ConnectAnnotatorsStep
                         selectedAnnotatorIds={formData.annotator_ids}
                         onSelectionChange={(ids) => handleChange({ annotator_ids: ids })}
@@ -138,7 +115,7 @@ export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
                     className="focus-visible:ring-brand-blue-700 bg-brand-blue-700 hover:bg-brand-blue-800 inline-flex h-10 items-center gap-1.5 rounded-lg px-4 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
                 >
                     {currentStep === LAST_STEP
-                        ? t('users.actions.create_manager')
+                        ? t('users.actions.create_admin')
                         : t('users.actions.next')}
                     <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </button>

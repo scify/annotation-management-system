@@ -34,7 +34,7 @@ class MonitorController extends Controller {
             Storage::disk('local')->put('monitor-active-work-data.json', $json);
         }
 
-        return Inertia::render('monitor/index', ['active_work_tab_data' => $data]);
+        return Inertia::render('monitor/index', ['annotator_progress_tab_data' => $data]);
     }
 
     public function annotatorHistory(): Response {
@@ -48,6 +48,6 @@ class MonitorController extends Controller {
             Storage::disk('local')->put('monitor-history-data.json', $json);
         }
 
-        return Inertia::render('monitor/index', ['history_tab_data' => $data]);
+        return Inertia::render('monitor/index', ['annotator_history_tab_data' => $data]);
     }
 }

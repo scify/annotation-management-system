@@ -7,11 +7,19 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
-import { type CreateManagerFormData } from '../create-manager-form';
+
+export interface PersonalInfoData {
+    name: string;
+    username: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+    status: 'active' | 'inactive';
+}
 
 interface PersonalInfoStepProps {
-    data: CreateManagerFormData;
-    onChange: (updates: Partial<CreateManagerFormData>) => void;
+    data: PersonalInfoData;
+    onChange: (updates: Partial<PersonalInfoData>) => void;
 }
 
 interface FieldProps {
@@ -86,7 +94,7 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
                         <Select
                             value={data.status}
                             onValueChange={(v) =>
-                                onChange({ status: v as CreateManagerFormData['status'] })
+                                onChange({ status: v as PersonalInfoData['status'] })
                             }
                         >
                             <SelectTrigger className="bg-white">

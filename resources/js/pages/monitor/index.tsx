@@ -136,7 +136,7 @@ function normalizeHistoryAnnotator(a: BackendHistoryAnnotator): HistoryAnnotator
 
 interface Props {
     annotator_progress_tab_data?: BackendActiveWorkData;
-    history_tab_data?: BackendHistoryData;
+    annotator_history_tab_data?: BackendHistoryData;
 }
 
 function SectionToggle({
@@ -177,7 +177,10 @@ type SortDir = 'asc' | 'desc' | 'none';
 
 const GRID_COLS = 'grid-cols-[52px_194px_150px_1fr_1fr_156px_195px_56px]';
 
-export default function MonitorIndex({ annotator_progress_tab_data, history_tab_data }: Props) {
+export default function MonitorIndex({
+    annotator_progress_tab_data,
+    annotator_history_tab_data,
+}: Props) {
     const { t } = useTranslations();
     const isAnnotationManager = useAuth().isAnnotationManager();
 
@@ -213,10 +216,10 @@ export default function MonitorIndex({ annotator_progress_tab_data, history_tab_
 
     const historyAnnotators = useMemo(() => {
         const raw = showOnlyMine
-            ? (history_tab_data?.my_annotators ?? [])
-            : (history_tab_data?.all_annotators ?? []);
+            ? (annotator_history_tab_data?.my_annotators ?? [])
+            : (annotator_history_tab_data?.all_annotators ?? []);
         return raw.map(normalizeHistoryAnnotator);
-    }, [history_tab_data, showOnlyMine]);
+    }, [annotator_history_tab_data, showOnlyMine]);
 
     const filtered = useMemo(() => {
         let result = [...annotators];
