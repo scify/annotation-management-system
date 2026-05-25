@@ -17,10 +17,10 @@ export function useFlashMessages() {
     // Stable string dep: join sorted values with null byte (cannot appear in validation messages)
     const errorKey = Object.values(errors ?? {})
         .sort((a, b) => a.localeCompare(b))
-        .join(' ');
+        .join('\0');
     useEffect(() => {
         errorKey
-            .split(' ')
+            .split('\0')
             .filter(Boolean)
             .forEach((msg) => toast.error(msg));
     }, [errorKey]);
