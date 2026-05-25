@@ -4,10 +4,10 @@ import { useTranslations } from '@/hooks/use-translations';
 import { type User, RolesEnum } from '@/types';
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
-import { AdminsTab } from './components/admins-tab';
-import { AnnotatorsTab } from './components/annotators-tab';
-import { ManagersTab } from './components/managers-tab';
-import { UsersTabs, type UserTab } from './components/users-tabs';
+import { AdminsTab } from './components/tabs/admins-tab';
+import { AnnotatorsTab } from './components/tabs/annotators-tab';
+import { ManagersTab } from './components/tabs/managers-tab';
+import { UsersTabs, type UserTab } from './components/tabs/users-tabs';
 
 interface Props {
     users: User[];

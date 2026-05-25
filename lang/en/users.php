@@ -25,6 +25,25 @@ return [
         'create_manager' => 'Create New Manager',
         'create_admin' => 'Create New Admin',
         'create_annotator' => 'Create New Annotator',
+        'next' => 'Next',
+        'back' => 'Back',
+        'cancel' => 'Cancel',
+    ],
+    'datasets' => [
+        'heading' => 'Datasets',
+        'instances' => ':count Instances',
+        'no_task_types' => 'No task types selected. Go back to step 2 and select at least one task type.',
+    ],
+    'tasks_access' => [
+        'heading' => 'Tasks & Datasets',
+    ],
+    'steps' => [
+        'personal_info' => 'Personal Info',
+        'tasks_access' => 'Tasks Access',
+        'datasets' => 'Datasets',
+        'connect_projects' => 'Connect to Projects',
+        'connect_annotators' => 'Connect to Annotators',
+        'coming_soon' => 'This step will be implemented soon.',
     ],
     'labels' => [
         'name' => 'Name',

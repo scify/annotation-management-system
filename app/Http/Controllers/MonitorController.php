@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Services\Monitor\MonitorActiveWorkTabService;
-use App\Services\Monitor\MonitorHistoryTabService;
+use App\Services\Monitor\MonitorAnnotatorHistoryTabService;
+use App\Services\Monitor\MonitorAnnotatorProgressTabService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -15,19 +15,19 @@ use Inertia\Response;
 
 class MonitorController extends Controller {
     public function __construct(
-        private readonly MonitorActiveWorkTabService $activeWorkTabService,
-        private readonly MonitorHistoryTabService $historyTabService,
+        private readonly MonitorAnnotatorProgressTabService $annotatorProgressTabService,
+        private readonly MonitorAnnotatorHistoryTabService $annotatorHistoryTabService,
     ) {}
 
     public function index(): RedirectResponse {
-        return to_route('monitor.active-work');
+        return to_route('monitor.annotator-progress');
     }
 
-    public function activeWork(): Response {
+    public function annotatorProgress(): Response {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data = $this->activeWorkTabService->getData($user);
+        $data = $this->annotatorProgressTabService->getData($user);
 
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if (is_string($json)) {
@@ -37,11 +37,11 @@ class MonitorController extends Controller {
         return Inertia::render('monitor/index', ['active_work_tab_data' => $data]);
     }
 
-    public function history(): Response {
+    public function annotatorHistory(): Response {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data = $this->historyTabService->getData($user);
+        $data = $this->annotatorHistoryTabService->getData($user);
 
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if (is_string($json)) {

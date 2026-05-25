@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 return [
     'page_title' => 'Monitor',
-    'tab_active_work' => 'Active Work',
-    'tab_history' => 'History',
+    'tab_annotator_progress' => 'Annotator Progress',
+    'tab_annotator_history' => 'Annotator History',
     'show_only_mine' => 'Show only Annotators I am connected with',
     'sort_by_name' => 'Sort by Name',
     'sort_by_workload' => 'Sort by Workload',

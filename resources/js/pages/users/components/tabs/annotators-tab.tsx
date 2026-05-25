@@ -23,8 +23,8 @@ import { RolesEnum } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Mail, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { RoleBadge } from './role-badge';
-import { StatusBadge } from './status-badge';
+import { RoleBadge } from '../shared/role-badge';
+import { StatusBadge } from '../shared/status-badge';
 
 interface MockAnnotator {
     id: number;
