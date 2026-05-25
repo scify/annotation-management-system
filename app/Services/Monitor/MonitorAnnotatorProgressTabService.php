@@ -153,12 +153,26 @@ readonly class MonitorAnnotatorProgressTabService {
 
             /** @var Collection<int, AnnotationAssignment> $myAssignments */
             $myAssignments = $assignmentsByAnnotator->get($annotator->id) ?? new Collection();
+            /** @var array<int, int> $mySubProjectIds */
             $mySubProjectIds = $myAssignments->pluck('sub_project_id')->all();
 
             /** @var Collection<int, Project> $myProjects */
             $myProjects = $projectsById->filter(
                 fn (Project $p): bool => in_array($p->id, $myProjectIds, true)
             );
+
+            $progressBySubProject = $this->subProjectService->getProgress($mySubProjectIds);
+
+            $totalAll = 0;
+            $totalDone = 0;
+            foreach ($progressBySubProject as $spProgress) {
+                foreach ($spProgress['assignments'] as $assignment) {
+                    $totalAll += $assignment['annotations_all'];
+                    $totalDone += $assignment['annotations_done'];
+                }
+            }
+
+            $annotatorProgress = $totalAll > 0 ? (float) ($totalDone / $totalAll) : 0.0;
 
             $projectsData = [];
             $hiddenProjectsData = [];
@@ -179,6 +193,7 @@ readonly class MonitorAnnotatorProgressTabService {
                         $project,
                         $annotatorSubProjects,
                         $workloadsByAnnotator[$annotator->id]['per_subproject'] ?? [],
+                        $progressBySubProject,
                     );
                 }
             }
@@ -190,7 +205,7 @@ readonly class MonitorAnnotatorProgressTabService {
                 'active_subprojects' => count($mySubProjectIds),
                 'active_projects' => $myProjects->count(),
                 'workload' => $workloadsByAnnotator[$annotator->id]['total'] ?? 0.5,
-                'progress' => 0.5,
+                'progress' => $annotatorProgress,
                 'projects' => $projectsData,
                 'hidden_projects' => $hiddenProjectsData,
             ];
@@ -202,10 +217,11 @@ readonly class MonitorAnnotatorProgressTabService {
     /**
      * @param  Collection<int, SubProject>  $subProjects
      * @param  array<int, float>  $subprojectWorkloads  Normalized workload keyed by sub_project_id
+     * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
      *
      * @return array<string, mixed>
      */
-    private function formatProject(Project $project, Collection $subProjects, array $subprojectWorkloads): array {
+    private function formatProject(Project $project, Collection $subProjects, array $subprojectWorkloads, array $progressBySubProject): array {
         $ownerId = $project->owner_user_id;
 
         $coManagers = $project->projectManagers
@@ -214,9 +230,16 @@ readonly class MonitorAnnotatorProgressTabService {
             ->values()
             ->all();
 
-        /** @var array<int, int> $subProjectIds */
-        $subProjectIds = $subProjects->pluck('id')->all();
-        $progressBySubProject = $this->subProjectService->getProgress($subProjectIds);
+        $projectTotalAll = 0;
+        $projectTotalDone = 0;
+        foreach ($subProjects as $sp) {
+            foreach (($progressBySubProject[$sp->id]['assignments'] ?? []) as $assignment) {
+                $projectTotalAll += $assignment['annotations_all'];
+                $projectTotalDone += $assignment['annotations_done'];
+            }
+        }
+
+        $projectProgress = $projectTotalAll > 0 ? (float) ($projectTotalDone / $projectTotalAll) : 0.0;
 
         return [
             'id' => $project->id,
@@ -226,7 +249,7 @@ readonly class MonitorAnnotatorProgressTabService {
             'dataset_name' => $project->dataset->name,
             'owner_name' => $project->owner->username,
             'co_managers' => $coManagers,
-            'project_progress' => 0.5,
+            'project_progress' => $projectProgress,
             'notifications_count' => 0,
             'started_at' => $project->started_at,
             'completed_at' => $project->completed_at,
@@ -241,6 +264,10 @@ readonly class MonitorAnnotatorProgressTabService {
                     'status' => $sp->status,
                     'workload' => $subprojectWorkloads[$sp->id] ?? 0.5,
                     'progress' => $progressBySubProject[$sp->id]['progress'] ?? 0.0,
+                    'started_at' => $sp->started_at,
+                    'completed_at' => $sp->completed_at,
+                    'scheduled_at' => $sp->scheduled_at,
+                    'deadline_at' => $sp->deadline_at,
                 ])
                 ->values()
                 ->all(),
