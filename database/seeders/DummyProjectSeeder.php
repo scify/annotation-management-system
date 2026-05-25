@@ -21,6 +21,7 @@ use App\Models\SubProject;
 use App\Models\User;
 use App\Services\Dataset\DatasetService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 
 class DummyProjectSeeder extends Seeder {
     public function run(): void {
@@ -328,7 +329,7 @@ class DummyProjectSeeder extends Seeder {
 
                         $confidenceRows = array_map(fn (int $annotationId): array => [
                             'annotation_id' => $annotationId,
-                            'value' => $confidenceCases[array_rand($confidenceCases)]->value,
+                            'value' => Arr::random($confidenceCases)->value,
                             'created_at' => $now,
                             'updated_at' => $now,
                         ], $annotationIds);
