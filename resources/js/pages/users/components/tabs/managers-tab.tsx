@@ -140,6 +140,7 @@ export function ManagersTab() {
                 <Select
                     value={statusFilter}
                     onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+                    aria-label={t('users.labels.status')}
                 >
                     <SelectTrigger className="w-[215px] bg-white">
                         <SelectValue
