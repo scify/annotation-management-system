@@ -11,249 +11,133 @@ import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { AnnotatorRow } from './components/annotator-row';
 import { MonitorHistory } from './components/monitor-history';
-import type { MonitorAnnotator } from './types';
+import type {
+    BackendActiveWorkData,
+    BackendAnnotator,
+    BackendHiddenProject,
+    BackendHistoryAnnotator,
+    BackendHistoryData,
+    BackendProject,
+    BackendSubproject,
+    HiddenProject,
+    HistoryAnnotator,
+    HistoryAnnotatorSubproject,
+    MonitorAnnotator,
+    MonitorProject,
+    SubProject,
+} from './types';
 
-const MOCK_ANNOTATORS: MonitorAnnotator[] = [
-    {
-        id: 1,
-        username: '@Nazpapad',
-        initials: 'N',
-        status: 'active',
-        activeSubprojects: 23,
-        activeProjects: 2,
-        remainingWorkload: 72,
-        progress: 75,
+// ── Adapter: backend → normalized UI types ─────────────────────────────────────
+
+function normalizeSubproject(sp: BackendSubproject): SubProject {
+    return {
+        id: sp.id,
+        name: sp.name,
+        // TODO(backend): replace with real subproject dates once backend adds started_at/deadline_at to subprojects
+        dateRange: '',
+        remainingWorkload: Math.round(sp.workload * 100),
+        progress: Math.round(sp.progress * 100),
+        state: sp.status as SubProject['state'],
+    };
+}
+
+function normalizeProject(p: BackendProject): MonitorProject {
+    return {
+        id: p.id,
+        name: p.name,
+        annotation_task_title: p.annotation_task_title,
+        dataset_name: p.dataset_name,
+        started_at: p.started_at,
+        completed_at: p.completed_at,
+        scheduled_at: p.scheduled_at,
+        deadline_at: p.deadline_at,
+        is_delayed_to_start: p.is_delayed_to_start,
+        is_delayed_to_end: p.is_delayed_to_end,
+        status: p.status as MonitorProject['status'],
+        owner: p.owner_name,
+        coManagers: p.co_managers.map((cm) => cm.username),
+        overallProgress: Math.round(p.project_progress * 100),
+        notifications_count: p.notifications_count,
+        subprojects: p.subprojects.map(normalizeSubproject),
+    };
+}
+
+function normalizeHiddenProject(hp: BackendHiddenProject): HiddenProject {
+    return {
+        restricted: true,
+        owner: hp.owner_name,
+        assignedCount: hp.active_subprojects_count,
+        // TODO(backend): replace with real value once backend adds assigned_to to hidden_projects
+        assignedTo: '',
+    };
+}
+
+function normalizeAnnotator(a: BackendAnnotator): MonitorAnnotator {
+    return {
+        id: a.id,
+        username: a.username,
+        initials: a.username[0]?.toUpperCase() ?? '?',
+        status: a.status ? 'active' : 'inactive',
+        activeSubprojects: a.active_subprojects,
+        activeProjects: a.active_projects,
+        remainingWorkload: Math.round(a.workload * 100),
+        progress: Math.round(a.progress * 100),
         projects: [
-            {
-                id: 1,
-                name: 'Project New Nov_26',
-                started_at: null,
-                completed_at: null,
-                scheduled_at: '2026-01-15',
-                deadline_at: '2026-02-15',
-                is_delayed_to_start: false,
-                is_delayed_to_end: false,
-                status: 'in_progress',
-                owner: '@akosmo',
-                coManagers: ['@nellysav', '@nazpapadaki', '@georgiou', '@mariap'],
-                overallProgress: 25,
-                subprojects: [
-                    {
-                        id: 1,
-                        name: 'Text Annotation Batch March _2026',
-                        dateRange: 'Jan 15, 2026 – Feb 28, 2026',
-                        remainingWorkload: 100,
-                        progress: 100,
-                        state: 'in_progress',
-                    },
-                    {
-                        id: 2,
-                        name: 'Text Annotation Batch March _2026',
-                        dateRange: 'Jan 15, 2026 – Feb 28, 2026',
-                        remainingWorkload: 100,
-                        progress: 100,
-                        state: 'in_progress',
-                    },
-                    {
-                        id: 3,
-                        name: 'Text Annotation Batch March _2026',
-                        dateRange: 'Jan 15, 2026 – Feb 28, 2026',
-                        remainingWorkload: 100,
-                        progress: 100,
-                        state: 'in_progress',
-                    },
-                ],
-            },
-            {
-                id: 2,
-                name: 'Text annotation – describe the meaning of the word',
-                started_at: null,
-                completed_at: null,
-                scheduled_at: '2026-01-15',
-                deadline_at: '2026-02-15',
-                is_delayed_to_start: false,
-                is_delayed_to_end: false,
-                status: 'in_progress',
-                owner: '@akosmo',
-                coManagers: ['@nellysav', '@nazpapadaki', '@georgiou', '@mariap'],
-                overallProgress: 25,
-                subprojects: [
-                    {
-                        id: 4,
-                        name: 'Semantic Labelling Batch A',
-                        dateRange: 'Jan 20, 2026 – Feb 10, 2026',
-                        remainingWorkload: 60,
-                        progress: 40,
-                        state: 'in_progress',
-                    },
-                    {
-                        id: 5,
-                        name: 'Semantic Labelling Batch B',
-                        dateRange: 'Jan 20, 2026 – Feb 10, 2026',
-                        remainingWorkload: 80,
-                        progress: 20,
-                        state: 'pending',
-                    },
-                ],
-            },
-            {
-                restricted: true,
-                owner: '@akosmo',
-                assignedCount: 5,
-                assignedTo: '@Nazpapad',
-            },
+            ...a.projects.map(normalizeProject),
+            ...a.hidden_projects.map(normalizeHiddenProject),
         ],
-    },
-    {
-        id: 2,
-        username: '@NellySav',
-        initials: 'N',
-        status: 'active',
-        activeSubprojects: 12,
-        activeProjects: 5,
-        remainingWorkload: 74,
-        progress: 75,
-        projects: [
-            {
-                id: 3,
-                name: 'Audio Transcription Sprint',
-                started_at: null,
-                completed_at: null,
-                scheduled_at: '2026-02-01',
-                deadline_at: '2026-03-01',
-                is_delayed_to_start: false,
-                is_delayed_to_end: false,
-                status: 'in_progress',
-                owner: '@akosmo',
-                coManagers: ['@nazpapadaki'],
-                overallProgress: 75,
-                subprojects: [
-                    {
-                        id: 6,
-                        name: 'Audio Batch Q1',
-                        dateRange: 'Feb 1, 2026 – Feb 15, 2026',
-                        remainingWorkload: 70,
-                        progress: 80,
-                        state: 'in_progress',
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        id: 3,
-        username: '@fpapastergiou',
-        initials: 'F',
-        status: 'active',
-        activeSubprojects: 23,
-        activeProjects: 2,
-        remainingWorkload: 52,
-        progress: 50,
-        projects: [
-            {
-                id: 4,
-                name: 'Image Classification Round 3',
-                started_at: null,
-                completed_at: null,
-                scheduled_at: '2026-01-10',
-                deadline_at: '2026-03-10',
-                is_delayed_to_start: false,
-                is_delayed_to_end: false,
-                status: 'in_progress',
-                owner: '@akosmo',
-                coManagers: ['@nellysav'],
-                overallProgress: 50,
-                subprojects: [
-                    {
-                        id: 7,
-                        name: 'Image Batch Jan',
-                        dateRange: 'Jan 10, 2026 – Feb 10, 2026',
-                        remainingWorkload: 50,
-                        progress: 50,
-                        state: 'in_progress',
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        id: 4,
-        username: '@vasilisgiannakopolos',
-        initials: 'V',
-        status: 'active',
-        activeSubprojects: 23,
-        activeProjects: 2,
-        remainingWorkload: 28,
-        progress: 25,
-        projects: [
-            {
-                id: 5,
-                name: 'Sentiment Analysis Phase 2',
-                started_at: null,
-                completed_at: null,
-                scheduled_at: '2026-01-05',
-                deadline_at: '2026-02-28',
-                is_delayed_to_start: false,
-                is_delayed_to_end: false,
-                status: 'in_progress',
-                owner: '@akosmo',
-                coManagers: ['@nellysav', '@nazpapadaki'],
-                overallProgress: 25,
-                subprojects: [
-                    {
-                        id: 8,
-                        name: 'Sentiment Batch Alpha',
-                        dateRange: 'Jan 5, 2026 – Feb 5, 2026',
-                        remainingWorkload: 28,
-                        progress: 25,
-                        state: 'in_progress',
-                    },
-                ],
-            },
-        ],
-    },
-    {
-        id: 5,
-        username: '@paulis',
-        initials: 'P',
-        status: 'active',
-        activeSubprojects: 23,
-        activeProjects: 2,
-        remainingWorkload: 72,
-        progress: 75,
-        projects: [
-            {
-                id: 6,
-                name: 'NER Annotation Campaign',
-                started_at: null,
-                completed_at: null,
-                scheduled_at: '2026-01-20',
-                deadline_at: '2026-03-20',
-                is_delayed_to_start: false,
-                is_delayed_to_end: false,
-                status: 'in_progress',
-                owner: '@akosmo',
-                coManagers: ['@nellysav'],
-                overallProgress: 75,
-                subprojects: [
-                    {
-                        id: 9,
-                        name: 'NER Batch Jan',
-                        dateRange: 'Jan 20, 2026 – Feb 20, 2026',
-                        remainingWorkload: 72,
-                        progress: 75,
-                        state: 'in_progress',
-                    },
-                ],
-            },
-        ],
-    },
-];
+    };
+}
+
+function normalizeHistoryAnnotator(a: BackendHistoryAnnotator): HistoryAnnotator {
+    return {
+        id: a.id,
+        username: a.username,
+        initials: a.username[0]?.toUpperCase() ?? '?',
+        status: a.is_active ? 'active' : 'inactive',
+        totalProjects: a.total_projects,
+        totalSubprojects: a.total_subprojects,
+        totalAnnotations: a.total_annotations,
+        totalFlags: a.total_flags,
+        // TODO(backend): wire to average_velocity once backend adds it
+        averageVelocity: null,
+        subprojects: a.subprojects.map(
+            (sp): HistoryAnnotatorSubproject => ({
+                project: sp.project_name,
+                subproject: sp.subproject_name,
+                annotations: sp.annotations,
+                flags: sp.flags,
+                // TODO(backend): wire to velocity once backend adds it
+                velocity: null,
+                confidence: sp.avg_confidence
+                    ? ((sp.avg_confidence[0].toUpperCase() + sp.avg_confidence.slice(1)) as
+                          | 'High'
+                          | 'Medium'
+                          | 'Low')
+                    : null,
+                dateCompleted: sp.completed_at
+                    ? new Date(sp.completed_at).toLocaleDateString('en-GB', {
+                          day: 'numeric',
+                          month: 'short',
+                          year: 'numeric',
+                      })
+                    : '',
+            })
+        ),
+    };
+}
+
+// ── Page component ─────────────────────────────────────────────────────────────
+
+interface Props {
+    active_work_tab_data?: BackendActiveWorkData;
+    history_tab_data?: BackendHistoryData;
+}
 
 function SectionToggle({
     checked,
@@ -293,7 +177,7 @@ type SortDir = 'asc' | 'desc' | 'none';
 
 const GRID_COLS = 'grid-cols-[52px_194px_150px_1fr_1fr_156px_195px_56px]';
 
-export default function MonitorIndex() {
+export default function MonitorIndex({ active_work_tab_data, history_tab_data }: Props) {
     const { t } = useTranslations();
     const isAnnotationManager = useAuth().isAnnotationManager();
 
@@ -302,15 +186,36 @@ export default function MonitorIndex() {
         { title: t('monitor.page_title'), href: route('monitor.index') },
     ];
 
-    const [activeTab, setActiveTab] = useState<TabKey>('active_work');
+    const initialTab: TabKey = active_work_tab_data !== undefined ? 'active_work' : 'history';
+    const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
     const [showOnlyMine, setShowOnlyMine] = useState(false);
     const [search, setSearch] = useState('');
     const [sortNameDir, setSortNameDir] = useState<SortDir>('none');
     const [sortWorkloadDir, setSortWorkloadDir] = useState<SortDir>('none');
     const [lastSort, setLastSort] = useState<'name' | 'workload' | null>(null);
 
+    function handleTabChange(tab: TabKey) {
+        setActiveTab(tab);
+        const routeName = tab === 'active_work' ? 'monitor.active-work' : 'monitor.history';
+        router.visit(route(routeName), { preserveScroll: true });
+    }
+
+    const annotators = useMemo(() => {
+        const raw = showOnlyMine
+            ? (active_work_tab_data?.my_annotators ?? [])
+            : (active_work_tab_data?.all_annotators ?? []);
+        return raw.map(normalizeAnnotator);
+    }, [active_work_tab_data, showOnlyMine]);
+
+    const historyAnnotators = useMemo(() => {
+        const raw = showOnlyMine
+            ? (history_tab_data?.my_annotators ?? [])
+            : (history_tab_data?.all_annotators ?? []);
+        return raw.map(normalizeHistoryAnnotator);
+    }, [history_tab_data, showOnlyMine]);
+
     const filtered = useMemo(() => {
-        let result = [...MOCK_ANNOTATORS];
+        let result = [...annotators];
 
         if (search.trim()) {
             const q = search.toLowerCase();
@@ -332,7 +237,7 @@ export default function MonitorIndex() {
         }
 
         return result;
-    }, [search, sortNameDir, sortWorkloadDir, lastSort]);
+    }, [annotators, search, sortNameDir, sortWorkloadDir, lastSort]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -357,7 +262,7 @@ export default function MonitorIndex() {
                                 role="tab"
                                 aria-selected={activeTab === 'active_work'}
                                 aria-controls="monitor-active-work"
-                                onClick={() => setActiveTab('active_work')}
+                                onClick={() => handleTabChange('active_work')}
                                 className={cn(
                                     'flex h-10 flex-1 items-center justify-center border-r border-slate-200 px-3 text-sm transition-colors hover:cursor-pointer',
                                     activeTab === 'active_work'
@@ -371,7 +276,7 @@ export default function MonitorIndex() {
                                 role="tab"
                                 aria-selected={activeTab === 'history'}
                                 aria-controls="monitor-history"
-                                onClick={() => setActiveTab('history')}
+                                onClick={() => handleTabChange('history')}
                                 className={cn(
                                     'flex h-10 flex-1 items-center justify-center px-3 text-sm transition-colors hover:cursor-pointer',
                                     activeTab === 'history'
@@ -397,6 +302,7 @@ export default function MonitorIndex() {
                             <div className="flex gap-4">
                                 <Select
                                     className="bg-white"
+                                    aria-label={t('monitor.sort_by_name')}
                                     value={sortNameDir}
                                     onValueChange={(v) => {
                                         setSortNameDir(v as SortDir);
@@ -422,6 +328,7 @@ export default function MonitorIndex() {
                                 <Select
                                     value={sortWorkloadDir}
                                     className="bg-white"
+                                    aria-label={t('monitor.sort_by_workload')}
                                     onValueChange={(v) => {
                                         setSortWorkloadDir(v as SortDir);
                                         setLastSort('workload');
@@ -533,7 +440,7 @@ export default function MonitorIndex() {
                     </div>
                 ) : (
                     <div id="monitor-history" role="tabpanel">
-                        <MonitorHistory />
+                        <MonitorHistory annotators={historyAnnotators} />
                     </div>
                 )}
             </div>

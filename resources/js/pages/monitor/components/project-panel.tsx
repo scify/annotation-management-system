@@ -95,8 +95,8 @@ export function ProjectPanel({ project }: ProjectPanelProps) {
                     <span className="text-xs text-slate-500">{project.owner}</span>
                 </div>
                 <span className="ml-auto text-sm font-medium text-slate-800">
-                    {project.assignedCount} {t('monitor.subprojects_assigned_to')}{' '}
-                    {project.assignedTo}
+                    {project.assignedCount} {t('monitor.subprojects_assigned_to')}
+                    {project.assignedTo ? ` ${project.assignedTo}` : ''}
                 </span>
             </div>
         );

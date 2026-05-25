@@ -12,6 +12,7 @@ return [
         'password.reset', 'password.store', 'verification.notice', 'verification.verify',
         'verification.send', 'password.confirm', 'password.confirmation', 'projects.index',
         'projects.show', 'projects.subprojects.create', 'locale.update', 'projects.create',
-        'projects.subprojects.edit', 'monitor.index', 'projects.store',
+        'projects.subprojects.edit', 'monitor.index', 'projects.store', 'monitor.active-work',
+        'monitor.history',
     ],
 ];

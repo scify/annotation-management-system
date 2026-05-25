@@ -6,7 +6,7 @@ import type { HistoryAnnotator, HistoryAnnotatorSubproject } from '../types';
 
 const HISTORY_GRID_COLS = 'grid-cols-[52px_211px_133px_154px_154px_155px_154px_167px_64px]';
 
-type Confidence = HistoryAnnotatorSubproject['confidence'];
+type Confidence = NonNullable<HistoryAnnotatorSubproject['confidence']>;
 
 const CONFIDENCE_CLASSES: Record<Confidence, string> = {
     High: 'border-green-500 bg-green-50 text-green-600',
@@ -90,7 +90,7 @@ export function HistoryAnnotatorRow({ annotator }: HistoryAnnotatorRowProps) {
                 {/* Average Velocity */}
                 <div role="cell" className="flex h-full items-center justify-center">
                     <span className="text-base font-medium text-slate-800 tabular-nums">
-                        {annotator.averageVelocity}
+                        {annotator.averageVelocity ?? '—'}
                     </span>
                 </div>
 
@@ -153,20 +153,24 @@ export function HistoryAnnotatorRow({ annotator }: HistoryAnnotatorRowProps) {
                                 {sp.flags}
                             </span>
                             <span className="w-[115px] text-center text-xs font-medium text-slate-800 tabular-nums">
-                                {sp.velocity}
+                                {sp.velocity ?? '—'}
                             </span>
                             <span className="flex w-[115px] items-center justify-center">
-                                <span
-                                    className={cn(
-                                        'inline-flex h-[20px] min-w-[52px] items-center justify-center rounded border px-2 text-xs font-semibold',
-                                        CONFIDENCE_CLASSES[sp.confidence]
-                                    )}
-                                >
-                                    {t(`monitor.confidence_${sp.confidence.toLowerCase()}`)}
-                                </span>
+                                {sp.confidence !== null ? (
+                                    <span
+                                        className={cn(
+                                            'inline-flex h-[20px] min-w-[52px] items-center justify-center rounded border px-2 text-xs font-semibold',
+                                            CONFIDENCE_CLASSES[sp.confidence]
+                                        )}
+                                    >
+                                        {t(`monitor.confidence_${sp.confidence.toLowerCase()}`)}
+                                    </span>
+                                ) : (
+                                    <span className="text-xs text-slate-400">—</span>
+                                )}
                             </span>
                             <span className="w-[126px] text-center text-xs font-medium text-slate-800">
-                                {sp.dateCompleted}
+                                {sp.dateCompleted || '—'}
                             </span>
                         </div>
                     ))}

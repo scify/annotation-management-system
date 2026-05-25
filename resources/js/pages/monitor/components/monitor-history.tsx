@@ -17,183 +17,11 @@ type LastSort = 'name' | 'velocity';
 
 const HISTORY_GRID_COLS = 'grid-cols-[52px_211px_133px_154px_154px_155px_154px_167px_64px]';
 
-const MOCK_HISTORY: HistoryAnnotator[] = [
-    {
-        id: 1,
-        username: '@Nazpapad',
-        initials: 'N',
-        status: 'active',
-        totalProjects: 4,
-        totalSubprojects: 12,
-        totalAnnotations: 1340,
-        totalFlags: 23,
-        averageVelocity: 112,
-        subprojects: [
-            {
-                project: 'Project New Nov_26',
-                subproject: 'Text Annotation Batch March 2026',
-                annotations: 450,
-                flags: 8,
-                velocity: 120,
-                confidence: 'High',
-                dateCompleted: 'Mar 15, 2026',
-            },
-            {
-                project: 'Project New Nov_26',
-                subproject: 'Semantic Labelling Batch A',
-                annotations: 390,
-                flags: 5,
-                velocity: 105,
-                confidence: 'Medium',
-                dateCompleted: 'Feb 28, 2026',
-            },
-            {
-                project: 'Text annotation – meaning of words',
-                subproject: 'Batch Alpha',
-                annotations: 500,
-                flags: 10,
-                velocity: 110,
-                confidence: 'High',
-                dateCompleted: 'Jan 20, 2026',
-            },
-        ],
-    },
-    {
-        id: 2,
-        username: '@nellysav',
-        initials: 'NE',
-        status: 'active',
-        totalProjects: 3,
-        totalSubprojects: 9,
-        totalAnnotations: 980,
-        totalFlags: 14,
-        averageVelocity: 98,
-        subprojects: [
-            {
-                project: 'Project New Nov_26',
-                subproject: 'Text Annotation Batch March 2026',
-                annotations: 320,
-                flags: 4,
-                velocity: 95,
-                confidence: 'Medium',
-                dateCompleted: 'Mar 15, 2026',
-            },
-            {
-                project: 'Sentiment Analysis Q1',
-                subproject: 'Batch 1',
-                annotations: 660,
-                flags: 10,
-                velocity: 100,
-                confidence: 'High',
-                dateCompleted: 'Feb 10, 2026',
-            },
-        ],
-    },
-    {
-        id: 3,
-        username: '@akosmo',
-        initials: 'AK',
-        status: 'inactive',
-        totalProjects: 2,
-        totalSubprojects: 5,
-        totalAnnotations: 560,
-        totalFlags: 31,
-        averageVelocity: 72,
-        subprojects: [
-            {
-                project: 'Text annotation – meaning of words',
-                subproject: 'Batch Beta',
-                annotations: 310,
-                flags: 18,
-                velocity: 68,
-                confidence: 'Low',
-                dateCompleted: 'Jan 31, 2026',
-            },
-            {
-                project: 'Sentiment Analysis Q1',
-                subproject: 'Batch 2',
-                annotations: 250,
-                flags: 13,
-                velocity: 76,
-                confidence: 'Medium',
-                dateCompleted: 'Feb 20, 2026',
-            },
-        ],
-    },
-    {
-        id: 4,
-        username: '@georgiou',
-        initials: 'G',
-        status: 'active',
-        totalProjects: 5,
-        totalSubprojects: 14,
-        totalAnnotations: 2100,
-        totalFlags: 9,
-        averageVelocity: 150,
-        subprojects: [
-            {
-                project: 'Project New Nov_26',
-                subproject: 'Semantic Labelling Batch B',
-                annotations: 700,
-                flags: 2,
-                velocity: 155,
-                confidence: 'High',
-                dateCompleted: 'Mar 1, 2026',
-            },
-            {
-                project: 'Sentiment Analysis Q1',
-                subproject: 'Batch 3',
-                annotations: 800,
-                flags: 4,
-                velocity: 148,
-                confidence: 'High',
-                dateCompleted: 'Mar 10, 2026',
-            },
-            {
-                project: 'NER Dataset Labelling',
-                subproject: 'Sprint 1',
-                annotations: 600,
-                flags: 3,
-                velocity: 147,
-                confidence: 'High',
-                dateCompleted: 'Feb 5, 2026',
-            },
-        ],
-    },
-    {
-        id: 5,
-        username: '@mariap',
-        initials: 'MP',
-        status: 'active',
-        totalProjects: 3,
-        totalSubprojects: 7,
-        totalAnnotations: 870,
-        totalFlags: 17,
-        averageVelocity: 88,
-        subprojects: [
-            {
-                project: 'NER Dataset Labelling',
-                subproject: 'Sprint 2',
-                annotations: 430,
-                flags: 9,
-                velocity: 90,
-                confidence: 'Medium',
-                dateCompleted: 'Feb 18, 2026',
-            },
-            {
-                project: 'Text annotation – meaning of words',
-                subproject: 'Batch Gamma',
-                annotations: 440,
-                flags: 8,
-                velocity: 86,
-                confidence: 'Medium',
-                dateCompleted: 'Mar 5, 2026',
-            },
-        ],
-    },
-];
+interface MonitorHistoryProps {
+    annotators: HistoryAnnotator[];
+}
 
-export function MonitorHistory() {
+export function MonitorHistory({ annotators }: MonitorHistoryProps) {
     const { t } = useTranslations();
     const [search, setSearch] = useState('');
     const [sortNameDir, setSortNameDir] = useState<SortDir>('none');
@@ -201,7 +29,7 @@ export function MonitorHistory() {
     const [lastSort, setLastSort] = useState<LastSort>('name');
 
     const filtered = useMemo(() => {
-        let list = [...MOCK_HISTORY];
+        let list = [...annotators];
 
         if (search.trim()) {
             const q = search.trim().toLowerCase();
@@ -215,15 +43,17 @@ export function MonitorHistory() {
                     : b.username.localeCompare(a.username)
             );
         } else if (lastSort === 'velocity' && sortVelocityDir !== 'none') {
-            list.sort((a, b) =>
-                sortVelocityDir === 'asc'
+            list.sort((a, b) => {
+                if (a.averageVelocity === null) return 1;
+                if (b.averageVelocity === null) return -1;
+                return sortVelocityDir === 'asc'
                     ? a.averageVelocity - b.averageVelocity
-                    : b.averageVelocity - a.averageVelocity
-            );
+                    : b.averageVelocity - a.averageVelocity;
+            });
         }
 
         return list;
-    }, [search, sortNameDir, sortVelocityDir, lastSort]);
+    }, [annotators, search, sortNameDir, sortVelocityDir, lastSort]);
 
     return (
         <>
@@ -232,6 +62,7 @@ export function MonitorHistory() {
                 <div className="flex gap-4">
                     <Select
                         className="bg-white"
+                        aria-label={t('monitor.sort_by_name')}
                         value={sortNameDir}
                         onValueChange={(v) => {
                             setSortNameDir(v as SortDir);
@@ -256,6 +87,7 @@ export function MonitorHistory() {
 
                     <Select
                         className="bg-white"
+                        aria-label={t('monitor.sort_by_velocity')}
                         value={sortVelocityDir}
                         onValueChange={(v) => {
                             setSortVelocityDir(v as SortDir);
@@ -358,9 +190,15 @@ export function MonitorHistory() {
 
                 {/* Body */}
                 <div role="rowgroup">
-                    {filtered.map((annotator) => (
-                        <HistoryAnnotatorRow key={annotator.id} annotator={annotator} />
-                    ))}
+                    {filtered.length === 0 ? (
+                        <div className="py-12 text-center text-sm text-slate-500">
+                            {search ? `No annotators matching "${search}"` : 'No annotators.'}
+                        </div>
+                    ) : (
+                        filtered.map((annotator) => (
+                            <HistoryAnnotatorRow key={annotator.id} annotator={annotator} />
+                        ))
+                    )}
                 </div>
             </div>
         </>
