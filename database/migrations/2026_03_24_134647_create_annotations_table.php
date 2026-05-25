@@ -20,6 +20,7 @@ return new class() extends Migration {
             $table->json('annotations');
             $table->boolean('pending')->default(false);
             $table->boolean('is_flagged')->default(false);
+            $table->string('confidence')->nullable();
             $table->timestamps();
         });
     }

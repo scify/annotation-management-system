@@ -11,7 +11,6 @@ use App\Models\Annotation;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfManager;
-use App\Models\Confidence;
 use App\Models\Dataset;
 use App\Models\DatasetInstance;
 use App\Models\InstanceShuffleMapper;
@@ -21,7 +20,6 @@ use App\Models\SubProject;
 use App\Models\User;
 use App\Services\Dataset\DatasetService;
 use Illuminate\Database\Seeder;
-use Random\RandomException;
 
 class DummyProjectSeeder extends Seeder {
     public function run(): void {
@@ -313,31 +311,15 @@ class DummyProjectSeeder extends Seeder {
                             'annotations' => '{}',
                             'pending' => (bool) random_int(0, 1),
                             'is_flagged' => $isFlagged,
+                            'confidence' => ($entry['seed_confidence'] ?? false)
+                                ? $confidenceCases[random_int(0, count($confidenceCases) - 1)]->value
+                                : null,
                             'created_at' => $now,
                             'updated_at' => $now,
                         ];
                     }
 
                     Annotation::query()->insertOrIgnore($rows);
-
-                    if ($entry['seed_confidence'] ?? false) {
-                        /** @var array<int, int> $annotationIds */
-                        $annotationIds = Annotation::query()
-                            ->where('annotation_assignment_id', $assignment->getKey())
-                            ->pluck('id')
-                            ->all();
-
-                        $confidenceRows = array_map(/**
-                         * @throws RandomException
-                         */ fn (int $annotationId): array => [
-                            'annotation_id' => $annotationId,
-                            'value' => $confidenceCases[random_int(0, count($confidenceCases) - 1)]->value,
-                            'created_at' => $now,
-                            'updated_at' => $now,
-                        ], $annotationIds);
-
-                        Confidence::query()->insertOrIgnore($confidenceRows);
-                    }
                 }
             }
 
