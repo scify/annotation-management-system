@@ -22,13 +22,13 @@ final readonly class GetAverageConfidencePerSubProjectQuery {
 
         /** @var array<int, array{user_id: int|string, sub_project_id: int|string, avg_confidence: float|string|null}> $rows */
         $rows = Annotation::query()
-            ->join('confidences', 'confidences.annotation_id', '=', 'annotations.id')
             ->join('annotation_assignments', 'annotation_assignments.id', '=', 'annotations.annotation_assignment_id')
             ->whereIn('annotation_assignments.user_id', $annotatorIds)
+            ->whereNotNull('annotations.confidence')
             ->selectRaw("
                 annotation_assignments.user_id,
                 annotation_assignments.sub_project_id,
-                AVG(CASE confidences.value
+                AVG(CASE annotations.confidence
                     WHEN 'low'    THEN 0.1
                     WHEN 'medium' THEN 0.5
                     WHEN 'high'   THEN 1.0

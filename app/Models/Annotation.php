@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\ConfidenceEnum;
 use Database\Factories\AnnotationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -17,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property array<string, mixed> $annotations
  * @property bool $pending
  * @property bool $is_flagged
+ * @property ConfidenceEnum|null $confidence
  */
 #[Fillable([
     'annotation_assignment_id',
@@ -25,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
     'annotations',
     'pending',
     'is_flagged',
+    'confidence',
 ])]
 class Annotation extends Model {
     /** @use HasFactory<AnnotationFactory> */
@@ -34,5 +37,6 @@ class Annotation extends Model {
         'annotations' => 'array',
         'pending' => 'boolean',
         'is_flagged' => 'boolean',
+        'confidence' => ConfidenceEnum::class,
     ];
 }
