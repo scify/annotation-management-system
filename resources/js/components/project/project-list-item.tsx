@@ -13,7 +13,8 @@ import {
     FolderOpenDot,
     UserRound,
 } from 'lucide-react';
-import { STATUS_VARIANT, toInitials, UserAvatar } from './project-card';
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
+import { STATUS_VARIANT, toInitials } from './project-card';
 
 export function ProjectListItem({ project }: { project: Project }) {
     const { t } = useTranslations();
@@ -22,7 +23,7 @@ export function ProjectListItem({ project }: { project: Project }) {
     const statusLabel = t(`projects.status.${project.status}`);
     const progress = Math.round(project.project_progress * 100);
     const ownerInitials = toInitials(project.owner_name ?? '?');
-    const ownerUsername = project.owner_name ? `@${project.owner_name}` : '—';
+    const ownerUsername = project.owner_name ? `${project.owner_name}` : '—';
     const coManagers = project.co_managers ?? [];
     const visibleCoManagers = coManagers.slice(0, 2);
     const extraCount = coManagers.length - 2;
@@ -170,7 +171,7 @@ export function ProjectListItem({ project }: { project: Project }) {
                             {t('projects.card.owner')}
                         </span>
                         <div className="flex items-center gap-1">
-                            <UserAvatar initials={ownerInitials} />
+                            <InitialsAvatar initials={ownerInitials} size="sm" />
                             <span className="text-[0.75rem] text-slate-600">{ownerUsername}</span>
                         </div>
                     </div>
@@ -182,9 +183,9 @@ export function ProjectListItem({ project }: { project: Project }) {
                         <div className="flex items-center gap-1">
                             {visibleCoManagers.map((cm) => (
                                 <div key={cm.id} className="flex min-w-0 items-center gap-1">
-                                    <UserAvatar initials={toInitials(cm.username)} />
+                                    <InitialsAvatar initials={toInitials(cm.username)} size="sm" />
                                     <span className="truncate text-[0.75rem] text-slate-600">
-                                        @{cm.username}
+                                        {cm.username}
                                     </span>
                                 </div>
                             ))}

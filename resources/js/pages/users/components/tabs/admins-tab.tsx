@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Input } from '@/components/ui/input';
 import {
     Table,
@@ -110,11 +110,10 @@ export function AdminsTab() {
                                 <TableRow key={admin.id} className="bg-white hover:bg-slate-50">
                                     <TableCell className="pl-4">
                                         <div className="flex items-center gap-3">
-                                            <Avatar className="size-[29px] shrink-0">
-                                                <AvatarFallback className="bg-brand-blue-700 text-xs font-semibold text-white">
-                                                    {admin.username.charAt(0).toUpperCase()}
-                                                </AvatarFallback>
-                                            </Avatar>
+                                            <InitialsAvatar
+                                                initials={admin.username.charAt(0).toUpperCase()}
+                                                variant="admin"
+                                            />
                                             <div className="flex flex-col gap-0.5">
                                                 <span className="text-sm font-medium text-slate-800">
                                                     {admin.username}

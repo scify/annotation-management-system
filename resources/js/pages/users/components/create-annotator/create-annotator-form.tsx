@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -60,11 +60,10 @@ function ManagerRow({ manager, isSelected, onToggle }: ManagerRowProps) {
             </span>
             <span className="flex flex-1 items-center">
                 <span className="flex h-[56px] w-[52px] shrink-0 items-center justify-center border-b border-slate-300">
-                    <Avatar className="size-[29px]">
-                        <AvatarFallback className="bg-brand-blue-700 text-xs font-semibold text-white">
-                            {manager.username.charAt(0).toUpperCase()}
-                        </AvatarFallback>
-                    </Avatar>
+                    <InitialsAvatar
+                        initials={manager.username.charAt(0).toUpperCase()}
+                        variant="admin"
+                    />
                 </span>
                 <span className="flex h-[56px] flex-1 items-center border-b border-slate-300 pl-2 text-base font-medium text-slate-800">
                     @{manager.username}

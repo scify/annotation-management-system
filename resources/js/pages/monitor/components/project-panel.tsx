@@ -1,6 +1,7 @@
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { WorkloadGauge } from '@/components/workload-gauge';
 import { useTranslations } from '@/hooks/use-translations';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { ChevronDown, ChevronUp, FolderOpen, Lock } from 'lucide-react';
 import { useState } from 'react';
 import type { HiddenProject, MonitorProject, SubProject } from '../types';
@@ -51,28 +52,14 @@ function StateBadge({ state }: { state: SubProject['state'] }) {
     );
 }
 
-/** Small 22 px avatar circle showing the first letter of the username (after @). */
-function MiniAvatar({ username }: { username: string }) {
-    const initial = username.startsWith('@')
-        ? username[1].toUpperCase()
-        : username[0].toUpperCase();
-    return (
-        <span
-            className="bg-brand-blue-300 inline-flex size-[22px] shrink-0 items-center justify-center rounded-full text-[10px] font-semibold text-white"
-            aria-hidden="true"
-        >
-            {initial}
-        </span>
-    );
-}
-
 // ── Main component ─────────────────────────────────────────────────────────────
 
 interface ProjectPanelProps {
     project: MonitorProject | HiddenProject;
+    annotatorUsername?: string;
 }
 
-export function ProjectPanel({ project }: ProjectPanelProps) {
+export function ProjectPanel({ project, annotatorUsername }: ProjectPanelProps) {
     const [subprojectsExpanded, setSubprojectsExpanded] = useState(false);
     const { t } = useTranslations();
 
@@ -91,12 +78,12 @@ export function ProjectPanel({ project }: ProjectPanelProps) {
                     <span className="text-xs font-semibold text-slate-500">
                         {t('monitor.owner')}:
                     </span>
-                    <MiniAvatar username={project.owner} />
+                    <InitialsAvatar initials={project.owner[0]?.toUpperCase() ?? '?'} size="sm" />
                     <span className="text-xs text-slate-500">{project.owner}</span>
                 </div>
                 <span className="ml-auto text-sm font-medium text-slate-800">
                     {project.assignedCount} {t('monitor.subprojects_assigned_to')}
-                    {project.assignedTo ? ` ${project.assignedTo}` : ''}
+                    {annotatorUsername ? ` @${annotatorUsername}` : ''}
                 </span>
             </div>
         );
@@ -125,12 +112,17 @@ export function ProjectPanel({ project }: ProjectPanelProps) {
                                 </span>
                                 {project.name}
                             </p>
-                            {/* Row 2: date + status badge */}
+                            {/* Row 2: planned dates + status badge + actual dates */}
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-slate-400">
-                                    {project.scheduled_at ?? '…'} – {project.deadline_at ?? '…'}
+                                <span className="text-sm text-slate-800">
+                                    {formatDate(project.scheduled_at)} –{' '}
+                                    {formatDate(project.deadline_at)}
                                 </span>
                                 <StatusBadge status={project.status} />
+                                <span className="ml-auto text-sm text-slate-400">
+                                    ({formatDate(project.started_at)} –{' '}
+                                    {formatDate(project.completed_at)})
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -183,7 +175,10 @@ export function ProjectPanel({ project }: ProjectPanelProps) {
                             {t('monitor.owner')}:
                         </span>
                         <div className="flex items-center gap-1">
-                            <MiniAvatar username={project.owner} />
+                            <InitialsAvatar
+                                initials={project.owner[0]?.toUpperCase() ?? '?'}
+                                size="sm"
+                            />
                             <span className="text-xs text-slate-500">{project.owner}</span>
                         </div>
                     </div>
@@ -197,7 +192,10 @@ export function ProjectPanel({ project }: ProjectPanelProps) {
                             <div className="flex items-center gap-1.5">
                                 {visibleCoManagers.map((cm) => (
                                     <div key={cm} className="flex items-center gap-1">
-                                        <MiniAvatar username={cm} />
+                                        <InitialsAvatar
+                                            initials={cm[0]?.toUpperCase() ?? '?'}
+                                            size="sm"
+                                        />
                                         <span className="text-xs text-slate-500">{cm}</span>
                                     </div>
                                 ))}

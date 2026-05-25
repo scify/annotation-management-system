@@ -1,5 +1,6 @@
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Input } from '@/components/ui/input';
-import { STATUS_VARIANT, UserAvatar, toInitials } from '@/components/project/project-card';
+import { STATUS_VARIANT, toInitials } from '@/components/project/project-card';
 import { Badge } from '@/components/ui/badge';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
@@ -140,7 +141,7 @@ function SelectableProjectItem({
     const statusLabel = t(`projects.status.${project.status}`);
     const progress = Math.round(project.project_progress * 100);
     const ownerInitials = toInitials(project.owner_name ?? '?');
-    const ownerUsername = project.owner_name ? `@${project.owner_name}` : '—';
+    const ownerUsername = project.owner_name ? `${project.owner_name}` : '—';
     const coManagers = project.co_managers ?? [];
     const visibleCoManagers = coManagers.slice(0, 2);
     const extraCount = coManagers.length - 2;
@@ -318,7 +319,7 @@ function SelectableProjectItem({
                                 {t('projects.card.owner')}
                             </span>
                             <div className="flex items-center gap-1">
-                                <UserAvatar initials={ownerInitials} />
+                                <InitialsAvatar initials={ownerInitials} size="sm" />
                                 <span className="text-[0.75rem] text-slate-600">
                                     {ownerUsername}
                                 </span>
@@ -332,9 +333,12 @@ function SelectableProjectItem({
                             <div className="flex items-center gap-1">
                                 {visibleCoManagers.map((cm) => (
                                     <div key={cm.id} className="flex min-w-0 items-center gap-1">
-                                        <UserAvatar initials={toInitials(cm.username)} />
+                                        <InitialsAvatar
+                                            initials={toInitials(cm.username)}
+                                            size="sm"
+                                        />
                                         <span className="truncate text-[0.75rem] text-slate-600">
-                                            @{cm.username}
+                                            {cm.username}
                                         </span>
                                     </div>
                                 ))}

@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Button } from '@/components/ui/button';
 import { Mail } from 'lucide-react';
 
@@ -22,11 +22,7 @@ export function UserTableCell({
 }: UserTableCellProps) {
     return (
         <div className="flex items-center gap-3">
-            <Avatar className="size-[29px] shrink-0">
-                <AvatarFallback className="bg-brand-blue-300 rounded-full text-sm font-semibold text-white">
-                    {initials}
-                </AvatarFallback>
-            </Avatar>
+            <InitialsAvatar initials={initials} />
             <div className="flex min-w-0 flex-1 flex-col">
                 <span className="text-base font-medium text-slate-800">{username}</span>
                 {email && <span className="text-sm text-slate-400">{email}</span>}

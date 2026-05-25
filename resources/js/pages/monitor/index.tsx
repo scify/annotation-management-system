@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Search } from 'lucide-react';
@@ -38,8 +38,7 @@ function normalizeSubproject(sp: BackendSubproject): SubProject {
     return {
         id: sp.id,
         name: sp.name,
-        // TODO(backend): replace with real subproject dates once backend adds started_at/deadline_at to subprojects
-        dateRange: '',
+        dateRange: `${formatDate(sp.scheduled_at)} – ${formatDate(sp.deadline_at)}`,
         remainingWorkload: Math.round(sp.workload * 100),
         progress: Math.round(sp.progress * 100),
         state: sp.status as SubProject['state'],
@@ -72,8 +71,6 @@ function normalizeHiddenProject(hp: BackendHiddenProject): HiddenProject {
         restricted: true,
         owner: hp.owner_name,
         assignedCount: hp.active_subprojects_count,
-        // TODO(backend): replace with real value once backend adds assigned_to to hidden_projects
-        assignedTo: '',
     };
 }
 

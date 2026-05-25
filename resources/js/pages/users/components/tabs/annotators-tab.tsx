@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -207,11 +207,12 @@ export function AnnotatorsTab() {
                                 <TableRow key={annotator.id} className="bg-white hover:bg-slate-50">
                                     <TableCell className="pl-4">
                                         <div className="flex items-center gap-3">
-                                            <Avatar className="size-[29px] shrink-0">
-                                                <AvatarFallback className="bg-brand-blue-700 text-xs font-semibold text-white">
-                                                    {annotator.username.charAt(0).toUpperCase()}
-                                                </AvatarFallback>
-                                            </Avatar>
+                                            <InitialsAvatar
+                                                initials={annotator.username
+                                                    .charAt(0)
+                                                    .toUpperCase()}
+                                                variant="admin"
+                                            />
                                             <span className="text-sm font-medium text-slate-800">
                                                 @{annotator.username}
                                             </span>

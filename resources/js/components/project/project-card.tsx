@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Badge, badgeVariants } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
@@ -47,16 +47,6 @@ export function toInitials(username: string): string {
     return username.charAt(0).toUpperCase();
 }
 
-export function UserAvatar({ initials }: { initials: string }) {
-    return (
-        <Avatar className="size-[22px] shrink-0">
-            <AvatarFallback className="bg-brand-blue-300 rounded-full text-[10px] font-semibold text-white">
-                {initials}
-            </AvatarFallback>
-        </Avatar>
-    );
-}
-
 export function ProjectCard({ project }: { project: Project }) {
     const { t } = useTranslations();
 
@@ -64,7 +54,7 @@ export function ProjectCard({ project }: { project: Project }) {
     const statusLabel = t(`projects.status.${project.status}`);
     const progress = Math.round(project.project_progress * 100);
     const ownerInitials = toInitials(project.owner_name ?? '?');
-    const ownerUsername = project.owner_name ? `@${project.owner_name}` : '—';
+    const ownerUsername = project.owner_name ? `${project.owner_name}` : '—';
     const coManagers = project.co_managers ?? [];
     const visibleCoManagers = coManagers.slice(0, 2);
     const extraCount = coManagers.length - 2;
@@ -216,7 +206,7 @@ export function ProjectCard({ project }: { project: Project }) {
                             {t('projects.card.owner')}
                         </span>
                         <div className="flex items-center gap-1">
-                            <UserAvatar initials={ownerInitials} />
+                            <InitialsAvatar initials={ownerInitials} size="sm" />
                             <span className="text-[0.75rem] text-slate-600">{ownerUsername}</span>
                         </div>
                     </div>
@@ -228,9 +218,9 @@ export function ProjectCard({ project }: { project: Project }) {
                         <div className="flex items-center gap-1">
                             {visibleCoManagers.map((cm) => (
                                 <div key={cm.username} className="flex min-w-0 items-center gap-1">
-                                    <UserAvatar initials={toInitials(cm.username)} />
+                                    <InitialsAvatar initials={toInitials(cm.username)} size="sm" />
                                     <span className="truncate text-[0.75rem] text-slate-600">
-                                        @{cm.username}
+                                        {cm.username}
                                     </span>
                                 </div>
                             ))}
