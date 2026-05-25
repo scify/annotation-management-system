@@ -18,8 +18,8 @@ interface Props {
 
 export default function UsersIndex({ users }: Props) {
     const { t } = useTranslations();
-    const { isAnnotationManager } = useAuth();
-    const [activeTab, setActiveTab] = useState<UserTab>('managers');
+    const { isAdmin, isAnnotationManager } = useAuth();
+    const [activeTab, setActiveTab] = useState<UserTab>(isAdmin() ? 'admins' : 'managers');
 
     const counts = {
         admins: users.filter((u) => u.role === RolesEnum.ADMIN).length,
