@@ -26,8 +26,8 @@ final readonly class GetProjectsByIdsQuery {
                 'owner:id,username',
                 'annotationTask:id,title',
                 'dataset:id,name',
-                'projectManagers.user:id,username',
-                'subProjects:id,project_id',
+                'projectManagers.user:id,username,email,status',
+                'subProjects:id,project_id,name,status,scheduled_at,deadline_at,started_at,completed_at,first_instance_index,last_instance_index',
             ])
             ->get();
     }

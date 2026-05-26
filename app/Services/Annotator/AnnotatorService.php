@@ -36,6 +36,36 @@ readonly class AnnotatorService {
     }
 
     /**
+     * Returns lightweight annotator data for a specific project's show page.
+     * Fetches annotators of any status and augments with counts and workload only —
+     * no per-subproject progress, since that is already in subprojects_data.
+     *
+     * @param  array<int, int>  $annotatorIds
+     * @param  Collection<int, int>  $activeSubProjectIds  In-progress subproject IDs for this project
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getProjectAnnotatorsData(array $annotatorIds, Collection $activeSubProjectIds): array {
+        if ($annotatorIds === []) {
+            return [];
+        }
+
+        $annotators = $this->activeAnnotatorsQuery->getAll($annotatorIds)
+            ->map(fn (User $user): array => [
+                'id' => $user->id,
+                'username' => $user->username,
+                'status' => $user->status->value,
+            ])
+            ->values()
+            ->all();
+
+        $this->augmentAnnotatorsWithActiveProjects($annotators, $activeSubProjectIds);
+        $this->augmentAnnotatorsWithWorkload($annotators);
+
+        return $annotators;
+    }
+
+    /**
      * @param  array<int, mixed>  $ids
      * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
      * @param  Collection<int, int>|null  $activeSubProjectIds

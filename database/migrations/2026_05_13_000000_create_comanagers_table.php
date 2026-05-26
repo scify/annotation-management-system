@@ -12,6 +12,7 @@ return new class() extends Migration {
             $table->id();
             $table->foreignId('project_id')->constrained('projects')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
+            $table->boolean('accepted');
             $table->unique(['project_id', 'user_id']);
             $table->timestamps();
         });

@@ -32,8 +32,8 @@ describe('userpolicy', function (): void {
             'annotation_task_id' => $annotationTask->id,
             'dataset_id' => $dataset->id,
         ]);
-        ProjectManager::query()->create(['project_id' => $project->id, 'user_id' => $this->manager->id]);
-        ProjectManager::query()->create(['project_id' => $project->id, 'user_id' => $this->manager_collaborator->id]);
+        ProjectManager::query()->create(['project_id' => $project->id, 'user_id' => $this->manager->id, 'accepted' => true]);
+        ProjectManager::query()->create(['project_id' => $project->id, 'user_id' => $this->manager_collaborator->id, 'accepted' => true]);
 
         $this->policy = new UserPolicy();
     });

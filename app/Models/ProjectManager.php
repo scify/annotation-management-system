@@ -14,12 +14,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int $project_id
  * @property int $user_id
+ * @property bool $accepted
  * @property-read Project $project
  * @property-read User $user
  */
 #[Fillable([
     'project_id',
     'user_id',
+    'accepted',
 ])]
 #[Table(name: 'project_managers')]
 class ProjectManager extends Model {

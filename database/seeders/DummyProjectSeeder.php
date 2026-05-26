@@ -20,8 +20,12 @@ use App\Models\SubProject;
 use App\Models\User;
 use App\Services\Dataset\DatasetService;
 use Illuminate\Database\Seeder;
+use Random\RandomException;
 
 class DummyProjectSeeder extends Seeder {
+    /**
+     * @throws RandomException
+     */
     public function run(): void {
         $managerCarol = User::query()->where('email', 'manager.carol@example.com')->firstOrFail();
         $managerDave = User::query()->where('email', 'manager.dave@example.com')->firstOrFail();
@@ -40,8 +44,7 @@ class DummyProjectSeeder extends Seeder {
         $projects = [
             [
                 'seed_confidence' => true,
-                'collaborator_id' => $adminAlice->getKey(),
-                'extra_manager_ids' => [$managerDave->getKey()],
+                'manager_ids' => [$adminAlice->getKey(), $managerDave->getKey()],
                 'annotator_emails' => ['annotator.eva@example.com', 'annotator.grace@example.com', 'annotator.frank@example.com'],
                 'project' => [
                     'name' => 'NER – English News',
@@ -91,7 +94,7 @@ class DummyProjectSeeder extends Seeder {
             ],
             [
                 'seed_confidence' => true,
-                'collaborator_id' => $adminBob->getKey(),
+                'manager_ids' => [$adminBob->getKey()],
                 'annotator_emails' => ['annotator.ivy@example.com', 'annotator.jack@example.com', 'annotator.karen@example.com'],
                 'project' => [
                     'name' => 'NER – Greek News',
@@ -136,7 +139,7 @@ class DummyProjectSeeder extends Seeder {
                 ],
             ],
             [
-                'collaborator_id' => $managerCarol->getKey(),
+                'manager_ids' => [$managerCarol->getKey()],
                 'annotator_emails' => ['annotator.frank@example.com', 'annotator.grace@example.com'],
                 'project' => [
                     'name' => 'Sentiment – Product Reviews',
@@ -170,7 +173,7 @@ class DummyProjectSeeder extends Seeder {
                 ],
             ],
             [
-                'collaborator_id' => $managerDave->getKey(),
+                'manager_ids' => [$managerDave->getKey()],
                 'annotator_emails' => ['annotator.henry@example.com', 'annotator.ivy@example.com', 'annotator.jack@example.com'],
                 'project' => [
                     'name' => 'Toxic Content – Social Media',
@@ -229,21 +232,16 @@ class DummyProjectSeeder extends Seeder {
                 $entry['project'],
             );
 
-            ProjectManager::query()->firstOrCreate([
-                'project_id' => $project->id,
-                'user_id' => $project->owner_user_id,
-            ]);
+            ProjectManager::query()->firstOrCreate(
+                ['project_id' => $project->id, 'user_id' => $project->owner_user_id],
+                ['accepted' => true],
+            );
 
-            ProjectManager::query()->firstOrCreate([
-                'project_id' => $project->id,
-                'user_id' => $entry['collaborator_id'],
-            ]);
-
-            foreach ($entry['extra_manager_ids'] ?? [] as $managerId) {
-                ProjectManager::query()->firstOrCreate([
-                    'project_id' => $project->id,
-                    'user_id' => $managerId,
-                ]);
+            foreach ($entry['manager_ids'] as $managerId) {
+                ProjectManager::query()->firstOrCreate(
+                    ['project_id' => $project->id, 'user_id' => $managerId],
+                    ['accepted' => true],
+                );
             }
 
             foreach ($entry['annotator_emails'] as $email) {

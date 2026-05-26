@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Project\ProjectExportRequest;
 use App\Http\Requests\Project\ProjectStoreRequest;
 use App\Models\Project;
 use App\Models\User;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class ProjectController extends Controller {
@@ -64,6 +66,14 @@ class ProjectController extends Controller {
 
         return to_route('projects.index')
             ->with('success', __('projects.messages.created'));
+    }
+
+    public function export(ProjectExportRequest $request, int $id): StreamedResponse {
+        return response()->streamDownload(
+            static function (): void { echo json_encode((object) []); },
+            'export.json',
+            ['Content-Type' => 'application/json'],
+        );
     }
 
     public function show(int $id): Response {

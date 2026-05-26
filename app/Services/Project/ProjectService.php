@@ -7,7 +7,7 @@ namespace App\Services\Project;
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
 use App\Models\AnnotationTask;
-use App\Models\AnnotatorOfManager;
+use App\Models\AnnotatorOfProject;
 use App\Models\Dataset;
 use App\Models\InstanceShuffleMapper;
 use App\Models\Project;
@@ -72,13 +72,14 @@ readonly class ProjectService {
             ProjectManager::query()->create([
                 'project_id' => $project->id,
                 'user_id' => $owner->id,
+                'accepted' => true,
             ]);
 
             foreach ($coManagerIds as $managerId) {
-                ProjectManager::query()->firstOrCreate([
-                    'project_id' => $project->id,
-                    'user_id' => $managerId,
-                ]);
+                ProjectManager::query()->firstOrCreate(
+                    ['project_id' => $project->id, 'user_id' => $managerId],
+                    ['accepted' => true],
+                );
             }
 
             if ($project->is_instance_shuffled) {
@@ -105,23 +106,33 @@ readonly class ProjectService {
     }
 
     /**
-     * Snapshots the annotators of the given managers into annotator_of_project.
-     * Called during project creation after managers are assigned.
+     * Assign all annotators of a project to a (co-)manager.
+     * Called when a co-manager accepts a project invitation.
      *
-     * @param  array<int, int>  $managerIds
+     * TODO: wire this call into the invitation acceptance handler once implemented.
      */
-    public function assignAnnotatorsFromManagers(Project $project, array $managerIds): void {
-        if ($managerIds === []) {
+    public function assignAnnotatorsToManagers(int $projectId, int $managerId): void {
+        $annotatorIds = AnnotatorOfProject::query()
+            ->where('project_id', $projectId)
+            ->pluck('user_id')
+            ->all();
+
+        if ($annotatorIds === []) {
             return;
         }
 
-        $annotatorIds = AnnotatorOfManager::query()
-            ->whereIn('manager_id', $managerIds)
-            ->distinct()
-            ->pluck('annotator_id')
-            ->all();
+        $now = now();
+        $rows = [];
+        foreach ($annotatorIds as $annotatorId) {
+            $rows[] = [
+                'manager_id' => $managerId,
+                'annotator_id' => $annotatorId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
 
-        $project->annotators()->sync($annotatorIds);
+        DB::table('annotator_of_managers')->insertOrIgnore($rows);
     }
 
     /**
@@ -183,24 +194,18 @@ readonly class ProjectService {
      */
     public function getDataForShowProject(int $id): array {
         $project = $this->projectsByIdsQuery->get([$id])->firstOrFail();
+        $subprojectsData = $this->subProjectService->getSubProjectsData($project->subProjects);
 
-        /** @var array<int, int> $subProjectIds */
-        $subProjectIds = $project->subProjects->pluck('id')->all();
-        $progressBySubProject = $this->subProjectService->getProgress($subProjectIds);
-
-        $subProjectCount = count($subProjectIds);
-        $progress = $subProjectCount > 0
-            ? (float) (array_sum(array_column($progressBySubProject, 'progress')) / $subProjectCount)
-            : 0.0;
+        /** @var array<int, int> $annotatorIds */
+        $annotatorIds = $project->annotators()->pluck('users.id')->all();
+        /** @var \Illuminate\Support\Collection<int, int> $subProjectIds */
+        $subProjectIds = $project->subProjects->pluck('id');
 
         return [
-            'project' => [
-                'id' => $project->id,
-                'name' => $project->name,
-                'annotation_task_title' => $project->annotationTask->title,
-                'dataset_name' => $project->dataset->name,
-                'project_progress' => $progress,
-            ],
+            'project_data' => $this->buildProjectData($project, $subprojectsData),
+            'subprojects_data' => $subprojectsData,
+            'annotators_data' => $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $subProjectIds),
+            'comanagers' => $this->buildCoManagersData($project),
         ];
     }
 
@@ -252,6 +257,43 @@ readonly class ProjectService {
             $allProjects,
             fn (array $project): bool => is_int($project['id']) && in_array($project['id'], $myProjectIds, true),
         ));
+    }
+
+    /**
+     * @return array<int, array{id: int, username: string, email: string, status: string, owner: bool, accepted: bool}>
+     */
+    private function buildCoManagersData(Project $project): array {
+        return $project->projectManagers
+            ->map(fn (ProjectManager $pm): array => [
+                'id' => $pm->user->id,
+                'username' => $pm->user->username,
+                'email' => $pm->user->email,
+                'status' => $pm->user->status->value,
+                'owner' => $pm->user_id === $project->owner_user_id,
+                'accepted' => (bool) $pm->accepted,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  array<int, array{progress: float, ...}>  $subprojectsData
+     *
+     * @return array<string, mixed>
+     */
+    private function buildProjectData(Project $project, array $subprojectsData): array {
+        $subProjectCount = count($subprojectsData);
+        $progress = $subProjectCount > 0
+            ? (float) (array_sum(array_column($subprojectsData, 'progress')) / $subProjectCount)
+            : 0.0;
+
+        return [
+            'id' => $project->id,
+            'name' => $project->name,
+            'annotation_task_title' => $project->annotationTask->title,
+            'dataset_name' => $project->dataset->name,
+            'project_progress' => $progress,
+        ];
     }
 
     /**
@@ -604,9 +646,26 @@ readonly class ProjectService {
      * @param  array<int, array<string, mixed>>  $data
      */
     private function augmentProjectsWithNotifications(array &$data): void {
+        /** @var array<int, int> $projectIds */
+        $projectIds = array_column($data, 'id');
+        $notificationCounts = $this->getNotificationCounts($projectIds);
+
         foreach ($data as &$project) {
-            $project['notifications_count'] = 0;
+            /** @var int $projectId */
+            $projectId = $project['id'];
+            $project['notifications_count'] = $notificationCounts[$projectId] ?? 0;
         }
+    }
+
+    /**
+     * TODO: implement once notifications are available.
+     *
+     * @param  array<int, int>  $projectIds
+     *
+     * @return array<int, int>
+     */
+    private function getNotificationCounts(array $projectIds): array {
+        return array_fill_keys($projectIds, 0);
     }
 
     /**
