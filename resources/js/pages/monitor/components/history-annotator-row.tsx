@@ -126,8 +126,8 @@ export function HistoryAnnotatorRow({ annotator }: HistoryAnnotatorRowProps) {
                         <span className="flex-1 truncate">{t('monitor.subproject')}</span>
                         <span className="w-[115px] text-right">{t('monitor.col_annotations')}</span>
                         <span className="w-[115px] text-right">{t('monitor.col_flags')}</span>
-                        <span className="w-[115px] text-center">{t('monitor.col_velocity')}</span>
-                        <span className="w-[115px] text-center">
+                        <span className="w-[145px] text-center">{t('monitor.col_velocity')}</span>
+                        <span className="w-[145px] text-center">
                             {t('monitor.col_avg_confidence')}
                         </span>
                         <span className="w-[126px] text-center">
@@ -154,7 +154,7 @@ export function HistoryAnnotatorRow({ annotator }: HistoryAnnotatorRowProps) {
                             <span className="w-[115px] text-right text-xs font-medium text-slate-800 tabular-nums">
                                 {sp.flags}
                             </span>
-                            <span className="flex w-[115px] items-center justify-center">
+                            <span className="flex w-[145px] items-center justify-center">
                                 {sp.velocity != null ? (
                                     <span className="text-xs font-medium text-slate-800 tabular-nums">
                                         {sp.velocity}
@@ -165,7 +165,7 @@ export function HistoryAnnotatorRow({ annotator }: HistoryAnnotatorRowProps) {
                                     </span>
                                 )}
                             </span>
-                            <span className="flex w-[115px] items-center justify-center">
+                            <span className="flex w-[145px] items-center justify-center">
                                 {sp.confidence !== null ? (
                                     <span
                                         className={cn(
@@ -176,7 +176,9 @@ export function HistoryAnnotatorRow({ annotator }: HistoryAnnotatorRowProps) {
                                         {t(`monitor.confidence_${sp.confidence.toLowerCase()}`)}
                                     </span>
                                 ) : (
-                                    <span className="text-xs text-slate-400">—</span>
+                                    <span className="bg-brand-blue-100 rounded-sm px-1.5 py-1 text-xs font-medium whitespace-nowrap text-slate-600">
+                                        {t('monitor.not_available_yet')}
+                                    </span>
                                 )}
                             </span>
                             <span className="w-[126px] text-center text-xs font-medium text-slate-800">
