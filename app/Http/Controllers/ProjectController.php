@@ -86,6 +86,6 @@ class ProjectController extends Controller {
             Storage::disk('local')->put('project-show-data.json', $json);
         }
 
-        return Inertia::render('projects/show');
+        return Inertia::render('projects/show', $data_for_show_project);
     }
 }
