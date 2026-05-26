@@ -294,7 +294,11 @@ export default function MonitorIndex({
                         <SectionToggle
                             checked={showOnlyMine}
                             onChange={setShowOnlyMine}
-                            label={t('monitor.show_only_mine')}
+                            label={
+                                showOnlyMine
+                                    ? t('monitor.show_only_mine')
+                                    : t('monitor.show_all_annotators')
+                            }
                         />
                     </div>
                 )}

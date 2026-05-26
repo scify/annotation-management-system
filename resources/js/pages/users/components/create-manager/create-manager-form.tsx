@@ -1,9 +1,9 @@
 import { useTranslations } from '@/hooks/use-translations';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CreateManagerStepper } from './create-manager-stepper';
 import { ConnectAnnotatorsStep } from './steps/connect-annotators-step';
-import { ConnectProjectsStep } from './steps/connect-projects-step';
+import { ConnectProjectsStep, MOCK_PROJECT_ANNOTATORS } from './steps/connect-projects-step';
 import { DatasetsStep } from './steps/datasets-step';
 import { PersonalInfoStep } from './steps/personal-info-step';
 import { MOCK_TASK_TYPES, TasksAccessStep } from './steps/tasks-access-step';
@@ -50,6 +50,11 @@ export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
         { label: t('users.steps.connect_projects') },
         { label: t('users.steps.connect_annotators') },
     ];
+
+    const lockedAnnotatorIds = useMemo(
+        () => [...new Set(formData.project_ids.flatMap((id) => MOCK_PROJECT_ANNOTATORS[id] ?? []))],
+        [formData.project_ids]
+    );
 
     function handleChange(updates: Partial<CreateManagerFormData>) {
         setFormData((prev) => ({ ...prev, ...updates }));
@@ -107,6 +112,7 @@ export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
                     <ConnectAnnotatorsStep
                         selectedAnnotatorIds={formData.annotator_ids}
                         onSelectionChange={(ids) => handleChange({ annotator_ids: ids })}
+                        lockedAnnotatorIds={lockedAnnotatorIds}
                     />
                 )}
             </div>

@@ -82,11 +82,13 @@ const MOCK_MY_ANNOTATORS = MOCK_ANNOTATORS.slice(0, 2);
 interface ConnectAnnotatorsStepProps {
     selectedAnnotatorIds: number[];
     onSelectionChange: (ids: number[]) => void;
+    lockedAnnotatorIds?: number[];
 }
 
 export function ConnectAnnotatorsStep({
     selectedAnnotatorIds,
     onSelectionChange,
+    lockedAnnotatorIds,
 }: ConnectAnnotatorsStepProps) {
     const { t, trans } = useTranslations();
     const [sortByName, setSortByName] = useState('');
@@ -96,6 +98,7 @@ export function ConnectAnnotatorsStep({
 
     const ns = 'users.select_annotators' as const;
     const selectedIds = new Set(selectedAnnotatorIds);
+    const lockedSet = new Set(lockedAnnotatorIds ?? []);
     const baseAnnotators = showMyOnly ? MOCK_MY_ANNOTATORS : MOCK_ANNOTATORS;
 
     const filteredAnnotators = useMemo(() => {
@@ -116,8 +119,11 @@ export function ConnectAnnotatorsStep({
         return result;
     }, [baseAnnotators, search, sortByName, sortByVelocity]);
 
+    const selectableAnnotators = filteredAnnotators.filter((a) => !lockedSet.has(a.id));
     const allSelected =
-        filteredAnnotators.length > 0 && filteredAnnotators.every((a) => selectedIds.has(a.id));
+        selectableAnnotators.length > 0 && selectableAnnotators.every((a) => selectedIds.has(a.id));
+    const totalSelectedCount = new Set([...selectedAnnotatorIds, ...(lockedAnnotatorIds ?? [])])
+        .size;
 
     function handleSingleChange(id: number, checked: boolean) {
         const next = new Set(selectedAnnotatorIds);
@@ -127,7 +133,7 @@ export function ConnectAnnotatorsStep({
     }
 
     function handleSelectAll(checked: boolean) {
-        const ids = filteredAnnotators.map((a) => a.id);
+        const ids = selectableAnnotators.map((a) => a.id);
         if (checked) {
             onSelectionChange([...new Set([...selectedAnnotatorIds, ...ids])]);
         } else {
@@ -143,7 +149,7 @@ export function ConnectAnnotatorsStep({
                     {t(`${ns}.heading`)}
                 </h2>
                 <p className="text-sm font-semibold text-slate-800">
-                    {trans(`${ns}.selected_count`, { count: selectedIds.size })}
+                    {trans(`${ns}.selected_count`, { count: totalSelectedCount })}
                 </p>
             </hgroup>
 
@@ -197,7 +203,9 @@ export function ConnectAnnotatorsStep({
                         </span>
                     </span>
                     <span className="text-sm font-medium text-slate-800">
-                        {t(`${ns}.show_my_annotators`)}
+                        {showMyOnly
+                            ? t(`${ns}.show_my_annotators`)
+                            : t(`${ns}.show_all_annotators`)}
                     </span>
                 </label>
 
@@ -261,7 +269,8 @@ export function ConnectAnnotatorsStep({
                     </TableHeader>
                     <TableBody>
                         {filteredAnnotators.map((annotator) => {
-                            const isSelected = selectedIds.has(annotator.id);
+                            const isLocked = lockedSet.has(annotator.id);
+                            const isSelected = isLocked || selectedIds.has(annotator.id);
 
                             return (
                                 <TableRow
@@ -269,11 +278,20 @@ export function ConnectAnnotatorsStep({
                                     className={`h-14 border-b border-slate-300 ${isSelected ? 'bg-brand-blue-50 hover:bg-brand-blue-50' : 'hover:bg-brand-blue-50 bg-white'}`}
                                 >
                                     <TableCell className="pl-4">
-                                        <label className="flex cursor-pointer">
+                                        <label
+                                            className={`flex ${isLocked ? 'cursor-default' : 'cursor-pointer'}`}
+                                        >
                                             <Checkbox
                                                 checked={isSelected}
-                                                onCheckedChange={(checked) =>
-                                                    handleSingleChange(annotator.id, checked)
+                                                disabled={isLocked}
+                                                onCheckedChange={
+                                                    isLocked
+                                                        ? undefined
+                                                        : (checked) =>
+                                                              handleSingleChange(
+                                                                  annotator.id,
+                                                                  checked
+                                                              )
                                                 }
                                                 aria-label={`Select ${annotator.name}`}
                                             />
