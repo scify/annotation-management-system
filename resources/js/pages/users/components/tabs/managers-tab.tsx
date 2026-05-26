@@ -33,6 +33,7 @@ interface MockManager {
     name: string;
     email: string;
     deleted_at: string | null;
+    status: 'active' | 'inactive' | 'pending';
 }
 
 const MOCK_MANAGERS: MockManager[] = [
@@ -42,6 +43,7 @@ const MOCK_MANAGERS: MockManager[] = [
         name: 'Aris Kosmopoulos',
         email: 'akosmo@scify.org',
         deleted_at: null,
+        status: 'pending',
     },
     {
         id: 2,
@@ -49,6 +51,7 @@ const MOCK_MANAGERS: MockManager[] = [
         name: 'Paul Isaris',
         email: 'paulisar@scify.org',
         deleted_at: null,
+        status: 'active',
     },
     {
         id: 3,
@@ -56,10 +59,11 @@ const MOCK_MANAGERS: MockManager[] = [
         name: 'Nelly Savvidou',
         email: 'nellysav@scify.org',
         deleted_at: null,
+        status: 'active',
     },
 ];
 
-type StatusFilter = 'all' | 'active' | 'inactive';
+type StatusFilter = 'all' | 'active' | 'inactive' | 'pending';
 
 export function ManagersTab() {
     const { t } = useTranslations();
@@ -71,8 +75,7 @@ export function ManagersTab() {
     const [messageTarget, setMessageTarget] = useState<MockManager | null>(null);
 
     const filtered = MOCK_MANAGERS.filter((m) => {
-        if (statusFilter === 'active' && m.deleted_at !== null) return false;
-        if (statusFilter === 'inactive' && m.deleted_at === null) return false;
+        if (statusFilter !== 'all' && m.status !== statusFilter) return false;
         if (search.trim()) {
             const q = search.toLowerCase();
             if (!m.name.toLowerCase().includes(q) && !m.email.toLowerCase().includes(q)) {
@@ -158,6 +161,9 @@ export function ManagersTab() {
                         <SelectItem value="inactive" className="hover:cursor-pointer">
                             {t('users.filters.show_only_inactive')}
                         </SelectItem>
+                        <SelectItem value="pending" className="hover:cursor-pointer">
+                            {t('users.filters.show_only_pending')}
+                        </SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -219,9 +225,7 @@ export function ManagersTab() {
                                         <RoleBadge role={RolesEnum.ANNOTATION_MANAGER} />
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <StatusBadge
-                                            status={manager.deleted_at ? 'inactive' : 'active'}
-                                        />
+                                        <StatusBadge status={manager.status} />
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-center gap-2">

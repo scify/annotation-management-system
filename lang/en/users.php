@@ -91,6 +91,7 @@ return [
         'show_all' => 'Show all',
         'show_only_active' => 'Show only active',
         'show_only_inactive' => 'Show only inactive',
+        'show_only_pending' => 'Show only pending',
         'show_only_mine' => 'Show only Managers I am connected with',
         'show_only_mine_annotators' => 'Show only Annotators I am connected with',
     ],
@@ -111,6 +112,8 @@ return [
     'status' => [
         'active' => 'Active',
         'inactive' => 'Inactive',
+        'pending' => 'Pending',
+        'pending_note' => 'The status of this user will be set as "Pending" until his first Login',
     ],
     'restore' => [
         'title' => 'Restore User',

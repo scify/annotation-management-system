@@ -12,7 +12,7 @@ export interface CreateAdminFormData {
     email: string;
     password: string;
     password_confirmation: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'pending';
     project_ids: number[];
     annotator_ids: number[];
 }

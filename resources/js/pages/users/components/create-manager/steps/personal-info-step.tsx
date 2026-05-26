@@ -1,12 +1,6 @@
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
+import { Info } from 'lucide-react';
 
 export interface PersonalInfoData {
     name: string;
@@ -14,7 +8,7 @@ export interface PersonalInfoData {
     email: string;
     password: string;
     password_confirmation: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'pending';
 }
 
 interface PersonalInfoStepProps {
@@ -91,22 +85,21 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
 
                 <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-7">
                     <Field label={t('users.labels.status')}>
-                        <Select
-                            value={data.status}
-                            onValueChange={(v) =>
-                                onChange({ status: v as PersonalInfoData['status'] })
-                            }
+                        <div className="flex h-10 w-full items-center rounded-md border border-slate-200 bg-white px-2.5 text-base text-slate-500">
+                            {t('users.status.pending')}
+                        </div>
+                        <div
+                            role="note"
+                            className="border-brand-blue-300 bg-brand-blue-50 flex items-start gap-2 rounded-md border p-4"
                         >
-                            <SelectTrigger className="bg-white">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="active">{t('users.status.active')}</SelectItem>
-                                <SelectItem value="inactive">
-                                    {t('users.status.inactive')}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
+                            <Info
+                                className="text-brand-blue-700 h-6 w-6 shrink-0"
+                                aria-hidden="true"
+                            />
+                            <p className="text-brand-blue-800 text-sm font-medium">
+                                {t('users.status.pending_note')}
+                            </p>
+                        </div>
                     </Field>
                 </div>
             </div>

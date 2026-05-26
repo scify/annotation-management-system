@@ -14,7 +14,7 @@ export interface CreateManagerFormData {
     email: string;
     password: string;
     password_confirmation: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'pending';
     task_type_ids: number[];
     dataset_ids: number[];
     project_ids: number[];
@@ -36,7 +36,7 @@ export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
         email: '',
         password: '',
         password_confirmation: '',
-        status: 'active',
+        status: 'pending',
         task_type_ids: [],
         dataset_ids: [],
         project_ids: [],
