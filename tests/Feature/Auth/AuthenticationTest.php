@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\RolesEnum;
+use App\Enums\StatusEnum;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -62,6 +63,48 @@ test('users can not authenticate with invalid password', function (): void {
         ->assertJson([
             'message' => 'These credentials do not match our records.',
         ]);
+});
+
+test('pending users become active after logging in', function (): void {
+    $user = User::factory()->create([
+        'status' => StatusEnum::PENDING,
+    ])->assignRole(RolesEnum::ANNOTATOR->value);
+
+    $this->get($this->loginRoute);
+
+    $this->withSession(['_token' => csrf_token()])
+        ->post($this->loginRoute, [
+            'username' => $user->username,
+            'password' => 'password',
+            '_token' => csrf_token(),
+            'captcha' => 'test',
+        ]);
+
+    $this->assertDatabaseHas('users', [
+        'id' => $user->id,
+        'status' => StatusEnum::ACTIVE->value,
+    ]);
+});
+
+test('active users remain active after logging in', function (): void {
+    $user = User::factory()->create([
+        'status' => StatusEnum::ACTIVE,
+    ])->assignRole(RolesEnum::ANNOTATOR->value);
+
+    $this->get($this->loginRoute);
+
+    $this->withSession(['_token' => csrf_token()])
+        ->post($this->loginRoute, [
+            'username' => $user->username,
+            'password' => 'password',
+            '_token' => csrf_token(),
+            'captcha' => 'test',
+        ]);
+
+    $this->assertDatabaseHas('users', [
+        'id' => $user->id,
+        'status' => StatusEnum::ACTIVE->value,
+    ]);
 });
 
 test('users can logout', function (): void {
