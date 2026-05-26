@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\RolesEnum;
+use App\Enums\StatusEnum;
 use App\Models\AnnotationTask;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -23,7 +24,7 @@ class DummyUsersSeeder extends Seeder {
             $user = User::query()->updateOrCreate(['email' => $data['email']], [
                 'name' => $data['name'],
                 'username' => $data['username'],
-                'is_active' => true,
+                'status' => StatusEnum::ACTIVE,
                 'password' => Hash::make($password),
             ]);
             $user->syncRoles([RolesEnum::ADMIN->value]);
@@ -40,7 +41,7 @@ class DummyUsersSeeder extends Seeder {
             $user = User::query()->updateOrCreate(['email' => $data['email']], [
                 'name' => $data['name'],
                 'username' => $data['username'],
-                'is_active' => true,
+                'status' => StatusEnum::ACTIVE,
                 'password' => Hash::make($password),
             ]);
             $user->syncRoles([RolesEnum::ANNOTATION_MANAGER->value]);
@@ -69,7 +70,7 @@ class DummyUsersSeeder extends Seeder {
             $user = User::query()->updateOrCreate(['email' => $data['email']], [
                 'name' => $data['name'],
                 'username' => $data['username'],
-                'is_active' => true,
+                'status' => StatusEnum::ACTIVE,
                 'password' => Hash::make($password),
             ]);
             $user->syncRoles([RolesEnum::ANNOTATOR->value]);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\StatusEnum;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -28,7 +29,7 @@ class UserFactory extends Factory {
             'name' => fake()->name(),
             'username' => fake()->unique()->username(),
             'email' => fake()->unique()->safeEmail(),
-            'is_active' => fake()->boolean(),
+            'status' => fake()->randomElement([StatusEnum::ACTIVE, StatusEnum::INACTIVE]),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
             'deleted_at' => null,

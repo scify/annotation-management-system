@@ -6,6 +6,7 @@ namespace App\Services\Monitor;
 
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
+use App\Enums\StatusEnum;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotatorOfProject;
 use App\Models\Project;
@@ -215,7 +216,7 @@ readonly class MonitorAnnotatorHistoryTabService {
             $result[] = [
                 'id' => $annotator->id,
                 'username' => $annotator->username,
-                'is_active' => $annotator->is_active,
+                'is_active' => $annotator->status === StatusEnum::ACTIVE,
                 'total_projects' => $myProjects->count(),
                 'total_subprojects' => count($subprojectsData),
                 'total_annotations' => array_sum(array_column($subprojectsData, 'annotations')),

@@ -6,6 +6,7 @@ namespace App\Services\Monitor;
 
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
+use App\Enums\StatusEnum;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotatorOfProject;
 use App\Models\Project;
@@ -201,7 +202,7 @@ readonly class MonitorAnnotatorProgressTabService {
             $result[] = [
                 'id' => $annotator->id,
                 'username' => $annotator->username,
-                'status' => $annotator->is_active,
+                'status' => $annotator->status === StatusEnum::ACTIVE,
                 'active_subprojects' => count($mySubProjectIds),
                 'active_projects' => $myProjects->count(),
                 'workload' => $workloadsByAnnotator[$annotator->id]['total'] ?? 0.5,

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\User;
 
 use App\Enums\RolesEnum;
+use App\Enums\StatusEnum;
 use App\Models\User;
 use App\Queries\FindUserByEmailQuery;
 use App\Queries\GetUsersQuery;
@@ -61,6 +62,12 @@ readonly class UserService {
      */
     public function getWorkloads(array $userIds): array {
         return $this->getUserWorkloadsQuery->get($userIds);
+    }
+
+    public function activateIfPending(User $user): void {
+        if ($user->status === StatusEnum::PENDING) {
+            $user->update(['status' => StatusEnum::ACTIVE]);
+        }
     }
 
     public function findByEmail(string $email): ?User {

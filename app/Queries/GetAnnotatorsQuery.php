@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Queries;
 
 use App\Enums\RolesEnum;
+use App\Enums\StatusEnum;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -16,7 +17,7 @@ final readonly class GetAnnotatorsQuery {
      * @return Collection<int, User>
      */
     public function getActive(?array $ids = null): Collection {
-        return $this->query($ids)->where('is_active', true)->get();
+        return $this->query($ids)->whereIn('status', [StatusEnum::ACTIVE, StatusEnum::PENDING])->get();
     }
 
     /**
@@ -37,7 +38,7 @@ final readonly class GetAnnotatorsQuery {
         return User::query()
             ->whereHas('roles', fn (Builder $q) => $q->where('name', RolesEnum::ANNOTATOR->value))
             ->when($ids !== null, fn ($q) => $q->whereIn('id', $ids))
-            ->select(['id', 'name', 'username', 'is_active'])
+            ->select(['id', 'name', 'username', 'status'])
             ->without('roles');
     }
 }

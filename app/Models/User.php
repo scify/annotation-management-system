@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\StatusEnum;
 use Carbon\Carbon;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Appends;
@@ -26,7 +27,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read string $username
  * @property-read string $email
  * @property-read string $password
- * @property-read string $is_active
+ * @property StatusEnum $status
  * @property-read string|null $remember_token
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
@@ -42,7 +43,7 @@ use Spatie\Permission\Traits\HasRoles;
     'username',
     'email',
     'password',
-    'is_active',
+    'status',
     'deleted_at',
 ])]
 #[Hidden([
@@ -102,7 +103,7 @@ class User extends Authenticatable {
      */
     protected function casts(): array {
         return [
-            'is_active' => 'boolean',
+            'status' => StatusEnum::class,
             'password' => 'hashed',
             'deleted_at' => 'datetime',
         ];
