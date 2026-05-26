@@ -54,4 +54,5 @@ return [
     'confidence_high' => 'Υψηλή',
     'confidence_medium' => 'Μέτρια',
     'confidence_low' => 'Χαμηλή',
+    'not_available_yet' => 'Μη διαθέσιμο ακόμα',
 ];

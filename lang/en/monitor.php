@@ -54,4 +54,5 @@ return [
     'confidence_high' => 'High',
     'confidence_medium' => 'Medium',
     'confidence_low' => 'Low',
+    'not_available_yet' => 'Not Available yet',
 ];

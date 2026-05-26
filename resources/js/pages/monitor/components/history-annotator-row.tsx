@@ -85,9 +85,15 @@ export function HistoryAnnotatorRow({ annotator }: HistoryAnnotatorRowProps) {
 
                 {/* Average Velocity */}
                 <div role="cell" className="flex h-full items-center justify-center">
-                    <span className="text-base font-medium text-slate-800 tabular-nums">
-                        {annotator.averageVelocity ?? '—'}
-                    </span>
+                    {annotator.averageVelocity != null ? (
+                        <span className="text-base font-medium text-slate-800 tabular-nums">
+                            {annotator.averageVelocity}
+                        </span>
+                    ) : (
+                        <span className="bg-brand-blue-100 rounded-sm px-1.5 py-1 text-xs font-medium whitespace-nowrap text-slate-600">
+                            {t('monitor.not_available_yet')}
+                        </span>
+                    )}
                 </div>
 
                 {/* Expand/collapse */}
@@ -148,8 +154,16 @@ export function HistoryAnnotatorRow({ annotator }: HistoryAnnotatorRowProps) {
                             <span className="w-[115px] text-right text-xs font-medium text-slate-800 tabular-nums">
                                 {sp.flags}
                             </span>
-                            <span className="w-[115px] text-center text-xs font-medium text-slate-800 tabular-nums">
-                                {sp.velocity ?? '—'}
+                            <span className="flex w-[115px] items-center justify-center">
+                                {sp.velocity != null ? (
+                                    <span className="text-xs font-medium text-slate-800 tabular-nums">
+                                        {sp.velocity}
+                                    </span>
+                                ) : (
+                                    <span className="bg-brand-blue-100 rounded-sm px-1.5 py-1 text-xs font-medium whitespace-nowrap text-slate-600">
+                                        {t('monitor.not_available_yet')}
+                                    </span>
+                                )}
                             </span>
                             <span className="flex w-[115px] items-center justify-center">
                                 {sp.confidence !== null ? (
