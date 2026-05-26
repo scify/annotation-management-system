@@ -7,6 +7,12 @@ import { useState } from 'react';
 import type { MonitorAnnotator } from '../types';
 import { ProjectPanel } from './project-panel';
 
+const STATUS_STYLES: Record<MonitorAnnotator['status'], string> = {
+    active: 'border-green-500 bg-green-50 text-green-600',
+    inactive: 'border-red-700 bg-red-50 text-red-700',
+    pending: 'border-slate-400 bg-slate-100 text-slate-500',
+};
+
 interface AnnotatorRowProps {
     annotator: MonitorAnnotator;
 }
@@ -39,14 +45,10 @@ export function AnnotatorRow({ annotator }: AnnotatorRowProps) {
                     <span
                         className={cn(
                             'inline-flex h-[22px] w-[100px] items-center justify-center rounded border text-xs font-semibold',
-                            annotator.status === 'active'
-                                ? 'border-green-500 bg-green-50 text-green-600'
-                                : 'border-slate-300 bg-slate-100 text-slate-500'
+                            STATUS_STYLES[annotator.status]
                         )}
                     >
-                        {annotator.status === 'active'
-                            ? t('monitor.active')
-                            : t('monitor.inactive')}
+                        {t(`monitor.${annotator.status}`)}
                     </span>
                 </div>
 

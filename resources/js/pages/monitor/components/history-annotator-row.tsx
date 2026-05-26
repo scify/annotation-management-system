@@ -5,6 +5,12 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import type { HistoryAnnotator, HistoryAnnotatorSubproject } from '../types';
 
+const STATUS_STYLES: Record<HistoryAnnotator['status'], string> = {
+    active: 'border-green-500 bg-green-50 text-green-600',
+    inactive: 'border-red-700 bg-red-50 text-red-700',
+    pending: 'border-slate-400 bg-slate-100 text-slate-500',
+};
+
 const HISTORY_GRID_COLS = 'grid-cols-[52px_211px_133px_154px_154px_155px_154px_167px_64px]';
 
 type Confidence = NonNullable<HistoryAnnotatorSubproject['confidence']>;
@@ -44,14 +50,10 @@ export function HistoryAnnotatorRow({ annotator }: HistoryAnnotatorRowProps) {
                     <span
                         className={cn(
                             'inline-flex h-[22px] w-[100px] items-center justify-center rounded border text-xs font-semibold',
-                            annotator.status === 'active'
-                                ? 'border-green-500 bg-green-50 text-green-600'
-                                : 'border-slate-300 bg-slate-100 text-slate-500'
+                            STATUS_STYLES[annotator.status]
                         )}
                     >
-                        {annotator.status === 'active'
-                            ? t('monitor.active')
-                            : t('monitor.inactive')}
+                        {t(`monitor.${annotator.status}`)}
                     </span>
                 </div>
 
