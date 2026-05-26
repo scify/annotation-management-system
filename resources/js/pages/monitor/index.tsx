@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
-import { cn } from '@/lib/utils';
+import { cn, formatDate } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { Search } from 'lucide-react';
@@ -38,8 +38,7 @@ function normalizeSubproject(sp: BackendSubproject): SubProject {
     return {
         id: sp.id,
         name: sp.name,
-        // TODO(backend): replace with real subproject dates once backend adds started_at/deadline_at to subprojects
-        dateRange: '',
+        dateRange: `${formatDate(sp.scheduled_at)} – ${formatDate(sp.deadline_at)}`,
         remainingWorkload: Math.round(sp.workload * 100),
         progress: Math.round(sp.progress * 100),
         state: sp.status as SubProject['state'],
@@ -72,8 +71,6 @@ function normalizeHiddenProject(hp: BackendHiddenProject): HiddenProject {
         restricted: true,
         owner: hp.owner_name,
         assignedCount: hp.active_subprojects_count,
-        // TODO(backend): replace with real value once backend adds assigned_to to hidden_projects
-        assignedTo: '',
     };
 }
 
@@ -135,8 +132,8 @@ function normalizeHistoryAnnotator(a: BackendHistoryAnnotator): HistoryAnnotator
 // ── Page component ─────────────────────────────────────────────────────────────
 
 interface Props {
-    active_work_tab_data?: BackendActiveWorkData;
-    history_tab_data?: BackendHistoryData;
+    annotator_progress_tab_data?: BackendActiveWorkData;
+    annotator_history_tab_data?: BackendHistoryData;
 }
 
 function SectionToggle({
@@ -172,12 +169,15 @@ function SectionToggle({
     );
 }
 
-type TabKey = 'active_work' | 'history';
+type TabKey = 'annotator_progress' | 'annotator_history';
 type SortDir = 'asc' | 'desc' | 'none';
 
 const GRID_COLS = 'grid-cols-[52px_194px_150px_1fr_1fr_156px_195px_56px]';
 
-export default function MonitorIndex({ active_work_tab_data, history_tab_data }: Props) {
+export default function MonitorIndex({
+    annotator_progress_tab_data,
+    annotator_history_tab_data,
+}: Props) {
     const { t } = useTranslations();
     const isAnnotationManager = useAuth().isAnnotationManager();
 
@@ -186,7 +186,8 @@ export default function MonitorIndex({ active_work_tab_data, history_tab_data }:
         { title: t('monitor.page_title'), href: route('monitor.index') },
     ];
 
-    const initialTab: TabKey = active_work_tab_data !== undefined ? 'active_work' : 'history';
+    const initialTab: TabKey =
+        annotator_progress_tab_data !== undefined ? 'annotator_progress' : 'annotator_history';
     const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
     const [showOnlyMine, setShowOnlyMine] = useState(false);
     const [search, setSearch] = useState('');
@@ -196,23 +197,26 @@ export default function MonitorIndex({ active_work_tab_data, history_tab_data }:
 
     function handleTabChange(tab: TabKey) {
         setActiveTab(tab);
-        const routeName = tab === 'active_work' ? 'monitor.active-work' : 'monitor.history';
+        const routeName =
+            tab === 'annotator_progress'
+                ? 'monitor.annotator-progress'
+                : 'monitor.annotator-history';
         router.visit(route(routeName), { preserveScroll: true });
     }
 
     const annotators = useMemo(() => {
         const raw = showOnlyMine
-            ? (active_work_tab_data?.my_annotators ?? [])
-            : (active_work_tab_data?.all_annotators ?? []);
+            ? (annotator_progress_tab_data?.my_annotators ?? [])
+            : (annotator_progress_tab_data?.all_annotators ?? []);
         return raw.map(normalizeAnnotator);
-    }, [active_work_tab_data, showOnlyMine]);
+    }, [annotator_progress_tab_data, showOnlyMine]);
 
     const historyAnnotators = useMemo(() => {
         const raw = showOnlyMine
-            ? (history_tab_data?.my_annotators ?? [])
-            : (history_tab_data?.all_annotators ?? []);
+            ? (annotator_history_tab_data?.my_annotators ?? [])
+            : (annotator_history_tab_data?.all_annotators ?? []);
         return raw.map(normalizeHistoryAnnotator);
-    }, [history_tab_data, showOnlyMine]);
+    }, [annotator_history_tab_data, showOnlyMine]);
 
     const filtered = useMemo(() => {
         let result = [...annotators];
@@ -260,31 +264,31 @@ export default function MonitorIndex({ active_work_tab_data, history_tab_data }:
                         >
                             <button
                                 role="tab"
-                                aria-selected={activeTab === 'active_work'}
-                                aria-controls="monitor-active-work"
-                                onClick={() => handleTabChange('active_work')}
+                                aria-selected={activeTab === 'annotator_progress'}
+                                aria-controls="monitor-annotator-progress"
+                                onClick={() => handleTabChange('annotator_progress')}
                                 className={cn(
                                     'flex h-10 flex-1 items-center justify-center border-r border-slate-200 px-3 text-sm transition-colors hover:cursor-pointer',
-                                    activeTab === 'active_work'
+                                    activeTab === 'annotator_progress'
                                         ? 'bg-white font-semibold text-slate-800'
                                         : 'bg-slate-100 font-medium text-slate-500'
                                 )}
                             >
-                                {t('monitor.tab_active_work')}
+                                {t('monitor.tab_annotator_progress')}
                             </button>
                             <button
                                 role="tab"
-                                aria-selected={activeTab === 'history'}
+                                aria-selected={activeTab === 'annotator_history'}
                                 aria-controls="monitor-history"
-                                onClick={() => handleTabChange('history')}
+                                onClick={() => handleTabChange('annotator_history')}
                                 className={cn(
                                     'flex h-10 flex-1 items-center justify-center px-3 text-sm transition-colors hover:cursor-pointer',
-                                    activeTab === 'history'
+                                    activeTab === 'annotator_history'
                                         ? 'bg-white font-semibold text-slate-800'
                                         : 'bg-slate-100 font-medium text-slate-500'
                                 )}
                             >
-                                {t('monitor.tab_history')}
+                                {t('monitor.tab_annotator_history')}
                             </button>
                         </div>
                         <SectionToggle
@@ -295,8 +299,8 @@ export default function MonitorIndex({ active_work_tab_data, history_tab_data }:
                     </div>
                 )}
 
-                {activeTab === 'active_work' || isAnnotationManager ? (
-                    <div id="monitor-active-work" role="tabpanel">
+                {activeTab === 'annotator_progress' || isAnnotationManager ? (
+                    <div id="monitor-annotator-progress" role="tabpanel">
                         {/* Filter bar */}
                         <div className="mb-4 flex items-center justify-between gap-4">
                             <div className="flex gap-4">

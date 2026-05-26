@@ -11,6 +11,10 @@ export interface BackendSubproject {
     status: string;
     workload: number;
     progress: number;
+    started_at: string | null;
+    completed_at: string | null;
+    scheduled_at: string | null;
+    deadline_at: string | null;
 }
 
 export interface BackendProject {
@@ -89,7 +93,6 @@ export interface BackendHistoryData {
 export interface SubProject {
     id: number;
     name: string;
-    /** Empty string until backend adds subproject-level dates (started_at/deadline_at). */
     dateRange: string;
     remainingWorkload: number;
     progress: number;
@@ -119,8 +122,6 @@ export interface HiddenProject {
     restricted: true;
     owner: string;
     assignedCount: number;
-    /** Empty string until backend adds assigned_to to hidden_projects response. */
-    assignedTo: string;
 }
 
 export interface HistoryAnnotatorSubproject {

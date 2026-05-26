@@ -131,7 +131,7 @@ export function MonitorHistory({ annotators }: MonitorHistoryProps) {
             {/* Table */}
             <div
                 role="table"
-                aria-label={t('monitor.tab_history')}
+                aria-label={t('monitor.tab_annotator_history')}
                 className="overflow-hidden rounded-xl border border-slate-300"
             >
                 {/* Header */}

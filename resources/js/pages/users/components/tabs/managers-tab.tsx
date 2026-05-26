@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -23,8 +23,9 @@ import { RolesEnum } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Mail, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { RoleBadge } from './role-badge';
-import { StatusBadge } from './status-badge';
+import { CreateManagerForm } from '../create-manager/create-manager-form';
+import { RoleBadge } from '../shared/role-badge';
+import { StatusBadge } from '../shared/status-badge';
 
 interface MockManager {
     id: number;
@@ -32,6 +33,7 @@ interface MockManager {
     name: string;
     email: string;
     deleted_at: string | null;
+    status: 'active' | 'inactive' | 'pending';
 }
 
 const MOCK_MANAGERS: MockManager[] = [
@@ -41,6 +43,7 @@ const MOCK_MANAGERS: MockManager[] = [
         name: 'Aris Kosmopoulos',
         email: 'akosmo@scify.org',
         deleted_at: null,
+        status: 'pending',
     },
     {
         id: 2,
@@ -48,6 +51,7 @@ const MOCK_MANAGERS: MockManager[] = [
         name: 'Paul Isaris',
         email: 'paulisar@scify.org',
         deleted_at: null,
+        status: 'active',
     },
     {
         id: 3,
@@ -55,22 +59,23 @@ const MOCK_MANAGERS: MockManager[] = [
         name: 'Nelly Savvidou',
         email: 'nellysav@scify.org',
         deleted_at: null,
+        status: 'active',
     },
 ];
 
-type StatusFilter = 'all' | 'active' | 'inactive';
+type StatusFilter = 'all' | 'active' | 'inactive' | 'pending';
 
 export function ManagersTab() {
     const { t } = useTranslations();
     const { can } = useAuth();
+    const [showCreateForm, setShowCreateForm] = useState(false);
     const [showOnlyMine, setShowOnlyMine] = useState(false);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [search, setSearch] = useState('');
     const [messageTarget, setMessageTarget] = useState<MockManager | null>(null);
 
     const filtered = MOCK_MANAGERS.filter((m) => {
-        if (statusFilter === 'active' && m.deleted_at !== null) return false;
-        if (statusFilter === 'inactive' && m.deleted_at === null) return false;
+        if (statusFilter !== 'all' && m.status !== statusFilter) return false;
         if (search.trim()) {
             const q = search.toLowerCase();
             if (!m.name.toLowerCase().includes(q) && !m.email.toLowerCase().includes(q)) {
@@ -79,6 +84,10 @@ export function ManagersTab() {
         }
         return true;
     });
+
+    if (showCreateForm) {
+        return <CreateManagerForm onCancel={() => setShowCreateForm(false)} />;
+    }
 
     return (
         <div className="flex flex-col gap-4">
@@ -112,13 +121,14 @@ export function ManagersTab() {
                 </div>
 
                 {can('create_managers') && (
-                    <Link
-                        href={route('users.create')}
-                        className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    <button
+                        type="button"
+                        onClick={() => setShowCreateForm(true)}
+                        className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         {t('users.actions.create_manager')}
                         <Plus className="h-4 w-4" aria-hidden="true" />
-                    </Link>
+                    </button>
                 )}
             </div>
 
@@ -133,6 +143,7 @@ export function ManagersTab() {
                 <Select
                     value={statusFilter}
                     onValueChange={(v) => setStatusFilter(v as StatusFilter)}
+                    aria-label={t('users.labels.status')}
                 >
                     <SelectTrigger className="w-[215px] bg-white">
                         <SelectValue
@@ -149,6 +160,9 @@ export function ManagersTab() {
                         </SelectItem>
                         <SelectItem value="inactive" className="hover:cursor-pointer">
                             {t('users.filters.show_only_inactive')}
+                        </SelectItem>
+                        <SelectItem value="pending" className="hover:cursor-pointer">
+                            {t('users.filters.show_only_pending')}
                         </SelectItem>
                     </SelectContent>
                 </Select>
@@ -190,11 +204,10 @@ export function ManagersTab() {
                                 <TableRow key={manager.id} className="bg-white hover:bg-slate-50">
                                     <TableCell className="pl-4">
                                         <div className="flex items-center gap-3">
-                                            <Avatar className="size-[29px] shrink-0">
-                                                <AvatarFallback className="bg-brand-blue-700 text-xs font-semibold text-white">
-                                                    {manager.username.charAt(0).toUpperCase()}
-                                                </AvatarFallback>
-                                            </Avatar>
+                                            <InitialsAvatar
+                                                initials={manager.username.charAt(0).toUpperCase()}
+                                                variant="admin"
+                                            />
                                             <div className="flex flex-col gap-0.5">
                                                 <span className="text-sm font-medium text-slate-800">
                                                     {manager.username}
@@ -212,9 +225,7 @@ export function ManagersTab() {
                                         <RoleBadge role={RolesEnum.ANNOTATION_MANAGER} />
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <StatusBadge
-                                            status={manager.deleted_at ? 'inactive' : 'active'}
-                                        />
+                                        <StatusBadge status={manager.status} />
                                     </TableCell>
                                     <TableCell>
                                         <div className="flex items-center justify-center gap-2">

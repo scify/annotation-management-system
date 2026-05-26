@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 return [
     'page_title' => 'Monitor',
-    'tab_active_work' => 'Ενεργή Εργασία',
-    'tab_history' => 'Ιστορικό',
+    'tab_annotator_progress' => 'Πρόοδος Επισημειωτών',
+    'tab_annotator_history' => 'Ιστορικό Επισημειωτών',
     'show_only_mine' => 'Εμφάνιση μόνο Επισημειωτών με τους οποίους συνδέομαι',
     'sort_by_name' => 'Ταξινόμηση κατά Όνομα',
     'sort_by_workload' => 'Ταξινόμηση κατά Φόρτο',
@@ -54,4 +54,5 @@ return [
     'confidence_high' => 'Υψηλή',
     'confidence_medium' => 'Μέτρια',
     'confidence_low' => 'Χαμηλή',
+    'not_available_yet' => 'Μη διαθέσιμο ακόμα',
 ];

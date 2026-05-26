@@ -22,8 +22,8 @@ Route::get('/', fn () => redirect()->to(route('dashboard'))->withHeaders([
 Route::middleware(['auth'])->group(function (): void {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('monitor', [MonitorController::class, 'index'])->name('monitor.index');
-    Route::get('monitor/active-work', [MonitorController::class, 'activeWork'])->name('monitor.active-work');
-    Route::get('monitor/history', [MonitorController::class, 'history'])->name('monitor.history');
+    Route::get('monitor/annotator-progress', [MonitorController::class, 'annotatorProgress'])->name('monitor.annotator-progress');
+    Route::get('monitor/annotator-history', [MonitorController::class, 'annotatorHistory'])->name('monitor.annotator-history');
 
     Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
     Route::get('projects/create', [ProjectController::class, 'create'])->name('projects.create');

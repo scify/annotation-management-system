@@ -1,3 +1,4 @@
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { WorkloadGauge } from '@/components/workload-gauge';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
@@ -23,12 +24,7 @@ export function AnnotatorRow({ annotator }: AnnotatorRowProps) {
             <div className={cn('grid h-[54px] items-center bg-white', GRID_COLS)}>
                 {/* Avatar */}
                 <div role="cell" className="flex h-full items-center justify-center">
-                    <div
-                        className="bg-brand-blue-300 flex size-[29px] items-center justify-center rounded-full text-xs font-semibold text-white"
-                        aria-hidden="true"
-                    >
-                        {annotator.initials}
-                    </div>
+                    <InitialsAvatar initials={annotator.initials} />
                 </div>
 
                 {/* Username */}
@@ -121,6 +117,7 @@ export function AnnotatorRow({ annotator }: AnnotatorRowProps) {
                         <ProjectPanel
                             key={'restricted' in project ? `restricted-${idx}` : project.id}
                             project={project}
+                            annotatorUsername={annotator.username}
                         />
                     ))}
                 </div>

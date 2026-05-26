@@ -71,7 +71,7 @@ function SelectValue({
             className={cn('data-[placeholder]:text-muted-foreground', className)}
             {...props}
         >
-            {({ selectedText }) => selectedText ?? placeholder}
+            {({ selectedText }) => selectedText || placeholder}
         </AriaSelectValue>
     );
 }
