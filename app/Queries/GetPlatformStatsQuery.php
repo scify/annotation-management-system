@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Queries;
 
 use App\Enums\RolesEnum;
+use App\Enums\StatusEnum;
 use App\Models\Project;
 use App\Models\User;
 
@@ -16,7 +17,7 @@ final readonly class GetPlatformStatsQuery {
         $allProjects = Project::query()->count();
 
         $activeUsers = User::query()
-            ->where('is_active', true)
+            ->where('status', StatusEnum::ACTIVE)
             ->with('roles')
             ->get();
 
