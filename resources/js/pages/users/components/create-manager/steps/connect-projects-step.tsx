@@ -22,6 +22,13 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
+export const MOCK_PROJECT_ANNOTATORS: Record<number, number[]> = {
+    1: [1, 2],
+    2: [2, 3],
+    3: [3, 4],
+    4: [4, 5],
+};
+
 const MOCK_PROJECTS: Project[] = [
     {
         id: 1,

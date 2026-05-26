@@ -142,7 +142,9 @@ export function SelectAnnotatorsStep({
                             </span>
                         </span>
                         <span className="text-sm font-medium text-slate-800">
-                            {t(`${ns}.show_my_annotators`)}
+                            {showMyOnly
+                                ? t(`${ns}.show_my_annotators`)
+                                : t(`${ns}.show_all_annotators`)}
                         </span>
                     </label>
                 )}

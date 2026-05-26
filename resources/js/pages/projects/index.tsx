@@ -290,7 +290,11 @@ export default function ProjectsIndex({
                         <SectionToggle
                             checked={showOnlyMine}
                             onChange={handleToggleMine}
-                            label={t('projects.show_only_mine')}
+                            label={
+                                showOnlyMine
+                                    ? t('projects.show_only_mine')
+                                    : t('projects.show_all_projects')
+                            }
                         />
                     )}
                 </div>

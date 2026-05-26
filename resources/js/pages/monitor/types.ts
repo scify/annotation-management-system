@@ -45,7 +45,7 @@ export interface BackendHiddenProject {
 export interface BackendAnnotator {
     id: number;
     username: string;
-    status: boolean;
+    status: 'active' | 'inactive' | 'pending';
     active_subprojects: number;
     active_projects: number;
     workload: number;
@@ -74,7 +74,7 @@ export interface BackendHistorySubproject {
 export interface BackendHistoryAnnotator {
     id: number;
     username: string;
-    is_active: boolean;
+    status: 'active' | 'inactive' | 'pending';
     total_projects: number;
     total_subprojects: number;
     total_annotations: number;
@@ -141,7 +141,7 @@ export interface HistoryAnnotator {
     id: number;
     username: string;
     initials: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'pending';
     totalProjects: number;
     totalSubprojects: number;
     totalAnnotations: number;
@@ -155,7 +155,7 @@ export interface MonitorAnnotator {
     id: number;
     username: string;
     initials: string;
-    status: 'active' | 'inactive';
+    status: 'active' | 'inactive' | 'pending';
     activeSubprojects: number;
     activeProjects: number;
     remainingWorkload: number;

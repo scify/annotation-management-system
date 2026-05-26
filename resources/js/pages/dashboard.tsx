@@ -138,7 +138,11 @@ export default function Dashboard({
                             <SectionToggle
                                 checked={showOnlyMineProjects}
                                 onChange={setShowOnlyMineProjects}
-                                label={t('projects.dashboard.toggle_show_mine_projects')}
+                                label={
+                                    showOnlyMineProjects
+                                        ? t('projects.dashboard.toggle_show_mine_projects')
+                                        : t('projects.dashboard.toggle_show_all_projects')
+                                }
                             />
                         )}
                     </div>
@@ -164,7 +168,11 @@ export default function Dashboard({
                             <SectionToggle
                                 checked={showOnlyMineAnnotators}
                                 onChange={setShowOnlyMineAnnotators}
-                                label={t('projects.dashboard.toggle_show_mine_annotators')}
+                                label={
+                                    showOnlyMineAnnotators
+                                        ? t('projects.dashboard.toggle_show_mine_annotators')
+                                        : t('projects.dashboard.toggle_show_all_annotators')
+                                }
                             />
                         )}
                     </div>

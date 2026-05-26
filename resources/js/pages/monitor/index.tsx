@@ -79,7 +79,7 @@ function normalizeAnnotator(a: BackendAnnotator): MonitorAnnotator {
         id: a.id,
         username: a.username,
         initials: a.username[0]?.toUpperCase() ?? '?',
-        status: a.status ? 'active' : 'inactive',
+        status: a.status,
         activeSubprojects: a.active_subprojects,
         activeProjects: a.active_projects,
         remainingWorkload: Math.round(a.workload * 100),
@@ -96,7 +96,7 @@ function normalizeHistoryAnnotator(a: BackendHistoryAnnotator): HistoryAnnotator
         id: a.id,
         username: a.username,
         initials: a.username[0]?.toUpperCase() ?? '?',
-        status: a.is_active ? 'active' : 'inactive',
+        status: a.status,
         totalProjects: a.total_projects,
         totalSubprojects: a.total_subprojects,
         totalAnnotations: a.total_annotations,
@@ -260,7 +260,7 @@ export default function MonitorIndex({
                         <div
                             role="tablist"
                             aria-label={t('monitor.page_title')}
-                            className="flex h-[50px] w-[390px] items-center rounded-lg border border-slate-200 bg-white px-1.5 py-1"
+                            className="flex h-[50px] w-[500px] items-center rounded-lg border border-slate-200 bg-white px-1.5 py-1"
                         >
                             <button
                                 role="tab"
@@ -294,7 +294,11 @@ export default function MonitorIndex({
                         <SectionToggle
                             checked={showOnlyMine}
                             onChange={setShowOnlyMine}
-                            label={t('monitor.show_only_mine')}
+                            label={
+                                showOnlyMine
+                                    ? t('monitor.show_only_mine')
+                                    : t('monitor.show_all_annotators')
+                            }
                         />
                     </div>
                 )}
