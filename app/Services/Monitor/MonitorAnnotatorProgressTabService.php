@@ -19,7 +19,7 @@ use App\Queries\GetAssignmentsBySubProjectsAndAnnotatorsQuery;
 use App\Queries\GetProjectIdsManagedByUserQuery;
 use App\Queries\GetProjectsByIdsQuery;
 use App\Queries\GetSubProjectsOfProjectsQuery;
-use App\Services\Annotator\WorkloadService;
+use App\Services\Annotation\WorkloadService;
 use App\Services\Project\SubProjectService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;

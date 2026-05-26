@@ -12,7 +12,7 @@ use App\Queries\GetPlatformStatsQuery;
 use App\Queries\GetProjectIdsManagedByUserQuery;
 use App\Queries\GetProjectsQuery;
 use App\Queries\GetSubProjectIdsQuery;
-use App\Services\Annotator\AnnotatorService;
+use App\Services\Annotation\AnnotatorService;
 use App\Services\Project\ProjectService;
 use App\Services\Project\SubProjectService;
 use Illuminate\Support\Collection;

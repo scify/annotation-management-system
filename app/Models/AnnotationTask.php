@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\AnnotationTaskTypeEnum;
 use Carbon\Carbon;
 use Database\Factories\AnnotationTaskFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $description
  * @property string|null $guidelines_url
  * @property int $weight
+ * @property AnnotationTaskTypeEnum $task_type
  * @property array<int, array{id: int, question: string, answers: list<string>, parameters: list<string>}>|null $customization_options
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
@@ -28,12 +30,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read Collection<int, Dataset> $datasets
  */
 #[Fillable([
-    'title',
-    'short_description',
+    'customization_options',
     'description',
     'guidelines_url',
+    'short_description',
+    'task_type',
+    'title',
     'weight',
-    'customization_options',
 ])]
 class AnnotationTask extends Model {
     /** @use HasFactory<AnnotationTaskFactory> */
@@ -67,6 +70,7 @@ class AnnotationTask extends Model {
     protected function casts(): array {
         return [
             'customization_options' => 'array',
+            'task_type' => AnnotationTaskTypeEnum::class,
         ];
     }
 }

@@ -9,7 +9,7 @@ use App\Models\Dataset;
 use App\Models\Project;
 use App\Models\SubProject;
 use App\Models\User;
-use App\Services\Annotator\WorkloadService;
+use App\Services\Annotation\WorkloadService;
 use Illuminate\Support\Facades\DB;
 
 describe('WorkloadService::computeNormalizedWorkloads', function (): void {

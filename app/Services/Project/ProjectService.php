@@ -21,7 +21,7 @@ use App\Queries\GetProjectIdsManagedByUserQuery;
 use App\Queries\GetProjectsByIdsQuery;
 use App\Queries\GetProjectsManagedByUserQuery;
 use App\Queries\GetProjectsQuery;
-use App\Services\Annotator\AnnotatorService;
+use App\Services\Annotation\AnnotatorService;
 use App\Services\Dataset\DatasetService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
@@ -200,12 +200,13 @@ readonly class ProjectService {
         $annotatorIds = $project->annotators()->pluck('users.id')->all();
         /** @var \Illuminate\Support\Collection<int, int> $subProjectIds */
         $subProjectIds = $project->subProjects->pluck('id');
+        $progressBySubProject = $this->subProjectService->getProgress($subProjectIds->all());
 
         return [
             'project_data' => $this->buildProjectData($project, $subprojectsData),
             'subprojects_data' => $subprojectsData,
-            'annotators_data' => $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $subProjectIds),
-            'comanagers' => $this->buildCoManagersData($project),
+            'annotators_data' => $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $subProjectIds, $progressBySubProject),
+            'comanagers_data' => $this->buildCoManagersData($project),
         ];
     }
 

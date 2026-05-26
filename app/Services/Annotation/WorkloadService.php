@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Annotator;
+namespace App\Services\Annotation;
 
 use App\Services\User\UserService;
 use Illuminate\Support\Facades\DB;

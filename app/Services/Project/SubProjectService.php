@@ -4,16 +4,37 @@ declare(strict_types=1);
 
 namespace App\Services\Project;
 
+use App\Enums\AgreementEnum;
 use App\Models\AnnotationAssignment;
 use App\Models\SubProject;
 use App\Queries\GetProgressQuery;
+use App\Services\Annotation\AnnotationService;
+use App\Services\Annotation\AnnotatorService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
 readonly class SubProjectService {
     public function __construct(
+        private AnnotationService $annotationService,
+        private AnnotatorService $annotatorService,
         private GetProgressQuery $progressQuery,
     ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDataForEditSubProject(int $projectId, int $subprojectId): array {
+        $subProject = SubProject::query()
+            ->with(['project.annotationTask', 'project.dataset:id,name'])
+            ->where('project_id', $projectId)
+            ->findOrFail($subprojectId);
+
+        return [
+            'subproject_data' => $this->buildSubProjectData($subProject),
+            'annotators_data' => $this->buildAnnotatorsData($subProject),
+            'annotations_data' => $this->buildAnnotationsData($subProject),
+        ];
+    }
 
     /**
      * @param  array<int, int>  $subProjectIds
@@ -98,6 +119,60 @@ readonly class SubProjectService {
                 'notification_count' => $notificationCounts[$subProject->id] ?? 0,
             ];
         })->values()->all();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function buildSubProjectData(SubProject $subProject): array {
+        $progress = $this->getProgress([$subProject->id]);
+        $spProgress = $progress[$subProject->id]['progress'] ?? 0.0;
+
+        return [
+            'id' => $subProject->id,
+            'project_id' => $subProject->project_id,
+            'name' => $subProject->name,
+            'status' => $subProject->status->value,
+            'priority' => $subProject->priority->value,
+            'flexible' => $subProject->flexible,
+            'auto_submission' => $subProject->auto_submission,
+            'minimum_annotators' => $subProject->minimum_annotators,
+            'first_instance_index' => $subProject->first_instance_index,
+            'last_instance_index' => $subProject->last_instance_index,
+            'scheduled_at' => $subProject->scheduled_at,
+            'deadline_at' => $subProject->deadline_at,
+            'started_at' => $subProject->started_at,
+            'completed_at' => $subProject->completed_at,
+            'dataset_id' => $subProject->project->dataset->id,
+            'dataset_name' => $subProject->project->dataset->name,
+            'progress' => $spProgress,
+        ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function buildAnnotatorsData(SubProject $subProject): array {
+        /** @var array<int, int> $annotatorIds */
+        $annotatorIds = AnnotationAssignment::query()
+            ->where('sub_project_id', $subProject->id)
+            ->pluck('user_id')
+            ->all();
+
+        /** @var \Illuminate\Support\Collection<int, int> $activeSubProjectIds */
+        $activeSubProjectIds = collect([$subProject->id]);
+
+        return $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $activeSubProjectIds);
+    }
+
+    /**
+     * @return array<int, array{dataset_instance_id: int, annotated: int, planned_annotations: int, agreement: AgreementEnum}>
+     */
+    private function buildAnnotationsData(SubProject $subProject): array {
+        return $this->annotationService->getAnnotationsData(
+            $subProject->id,
+            $subProject->project->annotationTask->task_type,
+        );
     }
 
     /**
