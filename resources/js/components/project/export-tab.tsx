@@ -9,10 +9,11 @@ import { Download } from 'lucide-react';
 import { useState } from 'react';
 
 interface ExportTabProps {
+    projectId: number;
     subProjects: SubProjectListItemData[];
 }
 
-export function ExportTab({ subProjects }: ExportTabProps) {
+export function ExportTab({ projectId, subProjects }: ExportTabProps) {
     const { trans } = useTranslations();
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
@@ -35,6 +36,13 @@ export function ExportTab({ subProjects }: ExportTabProps) {
         setSelectedIds(checked ? new Set(subProjects.map((sp) => sp.id)) : new Set());
     };
 
+    const handleExport = () => {
+        const base = route('projects.export', { id: projectId });
+        const params = new URLSearchParams();
+        selectedIds.forEach((id) => params.append('subproject_ids[]', String(id)));
+        window.location.href = `${base}?${params.toString()}`;
+    };
+
     return (
         <div
             id="tabpanel-export"
@@ -54,6 +62,7 @@ export function ExportTab({ subProjects }: ExportTabProps) {
                 </div>
                 <Button
                     disabled={selectedCount === 0}
+                    onClick={handleExport}
                     className="bg-brand-blue-700 hover:bg-brand-blue-800 h-10 font-semibold text-white disabled:opacity-50"
                 >
                     <Download className="size-4" aria-hidden="true" />

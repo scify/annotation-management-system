@@ -164,11 +164,11 @@ export function ManagersTab({
                                     </TableCell>
                                     <TableCell className="text-center">
                                         {manager.role === 'owner' ? (
-                                            <span className="inline-flex h-[22px] w-[122px] items-center justify-center rounded border border-purple-300 bg-purple-50 px-2 py-px text-center text-xs font-semibold text-purple-600">
+                                            <span className="inline-flex h-[22px] items-center justify-center rounded border border-purple-300 bg-purple-50 px-2 py-px text-center text-xs font-semibold text-purple-600">
                                                 {t('projects.managers_tab.role_owner')}
                                             </span>
                                         ) : (
-                                            <span className="inline-flex h-[22px] w-[122px] items-center justify-center rounded border border-cyan-300 px-2 py-px text-center text-xs font-semibold text-cyan-600">
+                                            <span className="inline-flex h-[22px] items-center justify-center rounded border border-cyan-300 px-2 py-px text-center text-xs font-semibold text-cyan-600">
                                                 {t('projects.managers_tab.role_co_manager')}
                                             </span>
                                         )}

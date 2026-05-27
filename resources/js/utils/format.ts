@@ -1,4 +1,6 @@
-const LOCALE = (typeof document !== 'undefined' && document.documentElement.lang) || 'en';
+function getLocale(): string {
+    return (typeof document !== 'undefined' && document.documentElement.lang) || 'en';
+}
 
 export function formatDate(
     date: string | null,
@@ -9,7 +11,7 @@ export function formatDate(
     }
 ): string {
     if (!date) return '';
-    return new Date(date).toLocaleDateString(LOCALE, options);
+    return new Date(date).toLocaleDateString(getLocale(), options);
 }
 
 export function formatDateDMY(date: string | null): string {
@@ -29,7 +31,7 @@ export function formatDateDMYShort(date: string | null): string {
 }
 
 export function formatRelativeTime(date: string): string {
-    const rtf = new Intl.RelativeTimeFormat(LOCALE, { numeric: 'auto' });
+    const rtf = new Intl.RelativeTimeFormat(getLocale(), { numeric: 'auto' });
     const now = new Date();
     const diff = new Date(date).getTime() - now.getTime();
 

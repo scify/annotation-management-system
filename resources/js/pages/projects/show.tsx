@@ -6,121 +6,167 @@ import { cn } from '@/lib/utils';
 import { AnnotatorsTab } from '@/components/project/annotators-tab';
 import { ExportTab } from '@/components/project/export-tab';
 import { ManagersTab } from '@/components/project/managers-tab';
+import { type ProjectManagerRowData } from '@/components/project/managers-tab';
 import { SubprojectsTab } from '@/components/project/subprojects-tab';
+import { STATUS_VARIANT, toInitials } from '@/components/project/project-card';
+import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
 import { type BreadcrumbItem } from '@/types';
+import { formatDate } from '@/utils/format';
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 
-interface ProjectShowData {
+interface BackendProjectData {
     id: number;
     name: string;
-    tags: [string, string];
+    annotation_task_title: string;
+    dataset_name: string;
+    project_progress: number;
+}
+
+interface BackendSubprojectData {
+    id: number;
+    name: string;
+    status: 'in_progress' | 'pending' | 'completed';
+    scheduled_at: string | null;
+    deadline_at: string | null;
+    started_at: string | null;
+    completed_at: string | null;
     progress: number;
-    subProjects: SubProjectListItemData[];
+    annotators_count: number;
+    first_instance_index: number;
+    last_instance_index: number;
+    notification_count: number;
+}
+
+interface BackendAnnotatorData {
+    id: number;
+    username: string;
+    status: string;
+    active_projects_count: number;
+    active_subprojects_count: number;
+    annotator_progress: number;
+    workload: number;
+}
+
+interface BackendManagerData {
+    id: number;
+    username: string;
+    email: string;
+    status: string;
+    owner: boolean;
+    accepted: boolean;
 }
 
 interface Props {
-    project?: ProjectShowData;
+    project_data: BackendProjectData;
+    subprojects_data: BackendSubprojectData[];
+    annotators_data: BackendAnnotatorData[];
+    comanagers_data: BackendManagerData[];
 }
 
 type TabKey = 'subprojects' | 'annotators' | 'managers' | 'export';
 
-const MOCK_PROJECT: ProjectShowData = {
-    id: 1,
-    name: 'Project New Nov_26',
-    tags: ["Explore word's meaning in medieval textes vol2", 'Text Dataset B'],
-    progress: 25,
-    subProjects: [
-        {
-            id: 1,
-            name: 'SubProject New Nov_26',
-            instancesRange: '200-1050',
-            dateRange: 'Jan 15, 2026 – Feb 28, 2026',
-            status: 'slate',
-            statusLabel: 'Pending',
-            progress: 75,
-            annotators: 3,
-            notifications: 1,
-        },
-        {
-            id: 2,
-            name: 'SubProject Test for Annotators',
-            instancesRange: '200-1050',
-            dateRange: 'Jan 15, 2026 – Feb 28, 2026',
-            status: 'lime',
-            statusLabel: 'Complete',
-            progress: 75,
-            annotators: 3,
-            notifications: 1,
-        },
-        {
-            id: 3,
-            name: 'Overall Annotation',
-            instancesRange: '200-1050',
-            dateRange: 'Jan 15, 2026 – Feb 28, 2026',
-            status: 'slate',
-            statusLabel: 'Pending',
-            progress: 75,
-            annotators: 3,
-            notifications: 1,
-        },
-    ],
-};
+const DATE_FORMAT: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
 
-export default function ProjectShow({ project }: Props) {
+export default function ProjectShow({
+    project_data,
+    subprojects_data,
+    annotators_data,
+    comanagers_data,
+}: Props) {
     const { t } = useTranslations();
-    const displayProject = project ?? MOCK_PROJECT;
     const [activeTab, setActiveTab] = useState<TabKey>('subprojects');
+
+    const subProjects: SubProjectListItemData[] = subprojects_data.map((sp) => ({
+        id: sp.id,
+        name: sp.name,
+        instancesRange: `${sp.first_instance_index}–${sp.last_instance_index}`,
+        dateRange: [
+            formatDate(sp.scheduled_at, DATE_FORMAT),
+            formatDate(sp.deadline_at, DATE_FORMAT),
+        ]
+            .filter(Boolean)
+            .join(' – '),
+        status: STATUS_VARIANT[sp.status],
+        statusLabel: t(`projects.status.${sp.status}`),
+        progress: Math.round(sp.progress * 100),
+        annotators: sp.annotators_count,
+        notifications: sp.notification_count,
+    }));
+
+    const annotators: ProjectAnnotatorRowData[] = annotators_data.map((a) => ({
+        id: a.id,
+        name: a.username,
+        annotator_progress: a.annotator_progress,
+        active_projects_count: a.active_projects_count,
+        active_subprojects_count: a.active_subprojects_count,
+        workload: a.workload,
+    }));
+
+    const managers: ProjectManagerRowData[] = comanagers_data.map((m) => ({
+        id: m.id,
+        initials: toInitials(m.username),
+        username: m.username,
+        email: m.email,
+        role: m.owner ? 'owner' : 'co-manager',
+        hasOwnershipRequest: false, // TODO: awaiting backend field
+    }));
+
+    const progress = Math.round(project_data.project_progress * 100);
 
     const tabs: { key: TabKey; label: string; count?: number }[] = [
         {
             key: 'subprojects',
             label: t('projects.show.tab_subprojects'),
-            count: displayProject.subProjects.length,
+            count: subprojects_data.length,
         },
-        { key: 'annotators', label: t('projects.show.tab_annotators'), count: 3 },
-        { key: 'managers', label: t('projects.show.tab_managers'), count: 3 },
+        {
+            key: 'annotators',
+            label: t('projects.show.tab_annotators'),
+            count: annotators_data.length,
+        },
+        { key: 'managers', label: t('projects.show.tab_managers'), count: comanagers_data.length },
         { key: 'export', label: t('projects.show.tab_export') },
     ];
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Projects', href: route('projects.index') },
-        { title: displayProject.name, href: route('projects.show', displayProject.id) },
+        { title: project_data.name, href: route('projects.show', project_data.id) },
     ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title={displayProject.name} />
+            <Head title={project_data.name} />
             <div className="flex flex-col gap-4 px-6 py-6">
                 {/* Project title */}
-                <h1 className="text-slate-800">{displayProject.name}</h1>
+                <h1 className="text-slate-800">{project_data.name}</h1>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-3">
                     <Tag>
                         <strong className="font-bold">{t('projects.show.tag_task')}</strong>
-                        <span className="ml-1">{displayProject.tags[0]}</span>
+                        <span className="ml-1">{project_data.annotation_task_title}</span>
                     </Tag>
                     <Tag>
                         <strong className="font-bold">{t('projects.show.tag_dataset')}</strong>
-                        <span className="ml-1">{displayProject.tags[1]}</span>
+                        <span className="ml-1">{project_data.dataset_name}</span>
                     </Tag>
                 </div>
 
                 {/* Overall progress bar */}
                 <div className="flex flex-col gap-2">
                     <span className="text-sm font-semibold text-slate-800">
-                        {t('projects.show.overall_progress')} {displayProject.progress}%
+                        {t('projects.show.overall_progress')} {progress}%
                     </span>
                     <div className="bg-brand-blue-100 h-3 w-full overflow-hidden rounded-full">
                         <div
                             className="bg-brand-blue-800 h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500 motion-safe:ease-out"
-                            style={{ width: `${displayProject.progress}%` }}
+                            style={{ width: `${progress}%` }}
                             role="progressbar"
-                            aria-valuenow={displayProject.progress}
+                            aria-valuenow={progress}
                             aria-valuemin={0}
                             aria-valuemax={100}
-                            aria-label={`Overall project progress: ${displayProject.progress}%`}
+                            aria-label={`Overall project progress: ${progress}%`}
                         />
                     </div>
                 </div>
@@ -156,16 +202,18 @@ export default function ProjectShow({ project }: Props) {
                 {/* Tab panels */}
                 {activeTab === 'subprojects' && (
                     <SubprojectsTab
-                        subProjects={displayProject.subProjects}
-                        projectId={displayProject.id}
+                        subProjects={subProjects}
+                        projectId={project_data.id}
                         onSubprojectCreated={() =>
-                            router.visit(route('projects.subprojects.create', displayProject.id))
+                            router.visit(route('projects.subprojects.create', project_data.id))
                         }
                     />
                 )}
-                {activeTab === 'annotators' && <AnnotatorsTab />}
-                {activeTab === 'managers' && <ManagersTab />}
-                {activeTab === 'export' && <ExportTab subProjects={displayProject.subProjects} />}
+                {activeTab === 'annotators' && <AnnotatorsTab annotators={annotators} />}
+                {activeTab === 'managers' && <ManagersTab initialManagers={managers} />}
+                {activeTab === 'export' && (
+                    <ExportTab projectId={project_data.id} subProjects={subProjects} />
+                )}
             </div>
         </AppLayout>
     );

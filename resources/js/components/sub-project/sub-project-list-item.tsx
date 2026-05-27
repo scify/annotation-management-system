@@ -62,7 +62,9 @@ export function SubProjectListItem({
                                 {t('sub-projects.list_item.instances')} {subProject.instancesRange}
                             </Tag>
                         </div>
-                        <p className="text-sm text-slate-600">{subProject.dateRange}</p>
+                        <p className="text-sm text-slate-600" suppressHydrationWarning>
+                            {subProject.dateRange}
+                        </p>
                     </div>
                 </div>
 
