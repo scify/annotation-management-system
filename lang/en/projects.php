@@ -58,7 +58,10 @@ return [
         'table_subprojects' => 'Subprojects',
         'table_workload' => 'Remain. Workload',
         'table_progress' => 'Progress',
-        'table_action' => 'Action',
+        'table_subproject_progress' => "Subproject's Progress",
+        'table_flags' => 'Flags',
+        'table_allow_flagging' => 'Allow Flagging',
+        'table_actions' => 'Actions',
     ],
 
     'managers_tab' => [

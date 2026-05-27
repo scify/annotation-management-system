@@ -85,6 +85,7 @@ return [
     ],
 
     'annotators_panel' => [
+        'make_announcement' => 'Ανακοίνωση',
         'remove_dialog_title' => 'Αφαίρεση Επισημειωτή',
         'remove_dialog_description' => 'Είστε βέβαιοι ότι θέλετε να αφαιρέσετε τον :username από αυτό το υποέργο;',
         'remove_confirm' => 'Αφαίρεση',
@@ -102,6 +103,8 @@ return [
         'col_agreement' => 'Συμφωνία',
         'col_action' => 'Ενέργεια',
         'col_annotation' => 'Επισημείωση',
+        'col_annotator' => 'Επισημειωτής',
+        'col_last_edited_by' => 'Τελευταία επεξεργασία από',
         'col_assigned_to' => 'Ανατέθηκε σε',
         'col_annotated_by' => 'Επισημειώθηκε από',
         'col_timestamp' => 'Ώρα',

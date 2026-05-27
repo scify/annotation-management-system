@@ -87,6 +87,7 @@ return [
     ],
 
     'annotators_panel' => [
+        'make_announcement' => 'Make Announcement',
         'remove_dialog_title' => 'Remove Annotator',
         'remove_dialog_description' => 'Are you sure you want to remove :username from this subproject?',
         'remove_confirm' => 'Remove',
@@ -104,6 +105,8 @@ return [
         'col_agreement' => 'Agreement',
         'col_action' => 'Action',
         'col_annotation' => 'Annotation',
+        'col_annotator' => 'Annotator',
+        'col_last_edited_by' => 'Last Edited by',
         'col_assigned_to' => 'Assigned to',
         'col_annotated_by' => 'Annotated by',
         'col_timestamp' => 'Timestamp',

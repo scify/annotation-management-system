@@ -58,7 +58,10 @@ return [
         'table_subprojects' => 'Υποέργα',
         'table_workload' => 'Υπόλ. Φόρτος',
         'table_progress' => 'Πρόοδος',
-        'table_action' => 'Ενέργεια',
+        'table_subproject_progress' => 'Πρόοδος Υποέργου',
+        'table_flags' => 'Επισημάνσεις',
+        'table_allow_flagging' => 'Να επιτρέπεται η επισήμανση',
+        'table_actions' => 'Ενέργειες',
     ],
 
     'managers_tab' => [

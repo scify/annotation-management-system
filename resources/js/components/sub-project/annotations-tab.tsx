@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -225,9 +224,6 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                             <TableHead className="text-center text-sm font-semibold text-slate-800">
                                 {t('sub-projects.annotations.col_agreement')}
                             </TableHead>
-                            <TableHead className="w-[279px] text-center text-sm font-semibold text-slate-800">
-                                {t('sub-projects.annotations.col_action')}
-                            </TableHead>
                             {/* Expand chevron column — no heading */}
                             <TableHead className="w-[55px]" />
                         </TableRow>
@@ -259,14 +255,6 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                         </TableCell>
                                         <TableCell className="h-14 text-center">
                                             <AgreementBadge level={row.agreement} />
-                                        </TableCell>
-                                        <TableCell className="h-14 text-center">
-                                            <Button
-                                                size="sm"
-                                                className="bg-brand-blue-700 hover:bg-brand-blue-800 h-[30px] text-white"
-                                            >
-                                                {t('sub-projects.annotations.go_to_instance')}
-                                            </Button>
                                         </TableCell>
                                         <TableCell className="h-14 text-center">
                                             <button
@@ -304,22 +292,17 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                              * outer table's column-width calculations — prevents
                                              * columns shifting when inner content is wider/narrower.
                                              */}
-                                            <TableCell colSpan={5} className="p-0">
+                                            <TableCell colSpan={4} className="p-0">
                                                 {/* Sub-header */}
                                                 <div className="flex h-10 items-center border-b border-slate-200">
-                                                    <span className="w-1/5 shrink-0 px-2 text-center text-sm font-semibold text-slate-400">
+                                                    <span className="w-1/5 shrink-0 px-2 text-sm font-semibold text-slate-400">
                                                         {t(
-                                                            'sub-projects.annotations.col_annotation'
+                                                            'sub-projects.annotations.col_annotator'
                                                         )}
                                                     </span>
                                                     <span className="w-1/5 shrink-0 px-2 text-sm font-semibold text-slate-400">
                                                         {t(
-                                                            'sub-projects.annotations.col_assigned_to'
-                                                        )}
-                                                    </span>
-                                                    <span className="w-1/5 shrink-0 px-2 text-sm font-semibold text-slate-400">
-                                                        {t(
-                                                            'sub-projects.annotations.col_annotated_by'
+                                                            'sub-projects.annotations.col_last_edited_by'
                                                         )}
                                                     </span>
                                                     <span className="w-1/5 shrink-0 px-2 text-sm font-semibold text-slate-400">
@@ -332,6 +315,9 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                                             'sub-projects.annotations.col_confidence'
                                                         )}
                                                     </span>
+                                                    <span className="w-1/5 shrink-0 px-2 text-center text-sm font-semibold text-slate-400">
+                                                        {t('sub-projects.annotations.col_action')}
+                                                    </span>
                                                 </div>
 
                                                 {/* One row per annotation entry */}
@@ -340,9 +326,6 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                                         key={entry.id}
                                                         className="flex min-h-[90px] items-start border-b border-slate-200 pt-4 pb-4"
                                                     >
-                                                        <span className="w-1/5 shrink-0 px-2 text-center text-base font-medium text-slate-800">
-                                                            {entry.annotation}
-                                                        </span>
                                                         <div className="flex w-1/5 shrink-0 flex-col gap-2 px-2">
                                                             <span className="text-base font-medium whitespace-nowrap text-slate-800">
                                                                 {entry.assignedTo.username}
@@ -366,6 +349,16 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                                             <AgreementBadge
                                                                 level={entry.confidence}
                                                             />
+                                                        </span>
+                                                        <span className="flex w-1/5 shrink-0 justify-center px-2">
+                                                            <button
+                                                                type="button"
+                                                                className="cursor-pointer text-sm font-semibold text-slate-800 underline underline-offset-2"
+                                                            >
+                                                                {t(
+                                                                    'sub-projects.annotations.go_to_instance'
+                                                                )}
+                                                            </button>
                                                         </span>
                                                     </div>
                                                 ))}

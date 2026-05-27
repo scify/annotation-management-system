@@ -19,6 +19,9 @@ export function SubprojectAnnotatorsPanel({
     const [annotatorToRemove, setAnnotatorToRemove] = useState<ProjectAnnotatorRowData | null>(
         null
     );
+    const [flaggingState, setFlaggingState] = useState<Record<number, boolean>>(() =>
+        Object.fromEntries(annotators.map((a) => [a.id, a.allow_flagging ?? false]))
+    );
 
     function handleRemoveRequest(id: number) {
         const annotator = annotators.find((a) => a.id === id);
@@ -32,6 +35,15 @@ export function SubprojectAnnotatorsPanel({
         }
     }
 
+    function handleAllowFlaggingChange(id: number, enabled: boolean) {
+        setFlaggingState((prev) => ({ ...prev, [id]: enabled }));
+    }
+
+    const annotatorsWithFlagging = annotators.map((a) => ({
+        ...a,
+        allow_flagging: flaggingState[a.id] ?? a.allow_flagging ?? false,
+    }));
+
     return (
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
@@ -44,8 +56,9 @@ export function SubprojectAnnotatorsPanel({
 
             <AnnotatorsTable
                 mode="remove"
-                annotators={annotators}
+                annotators={annotatorsWithFlagging}
                 onAnnotatorRemoved={handleRemoveRequest}
+                onAllowFlaggingChange={handleAllowFlaggingChange}
             />
 
             <ProjectDialog

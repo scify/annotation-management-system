@@ -5,8 +5,8 @@ import {
     PriorityBadge,
     type SubprojectPriority,
     type SubmissionMode,
-    ToggleSwitch,
 } from '@/components/sub-project/configuration-step';
+import { ToggleSwitch } from '@/components/ui/toggle-switch';
 import { type DatasetInfo } from '@/components/sub-project/select-dataset-subset-step';
 import {
     AnnotationsTab,
@@ -35,7 +35,7 @@ import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { CalendarDate } from '@internationalized/date';
 import { Head } from '@inertiajs/react';
-import { CircleAlert } from 'lucide-react';
+import { CircleAlert, Megaphone } from 'lucide-react';
 import { useState } from 'react';
 
 // ── Mock data ─────────────────────────────────────────────────────────────────
@@ -72,6 +72,8 @@ const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
         active_subprojects_count: 23,
         workload: 0.85,
         annotator_progress: 0.75,
+        annotator_flags: 23,
+        allow_flagging: true,
     },
     {
         id: 2,
@@ -80,6 +82,8 @@ const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
         active_subprojects_count: 4,
         workload: 0.3,
         annotator_progress: 0.75,
+        annotator_flags: 23,
+        allow_flagging: true,
     },
     {
         id: 3,
@@ -88,6 +92,8 @@ const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
         active_subprojects_count: 6,
         workload: 0.5,
         annotator_progress: 0.6,
+        annotator_flags: 23,
+        allow_flagging: false,
     },
 ];
 
@@ -236,11 +242,17 @@ export default function EditSubproject({
             <div className="flex flex-col gap-4 px-6 py-6">
                 {/* ── Subproject header ─────────────────────────────────── */}
                 <div className="flex flex-col gap-3">
-                    <div className="flex flex-wrap items-center gap-3">
-                        <h1 className="text-3xl font-light text-slate-800">{name}</h1>
-                        <Badge variant={displaySubproject.status}>
-                            {displaySubproject.statusLabel}
-                        </Badge>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex flex-wrap items-center gap-3">
+                            <h1 className="text-3xl font-light text-slate-800">{name}</h1>
+                            <Badge variant={displaySubproject.status}>
+                                {displaySubproject.statusLabel}
+                            </Badge>
+                        </div>
+                        <Button className="bg-brand-blue-700 hover:bg-brand-blue-800 font-semibold text-white">
+                            <Megaphone className="size-4" aria-hidden="true" />
+                            {t('sub-projects.annotators_panel.make_announcement')}
+                        </Button>
                     </div>
 
                     {/* Metadata tags */}

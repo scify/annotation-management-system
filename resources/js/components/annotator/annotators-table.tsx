@@ -1,3 +1,4 @@
+import { ToggleSwitch } from '@/components/ui/toggle-switch';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -11,7 +12,7 @@ import {
 import { WorkloadGauge } from '@/components/workload-gauge';
 import { useTranslations } from '@/hooks/use-translations';
 import { UserTableCell } from '@/components/project/user-table-cell';
-import { CircleMinus } from 'lucide-react';
+import { CircleMinus, Info, Mail } from 'lucide-react';
 
 export interface ProjectAnnotatorRowData {
     id: number;
@@ -20,6 +21,8 @@ export interface ProjectAnnotatorRowData {
     active_projects_count: number;
     active_subprojects_count: number;
     workload: number;
+    annotator_flags?: number;
+    allow_flagging?: boolean;
 }
 
 type AnnotatorsTableProps =
@@ -28,6 +31,10 @@ type AnnotatorsTableProps =
           annotators: ProjectAnnotatorRowData[];
           /** Called when the remove button for a row is clicked */
           onAnnotatorRemoved?: (id: number) => void;
+          /** Called when the Allow Flagging toggle is changed for a row */
+          onAllowFlaggingChange?: (id: number, enabled: boolean) => void;
+          /** Called when the message button for a row is clicked */
+          onMessageAnnotator?: (id: number) => void;
       }
     | {
           mode: 'selectable';
@@ -63,12 +70,28 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                             {t('projects.annotators_tab.table_workload')}
                         </TableHead>
                         <TableHead className="text-center text-sm font-semibold text-slate-800">
-                            {t('projects.annotators_tab.table_progress')}
+                            {mode === 'remove'
+                                ? t('projects.annotators_tab.table_subproject_progress')
+                                : t('projects.annotators_tab.table_progress')}
                         </TableHead>
                         {mode === 'remove' && (
-                            <TableHead className="text-center text-sm font-semibold text-slate-800">
-                                {t('projects.annotators_tab.table_action')}
-                            </TableHead>
+                            <>
+                                <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                    {t('projects.annotators_tab.table_flags')}
+                                </TableHead>
+                                <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                    <span className="inline-flex items-center gap-1">
+                                        {t('projects.annotators_tab.table_allow_flagging')}
+                                        <Info
+                                            className="size-3.5 text-slate-400"
+                                            aria-hidden="true"
+                                        />
+                                    </span>
+                                </TableHead>
+                                <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                    {t('projects.annotators_tab.table_actions')}
+                                </TableHead>
+                            </>
                         )}
                     </TableRow>
                 </TableHeader>
@@ -105,7 +128,7 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                                     <UserTableCell
                                         initials={initials}
                                         username={annotator.name}
-                                        showMessageButton={mode === 'remove'}
+                                        showMessageButton={false}
                                     />
                                 </TableCell>
                                 <TableCell className="text-right">
@@ -142,17 +165,57 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                                     </div>
                                 </TableCell>
                                 {mode === 'remove' && (
-                                    <TableCell className="text-center">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 rounded-lg"
-                                            aria-label={`Remove ${annotator.name} from project`}
-                                            onClick={() => props.onAnnotatorRemoved?.(annotator.id)}
-                                        >
-                                            <CircleMinus className="size-6" aria-hidden="true" />
-                                        </Button>
-                                    </TableCell>
+                                    <>
+                                        <TableCell className="text-center">
+                                            <span className="text-base font-medium text-slate-800">
+                                                {annotator.annotator_flags ?? 0}
+                                            </span>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex justify-center">
+                                                <ToggleSwitch
+                                                    id={`allow-flagging-${annotator.id}`}
+                                                    checked={annotator.allow_flagging ?? false}
+                                                    onChange={(enabled) =>
+                                                        props.onAllowFlaggingChange?.(
+                                                            annotator.id,
+                                                            enabled
+                                                        )
+                                                    }
+                                                    ariaLabel={`Allow flagging for ${annotator.name}`}
+                                                />
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <div className="flex items-center justify-center gap-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 rounded-lg"
+                                                    aria-label={`Remove ${annotator.name} from subproject`}
+                                                    onClick={() =>
+                                                        props.onAnnotatorRemoved?.(annotator.id)
+                                                    }
+                                                >
+                                                    <CircleMinus
+                                                        className="size-6"
+                                                        aria-hidden="true"
+                                                    />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 rounded-lg"
+                                                    aria-label={`Send message to ${annotator.name}`}
+                                                    onClick={() =>
+                                                        props.onMessageAnnotator?.(annotator.id)
+                                                    }
+                                                >
+                                                    <Mail className="size-6" aria-hidden="true" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </>
                                 )}
                             </TableRow>
                         );
