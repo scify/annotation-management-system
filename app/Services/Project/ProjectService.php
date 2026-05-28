@@ -196,16 +196,34 @@ readonly class ProjectService {
         $project = $this->projectsByIdsQuery->get([$id])->firstOrFail();
         $subprojectsData = $this->subProjectService->getSubProjectsData($project->subProjects);
 
+        $annotatorPivotRows = AnnotatorOfProject::query()->where('project_id', $project->id)->get();
+
         /** @var array<int, int> $annotatorIds */
-        $annotatorIds = $project->annotators()->pluck('users.id')->all();
+        $annotatorIds = $annotatorPivotRows->pluck('user_id')->all();
+
+        /** @var array<int, bool> $canFlagByAnnotatorId */
+        $canFlagByAnnotatorId = $annotatorPivotRows
+            ->mapWithKeys(fn (AnnotatorOfProject $row): array => [$row->user_id => $row->can_flag])
+            ->all();
+
         /** @var \Illuminate\Support\Collection<int, int> $subProjectIds */
         $subProjectIds = $project->subProjects->pluck('id');
         $progressBySubProject = $this->subProjectService->getProgress($subProjectIds->all());
 
+        $annotatorsData = $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $subProjectIds, $progressBySubProject);
+
+        $annotatorsData = array_map(
+            fn (array $annotator): array => [
+                ...$annotator,
+                'can_flag' => ! is_int($annotator['id']) || (($canFlagByAnnotatorId[$annotator['id']] ?? true)),
+            ],
+            $annotatorsData,
+        );
+
         return [
             'project_data' => $this->buildProjectData($project, $subprojectsData),
             'subprojects_data' => $subprojectsData,
-            'annotators_data' => $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $subProjectIds, $progressBySubProject),
+            'annotators_data' => $annotatorsData,
             'comanagers_data' => $this->buildCoManagersData($project),
         ];
     }

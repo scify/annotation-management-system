@@ -6,7 +6,10 @@ namespace App\Services\Project;
 
 use App\Enums\AgreementEnum;
 use App\Models\AnnotationAssignment;
+use App\Models\AnnotatorOfProject;
 use App\Models\SubProject;
+use App\Queries\GetAnnotatorProjectLinksByProjectQuery;
+use App\Queries\GetCountsOfFlagsQuery;
 use App\Queries\GetProgressQuery;
 use App\Services\Annotation\AnnotationService;
 use App\Services\Annotation\AnnotatorService;
@@ -17,6 +20,8 @@ readonly class SubProjectService {
     public function __construct(
         private AnnotationService $annotationService,
         private AnnotatorService $annotatorService,
+        private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
+        private GetCountsOfFlagsQuery $flagsQuery,
         private GetProgressQuery $progressQuery,
     ) {}
 
@@ -162,7 +167,23 @@ readonly class SubProjectService {
         /** @var \Illuminate\Support\Collection<int, int> $activeSubProjectIds */
         $activeSubProjectIds = collect([$subProject->id]);
 
-        return $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $activeSubProjectIds);
+        $annotatorsData = $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $activeSubProjectIds);
+
+        /** @var array<int, bool> $canFlagByAnnotatorId */
+        $canFlagByAnnotatorId = $this->annotatorProjectLinksQuery->get($subProject->project_id, $annotatorIds)
+            ->mapWithKeys(fn (AnnotatorOfProject $row): array => [$row->user_id => $row->can_flag])
+            ->all();
+
+        $flagCounts = $this->flagsQuery->get($annotatorIds);
+
+        return array_map(
+            fn (array $annotator): array => [
+                ...$annotator,
+                'can_flag' => ! is_int($annotator['id']) || (($canFlagByAnnotatorId[$annotator['id']] ?? true)),
+                'flag_count' => is_int($annotator['id']) ? ($flagCounts[$annotator['id']][$subProject->id] ?? 0) : 0,
+            ],
+            $annotatorsData,
+        );
     }
 
     /**

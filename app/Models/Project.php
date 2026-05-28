@@ -100,7 +100,8 @@ class Project extends Model {
      * @return BelongsToMany<User, $this>
      */
     public function annotators(): BelongsToMany {
-        return $this->belongsToMany(User::class, 'annotator_of_project', 'project_id', 'user_id');
+        return $this->belongsToMany(User::class, 'annotator_of_project', 'project_id', 'user_id')
+            ->withPivot('can_flag');
     }
 
     public function isDelayedToStart(): bool {

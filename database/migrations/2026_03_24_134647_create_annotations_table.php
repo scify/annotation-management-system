@@ -21,6 +21,7 @@ return new class() extends Migration {
             $table->boolean('pending')->default(false);
             $table->boolean('is_flagged')->default(false);
             $table->string('confidence')->nullable();
+            $table->foreignId('last_edited_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
     }

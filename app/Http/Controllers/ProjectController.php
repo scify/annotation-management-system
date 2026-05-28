@@ -6,8 +6,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Project\ProjectExportRequest;
 use App\Http\Requests\Project\ProjectStoreRequest;
+use App\Http\Requests\Project\ToggleCanFlagRequest;
 use App\Models\Project;
 use App\Models\User;
+use App\Services\Annotation\AnnotatorService;
 use App\Services\Project\ProjectService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +23,10 @@ use Throwable;
 class ProjectController extends Controller {
     use AuthorizesRequests;
 
-    public function __construct(private readonly ProjectService $projectService) {}
+    public function __construct(
+        private readonly ProjectService $projectService,
+        private readonly AnnotatorService $annotatorService,
+    ) {}
 
     public function index(): Response {
         $this->authorize('viewAny', Project::class);
@@ -74,6 +79,16 @@ class ProjectController extends Controller {
             'export.json',
             ['Content-Type' => 'application/json'],
         );
+    }
+
+    public function toggleCanFlagOfAnnotator(ToggleCanFlagRequest $request): RedirectResponse {
+        $this->annotatorService->toggleCanFlag(
+            $request->integer('annotator_id'),
+            $request->integer('project_id'),
+        );
+
+        return to_route('projects.show', $request->integer('project_id'))
+            ->with('success', __('projects.messages.can_flag_toggled'));
     }
 
     public function show(int $id): Response {
