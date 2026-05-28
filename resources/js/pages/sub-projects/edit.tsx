@@ -188,10 +188,6 @@ export default function EditSubproject({
     const [shuffle, setShuffle] = useState(displaySubproject.shuffle);
     const [priority, setPriority] = useState<SubprojectPriority | null>(displaySubproject.priority);
     const [dateRange, setDateRange] = useState<DateRangeValue | null>(displaySubproject.dateRange);
-    const [minAnnotationsEnabled, setMinAnnotationsEnabled] = useState(
-        displaySubproject.minAnnotationsEnabled
-    );
-    const [minAnnotations, setMinAnnotations] = useState(displaySubproject.minAnnotations);
     const [flexibleBrowsing, setFlexibleBrowsing] = useState(displaySubproject.flexibleBrowsing);
     const [submissionMode, setSubmissionMode] = useState<SubmissionMode>(
         displaySubproject.submissionMode
@@ -487,6 +483,9 @@ export default function EditSubproject({
                                                 <SelectItem
                                                     key={p}
                                                     value={p}
+                                                    textValue={t(
+                                                        `sub-projects.configuration.priority_${p}`
+                                                    )}
                                                     className="py-2.5 pr-8 pl-3 hover:cursor-pointer"
                                                 >
                                                     <span className="flex items-center gap-3">
@@ -511,48 +510,26 @@ export default function EditSubproject({
                                     <h3 className="text-lg font-semibold text-slate-800">
                                         {t('sub-projects.configuration.requirements_label')}
                                     </h3>
-                                    <ToggleSwitch
-                                        id="edit-min-annotations"
-                                        checked={minAnnotationsEnabled}
-                                        onChange={setMinAnnotationsEnabled}
-                                        label={t(
-                                            'sub-projects.configuration.min_annotations_label'
-                                        )}
-                                        description={t(
-                                            'sub-projects.configuration.min_annotations_description'
-                                        )}
-                                    />
-                                    <div
-                                        className={cn(
-                                            'transition-opacity',
-                                            !minAnnotationsEnabled &&
-                                                'pointer-events-none opacity-50'
-                                        )}
-                                    >
-                                        <Input
-                                            id="edit-min-annotations-count"
-                                            type="number"
-                                            inputMode="numeric"
-                                            min={1}
-                                            max={selectedAnnotatorIds.size || undefined}
-                                            value={minAnnotationsEnabled ? minAnnotations : ''}
-                                            placeholder={
-                                                minAnnotationsEnabled
-                                                    ? String(selectedAnnotatorIds.size)
-                                                    : t(
-                                                          'sub-projects.configuration.min_annotations_inactive'
-                                                      )
-                                            }
-                                            disabled={!minAnnotationsEnabled}
-                                            onChange={(e) =>
-                                                setMinAnnotations(Number(e.target.value))
-                                            }
-                                            aria-label={t(
+
+                                    <div className="pointer-events-none opacity-50">
+                                        <ToggleSwitch
+                                            id="edit-min-annotations"
+                                            checked={false}
+                                            onChange={() => {}}
+                                            label={t(
                                                 'sub-projects.configuration.min_annotations_label'
                                             )}
-                                            className="h-10 bg-white px-3"
+                                            description={t(
+                                                'sub-projects.configuration.min_annotations_description'
+                                            )}
                                         />
                                     </div>
+
+                                    <p className="text-xs text-slate-400 italic">
+                                        {t(
+                                            'sub-projects.configuration.min_annotations_coming_soon'
+                                        )}
+                                    </p>
                                 </div>
 
                                 {/* Browsing and Submission */}

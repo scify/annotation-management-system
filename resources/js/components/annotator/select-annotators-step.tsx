@@ -172,6 +172,7 @@ export function SelectAnnotatorsStep({
                     checked={allFilteredSelected}
                     onCheckedChange={handleSelectAll}
                     aria-label={t(`${ns}.select_all`)}
+                    name="select-all-annotators"
                 />
                 <span className="text-sm text-slate-700">{t(`${ns}.select_all`)}</span>
             </label>

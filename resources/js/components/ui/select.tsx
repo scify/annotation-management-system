@@ -38,7 +38,7 @@ function Select<T extends object>({
     return (
         <AriaSelect
             data-slot="select"
-            selectedKey={value}
+            selectedKey={value ?? null}
             onSelectionChange={(key) => onValueChange?.(String(key))}
             defaultSelectedKey={defaultValue}
             {...props}

@@ -65,6 +65,7 @@ export function SelectDatasetSubsetStep({
                                 checked={shuffle}
                                 onCheckedChange={onShuffleChange}
                                 aria-label={t('sub-projects.select_dataset.shuffle_on')}
+                                name="shuffle"
                             />
                             <span className="text-sm font-medium text-slate-900">
                                 {t('sub-projects.select_dataset.shuffle_on')}
