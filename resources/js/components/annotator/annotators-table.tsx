@@ -120,6 +120,7 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                                                     props.onSelectionChange(annotator.id, checked)
                                                 }
                                                 aria-label={`Select ${annotator.name}`}
+                                                name={`annotator-${annotator.id}`}
                                             />
                                         </label>
                                     </TableCell>

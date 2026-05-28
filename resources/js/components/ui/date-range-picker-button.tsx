@@ -24,6 +24,7 @@ interface DateRangePickerButtonProps {
     placeholder: string;
     'aria-label': string;
     className?: string;
+    isInvalid?: boolean;
 }
 
 export function formatDateRange(range: DateRangeValue | null): string | null {
@@ -43,6 +44,7 @@ export function DateRangePickerButton({
     placeholder,
     'aria-label': ariaLabel,
     className,
+    isInvalid,
 }: DateRangePickerButtonProps) {
     const formatted = formatDateRange(value);
 
@@ -53,9 +55,10 @@ export function DateRangePickerButton({
             value={value}
             onChange={(range) => onChange(range ? { start: range.start, end: range.end } : null)}
             minValue={today(getLocalTimeZone())}
+            isInvalid={isInvalid}
         >
             <Group className="w-full">
-                <Button className="focus-visible:ring-brand-blue-700/50 flex h-10 w-full cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-left text-sm focus-visible:ring-2 focus-visible:outline-none">
+                <Button className="focus-visible:ring-brand-blue-700/50 data-[invalid]:border-destructive data-[invalid]:ring-2 data-[invalid]:ring-destructive/20 flex h-10 w-full cursor-pointer items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 text-left text-sm focus-visible:ring-2 focus-visible:outline-none">
                     <Calendar className="size-4 shrink-0 text-slate-800" aria-hidden="true" />
                     {formatted ? (
                         <span className="flex-1 text-slate-800">{formatted}</span>

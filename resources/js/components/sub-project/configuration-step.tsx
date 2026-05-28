@@ -2,7 +2,6 @@ import {
     DateRangePickerButton,
     type DateRangeValue,
 } from '@/components/ui/date-range-picker-button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import { ToggleSwitch } from '@/components/ui/toggle-switch';
 import { useTranslations } from '@/hooks/use-translations';
@@ -72,15 +71,10 @@ export function PriorityBadge({ priority, size = 'md' }: Readonly<PriorityBadgeP
 export function ConfigurationStep({
     priority,
     dateRange,
-    minAnnotationsEnabled,
-    minAnnotations,
-    annotatorCount,
     flexibleBrowsing,
     submissionMode,
     onPriorityChange,
     onDateRangeChange,
-    onMinAnnotationsEnabledChange,
-    onMinAnnotationsChange,
     onFlexibleBrowsingChange,
     onSubmissionModeChange,
 }: Readonly<ConfigurationStepProps>) {
@@ -95,11 +89,14 @@ export function ConfigurationStep({
             <div className="rounded-2xl border border-slate-200 bg-white pt-5 pb-6">
                 <div className="flex justify-center gap-24 px-6">
                     {/* ── Left column ────────────────────────────────────── */}
-                    <div className="flex w-1/4 shrink-0 flex-col gap-7">
+                    <div className="flex w-1/3 shrink-0 flex-col gap-7">
                         {/* Priority */}
                         <div className="flex flex-col gap-3">
                             <h3 className="text-lg font-semibold text-slate-800">
                                 {t('sub-projects.configuration.priority_label')}
+                                <span className="text-destructive ml-0.5" aria-hidden="true">
+                                    *
+                                </span>
                             </h3>
 
                             <Select
@@ -109,6 +106,7 @@ export function ConfigurationStep({
                             >
                                 <SelectTrigger
                                     aria-label={t('sub-projects.configuration.priority_label')}
+                                    aria-invalid={!priority || undefined}
                                     className="h-10 w-full gap-2 border-slate-200 px-3 hover:cursor-pointer [&>span]:!flex [&>span]:!overflow-visible"
                                 >
                                     {priority ? (
@@ -140,6 +138,9 @@ export function ConfigurationStep({
                                             <SelectItem
                                                 key={p}
                                                 value={p}
+                                                textValue={t(
+                                                    `sub-projects.configuration.priority_${p}`
+                                                )}
                                                 className="py-2.5 pr-8 pl-3 hover:cursor-pointer"
                                             >
                                                 <span className="flex items-center gap-3">
@@ -161,6 +162,9 @@ export function ConfigurationStep({
                         <div className="flex flex-col gap-3">
                             <h3 className="text-lg font-semibold text-slate-800">
                                 {t('sub-projects.configuration.timeframe_label')}
+                                <span className="text-destructive ml-0.5" aria-hidden="true">
+                                    *
+                                </span>
                             </h3>
 
                             <DateRangePickerButton
@@ -168,6 +172,7 @@ export function ConfigurationStep({
                                 onChange={onDateRangeChange}
                                 placeholder={t('sub-projects.configuration.timeframe_placeholder')}
                                 aria-label={t('sub-projects.configuration.timeframe_label')}
+                                isInvalid={!dateRange || undefined}
                             />
                         </div>
 
@@ -177,44 +182,21 @@ export function ConfigurationStep({
                                 {t('sub-projects.configuration.requirements_label')}
                             </h3>
 
-                            <ToggleSwitch
-                                id="min-annotations-toggle"
-                                checked={minAnnotationsEnabled}
-                                onChange={onMinAnnotationsEnabledChange}
-                                label={t('sub-projects.configuration.min_annotations_label')}
-                                description={t(
-                                    'sub-projects.configuration.min_annotations_description'
-                                )}
-                            />
-
-                            <div
-                                className={cn(
-                                    'transition-opacity',
-                                    !minAnnotationsEnabled && 'pointer-events-none opacity-50'
-                                )}
-                            >
-                                <Input
-                                    id="min-annotations-count"
-                                    type="number"
-                                    inputMode="numeric"
-                                    min={1}
-                                    max={annotatorCount || undefined}
-                                    value={minAnnotationsEnabled ? minAnnotations : ''}
-                                    placeholder={
-                                        !minAnnotationsEnabled
-                                            ? t(
-                                                  'sub-projects.configuration.min_annotations_inactive'
-                                              )
-                                            : undefined
-                                    }
-                                    disabled={!minAnnotationsEnabled}
-                                    onChange={(e) => onMinAnnotationsChange(Number(e.target.value))}
-                                    aria-label={t(
-                                        'sub-projects.configuration.min_annotations_label'
+                            <div className="pointer-events-none opacity-50">
+                                <ToggleSwitch
+                                    id="min-annotations-toggle"
+                                    checked={false}
+                                    onChange={() => {}}
+                                    label={t('sub-projects.configuration.min_annotations_label')}
+                                    description={t(
+                                        'sub-projects.configuration.min_annotations_description'
                                     )}
-                                    className="h-10 bg-white px-3"
                                 />
                             </div>
+
+                            <p className="text-xs text-slate-400 italic">
+                                {t('sub-projects.configuration.min_annotations_coming_soon')}
+                            </p>
                         </div>
                     </div>
 
