@@ -28,7 +28,7 @@ class SubProjectFactory extends Factory {
             'flexible' => false,
             'auto_submission' => true,
             'minimum_annotators' => 1,
-            'first_instance_index' => 0,
+            'first_instance_index' => 1,
             'last_instance_index' => fake()->numberBetween(10, 100),
         ];
     }

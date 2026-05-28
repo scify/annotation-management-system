@@ -120,6 +120,24 @@ return [
         'agreement_low' => 'Low',
     ],
 
+    'messages' => [
+        'created' => 'Subproject created successfully.',
+    ],
+
+    'labels' => [
+        'annotator_ids' => 'Annotators',
+        'shuffle' => 'Shuffle',
+        'from_instance' => 'From instance',
+        'to_instance' => 'To instance',
+        'dataset_id' => 'Dataset',
+        'priority' => 'Priority',
+        'scheduled_at' => 'Scheduled at',
+        'deadline_at' => 'Deadline',
+        'is_flexible' => 'Flexible browsing',
+        'requires_confirmation' => 'Requires confirmation',
+        'minimum_annotations' => 'Minimum annotations',
+    ],
+
     'select_dataset' => [
         'project_dataset_heading' => 'Project Dataset',
         'dataset_label' => 'Dataset:',

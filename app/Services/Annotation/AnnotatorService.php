@@ -27,7 +27,7 @@ readonly class AnnotatorService {
      */
     public function getAllAnnotators(array $progressBySubProject = [], ?Collection $activeSubProjectIds = null): array {
         $annotators = $this->activeAnnotatorsQuery->getActive()
-            ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
+            ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name, 'status' => $user->status->value])
             ->values()
             ->all();
 
@@ -85,7 +85,7 @@ readonly class AnnotatorService {
      */
     public function getAnnotatorsByIds(array $ids, array $progressBySubProject = [], ?Collection $activeSubProjectIds = null): array {
         $annotators = $this->activeAnnotatorsQuery->getActive($ids)
-            ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name])
+            ->map(fn (User $user): array => ['id' => $user->id, 'name' => $user->name, 'status' => $user->status->value])
             ->values()
             ->all();
 

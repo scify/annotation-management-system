@@ -67,7 +67,7 @@ describe('WorkloadService::computeNormalizedWorkloads', function (): void {
                 $subProject = SubProject::factory()->create([
                     'project_id' => $project->id,
                     'status' => ProjectStatusEnum::IN_PROGRESS,
-                    'first_instance_index' => 0,
+                    'first_instance_index' => 1,
                     'last_instance_index' => ($j + 1) * 20,
                 ]);
 

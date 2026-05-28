@@ -56,7 +56,7 @@ class DummyDatasetsSeeder extends Seeder {
             );
             $added_dataset_id = $addedDataset->getKey();
             // add dummy instances
-            for ($i = 0; $i < 5; $i++) {
+            for ($i = 1; $i <= 5; $i++) {
                 DatasetInstance::query()->updateOrCreate(
                     ['index' => $i, 'dataset_id' => $added_dataset_id],
                     [

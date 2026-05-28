@@ -118,6 +118,24 @@ return [
         'agreement_low' => 'Χαμηλή',
     ],
 
+    'messages' => [
+        'created' => 'Το υποέργο δημιουργήθηκε επιτυχώς.',
+    ],
+
+    'labels' => [
+        'annotator_ids' => 'Επισημειωτές',
+        'shuffle' => 'Τυχαία σειρά',
+        'from_instance' => 'Από παράδειγμα',
+        'to_instance' => 'Έως παράδειγμα',
+        'dataset_id' => 'Σύνολο δεδομένων',
+        'priority' => 'Προτεραιότητα',
+        'scheduled_at' => 'Προγραμματισμένο για',
+        'deadline_at' => 'Προθεσμία',
+        'is_flexible' => 'Ευέλικτη περιήγηση',
+        'requires_confirmation' => 'Απαιτείται επιβεβαίωση',
+        'minimum_annotations' => 'Ελάχιστες επισημειώσεις',
+    ],
+
     'select_dataset' => [
         'project_dataset_heading' => 'Σύνολο Δεδομένων Έργου',
         'dataset_label' => 'Σύνολο δεδομένων:',

@@ -21,6 +21,7 @@ use App\Queries\GetProjectIdsManagedByUserQuery;
 use App\Queries\GetProjectsByIdsQuery;
 use App\Queries\GetProjectsManagedByUserQuery;
 use App\Queries\GetProjectsQuery;
+use App\Queries\GetSubProjectIdsQuery;
 use App\Services\Annotation\AnnotatorService;
 use App\Services\Dataset\DatasetService;
 use Illuminate\Database\Eloquent\Collection;
@@ -39,6 +40,7 @@ readonly class ProjectService {
         private GetProjectIdsManagedByUserQuery $projectIdsByManagerQuery,
         private GetProjectsByIdsQuery $projectsByIdsQuery,
         private GetProjectsQuery $projectsQuery,
+        private GetSubProjectIdsQuery $subProjectIdsQuery,
         private GetProjectsManagedByUserQuery $userProjectsQuery,
     ) {}
 
@@ -89,7 +91,7 @@ readonly class ProjectService {
                 foreach ($shuffled as $newIndex => $oldIndex) {
                     $rows[] = [
                         'project_id' => $project->id,
-                        'new_index' => $newIndex,
+                        'new_index' => $newIndex + 1,
                         'old_index' => $oldIndex,
                         'created_at' => $now,
                         'updated_at' => $now,
@@ -375,10 +377,17 @@ readonly class ProjectService {
             return [];
         }
 
+        /** @var array<int, int> $allSubProjectIds */
+        $allSubProjectIds = $this->subProjectIdsQuery->getAll()->all();
+        $progressBySubProject = $this->subProjectService->getProgress($allSubProjectIds);
+
+        /** @var \Illuminate\Support\Collection<int, int> $activeSubProjectIds */
+        $activeSubProjectIds = collect($allSubProjectIds);
+
         $myProjectIds = $this->userProjectsQuery->get($user->id, ProjectStatusEnum::IN_PROGRESS)->pluck('id')->all();
 
         if ($roleName === RolesEnum::ADMIN->value) {
-            $allAnnotators = $this->annotatorService->getAllAnnotators();
+            $allAnnotators = $this->annotatorService->getAllAnnotators($progressBySubProject, $activeSubProjectIds);
 
             return [
                 'all_annotators' => $allAnnotators,
@@ -387,17 +396,24 @@ readonly class ProjectService {
         }
 
         return [
-            'my_annotators' => $this->resolveMyAnnotators($myProjectIds),
+            'my_annotators' => $this->resolveMyAnnotators($myProjectIds, progressBySubProject: $progressBySubProject, activeSubProjectIds: $activeSubProjectIds),
         ];
     }
 
     /**
      * @param  array<int, mixed>  $projectIds
      * @param  array<int, array<string, mixed>>|null  $allAnnotators
+     * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
+     * @param  \Illuminate\Support\Collection<int, int>|null  $activeSubProjectIds
      *
      * @return array<int, array<string, mixed>>
      */
-    private function resolveMyAnnotators(array $projectIds, ?array $allAnnotators = null): array {
+    private function resolveMyAnnotators(
+        array $projectIds,
+        ?array $allAnnotators = null,
+        array $progressBySubProject = [],
+        ?\Illuminate\Support\Collection $activeSubProjectIds = null,
+    ): array {
         if ($projectIds === []) {
             return [];
         }
@@ -415,7 +431,7 @@ readonly class ProjectService {
             ));
         }
 
-        return $this->annotatorService->getAnnotatorsByIds($annotatorIds);
+        return $this->annotatorService->getAnnotatorsByIds($annotatorIds, $progressBySubProject, $activeSubProjectIds);
     }
 
     /**
@@ -455,7 +471,7 @@ readonly class ProjectService {
     /**
      * @param  Collection<int, User>  $users
      *
-     * @return array<int, array{id: int, username: string, name: string, role: string|null}>
+     * @return array<int, array{id: int, username: string, name: string, role: string|null, status: string}>
      */
     private function formatCoManagers(Collection $users): array {
         return $users
@@ -464,6 +480,7 @@ readonly class ProjectService {
                 'username' => $user->username,
                 'name' => $user->name,
                 'role' => $user->role,
+                'status' => $user->status->value,
             ])
             ->values()
             ->all();

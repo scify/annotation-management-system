@@ -11,6 +11,8 @@ use App\Models\SubProject;
 use App\Queries\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\GetCountsOfFlagsQuery;
 use App\Queries\GetProgressQuery;
+use App\Queries\GetSubProjectIdsQuery;
+use App\Queries\GetSubsetInfoByProjectQuery;
 use App\Services\Annotation\AnnotationService;
 use App\Services\Annotation\AnnotatorService;
 use Carbon\Carbon;
@@ -23,7 +25,16 @@ readonly class SubProjectService {
         private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
         private GetCountsOfFlagsQuery $flagsQuery,
         private GetProgressQuery $progressQuery,
+        private GetSubProjectIdsQuery $subProjectIdsQuery,
+        private GetSubsetInfoByProjectQuery $subsetInfoQuery,
     ) {}
+
+    /**
+     * @param  array<string, mixed>  $data
+     *
+     * TODO: implement subproject store
+     */
+    public function storeSubProject(int $projectId, array $data): void {}
 
     /**
      * @return array<string, mixed>
@@ -38,6 +49,16 @@ readonly class SubProjectService {
             'subproject_data' => $this->buildSubProjectData($subProject),
             'annotators_data' => $this->buildAnnotatorsData($subProject),
             'annotations_data' => $this->buildAnnotationsData($subProject),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDataForCreateSubProject(int $projectId): array {
+        return [
+            'annotators_data' => $this->getAnnotatorsDataForCreate($projectId),
+            'subset_data' => $this->getSubsetDataForCreate($projectId),
         ];
     }
 
@@ -194,6 +215,53 @@ readonly class SubProjectService {
             $subProject->id,
             $subProject->project->annotationTask->task_type,
         );
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function getAnnotatorsDataForCreate(int $projectId): array {
+        /** @var array<int, int> $annotatorIds */
+        $annotatorIds = $this->annotatorProjectLinksQuery->getAll($projectId)
+            ->pluck('user_id')
+            ->all();
+
+        /** @var array<int, int> $subProjectIds */
+        $subProjectIds = $this->subProjectIdsQuery->getAll()->all();
+        $progressBySubProject = $this->getProgress($subProjectIds);
+
+        /** @var \Illuminate\Support\Collection<int, int> $activeSubProjectIds */
+        $activeSubProjectIds = collect($subProjectIds);
+
+        return $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $activeSubProjectIds, $progressBySubProject);
+    }
+
+    /**
+     * @return array{dataset_id: int, dataset_name: string, size: int, previous_subset_last_index: int|null, from_instance: int, to_instance: int}
+     */
+    private function getSubsetDataForCreate(int $projectId): array {
+        $info = $this->subsetInfoQuery->get($projectId);
+
+        $size = $info['size'];
+        $previousLastIndex = $info['previous_subset_last_index'];
+
+        if ($previousLastIndex === null) {
+            $fromInstance = 1;
+        } else {
+            $fromInstance = $previousLastIndex + 1;
+            if ($fromInstance > $size) {
+                $fromInstance = 1;
+            }
+        }
+
+        return [
+            'dataset_id' => $info['dataset_id'],
+            'dataset_name' => $info['dataset_name'],
+            'size' => $size,
+            'previous_subset_last_index' => $previousLastIndex,
+            'from_instance' => $fromInstance,
+            'to_instance' => $size,
+        ];
     }
 
     /**

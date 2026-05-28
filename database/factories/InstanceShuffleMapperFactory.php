@@ -18,8 +18,8 @@ class InstanceShuffleMapperFactory extends Factory {
     public function definition(): array {
         return [
             'project_id' => Project::factory(),
-            'new_index' => fake()->numberBetween(0, 10000),
-            'old_index' => fake()->numberBetween(0, 10000),
+            'new_index' => fake()->numberBetween(1, 10000),
+            'old_index' => fake()->numberBetween(1, 10000),
         ];
     }
 }

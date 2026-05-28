@@ -22,7 +22,7 @@ class AnnotationFactory extends Factory {
         return [
             'annotation_assignment_id' => AnnotationAssignment::factory(),
             'dataset_instance_id' => DatasetInstance::factory(),
-            'index' => 0,
+            'index' => 1,
             'annotations' => [],
         ];
     }

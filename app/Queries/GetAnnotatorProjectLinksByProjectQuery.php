@@ -23,4 +23,13 @@ final readonly class GetAnnotatorProjectLinksByProjectQuery {
             ->whereIn('user_id', $annotatorIds)
             ->get();
     }
+
+    /**
+     * @return Collection<int, AnnotatorOfProject>
+     */
+    public function getAll(int $projectId): Collection {
+        return AnnotatorOfProject::query()
+            ->where('project_id', $projectId)
+            ->get();
+    }
 }

@@ -32,6 +32,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
     Route::get('projects/{id}/export', [ProjectController::class, 'export'])->name('projects.export');
     Route::get('projects/{id}/subprojects/create', [SubProjectController::class, 'create'])->name('projects.subprojects.create');
+    Route::post('projects/{id}/subprojects', [SubProjectController::class, 'store'])->name('projects.subprojects.store');
     Route::get('projects/{projectId}/subprojects/{subprojectId}/edit', [SubProjectController::class, 'edit'])->name('projects.subprojects.edit');
 
     Route::resource('users', UserController::class);

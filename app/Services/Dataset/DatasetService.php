@@ -14,7 +14,7 @@ class DatasetService {
     public function generateShuffledIndexArray(int $datasetId): array {
         $size = DatasetInstance::query()->where('dataset_id', $datasetId)->count();
 
-        $indices = range(0, $size - 1);
+        $indices = range(1, $size);
         $indices = Arr::shuffle($indices);
 
         return array_values($indices);

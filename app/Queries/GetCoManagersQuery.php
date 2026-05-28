@@ -24,7 +24,7 @@ final readonly class GetCoManagersQuery {
                 RolesEnum::ANNOTATION_MANAGER->value,
             ]))
             ->when($ids !== null, fn ($q) => $q->whereIn('id', $ids))
-            ->select(['id', 'username', 'name'])
+            ->select(['id', 'username', 'name', 'status'])
             ->get();
     }
 }

@@ -70,8 +70,8 @@ class DummyProjectSeeder extends Seeder {
                         'flexible' => false,
                         'auto_submission' => true,
                         'minimum_annotators' => 1,
-                        'first_instance_index' => 0,
-                        'last_instance_index' => 2,
+                        'first_instance_index' => 1,
+                        'last_instance_index' => 3,
                         'scheduled_at' => '2026-03-01',
                         'started_at' => '2026-04-01 09:00:00',
                         'deadline_at' => '2026-05-31',
@@ -84,8 +84,8 @@ class DummyProjectSeeder extends Seeder {
                         'flexible' => false,
                         'auto_submission' => true,
                         'minimum_annotators' => 1,
-                        'first_instance_index' => 3,
-                        'last_instance_index' => 4,
+                        'first_instance_index' => 4,
+                        'last_instance_index' => 5,
                         'scheduled_at' => '2026-05-01',
                         'deadline_at' => '2026-06-30',
                         'annotators' => ['annotator.frank@example.com', 'annotator.henry@example.com'],
@@ -117,8 +117,8 @@ class DummyProjectSeeder extends Seeder {
                         'flexible' => true,
                         'auto_submission' => true,
                         'minimum_annotators' => 2,
-                        'first_instance_index' => 0,
-                        'last_instance_index' => 1,
+                        'first_instance_index' => 1,
+                        'last_instance_index' => 2,
                         'scheduled_at' => '2026-05-15',
                         'deadline_at' => '2026-06-20',
                         'annotators' => ['annotator.ivy@example.com', 'annotator.jack@example.com'],
@@ -130,8 +130,8 @@ class DummyProjectSeeder extends Seeder {
                         'flexible' => true,
                         'auto_submission' => true,
                         'minimum_annotators' => 2,
-                        'first_instance_index' => 2,
-                        'last_instance_index' => 4,
+                        'first_instance_index' => 3,
+                        'last_instance_index' => 5,
                         'scheduled_at' => '2026-06-01',
                         'deadline_at' => '2026-07-15',
                         'annotators' => ['annotator.karen@example.com', 'annotator.eva@example.com'],
@@ -163,8 +163,8 @@ class DummyProjectSeeder extends Seeder {
                         'flexible' => false,
                         'auto_submission' => true,
                         'minimum_annotators' => 1,
-                        'first_instance_index' => 0,
-                        'last_instance_index' => 4,
+                        'first_instance_index' => 1,
+                        'last_instance_index' => 5,
                         'scheduled_at' => '2026-02-15',
                         'started_at' => '2026-03-10 09:00:00',
                         'deadline_at' => '2026-05-20',
@@ -199,8 +199,8 @@ class DummyProjectSeeder extends Seeder {
                         'flexible' => false,
                         'auto_submission' => false,
                         'minimum_annotators' => 2,
-                        'first_instance_index' => 0,
-                        'last_instance_index' => 2,
+                        'first_instance_index' => 1,
+                        'last_instance_index' => 3,
                         'scheduled_at' => '2026-04-01',
                         'started_at' => '2026-04-15 09:00:00',
                         'deadline_at' => '2026-05-31',
@@ -213,8 +213,8 @@ class DummyProjectSeeder extends Seeder {
                         'flexible' => false,
                         'auto_submission' => false,
                         'minimum_annotators' => 2,
-                        'first_instance_index' => 3,
-                        'last_instance_index' => 4,
+                        'first_instance_index' => 4,
+                        'last_instance_index' => 5,
                         'scheduled_at' => '2026-05-10',
                         'deadline_at' => '2026-06-20',
                         'annotators' => ['annotator.jack@example.com', 'annotator.karen@example.com'],
@@ -259,7 +259,7 @@ class DummyProjectSeeder extends Seeder {
                 $counter = count($shuffled);
                 for ($i = 0; $i < $counter; $i++) {
                     InstanceShuffleMapper::query()->updateOrCreate(
-                        ['new_index' => $i, 'project_id' => $project->getKey()],
+                        ['new_index' => $i + 1, 'project_id' => $project->getKey()],
                         ['old_index' => $shuffled[$i]],
                     );
                 }
@@ -296,8 +296,12 @@ class DummyProjectSeeder extends Seeder {
                     $projectAnnotatorIds[] = $annotatorKey;
 
                     $rows = [];
-                    foreach ($datasetInstances as $localIndex => $instance) {
-                        $isFlagged = $flaggedCount < 2 && $localIndex === 0;
+                    $localIndex = 0;
+                    $isFirst = true;
+                    foreach ($datasetInstances as $instance) {
+                        $localIndex++;
+                        $isFlagged = $flaggedCount < 2 && $isFirst;
+                        $isFirst = false;
                         if ($isFlagged) {
                             $flaggedCount++;
                         }

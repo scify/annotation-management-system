@@ -27,4 +27,18 @@ final readonly class GetSubProjectIdsQuery {
 
         return $result;
     }
+
+    /**
+     * Returns all subproject IDs, optionally filtered by status.
+     *
+     * @return Collection<int, int>
+     */
+    public function getAll(?ProjectStatusEnum $status = null): Collection {
+        /** @var Collection<int, int> $result */
+        $result = SubProject::query()
+            ->when($status instanceof ProjectStatusEnum, fn ($q) => $q->where('status', $status))
+            ->pluck('id');
+
+        return $result;
+    }
 }

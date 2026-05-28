@@ -24,7 +24,14 @@ readonly class AnnotationService {
      *     annotated: int,
      *     planned_annotations: int,
      *     agreement: AgreementEnum,
-     *     annotations: array<int, array{id: int, annotator_name: string, last_edited_by: string, updated_at: string, confidence: ConfidenceEnum|null}>
+     *     annotations: array<int, array{
+     *         id: int,
+     *         annotator_data: array{user_id: int, username: string, role: string|null},
+     *         last_edited_by_data: array{user_id: int, username: string|null, role: string|null}|null,
+     *         updated_at: string|null,
+     *         confidence: ConfidenceEnum|null,
+     *         pending: bool
+     *     }>
      * }>
      */
     public function getAnnotationsData(int $subProjectId, AnnotationTaskTypeEnum $taskType): array {
