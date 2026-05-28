@@ -28,6 +28,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('projects', [ProjectController::class, 'index'])->name('projects.index');
     Route::get('projects/create', [ProjectController::class, 'create'])->name('projects.create');
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
+    Route::post('projects/toggle-can-flag', [ProjectController::class, 'toggleCanFlagOfAnnotator'])->name('projects.toggle-can-flag');
     Route::get('projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
     Route::get('projects/{id}/export', [ProjectController::class, 'export'])->name('projects.export');
     Route::get('projects/{id}/subprojects/create', [SubProjectController::class, 'create'])->name('projects.subprojects.create');

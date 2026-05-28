@@ -40,4 +40,12 @@ class ProjectPolicy {
 
         return $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
     }
+
+    public function toggleCanFlag(User $user): bool {
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+
+        return $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
+    }
 }

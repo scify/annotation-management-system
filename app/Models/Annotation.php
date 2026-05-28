@@ -9,6 +9,7 @@ use Database\Factories\AnnotationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -19,6 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $pending
  * @property bool $is_flagged
  * @property ConfidenceEnum|null $confidence
+ * @property int|null $last_edited_by
+ * @property-read User|null $lastEditedBy
  */
 #[Fillable([
     'annotation_assignment_id',
@@ -28,6 +31,7 @@ use Illuminate\Database\Eloquent\Model;
     'pending',
     'is_flagged',
     'confidence',
+    'last_edited_by',
 ])]
 class Annotation extends Model {
     /** @use HasFactory<AnnotationFactory> */
@@ -39,4 +43,11 @@ class Annotation extends Model {
         'is_flagged' => 'boolean',
         'confidence' => ConfidenceEnum::class,
     ];
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function lastEditedBy(): BelongsTo {
+        return $this->belongsTo(User::class, 'last_edited_by');
+    }
 }

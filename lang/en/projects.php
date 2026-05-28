@@ -143,6 +143,7 @@ return [
 
     'messages' => [
         'created' => 'Project created successfully.',
+        'can_flag_toggled' => 'Annotator flag permission updated.',
     ],
 
     'create' => [

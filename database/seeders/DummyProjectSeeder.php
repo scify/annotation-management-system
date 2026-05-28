@@ -312,6 +312,7 @@ class DummyProjectSeeder extends Seeder {
                             'confidence' => ($entry['seed_confidence'] ?? false)
                                 ? $confidenceCases[random_int(0, count($confidenceCases) - 1)]->value
                                 : null,
+                            'last_edited_by' => $annotator->getKey(),
                             'created_at' => $now,
                             'updated_at' => $now,
                         ];
