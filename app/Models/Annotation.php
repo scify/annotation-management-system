@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $annotation_assignment_id
  * @property int $dataset_instance_id
  * @property int $index
- * @property array<string, mixed> $annotations
+ * @property array<string, mixed>|null $annotations
  * @property bool $pending
  * @property bool $is_flagged
  * @property ConfidenceEnum|null $confidence
@@ -43,6 +43,10 @@ class Annotation extends Model {
         'is_flagged' => 'boolean',
         'confidence' => ConfidenceEnum::class,
     ];
+
+    public function isAnnotated(): bool {
+        return $this->annotations !== null && ! $this->pending;
+    }
 
     /**
      * @return BelongsTo<User, $this>

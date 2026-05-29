@@ -20,7 +20,7 @@ use App\Queries\GetCountsOfFlagsQuery;
 use App\Queries\GetProjectIdsManagedByUserQuery;
 use App\Queries\GetProjectsByIdsQuery;
 use App\Queries\GetSubProjectsOfProjectsQuery;
-use App\Services\Project\SubProjectService;
+use App\Services\SubProject\SubProjectService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 

@@ -24,6 +24,7 @@ use App\Queries\GetProjectsQuery;
 use App\Queries\GetSubProjectIdsQuery;
 use App\Services\Annotation\AnnotatorService;
 use App\Services\Dataset\DatasetService;
+use App\Services\SubProject\SubProjectService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;

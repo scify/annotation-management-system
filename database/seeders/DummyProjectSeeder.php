@@ -43,7 +43,6 @@ class DummyProjectSeeder extends Seeder {
 
         $projects = [
             [
-                'seed_confidence' => true,
                 'manager_ids' => [$adminAlice->getKey(), $managerDave->getKey()],
                 'annotator_emails' => ['annotator.eva@example.com', 'annotator.grace@example.com', 'annotator.frank@example.com'],
                 'project' => [
@@ -93,7 +92,6 @@ class DummyProjectSeeder extends Seeder {
                 ],
             ],
             [
-                'seed_confidence' => true,
                 'manager_ids' => [$adminBob->getKey()],
                 'annotator_emails' => ['annotator.ivy@example.com', 'annotator.jack@example.com', 'annotator.karen@example.com'],
                 'project' => [
@@ -196,7 +194,7 @@ class DummyProjectSeeder extends Seeder {
                         'name' => 'Batch 1',
                         'status' => ProjectStatusEnum::IN_PROGRESS,
                         'priority' => SubProjectPriorityEnum::HIGH,
-                        'flexible' => false,
+                        'flexible' => true,
                         'auto_submission' => false,
                         'minimum_annotators' => 2,
                         'first_instance_index' => 1,
@@ -231,6 +229,7 @@ class DummyProjectSeeder extends Seeder {
                 ['name' => $entry['project']['name']],
                 $entry['project'],
             );
+            $expectsConfidence = $project->expectsConfidence();
 
             ProjectManager::query()->firstOrCreate(
                 ['project_id' => $project->id, 'user_id' => $project->owner_user_id],
@@ -286,6 +285,8 @@ class DummyProjectSeeder extends Seeder {
 
                 $now = now();
 
+                $canBePending = $subProject->requiresSubmission();
+
                 foreach ($annotatorEmails as $email) {
                     $annotator = User::query()->where('email', $email)->firstOrFail();
                     $assignment = AnnotationAssignment::query()->firstOrCreate(
@@ -298,9 +299,12 @@ class DummyProjectSeeder extends Seeder {
                     $rows = [];
                     $localIndex = 0;
                     $isFirst = true;
+                    $instanceCount = count($datasetInstances);
+                    $cutoff = random_int(0, $instanceCount);
                     foreach ($datasetInstances as $instance) {
                         $localIndex++;
-                        $isFlagged = $flaggedCount < 2 && $isFirst;
+                        $isDone = $localIndex <= $cutoff;
+                        $isFlagged = ! $isDone && $flaggedCount < 2 && $isFirst;
                         $isFirst = false;
                         if ($isFlagged) {
                             $flaggedCount++;
@@ -310,10 +314,10 @@ class DummyProjectSeeder extends Seeder {
                             'annotation_assignment_id' => $assignment->getKey(),
                             'dataset_instance_id' => $instance->getKey(),
                             'index' => $localIndex,
-                            'annotations' => '{}',
-                            'pending' => (bool) random_int(0, 1),
+                            'annotations' => $isDone ? '{}' : null,
+                            'pending' => $isDone && $canBePending && (bool) random_int(0, 1),
                             'is_flagged' => $isFlagged,
-                            'confidence' => ($entry['seed_confidence'] ?? false)
+                            'confidence' => $expectsConfidence && $isDone
                                 ? $confidenceCases[random_int(0, count($confidenceCases) - 1)]->value
                                 : null,
                             'last_edited_by' => $annotator->getKey(),

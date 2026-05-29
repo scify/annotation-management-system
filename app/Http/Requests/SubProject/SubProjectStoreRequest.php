@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Requests\Project;
+namespace App\Http\Requests\SubProject;
 
 use App\Enums\SubProjectPriorityEnum;
 use App\Models\Project;
@@ -20,6 +20,7 @@ class SubProjectStoreRequest extends FormRequest {
      */
     public function rules(): array {
         return [
+            'name' => ['required', 'string', 'max:255'],
             'annotator_ids' => ['required', 'array', 'min:1'],
             'annotator_ids.*' => ['integer', Rule::exists('annotator_of_project', 'user_id')->where('project_id', (int) $this->route('id'))],
             'shuffle' => ['required', 'boolean'],
@@ -40,6 +41,7 @@ class SubProjectStoreRequest extends FormRequest {
      */
     public function attributes(): array {
         return [
+            'name' => __('sub-projects.labels.name'),
             'annotator_ids' => __('sub-projects.labels.annotator_ids'),
             'shuffle' => __('sub-projects.labels.shuffle'),
             'from_instance' => __('sub-projects.labels.from_instance'),

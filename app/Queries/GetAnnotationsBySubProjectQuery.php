@@ -20,7 +20,6 @@ final readonly class GetAnnotationsBySubProjectQuery {
      * }>
      */
     public function get(int $subProjectId): array {
-        /** @var array<int, array{id: int, dataset_instance_id: int|string, annotations: array<string, mixed>|null, pending: bool, updated_at: string, confidence: ConfidenceEnum|null, user_id: int|string, username: string, role: string|null, last_edited_by: int|string|null, editor_username: string|null, editor_role: string|null}> $rows */
         $rows = Annotation::query()
             ->join('annotation_assignments', 'annotation_assignments.id', '=', 'annotations.annotation_assignment_id')
             ->join('users', 'users.id', '=', 'annotation_assignments.user_id')
@@ -50,13 +49,12 @@ final readonly class GetAnnotationsBySubProjectQuery {
                 'editor_users.username as editor_username',
                 'editor_roles.name as editor_role',
             )
-            ->get()
-            ->toArray();
+            ->get();
 
         $result = [];
 
         foreach ($rows as $row) {
-            $dsId = (int) $row['dataset_instance_id'];
+            $dsId = $row->dataset_instance_id;
             $entry = $result[$dsId] ?? [
                 'planned_annotations' => 0,
                 'annotated' => 0,
@@ -65,32 +63,43 @@ final readonly class GetAnnotationsBySubProjectQuery {
             ];
             $entry['planned_annotations']++;
 
-            if (! $row['pending']) {
+            if ($row->isAnnotated()) {
                 $entry['annotated']++;
             }
 
             $entry['annotations_values'][] = [
-                'annotations' => $row['annotations'],
-                'pending' => $row['pending'],
+                'annotations' => $row->annotations,
+                'pending' => $row->pending,
             ];
 
-            $hasEditor = $row['last_edited_by'] !== null;
+            $hasEditor = $row->last_edited_by !== null;
+
+            /** @var int $userId */
+            $userId = $row->getAttribute('user_id');
+            /** @var string $username */
+            $username = $row->getAttribute('username');
+            /** @var string|null $role */
+            $role = $row->getAttribute('role');
+            /** @var string|null $editorUsername */
+            $editorUsername = $row->getAttribute('editor_username');
+            /** @var string|null $editorRole */
+            $editorRole = $row->getAttribute('editor_role');
 
             $entry['annotations'][] = [
-                'id' => $row['id'],
+                'id' => $row->id,
                 'annotator_data' => [
-                    'user_id' => (int) $row['user_id'],
-                    'username' => $row['username'],
-                    'role' => $row['role'],
+                    'user_id' => $userId,
+                    'username' => $username,
+                    'role' => $role,
                 ],
                 'last_edited_by_data' => $hasEditor ? [
-                    'user_id' => (int) $row['last_edited_by'],
-                    'username' => $row['editor_username'],
-                    'role' => $row['editor_role'],
+                    'user_id' => (int) $row->last_edited_by,
+                    'username' => $editorUsername,
+                    'role' => $editorRole,
                 ] : null,
-                'updated_at' => $hasEditor ? $row['updated_at'] : null,
-                'confidence' => $row['confidence'],
-                'pending' => $row['pending'],
+                'updated_at' => $hasEditor ? $row->updated_at?->toDateTimeString() : null,
+                'confidence' => $row->confidence,
+                'pending' => $row->pending,
             ];
 
             $result[$dsId] = $entry;

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Project;
+namespace App\Services\SubProject;
 
 use App\Enums\AgreementEnum;
 use App\Models\AnnotationAssignment;
@@ -11,6 +11,7 @@ use App\Models\SubProject;
 use App\Queries\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\GetCountsOfFlagsQuery;
 use App\Queries\GetProgressQuery;
+use App\Queries\GetProjectBasicDataQuery;
 use App\Queries\GetSubProjectIdsQuery;
 use App\Queries\GetSubsetInfoByProjectQuery;
 use App\Services\Annotation\AnnotationService;
@@ -23,6 +24,7 @@ readonly class SubProjectService {
         private AnnotationService $annotationService,
         private AnnotatorService $annotatorService,
         private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
+        private GetProjectBasicDataQuery $projectBasicDataQuery,
         private GetCountsOfFlagsQuery $flagsQuery,
         private GetProgressQuery $progressQuery,
         private GetSubProjectIdsQuery $subProjectIdsQuery,
@@ -57,6 +59,7 @@ readonly class SubProjectService {
      */
     public function getDataForCreateSubProject(int $projectId): array {
         return [
+            'project_data' => $this->projectBasicDataQuery->get($projectId),
             'annotators_data' => $this->getAnnotatorsDataForCreate($projectId),
             'subset_data' => $this->getSubsetDataForCreate($projectId),
         ];

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Project\SubProjectStoreRequest;
+use App\Http\Requests\SubProject\SubProjectStoreRequest;
 use App\Models\Project;
-use App\Services\Project\SubProjectService;
+use App\Services\SubProject\SubProjectService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;

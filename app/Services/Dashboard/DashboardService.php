@@ -14,7 +14,7 @@ use App\Queries\GetProjectsQuery;
 use App\Queries\GetSubProjectIdsQuery;
 use App\Services\Annotation\AnnotatorService;
 use App\Services\Project\ProjectService;
-use App\Services\Project\SubProjectService;
+use App\Services\SubProject\SubProjectService;
 use Illuminate\Support\Collection;
 
 readonly class DashboardService {

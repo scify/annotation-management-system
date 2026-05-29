@@ -17,7 +17,7 @@ return new class() extends Migration {
             $table->foreignId('dataset_instance_id')->constrained();
             $table->unsignedMediumInteger('index');
             $table->unique(['annotation_assignment_id', 'dataset_instance_id']);
-            $table->json('annotations');
+            $table->json('annotations')->nullable()->default(null);
             $table->boolean('pending')->default(false);
             $table->boolean('is_flagged')->default(false);
             $table->string('confidence')->nullable();

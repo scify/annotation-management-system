@@ -104,6 +104,16 @@ class Project extends Model {
             ->withPivot('can_flag');
     }
 
+    public function expectsConfidence(): bool {
+        foreach ($this->annotation_task_configuration ?? [] as $item) {
+            if ($item['id'] === 0) {
+                return $item['answer'] === 'Yes';
+            }
+        }
+
+        return false;
+    }
+
     public function isDelayedToStart(): bool {
         return $this->scheduled_at !== null
             && Date::now()->gt($this->scheduled_at)

@@ -54,6 +54,14 @@ class SubProject extends Model {
     /** @use HasFactory<SubProjectFactory> */
     use HasFactory;
 
+    public function isFlexible(): bool {
+        return $this->flexible;
+    }
+
+    public function requiresSubmission(): bool {
+        return $this->flexible && ! $this->auto_submission;
+    }
+
     /**
      * @return BelongsTo<Project, $this>
      */
