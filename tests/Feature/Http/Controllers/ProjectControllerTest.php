@@ -51,7 +51,7 @@ describe('ProjectController::store', function (): void {
         $response = $this->actingAs($this->admin)->post(route('projects.store'), $payload);
 
         // Assert
-        $response->assertRedirect(route('projects.index'));
+        $response->assertRedirect(route('projects.create'));
 
         $project = Project::query()->where('name', 'My New Project')->firstOrFail();
 
@@ -189,7 +189,7 @@ describe('ProjectController::store', function (): void {
         $response = $this->actingAs($this->manager)->post(route('projects.store'), $payload);
 
         // Assert
-        $response->assertRedirect(route('projects.index'));
+        $response->assertRedirect(route('projects.create'));
 
         expect(Project::query()->where('name', 'Manager Project')->exists())->toBeTrue();
     });
