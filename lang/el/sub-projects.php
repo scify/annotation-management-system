@@ -40,10 +40,11 @@ return [
         'instances' => 'Παραδείγματα:',
         'progress' => 'Πρόοδος',
         'actions_label' => 'Ενέργειες υποέργου',
-        'action_view_edit' => 'Προβολή / Επεξεργασία',
-        'action_test' => 'Δοκιμή',
-        'action_clone' => 'Αντιγραφή',
+        'action_delete' => 'Διαγραφή',
+        'action_set_completed' => 'Ορισμός ως Ολοκληρωμένο',
         'action_set_in_progress' => 'Ορισμός ως Σε Εξέλιξη',
+        'action_test' => 'Δοκιμή',
+        'action_view_edit' => 'Προβολή / Επεξεργασία',
     ],
 
     'select_annotators' => [

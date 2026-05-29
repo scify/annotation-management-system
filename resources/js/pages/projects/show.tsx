@@ -89,6 +89,7 @@ export default function ProjectShow({
             .join(' – '),
         status: STATUS_VARIANT[sp.status],
         statusLabel: t(`projects.status.${sp.status}`),
+        subprojectStatus: sp.status,
         progress: Math.round(sp.progress * 100),
         annotators: sp.annotators_count,
         notifications: sp.notification_count,

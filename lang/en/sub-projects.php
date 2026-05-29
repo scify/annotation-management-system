@@ -40,10 +40,11 @@ return [
         'instances' => 'Instances:',
         'progress' => 'Progress',
         'actions_label' => 'Subproject actions',
-        'action_view_edit' => 'View / Edit',
-        'action_test' => 'Test',
-        'action_clone' => 'Clone',
+        'action_delete' => 'Delete',
+        'action_set_completed' => 'Set as Completed',
         'action_set_in_progress' => 'Set as In Progress',
+        'action_test' => 'Test',
+        'action_view_edit' => 'View / Edit',
     ],
 
     'select_annotators' => [

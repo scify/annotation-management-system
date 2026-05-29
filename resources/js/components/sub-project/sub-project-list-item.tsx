@@ -20,6 +20,7 @@ export interface SubProjectListItemData {
     dateRange: string;
     status: StatusVariant;
     statusLabel: string;
+    subprojectStatus: 'in_progress' | 'pending' | 'completed';
     progress: number;
     annotators: number;
     notifications: number;
@@ -98,14 +99,23 @@ export function SubProjectListItem({
                                 >
                                     {t('sub-projects.list_item.action_view_edit')}
                                 </DropdownMenuItem>
-                                <DropdownMenuItem>
+                                {subProject.subprojectStatus === 'in_progress' && (
+                                    <DropdownMenuItem>
+                                        {t('sub-projects.list_item.action_set_completed')}
+                                    </DropdownMenuItem>
+                                )}
+                                {subProject.subprojectStatus === 'pending' && (
+                                    <>
+                                        <DropdownMenuItem>
+                                            {t('sub-projects.list_item.action_set_in_progress')}
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem>
+                                            {t('sub-projects.list_item.action_delete')}
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
+                                <DropdownMenuItem isDisabled>
                                     {t('sub-projects.list_item.action_test')}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    {t('sub-projects.list_item.action_clone')}
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    {t('sub-projects.list_item.action_set_in_progress')}
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
