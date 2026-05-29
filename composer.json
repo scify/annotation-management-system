@@ -127,7 +127,10 @@
         ],
         "test": "pest --exclude-testsuite=Browser",
         "test:backend": "pest --exclude-testsuite=Browser",
-        "test:browser": "pest --testsuite=Browser",
+        "test:browser": [
+            "@php -r \"file_exists('public/hot') && unlink('public/hot');\"",
+            "pest --testsuite=Browser"
+        ],
         "test:coverage": "pest --coverage --parallel --exclude-testsuite=Browser"
     },
     "extra": {

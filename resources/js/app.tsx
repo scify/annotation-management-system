@@ -1,4 +1,5 @@
 import '../scss/app.scss';
+import type { ComponentType } from 'react';
 import { router } from '@inertiajs/react';
 import { createInertiaApp } from '@inertiajs/react';
 import { RouterProvider } from 'react-aria-components';
@@ -7,6 +8,10 @@ import { initializeTheme } from './hooks/use-appearance';
 const appName = import.meta.env.VITE_APP_NAME ?? 'Laravel';
 
 createInertiaApp({
+    resolve: (name) => {
+        const pages = import.meta.glob<{ default: ComponentType }>('./pages/**/*.tsx');
+        return pages[`./pages/${name}.tsx`]();
+    },
     title: (title) => `${title} - ${appName}`,
     progress: {
         color: '#4B5563',
