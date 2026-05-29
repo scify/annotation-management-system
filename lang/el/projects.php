@@ -177,6 +177,10 @@ return [
         'role_admin' => 'Διαχειριστής',
         'role_manager' => 'Υπεύθυνος Επισημειωτών',
         'role_annotation_manager' => 'Υπεύθυνος Επισημειωτών',
+        'table_status' => 'Κατάσταση',
+        'status_active' => 'Ενεργός',
+        'status_inactive' => 'Ανενεργός',
+        'status_pending' => 'Εκκρεμής',
     ],
 
     'select_annotators' => [

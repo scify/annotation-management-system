@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -18,6 +19,20 @@ export interface CoManagerCandidateRowData {
     username: string;
     name: string;
     role: 'admin' | 'annotation-manager';
+    status?: 'active' | 'inactive' | 'pending';
+}
+
+const STATUS_VARIANT = {
+    active: 'lime',
+    inactive: 'slate',
+    pending: 'yellow',
+} as const;
+
+function CoManagerStatusBadge({ status }: { status?: string }) {
+    const { t } = useTranslations();
+    if (!status) return null;
+    const variant = STATUS_VARIANT[status as keyof typeof STATUS_VARIANT] ?? 'slate';
+    return <Badge variant={variant}>{t(`projects.select_co_managers.status_${status}`)}</Badge>;
 }
 
 interface SelectCoManagersStepProps {
@@ -110,6 +125,9 @@ export function SelectCoManagersStep({
                             <TableHead className="text-sm font-semibold text-slate-800">
                                 {t('projects.select_co_managers.table_role')}
                             </TableHead>
+                            <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                {t('projects.select_co_managers.table_status')}
+                            </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -163,6 +181,11 @@ export function SelectCoManagersStep({
                                                 `projects.select_co_managers.role_${candidate.role.replace('-', '_')}`
                                             )}
                                         </span>
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <div className="flex justify-center">
+                                            <CoManagerStatusBadge status={candidate.status} />
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             );

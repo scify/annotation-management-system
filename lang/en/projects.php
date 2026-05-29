@@ -177,6 +177,10 @@ return [
         'role_admin' => 'Admin',
         'role_manager' => 'Manager',
         'role_annotation_manager' => 'Annotation Manager',
+        'table_status' => 'Status',
+        'status_active' => 'Active',
+        'status_inactive' => 'Inactive',
+        'status_pending' => 'Pending',
     ],
 
     'select_annotators' => [
