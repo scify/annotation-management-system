@@ -14,10 +14,12 @@ use App\Queries\GetProgressQuery;
 use App\Queries\GetProjectBasicDataQuery;
 use App\Queries\GetSubProjectIdsQuery;
 use App\Queries\GetSubsetInfoByProjectQuery;
+use App\Queries\StoreSubProjectQuery;
 use App\Services\Annotation\AnnotationService;
 use App\Services\Annotation\AnnotatorService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Throwable;
 
 readonly class SubProjectService {
     public function __construct(
@@ -27,6 +29,7 @@ readonly class SubProjectService {
         private GetProjectBasicDataQuery $projectBasicDataQuery,
         private GetCountsOfFlagsQuery $flagsQuery,
         private GetProgressQuery $progressQuery,
+        private StoreSubProjectQuery $storeSubProjectQuery,
         private GetSubProjectIdsQuery $subProjectIdsQuery,
         private GetSubsetInfoByProjectQuery $subsetInfoQuery,
     ) {}
@@ -34,9 +37,11 @@ readonly class SubProjectService {
     /**
      * @param  array<string, mixed>  $data
      *
-     * TODO: implement subproject store
+     * @throws Throwable
      */
-    public function storeSubProject(int $projectId, array $data): void {}
+    public function storeSubProject(int $projectId, array $data): void {
+        $this->storeSubProjectQuery->execute($projectId, $data);
+    }
 
     /**
      * @return array<string, mixed>

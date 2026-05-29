@@ -35,7 +35,14 @@ class SubProjectController extends Controller {
     }
 
     public function store(SubProjectStoreRequest $request, int $id): RedirectResponse {
-        $this->subProjectService->storeSubProject($id, $request->validated());
+        $validated = $request->validated();
+
+        $json = json_encode($validated, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (is_string($json)) {
+            Storage::disk('local')->put('subproject-store-data.json', $json);
+        }
+
+        $this->subProjectService->storeSubProject($id, $validated);
 
         return to_route('projects.subprojects.create', $id)
             ->with('created_subproject_name', $request->validated()['name']);
