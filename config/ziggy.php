@@ -13,6 +13,6 @@ return [
         'verification.send', 'password.confirm', 'password.confirmation', 'projects.index',
         'projects.show', 'projects.subprojects.create', 'locale.update', 'projects.create',
         'projects.subprojects.edit', 'monitor.index', 'projects.store', 'monitor.annotator-progress',
-        'monitor.annotator-history', 'projects.export',
+        'monitor.annotator-history', 'projects.export', 'projects.subprojects.store',
     ],
 ];

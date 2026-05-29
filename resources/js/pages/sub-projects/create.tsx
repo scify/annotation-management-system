@@ -18,65 +18,51 @@ import { Head, router } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, FolderDot } from 'lucide-react';
 import { useState } from 'react';
 
-const MOCK_PROJECT = { id: 1, name: 'Project New Nov_26' };
-
-const MOCK_DATASET = { name: 'Text Dataset B', totalInstances: 10_000, previousEndInstance: 56 };
-
-const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
-    {
-        id: 1,
-        name: 'George Giannakopoulos',
-        active_projects_count: 23,
-        active_subprojects_count: 23,
-        workload: 0.85,
-        annotator_progress: 0.75,
-    },
-    {
-        id: 2,
-        name: 'Nelly Savrani',
-        active_projects_count: 12,
-        active_subprojects_count: 4,
-        workload: 0.3,
-        annotator_progress: 0.75,
-    },
-    {
-        id: 3,
-        name: 'Paul Isaris',
-        active_projects_count: 5,
-        active_subprojects_count: 10,
-        workload: 0.6,
-        annotator_progress: 0.4,
-    },
-    {
-        id: 4,
-        name: 'Aris Papadopoulos',
-        active_projects_count: 8,
-        active_subprojects_count: 16,
-        workload: 0.5,
-        annotator_progress: 0.55,
-    },
-    {
-        id: 5,
-        name: 'Maria Konstantinou',
-        active_projects_count: 15,
-        active_subprojects_count: 30,
-        workload: 0.7,
-        annotator_progress: 0.9,
-    },
-];
-
-interface Props {
-    project?: { id: number; name: string };
-    /** Available annotators — falls back to mock data */
-    annotators?: ProjectAnnotatorRowData[];
-    dataset?: { name: string; totalInstances: number; previousEndInstance?: number };
+interface BackendAnnotator {
+    id: number;
+    username: string;
+    status?: 'active' | 'inactive' | 'pending';
+    active_projects_count: number;
+    active_subprojects_count: number;
+    annotator_progress: number;
+    workload: number;
 }
 
-export default function CreateSubproject({ project, annotators, dataset }: Props) {
-    const { t } = useTranslations();
-    const displayProject = project ?? MOCK_PROJECT;
-    const displayAnnotators = annotators ?? MOCK_ANNOTATORS;
-    const displayDataset = dataset ?? MOCK_DATASET;
+interface BackendSubsetData {
+    dataset_id: number;
+    dataset_name: string;
+    size: number;
+    previous_subset_last_index: number | null;
+    from_instance: number;
+    to_instance: number;
+}
+
+interface Props {
+    project_data: { project_id: number; name: string };
+    annotators_data: BackendAnnotator[];
+    subset_data: BackendSubsetData;
+    created_subproject_name?: string | null;
+}
+
+export default function CreateSubproject({
+    project_data,
+    annotators_data,
+    subset_data,
+    created_subproject_name,
+}: Props) {
+    const { t, trans } = useTranslations();
+    const isSuccess = !!created_subproject_name;
+
+    const displayAnnotators: ProjectAnnotatorRowData[] = annotators_data.map((a) => ({
+        ...a,
+        name: a.username,
+    }));
+
+    const displayDataset = {
+        name: subset_data.dataset_name,
+        totalInstances: subset_data.size,
+        previousEndInstance: subset_data.previous_subset_last_index ?? undefined,
+    };
 
     const STEPS = [
         { label: t('sub-projects.select_annotators.heading') },
@@ -91,6 +77,7 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
     );
     const [toInstance, setToInstance] = useState(displayDataset.totalInstances);
     const [shuffle, setShuffle] = useState(true);
+    const [datasetId] = useState(subset_data.dataset_id);
 
     // Step 3 — Configuration
     const [priority, setPriority] = useState<SubprojectPriority | null>(null);
@@ -100,15 +87,17 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
     const [flexibleBrowsing, setFlexibleBrowsing] = useState(false);
     const [submissionMode, setSubmissionMode] = useState<SubmissionMode>('auto');
 
-    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(isSuccess);
     const [subprojectName, setSubprojectName] = useState('');
+    const [processing, setProcessing] = useState(false);
+    const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('projects.title'), href: route('projects.index') },
-        { title: displayProject.name, href: route('projects.show', displayProject.id) },
+        { title: project_data.name, href: route('projects.show', project_data.project_id) },
         {
             title: t('sub-projects.create.heading'),
-            href: route('projects.subprojects.create', displayProject.id),
+            href: route('projects.subprojects.create', project_data.project_id),
         },
     ];
 
@@ -138,6 +127,42 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
         } else {
             setConfirmOpen(true);
         }
+    }
+
+    function handleDialogClose() {
+        if (isSuccess) {
+            router.visit(route('projects.show', project_data.project_id));
+        } else {
+            setConfirmOpen(false);
+        }
+    }
+
+    function handleSubmit() {
+        setServerErrors({});
+        router.post(
+            route('projects.subprojects.store', project_data.project_id),
+            {
+                name: subprojectName.trim(),
+                annotator_ids: Array.from(selectedAnnotatorIds),
+                shuffle,
+                from_instance: fromInstance,
+                to_instance: toInstance,
+                dataset_id: datasetId,
+                priority,
+                scheduled_at: dateRange?.start?.toString() ?? null,
+                deadline_at: dateRange?.end?.toString() ?? null,
+                is_flexible: flexibleBrowsing,
+                requires_confirmation: flexibleBrowsing ? submissionMode === 'manual' : null,
+                minimum_annotations: minAnnotationsEnabled ? minAnnotations : null,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onStart: () => setProcessing(true),
+                onFinish: () => setProcessing(false),
+                onError: (errors) => setServerErrors(errors),
+            }
+        );
     }
 
     return (
@@ -202,7 +227,9 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
                     )}
                     <Button
                         variant="outline"
-                        onClick={() => router.visit(route('projects.show', displayProject.id))}
+                        onClick={() =>
+                            router.visit(route('projects.show', project_data.project_id))
+                        }
                     >
                         {t('sub-projects.create.cancel')}
                     </Button>
@@ -232,25 +259,55 @@ export default function CreateSubproject({ project, annotators, dataset }: Props
 
                 <ProjectDialog
                     open={confirmOpen}
-                    onClose={() => setConfirmOpen(false)}
+                    onClose={handleDialogClose}
                     icon={<FolderDot />}
                     title={t('sub-projects.create.heading')}
-                    description={t('sub-projects.create.dialog_description')}
+                    description={
+                        isSuccess ? undefined : t('sub-projects.create.dialog_description')
+                    }
                     cancelLabel={t('sub-projects.create.back')}
-                    actionLabel={t('sub-projects.create.create_action')}
-                    onAction={() => {
-                        setConfirmOpen(false);
-                        // TODO: submit with subprojectName
-                    }}
+                    hideCancelButton={isSuccess}
+                    actionLabel={
+                        isSuccess
+                            ? t('sub-projects.create.dialog_go_to_subprojects')
+                            : t('sub-projects.create.create_action')
+                    }
+                    actionDisabled={!isSuccess && (subprojectName.trim() === '' || processing)}
+                    loading={processing}
+                    onAction={
+                        isSuccess
+                            ? () => router.visit(route('projects.show', project_data.project_id))
+                            : handleSubmit
+                    }
                 >
-                    <Input
-                        type="text"
-                        value={subprojectName}
-                        onChange={(e) => setSubprojectName(e.target.value)}
-                        placeholder={t('sub-projects.create.dialog_name_placeholder')}
-                        className="mb-12 h-10 bg-white px-3 py-3"
-                        aria-label={t('sub-projects.create.dialog_description')}
-                    />
+                    {isSuccess ? (
+                        <div
+                            role="status"
+                            aria-live="polite"
+                            className="mb-8 rounded-md border border-slate-400 bg-slate-50 p-3 text-sm font-medium text-slate-700"
+                        >
+                            {trans('sub-projects.create.dialog_success_message', {
+                                name: created_subproject_name ?? '',
+                            })}
+                        </div>
+                    ) : (
+                        <>
+                            <Input
+                                type="text"
+                                value={subprojectName}
+                                onChange={(e) => setSubprojectName(e.target.value)}
+                                placeholder={t('sub-projects.create.dialog_name_placeholder')}
+                                className="mb-12 h-10 bg-white px-3 py-3"
+                                aria-label={t('sub-projects.create.dialog_description')}
+                                aria-invalid={!!serverErrors.name}
+                            />
+                            {serverErrors.name && (
+                                <p role="alert" className="text-sm text-red-600">
+                                    {serverErrors.name}
+                                </p>
+                            )}
+                        </>
+                    )}
                 </ProjectDialog>
             </div>
         </AppLayout>
