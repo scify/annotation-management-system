@@ -299,7 +299,7 @@ export default function CreateProject({
                         <div
                             role="status"
                             aria-live="polite"
-                            className="rounded-md border border-slate-400 bg-slate-50 p-3 text-sm font-medium text-slate-700"
+                            className="mb-8 rounded-md border border-slate-400 bg-slate-50 p-3 text-sm font-medium text-slate-700"
                         >
                             {trans('projects.create.dialog_success_message', {
                                 name: flash.created_project_name ?? '',
