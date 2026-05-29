@@ -7,6 +7,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { Loader2 } from 'lucide-react';
 
 export interface ProjectDialogProps {
     open: boolean;
@@ -14,19 +15,24 @@ export interface ProjectDialogProps {
     /** Lucide icon — sized and coloured by the wrapper */
     icon: React.ReactNode;
     title: string;
-    description: React.ReactNode;
+    /** When omitted the description area is not rendered */
+    description?: React.ReactNode;
     /** Optional content between description and footer (warning box, textarea, etc.) */
     children?: React.ReactNode;
     /** Label for the cancel/reject button. Defaults to "Cancel" */
     cancelLabel?: string;
     /** Optional icon rendered to the left of the cancel label */
     cancelIcon?: React.ReactNode;
+    /** When true, hides the cancel button and makes the action button full-width */
+    hideCancelButton?: boolean;
     actionLabel: string;
     /** Optional icon rendered to the right of the action label */
     actionIcon?: React.ReactNode;
     onAction: () => void;
     /** Disables the action button when true */
     actionDisabled?: boolean;
+    /** Shows a spinner on the action button and disables both buttons */
+    loading?: boolean;
     /**
      * - `standard`    → solid brand-blue-700 (e.g. Send message)
      * - `highlighted` → brand-blue-800 + 4px cyan-400 ring (e.g. Approve, Send Request)
@@ -43,10 +49,12 @@ export function ProjectDialog({
     children,
     cancelLabel = 'Cancel',
     cancelIcon,
+    hideCancelButton = false,
     actionLabel,
     actionIcon,
     onAction,
     actionDisabled = false,
+    loading = false,
     actionStyle = 'standard',
 }: ProjectDialogProps) {
     return (
@@ -65,36 +73,46 @@ export function ProjectDialog({
                         <DialogTitle className="text-xl leading-9 font-bold text-slate-700">
                             {title}
                         </DialogTitle>
-                        <DialogDescription className="text-sm leading-5 font-medium text-slate-500">
-                            {description}
-                        </DialogDescription>
+                        {description && (
+                            <DialogDescription className="text-sm leading-5 font-medium text-slate-500">
+                                {description}
+                            </DialogDescription>
+                        )}
                     </div>
                 </DialogHeader>
 
                 {children}
 
                 <DialogFooter className="flex-row gap-[22px]">
-                    <button
-                        type="button"
-                        onClick={onClose}
-                        className="text-brand-blue-900 flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-yellow-300 text-base font-semibold transition-colors hover:bg-yellow-400"
-                    >
-                        {cancelIcon}
-                        {cancelLabel}
-                    </button>
+                    {!hideCancelButton && (
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            disabled={loading}
+                            className="text-brand-blue-900 flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-yellow-300 text-base font-semibold transition-colors hover:bg-yellow-400 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                            {cancelIcon}
+                            {cancelLabel}
+                        </button>
+                    )}
                     <button
                         type="button"
                         onClick={onAction}
-                        disabled={actionDisabled}
+                        disabled={actionDisabled || loading}
                         className={cn(
-                            'flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                            'flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                            hideCancelButton ? 'w-full' : 'flex-1',
                             actionStyle === 'highlighted'
                                 ? 'bg-brand-blue-800 hover:bg-brand-blue-900 border-4 border-cyan-400'
                                 : 'bg-brand-blue-700 hover:bg-brand-blue-800'
                         )}
                     >
                         {actionLabel}
-                        {actionIcon}
+                        {loading ? (
+                            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                        ) : (
+                            actionIcon
+                        )}
                     </button>
                 </DialogFooter>
             </DialogContent>

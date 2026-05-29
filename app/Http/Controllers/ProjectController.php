@@ -67,10 +67,10 @@ class ProjectController extends Controller {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $this->projectService->storeProject($user, $request->validated());
+        $project = $this->projectService->storeProject($user, $request->validated());
 
-        return to_route('projects.index')
-            ->with('success', __('projects.messages.created'));
+        return to_route('projects.create')
+            ->with('created_project_name', $project->name);
     }
 
     public function export(ProjectExportRequest $request, int $id): StreamedResponse {

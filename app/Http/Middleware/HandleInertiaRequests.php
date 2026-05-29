@@ -87,6 +87,7 @@ class HandleInertiaRequests extends Middleware {
                 'error' => $request->session()->get('error'),
                 'warning' => $request->session()->get('warning'),
                 'info' => $request->session()->get('info'),
+                'created_project_name' => $request->session()->get('created_project_name'),
             ],
         ];
     }
