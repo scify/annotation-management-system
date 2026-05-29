@@ -1,7 +1,7 @@
 import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { BookSearch, Container, Search } from 'lucide-react';
+import { AlertCircle, BookSearch, Container, Search } from 'lucide-react';
 import { useState } from 'react';
 
 export interface TaskTypeCardData {
@@ -19,9 +19,15 @@ interface TaskTypeCardProps {
     taskType: TaskTypeCardData;
     isSelected: boolean;
     onSelect: () => void;
+    isDisabled?: boolean;
 }
 
-function TaskTypeCard({ taskType, isSelected, onSelect }: Readonly<TaskTypeCardProps>) {
+function TaskTypeCard({
+    taskType,
+    isSelected,
+    onSelect,
+    isDisabled = false,
+}: Readonly<TaskTypeCardProps>) {
     const { t } = useTranslations();
     const [tab, setTab] = useState(0);
 
@@ -29,18 +35,22 @@ function TaskTypeCard({ taskType, isSelected, onSelect }: Readonly<TaskTypeCardP
         // <div role="radio"> instead of <button> so that the dot <button>s inside are valid HTML
         <div
             role="radio"
-            aria-checked={isSelected}
+            aria-checked={isDisabled ? undefined : isSelected}
+            aria-disabled={isDisabled}
             tabIndex={0}
-            onClick={onSelect}
+            onClick={() => {
+                if (!isDisabled) onSelect();
+            }}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    onSelect();
+                    if (!isDisabled) onSelect();
                 }
             }}
             className={cn(
-                'focus-visible:ring-brand-blue-700 relative flex h-[343px] w-full cursor-pointer flex-col rounded-2xl border border-slate-200 px-5 pt-5 pb-3 transition-colors outline-none focus-visible:ring-2',
-                isSelected ? 'bg-brand-blue-50' : 'bg-white hover:bg-slate-50'
+                'focus-visible:ring-brand-blue-700 relative flex h-[343px] w-full flex-col rounded-2xl border border-slate-200 px-5 pt-5 pb-3 transition-colors outline-none focus-visible:ring-2',
+                isDisabled ? 'cursor-not-allowed bg-white' : 'cursor-pointer',
+                !isDisabled && (isSelected ? 'bg-brand-blue-50' : 'bg-white hover:bg-slate-50')
             )}
         >
             {/* Radio indicator */}
@@ -88,6 +98,15 @@ function TaskTypeCard({ taskType, isSelected, onSelect }: Readonly<TaskTypeCardP
                 <div className="min-h-0 flex-1 pt-3">
                     <p className="h-full [scrollbar-width:thin] [scrollbar-color:theme(colors.slate.300)_transparent] overflow-y-auto text-sm leading-5 text-slate-600">
                         {taskType.description ?? '—'}
+                    </p>
+                </div>
+            )}
+
+            {isDisabled && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-white/85 p-6 text-center backdrop-blur-[1px]">
+                    <AlertCircle className="size-8 shrink-0 text-slate-400" aria-hidden="true" />
+                    <p className="text-sm font-medium text-slate-600">
+                        {t('projects.select_task_type.no_datasets_reason')}
                     </p>
                 </div>
             )}
@@ -189,6 +208,7 @@ export function SelectTaskTypeStep({
                         key={tt.id}
                         taskType={tt}
                         isSelected={selectedId === tt.id}
+                        isDisabled={tt.datasets.length === 0}
                         onSelect={() => onSelectionChange(tt.id)}
                     />
                 ))}

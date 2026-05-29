@@ -163,6 +163,8 @@ return [
         'step_add_co_managers' => 'Προσθήκη Συν-Υπεύθυνων Επισημειωτών',
         'dialog_description' => 'Εισάγετε ένα όνομα για το έργο',
         'dialog_name_placeholder' => 'Όνομα έργου…',
+        'dialog_success_message' => 'Το έργο ":name" δημιουργήθηκε.',
+        'dialog_go_to_projects' => 'Μετάβαση σε όλα τα Έργα',
     ],
 
     'select_co_managers' => [
@@ -206,6 +208,7 @@ return [
         'min_one_required' => 'Επιλέξτε τουλάχιστον έναν τύπο εργασίας για να συνεχίσετε.',
         'card_pages_label' => 'Σελίδες κάρτας',
         'page_label' => 'Σελίδα',
+        'no_datasets_reason' => 'Δεν υπάρχουν διαθέσιμα σύνολα δεδομένων για αυτόν τον τύπο εργασίας.',
     ],
 
     'configuration' => [

@@ -163,6 +163,8 @@ return [
         'step_add_co_managers' => 'Add Co-Managers',
         'dialog_description' => 'Enter a Project name',
         'dialog_name_placeholder' => 'Project name…',
+        'dialog_success_message' => 'Project ":name" has been created.',
+        'dialog_go_to_projects' => 'Go to all Projects',
     ],
 
     'select_co_managers' => [
@@ -206,6 +208,7 @@ return [
         'min_one_required' => 'Please select at least one task type to continue.',
         'card_pages_label' => 'Card pages',
         'page_label' => 'Page',
+        'no_datasets_reason' => 'No datasets are available for this task type.',
     ],
 
     'configuration' => [

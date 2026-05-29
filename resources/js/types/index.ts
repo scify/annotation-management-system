@@ -100,6 +100,7 @@ export interface SharedData {
         error: string | null;
         warning: string | null;
         info: string | null;
+        created_project_name: string | null;
     };
     auth: Auth;
     ziggy: Config & { location: string };

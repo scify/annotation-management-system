@@ -15,15 +15,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { Head, router, usePage } from '@inertiajs/react';
 import { type DateRangeValue } from '@/components/ui/date-range-picker-button';
 import { ChevronLeft, ChevronRight, FolderDot } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Props {
     annotation_tasks: TaskTypeCardData[];
-    all_annotators: ProjectAnnotatorRowData[];
+    all_annotators?: ProjectAnnotatorRowData[];
     my_annotators?: ProjectAnnotatorRowData[];
     co_managers: CoManagerCandidateRowData[];
 }
@@ -34,7 +34,9 @@ export default function CreateProject({
     my_annotators,
     co_managers,
 }: Props) {
-    const { t } = useTranslations();
+    const { t, trans } = useTranslations();
+    const { flash } = usePage<SharedData>().props;
+    const isSuccess = !!flash.created_project_name;
 
     const STEPS = [
         { label: t('projects.create.step_select_task_type') },
@@ -51,7 +53,7 @@ export default function CreateProject({
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedTaskTypeId, setSelectedTaskTypeId] = useState<number | null>(null);
     const [selectedAnnotatorIds, setSelectedAnnotatorIds] = useState<Set<number>>(new Set());
-    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(isSuccess);
     const [projectName, setProjectName] = useState('');
     const [processing, setProcessing] = useState(false);
     const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
@@ -124,6 +126,51 @@ export default function CreateProject({
         }
     }
 
+    function handleSubmit() {
+        const customizationOptions = selectedTaskType?.customization_options ?? [];
+        const annotationTaskConfiguration =
+            customizationOptions.length > 0
+                ? customizationOptions.map((option) => ({
+                      id: option.id,
+                      answer: customizationAnswers[option.id] ?? option.answers[0],
+                  }))
+                : null;
+
+        setServerErrors({});
+        router.post(
+            route('projects.store'),
+            {
+                name: projectName.trim(),
+                annotation_task_id: selectedTaskTypeId,
+                dataset_id: selectedDatasetId,
+                is_instance_shuffled: shuffleInstances,
+                annotation_task_configuration: annotationTaskConfiguration,
+                restricted_visibility: restrictVisibility,
+                annotator_ids: Array.from(selectedAnnotatorIds),
+                co_manager_ids: Array.from(selectedCoManagerIds),
+                scheduled_at: dateRange?.start.toString() ?? null,
+                deadline_at: dateRange?.end.toString() ?? null,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onStart: () => setProcessing(true),
+                onFinish: () => setProcessing(false),
+                onError: (errors) => {
+                    setServerErrors(errors);
+                },
+            }
+        );
+    }
+
+    function handleDialogClose() {
+        if (isSuccess) {
+            router.visit(route('projects.index'));
+        } else {
+            setConfirmOpen(false);
+        }
+    }
+
     const isNextDisabled =
         (currentStep === 0 && selectedTaskTypeId === null) ||
         (currentStep === 1 && selectedDatasetId === null) ||
@@ -167,8 +214,8 @@ export default function CreateProject({
 
                 {currentStep === 2 && (
                     <SelectAnnotatorsStep
-                        annotators={all_annotators}
-                        myAnnotators={my_annotators}
+                        annotators={all_annotators ?? my_annotators ?? []}
+                        myAnnotators={all_annotators !== undefined ? my_annotators : undefined}
                         selectedIds={selectedAnnotatorIds}
                         onSelectionChange={handleSelectionChange}
                         onSelectAllChange={handleSelectAllChange}
@@ -231,92 +278,80 @@ export default function CreateProject({
 
                 <ProjectDialog
                     open={confirmOpen}
-                    onClose={() => setConfirmOpen(false)}
+                    onClose={handleDialogClose}
                     icon={<FolderDot />}
                     title={t('projects.create.heading')}
-                    description={t('projects.create.dialog_description')}
+                    description={isSuccess ? undefined : t('projects.create.dialog_description')}
+                    loading={processing}
+                    hideCancelButton={isSuccess}
                     cancelLabel={t('projects.create.back')}
-                    actionLabel={t('projects.create.create_action')}
-                    actionDisabled={projectName.trim() === '' || processing}
-                    onAction={() => {
-                        const customizationOptions = selectedTaskType?.customization_options ?? [];
-                        const annotationTaskConfiguration =
-                            customizationOptions.length > 0
-                                ? customizationOptions.map((option) => ({
-                                      id: option.id,
-                                      answer: customizationAnswers[option.id] ?? option.answers[0],
-                                  }))
-                                : null;
-
-                        setServerErrors({});
-                        setConfirmOpen(false);
-                        router.post(
-                            route('projects.store'),
-                            {
-                                name: projectName.trim(),
-                                annotation_task_id: selectedTaskTypeId,
-                                dataset_id: selectedDatasetId,
-                                is_instance_shuffled: shuffleInstances,
-                                annotation_task_configuration: annotationTaskConfiguration,
-                                restricted_visibility: restrictVisibility,
-                                annotator_ids: Array.from(selectedAnnotatorIds),
-                                co_manager_ids: Array.from(selectedCoManagerIds),
-                                scheduled_at: dateRange?.start.toString() ?? null,
-                                deadline_at: dateRange?.end.toString() ?? null,
-                            },
-                            {
-                                preserveState: true,
-                                preserveScroll: true,
-                                onStart: () => setProcessing(true),
-                                onFinish: () => setProcessing(false),
-                                onError: (errors) => {
-                                    setServerErrors(errors);
-                                    setConfirmOpen(true);
-                                },
-                            }
-                        );
-                    }}
+                    actionLabel={
+                        isSuccess
+                            ? t('projects.create.dialog_go_to_projects')
+                            : t('projects.create.create_action')
+                    }
+                    actionDisabled={!isSuccess && (projectName.trim() === '' || processing)}
+                    onAction={
+                        isSuccess ? () => router.visit(route('projects.index')) : handleSubmit
+                    }
                 >
-                    <div className="mb-4 flex flex-col gap-1">
-                        <Input
-                            type="text"
-                            value={projectName}
-                            onChange={(e) => {
-                                setProjectName(e.target.value);
-                                if (serverErrors.name) {
-                                    setServerErrors((prev) => {
-                                        const next = { ...prev };
-                                        delete next.name;
-                                        return next;
-                                    });
-                                }
-                            }}
-                            placeholder={t('projects.create.dialog_name_placeholder')}
-                            className="h-10 bg-white px-3 py-3"
-                            aria-label={t('projects.create.dialog_description')}
-                            aria-invalid={!!serverErrors.name}
-                            aria-describedby={serverErrors.name ? 'project-name-error' : undefined}
-                        />
-                        {serverErrors.name && (
-                            <p
-                                id="project-name-error"
-                                role="alert"
-                                className="text-sm text-red-600"
-                            >
-                                {serverErrors.name}
-                            </p>
-                        )}
-                    </div>
-                    {Object.entries(serverErrors).filter(([key]) => key !== 'name').length > 0 && (
-                        <div role="alert" className="mb-4 rounded-md bg-red-50 p-3">
-                            <ul className="list-inside list-disc space-y-1 text-sm text-red-700">
-                                {Object.entries(serverErrors)
-                                    .filter(([key]) => key !== 'name')
-                                    .map(([key, msg]) => (
-                                        <li key={key}>{msg}</li>
-                                    ))}
-                            </ul>
+                    {isSuccess ? (
+                        <div
+                            role="status"
+                            aria-live="polite"
+                            className="rounded-md border border-slate-400 bg-slate-50 p-3 text-sm font-medium text-slate-700"
+                        >
+                            {trans('projects.create.dialog_success_message', {
+                                name: flash.created_project_name ?? '',
+                            })}
                         </div>
+                    ) : (
+                        <>
+                            <div className="mb-4 flex flex-col gap-1">
+                                <Input
+                                    type="text"
+                                    value={projectName}
+                                    onChange={(e) => {
+                                        setProjectName(e.target.value);
+                                        if (serverErrors.name) {
+                                            setServerErrors((prev) => {
+                                                const next = { ...prev };
+                                                delete next.name;
+                                                return next;
+                                            });
+                                        }
+                                    }}
+                                    placeholder={t('projects.create.dialog_name_placeholder')}
+                                    className="h-10 bg-white px-3 py-3"
+                                    aria-label={t('projects.create.dialog_description')}
+                                    aria-invalid={!!serverErrors.name}
+                                    aria-describedby={
+                                        serverErrors.name ? 'project-name-error' : undefined
+                                    }
+                                />
+                                {serverErrors.name && (
+                                    <p
+                                        id="project-name-error"
+                                        role="alert"
+                                        className="text-sm text-red-600"
+                                    >
+                                        {serverErrors.name}
+                                    </p>
+                                )}
+                            </div>
+                            {Object.entries(serverErrors).filter(([key]) => key !== 'name').length >
+                                0 && (
+                                <div role="alert" className="mb-4 rounded-md bg-red-50 p-3">
+                                    <ul className="list-inside list-disc space-y-1 text-sm text-red-700">
+                                        {Object.entries(serverErrors)
+                                            .filter(([key]) => key !== 'name')
+                                            .map(([key, msg]) => (
+                                                <li key={key}>{msg}</li>
+                                            ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </>
                     )}
                 </ProjectDialog>
             </div>
