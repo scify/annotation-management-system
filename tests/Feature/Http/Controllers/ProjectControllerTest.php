@@ -134,7 +134,7 @@ describe('ProjectController::store', function (): void {
 
     it('creates instance shuffle mappers when is_instance_shuffled is true', function (): void {
         // Arrange — seed 3 dataset instances so the shuffle mapper has something to index
-        foreach (range(0, 2) as $i) {
+        foreach (range(1, 3) as $i) {
             DatasetInstance::query()->create([
                 'dataset_id' => $this->dataset->id,
                 'index' => $i,
@@ -168,10 +168,10 @@ describe('ProjectController::store', function (): void {
         expect($mappers)->toHaveCount(3);
 
         // new_index values must be 0, 1, 2 in order
-        expect($mappers->pluck('new_index')->all())->toBe([0, 1, 2]);
+        expect($mappers->pluck('new_index')->all())->toBe([1, 2, 3]);
 
         // old_index values must be a permutation of 0, 1, 2
-        expect($mappers->pluck('old_index')->sort()->values()->all())->toBe([0, 1, 2]);
+        expect($mappers->pluck('old_index')->sort()->values()->all())->toBe([1, 2, 3]);
     });
 
     it('allows annotation managers to create projects', function (): void {

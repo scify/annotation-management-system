@@ -22,6 +22,6 @@ describe('DatasetService::generateShuffledIndexArray', function (): void {
         sort($sorted);
 
         expect($result)->toHaveCount(5)
-            ->and($sorted)->toBe([0, 1, 2, 3, 4]);
+            ->and($sorted)->toBe([1, 2, 3, 4, 5]);
     });
 });
