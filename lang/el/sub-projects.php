@@ -32,6 +32,8 @@ return [
         'create_action' => 'Δημιουργία',
         'dialog_description' => 'Εισάγετε ένα όνομα για το υποέργο',
         'dialog_name_placeholder' => 'Όνομα Νέου Υποέργου…',
+        'dialog_success_message' => 'Το υποέργο ":name" δημιουργήθηκε.',
+        'dialog_go_to_subprojects' => 'Μετάβαση στα Υποέργα',
     ],
 
     'list_item' => [

@@ -32,6 +32,8 @@ return [
         'create_action' => 'Create',
         'dialog_description' => 'Enter a subproject name',
         'dialog_name_placeholder' => 'New Subproject Name…',
+        'dialog_success_message' => 'Subproject ":name" has been created.',
+        'dialog_go_to_subprojects' => 'Go to Subprojects',
     ],
 
     'list_item' => [

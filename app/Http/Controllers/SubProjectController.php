@@ -28,7 +28,10 @@ class SubProjectController extends Controller {
             Storage::disk('local')->put('subproject-create-data.json', $json);
         }
 
-        return Inertia::render('sub-projects/create', $data_for_create_sub_project);
+        return Inertia::render('sub-projects/create', [
+            ...$data_for_create_sub_project,
+            'created_subproject_name' => session()->pull('created_subproject_name'),
+        ]);
     }
 
     public function store(SubProjectStoreRequest $request, int $id): RedirectResponse {
@@ -41,8 +44,8 @@ class SubProjectController extends Controller {
 
         $this->subProjectService->storeSubProject($id, $validated);
 
-        return to_route('projects.show', $id)
-            ->with('success', __('sub-projects.messages.created'));
+        return to_route('projects.subprojects.create', $id)
+            ->with('created_subproject_name', $request->validated()['name']);
     }
 
     public function edit(int $projectId, int $subprojectId): Response {
