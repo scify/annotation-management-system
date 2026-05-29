@@ -1,16 +1,15 @@
 import '../scss/app.scss';
-import type { ComponentType } from 'react';
-import { router } from '@inertiajs/react';
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
+import type { ResolvedComponent } from '@inertiajs/react';
 import { RouterProvider } from 'react-aria-components';
 import { initializeTheme } from './hooks/use-appearance';
 
 const appName = import.meta.env.VITE_APP_NAME ?? 'Laravel';
 
 createInertiaApp({
-    resolve: (name) => {
-        const pages = import.meta.glob<{ default: ComponentType }>('./pages/**/*.tsx');
-        return pages[`./pages/${name}.tsx`]();
+    resolve: async (name) => {
+        const pages = import.meta.glob<{ default: ResolvedComponent }>('./pages/**/*.tsx');
+        return (await pages[`./pages/${name}.tsx`]()).default;
     },
     title: (title) => `${title} - ${appName}`,
     progress: {
