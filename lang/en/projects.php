@@ -62,6 +62,10 @@ return [
         'table_flags' => 'Flags',
         'table_allow_flagging' => 'Allow Flagging',
         'table_actions' => 'Actions',
+        'table_status' => 'Status',
+        'status_active' => 'Active',
+        'status_inactive' => 'Inactive',
+        'status_pending' => 'Pending',
     ],
 
     'managers_tab' => [

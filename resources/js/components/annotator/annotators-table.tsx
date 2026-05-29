@@ -1,4 +1,5 @@
 import { ToggleSwitch } from '@/components/ui/toggle-switch';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -17,12 +18,26 @@ import { CircleMinus, Info, Mail } from 'lucide-react';
 export interface ProjectAnnotatorRowData {
     id: number;
     name: string;
+    status?: 'active' | 'inactive' | 'pending';
     annotator_progress: number;
     active_projects_count: number;
     active_subprojects_count: number;
     workload: number;
     annotator_flags?: number;
     allow_flagging?: boolean;
+}
+
+const STATUS_VARIANT = {
+    active: 'lime',
+    inactive: 'slate',
+    pending: 'yellow',
+} as const;
+
+function AnnotatorStatusBadge({ status }: { status?: string }) {
+    const { t } = useTranslations();
+    if (!status) return null;
+    const variant = STATUS_VARIANT[status as keyof typeof STATUS_VARIANT] ?? 'slate';
+    return <Badge variant={variant}>{t(`projects.annotators_tab.status_${status}`)}</Badge>;
 }
 
 type AnnotatorsTableProps =
@@ -74,6 +89,11 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                                 ? t('projects.annotators_tab.table_subproject_progress')
                                 : t('projects.annotators_tab.table_progress')}
                         </TableHead>
+                        {mode === 'selectable' && (
+                            <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                {t('projects.annotators_tab.table_status')}
+                            </TableHead>
+                        )}
                         {mode === 'remove' && (
                             <>
                                 <TableHead className="text-center text-sm font-semibold text-slate-800">
@@ -165,6 +185,13 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                                         </div>
                                     </div>
                                 </TableCell>
+                                {mode === 'selectable' && (
+                                    <TableCell className="text-center">
+                                        <div className="flex justify-center">
+                                            <AnnotatorStatusBadge status={annotator.status} />
+                                        </div>
+                                    </TableCell>
+                                )}
                                 {mode === 'remove' && (
                                     <>
                                         <TableCell className="text-center">

@@ -62,6 +62,10 @@ return [
         'table_flags' => 'Επισημάνσεις',
         'table_allow_flagging' => 'Να επιτρέπεται η επισήμανση',
         'table_actions' => 'Ενέργειες',
+        'table_status' => 'Κατάσταση',
+        'status_active' => 'Ενεργός',
+        'status_inactive' => 'Ανενεργός',
+        'status_pending' => 'Εκκρεμής',
     ],
 
     'managers_tab' => [
