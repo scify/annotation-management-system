@@ -34,7 +34,7 @@ export function UserForm({ user, action, roles }: Readonly<UserFormProps>) {
         email: user?.email ?? '',
         password: '',
         password_confirmation: '',
-        role: user?.role ?? (roles.length === 1 ? roles[0].name : ''),
+        role: user?.role ?? (roles?.length === 1 ? roles[0].name : ''),
     });
 
     const handleSubmit: FormEventHandler = (e) => {
@@ -81,7 +81,7 @@ export function UserForm({ user, action, roles }: Readonly<UserFormProps>) {
                 <Label id="role-label" htmlFor="role">
                     {t('users.labels.role')}
                 </Label>
-                {roles.length > 1 ? (
+                {(roles?.length ?? 0) > 1 ? (
                     <Select
                         aria-labelledby="role-label"
                         value={data.role}
@@ -99,7 +99,7 @@ export function UserForm({ user, action, roles }: Readonly<UserFormProps>) {
                         </SelectContent>
                     </Select>
                 ) : (
-                    <Input id="role" type="text" value={t(roles[0].label)} disabled />
+                    <Input id="role" type="text" value={t(roles?.[0]?.label ?? '')} disabled />
                 )}
                 {errors.role && <p className="mt-1 text-sm text-red-600">{errors.role}</p>}
             </div>
