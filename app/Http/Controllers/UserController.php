@@ -36,7 +36,7 @@ class UserController extends Controller {
 
         $users = $this->userService->getUsers(search: $search);
 
-        $management = $this->userManagementService->getUsersByRole();
+        $management = $this->userManagementService->getUsersByRole($currentUser);
 
         $json = json_encode($management, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if (is_string($json)) {
