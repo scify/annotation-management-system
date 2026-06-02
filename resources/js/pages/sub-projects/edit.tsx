@@ -110,6 +110,7 @@ const MOCK_ANNOTATION_ROWS: InstanceAnnotationRow[] = [
                 annotatedBy: { username: '@ggiannakopoulos', role: 'manager' },
                 timestamp: 'Jan 22, 2026 10:30am',
                 confidence: 'high',
+                status: 'submitted',
             },
             {
                 id: 2,
@@ -118,6 +119,7 @@ const MOCK_ANNOTATION_ROWS: InstanceAnnotationRow[] = [
                 annotatedBy: { username: '@akosmo', role: 'manager' },
                 timestamp: 'Jan 22, 2026 10:30am',
                 confidence: 'low',
+                status: 'pending',
             },
         ],
     },
@@ -199,12 +201,12 @@ export default function EditSubproject({
         useState<Set<number>>(initialAnnotatorIds);
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
-    const [activeTab, setActiveTab] = useState<TabKey>('overview');
+    const [activeTab, setActiveTab] = useState<TabKey>('annotations');
 
     const tabs: { key: TabKey; label: string }[] = [
-        { key: 'overview', label: t('sub-projects.edit.tab_overview_settings') },
-        { key: 'annotators', label: t('sub-projects.edit.tab_annotators') },
         { key: 'annotations', label: t('sub-projects.edit.tab_annotations') },
+        { key: 'annotators', label: t('sub-projects.edit.tab_annotators') },
+        { key: 'overview', label: t('sub-projects.edit.tab_overview_settings') },
     ];
 
     const breadcrumbs: BreadcrumbItem[] = [

@@ -22,6 +22,7 @@ import { Fragment, useMemo, useState } from 'react';
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export type AgreementLevel = 'high' | 'medium' | 'low';
+export type AnnotationStatus = 'submitted' | 'pending' | 'not_annotated';
 export type UserRole = 'annotator' | 'manager';
 
 export interface AnnotationEntry {
@@ -31,6 +32,7 @@ export interface AnnotationEntry {
     annotatedBy: { username: string; role: UserRole };
     timestamp: string;
     confidence: AgreementLevel;
+    status: AnnotationStatus;
 }
 
 export interface InstanceAnnotationRow {
@@ -79,6 +81,25 @@ function RoleBadge({ role }: { role: UserRole }) {
             )}
         >
             {t(`sub-projects.annotations.role_${role}`)}
+        </span>
+    );
+}
+
+function AnnotationStatusBadge({ status }: { status: AnnotationStatus }) {
+    const { t } = useTranslations();
+    const styles: Record<AnnotationStatus, string> = {
+        submitted: 'bg-green-200',
+        pending: 'bg-yellow-200',
+        not_annotated: 'bg-brand-blue-100',
+    };
+    return (
+        <span
+            className={cn(
+                'inline-flex h-[26px] items-center justify-center rounded-lg px-2.5 text-xs font-medium whitespace-nowrap text-slate-800',
+                styles[status]
+            )}
+        >
+            {t(`sub-projects.annotations.status_${status}`)}
         </span>
     );
 }
@@ -295,27 +316,30 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                             <TableCell colSpan={4} className="p-0">
                                                 {/* Sub-header */}
                                                 <div className="flex h-10 items-center border-b border-slate-200">
-                                                    <span className="w-1/5 shrink-0 px-2 text-sm font-semibold text-slate-400">
+                                                    <span className="w-1/6 shrink-0 px-2 text-sm font-semibold text-slate-400">
                                                         {t(
                                                             'sub-projects.annotations.col_annotator'
                                                         )}
                                                     </span>
-                                                    <span className="w-1/5 shrink-0 px-2 text-sm font-semibold text-slate-400">
+                                                    <span className="w-1/6 shrink-0 px-2 text-sm font-semibold text-slate-400">
                                                         {t(
                                                             'sub-projects.annotations.col_last_edited_by'
                                                         )}
                                                     </span>
-                                                    <span className="w-1/5 shrink-0 px-2 text-sm font-semibold text-slate-400">
+                                                    <span className="w-1/6 shrink-0 px-2 text-sm font-semibold text-slate-400">
                                                         {t(
                                                             'sub-projects.annotations.col_timestamp'
                                                         )}
                                                     </span>
-                                                    <span className="w-1/5 shrink-0 px-2 text-center text-sm font-semibold text-slate-400">
+                                                    <span className="w-1/6 shrink-0 px-2 text-center text-sm font-semibold text-slate-400">
                                                         {t(
                                                             'sub-projects.annotations.col_confidence'
                                                         )}
                                                     </span>
-                                                    <span className="w-1/5 shrink-0 px-2 text-center text-sm font-semibold text-slate-400">
+                                                    <span className="w-1/6 shrink-0 px-2 text-center text-sm font-semibold text-slate-400">
+                                                        {t('sub-projects.annotations.col_status')}
+                                                    </span>
+                                                    <span className="w-1/6 shrink-0 px-2 text-center text-sm font-semibold text-slate-400">
                                                         {t('sub-projects.annotations.col_action')}
                                                     </span>
                                                 </div>
@@ -326,7 +350,7 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                                         key={entry.id}
                                                         className="flex min-h-[90px] items-start border-b border-slate-200 pt-4 pb-4"
                                                     >
-                                                        <div className="flex w-1/5 shrink-0 flex-col gap-2 px-2">
+                                                        <div className="flex w-1/6 shrink-0 flex-col gap-2 px-2">
                                                             <span className="text-base font-medium whitespace-nowrap text-slate-800">
                                                                 {entry.assignedTo.username}
                                                             </span>
@@ -334,7 +358,7 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                                                 role={entry.assignedTo.role}
                                                             />
                                                         </div>
-                                                        <div className="flex w-1/5 shrink-0 flex-col gap-2 px-2">
+                                                        <div className="flex w-1/6 shrink-0 flex-col gap-2 px-2">
                                                             <span className="text-base font-medium whitespace-nowrap text-slate-800">
                                                                 {entry.annotatedBy.username}
                                                             </span>
@@ -342,15 +366,20 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                                                 role={entry.annotatedBy.role}
                                                             />
                                                         </div>
-                                                        <span className="w-1/5 shrink-0 px-2 text-base font-medium text-slate-800">
+                                                        <span className="w-1/6 shrink-0 px-2 text-base font-medium text-slate-800">
                                                             {entry.timestamp}
                                                         </span>
-                                                        <span className="flex w-1/5 shrink-0 justify-center px-2">
+                                                        <span className="flex w-1/6 shrink-0 justify-center px-2">
                                                             <AgreementBadge
                                                                 level={entry.confidence}
                                                             />
                                                         </span>
-                                                        <span className="flex w-1/5 shrink-0 justify-center px-2">
+                                                        <span className="flex w-1/6 shrink-0 justify-center px-2">
+                                                            <AnnotationStatusBadge
+                                                                status={entry.status}
+                                                            />
+                                                        </span>
+                                                        <span className="flex w-1/6 shrink-0 justify-center px-2">
                                                             <button
                                                                 type="button"
                                                                 className="cursor-pointer text-sm font-semibold text-slate-800 underline underline-offset-2"

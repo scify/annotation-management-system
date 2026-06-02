@@ -122,6 +122,10 @@ return [
         'agreement_high' => 'High',
         'agreement_medium' => 'Medium',
         'agreement_low' => 'Low',
+        'col_status' => 'Status',
+        'status_submitted' => 'Submitted',
+        'status_pending' => 'Pending',
+        'status_not_annotated' => 'Not Annotated',
     ],
 
     'messages' => [

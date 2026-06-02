@@ -122,6 +122,10 @@ return [
         'agreement_high' => 'Υψηλή',
         'agreement_medium' => 'Μεσαία',
         'agreement_low' => 'Χαμηλή',
+        'col_status' => 'Κατάσταση',
+        'status_submitted' => 'Υποβλήθηκε',
+        'status_pending' => 'Σε εκκρεμότητα',
+        'status_not_annotated' => 'Δεν επισημειώθηκε',
     ],
 
     'messages' => [
