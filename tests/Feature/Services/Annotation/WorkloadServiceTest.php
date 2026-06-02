@@ -200,7 +200,8 @@ describe('WorkloadService::computeNormalizedWorkloads', function (): void {
                 $rows[] = [
                     'annotation_assignment_id' => $assignment->id,
                     'dataset_instance_id' => $instanceIds[$i],
-                    'index' => $i,
+                    'project_instance_index' => $i,
+                    'annotator_instance_index' => $i,
                     'annotations' => '[]',
                     'created_at' => $now,
                     'updated_at' => $now,

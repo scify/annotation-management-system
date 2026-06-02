@@ -20,6 +20,7 @@ use App\Models\SubProject;
 use App\Models\User;
 use App\Services\Dataset\DatasetService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Arr;
 use Random\RandomException;
 
 class DummyProjectSeeder extends Seeder {
@@ -75,6 +76,7 @@ class DummyProjectSeeder extends Seeder {
                         'started_at' => '2026-04-01 09:00:00',
                         'deadline_at' => '2026-05-31',
                         'annotators' => ['annotator.eva@example.com', 'annotator.grace@example.com'],
+                        'shuffle' => true,
                     ],
                     [
                         'name' => 'Batch 2',
@@ -269,7 +271,8 @@ class DummyProjectSeeder extends Seeder {
 
             foreach ($entry['subprojects'] as $spData) {
                 $annotatorEmails = $spData['annotators'];
-                unset($spData['annotators']);
+                $shuffle = $spData['shuffle'] ?? false;
+                unset($spData['annotators'], $spData['shuffle']);
 
                 $subProject = SubProject::query()->updateOrCreate(
                     ['project_id' => $project->getKey(), 'name' => $spData['name']],
@@ -283,6 +286,16 @@ class DummyProjectSeeder extends Seeder {
                     ->select('id')
                     ->get();
 
+                // Build a project-position → dataset_instance_id lookup (1-based)
+                $instanceByProjectPos = [];
+                $pos = 1;
+                foreach ($datasetInstances as $instance) {
+                    $instanceByProjectPos[$pos++] = $instance->getKey();
+                }
+
+                $instanceCount = count($instanceByProjectPos);
+                $projectPositions = range(1, $instanceCount);
+
                 $now = now();
 
                 $canBePending = $subProject->requiresSubmission();
@@ -291,19 +304,25 @@ class DummyProjectSeeder extends Seeder {
                     $annotator = User::query()->where('email', $email)->firstOrFail();
                     $assignment = AnnotationAssignment::query()->firstOrCreate(
                         ['user_id' => $annotator->getKey(), 'sub_project_id' => $subProject->getKey()],
+                        ['is_instance_shuffled' => $shuffle],
                     );
                     /** @var int|string $annotatorKey */
                     $annotatorKey = $annotator->getKey();
                     $projectAnnotatorIds[] = $annotatorKey;
 
+                    // Each annotator gets their own permutation when shuffle is enabled.
+                    // annotator_instance_index is sequential; the project side varies per annotator.
+                    $orderedProjectPositions = $shuffle
+                        ? Arr::shuffle($projectPositions)
+                        : $projectPositions;
+
                     $rows = [];
-                    $localIndex = 0;
                     $isFirst = true;
-                    $instanceCount = count($datasetInstances);
                     $cutoff = random_int(0, $instanceCount);
-                    foreach ($datasetInstances as $instance) {
-                        $localIndex++;
-                        $isDone = $localIndex <= $cutoff;
+
+                    foreach ($orderedProjectPositions as $annotatorPos => $projectPos) {
+                        $annotatorIndex = $annotatorPos + 1;
+                        $isDone = $annotatorIndex <= $cutoff;
                         $isFlagged = ! $isDone && $flaggedCount < 2 && $isFirst;
                         $isFirst = false;
                         if ($isFlagged) {
@@ -312,8 +331,9 @@ class DummyProjectSeeder extends Seeder {
 
                         $rows[] = [
                             'annotation_assignment_id' => $assignment->getKey(),
-                            'dataset_instance_id' => $instance->getKey(),
-                            'index' => $localIndex,
+                            'dataset_instance_id' => $instanceByProjectPos[$projectPos],
+                            'project_instance_index' => $projectPos,
+                            'annotator_instance_index' => $annotatorIndex,
                             'annotations' => $isDone ? '{}' : null,
                             'pending' => $isDone && $canBePending && (bool) random_int(0, 1),
                             'is_flagged' => $isFlagged,

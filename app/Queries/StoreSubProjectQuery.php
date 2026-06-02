@@ -10,6 +10,7 @@ use App\Models\DatasetInstance;
 use App\Models\InstanceShuffleMapper;
 use App\Models\Project;
 use App\Models\SubProject;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -75,16 +76,23 @@ final readonly class StoreSubProjectQuery {
                 $lastIndex,
             );
 
-            // TODO: when $data['shuffle'] is true, each annotator's instance order should be
-            // individually randomised before building annotation rows (different permutation per assignment).
+            $projectIndices = range($firstIndex, $lastIndex);
             $annotationRows = [];
 
             foreach ($assignmentIds as $assignmentId) {
-                for ($index = $firstIndex; $index <= $lastIndex; $index++) {
+                // When shuffle is enabled each annotator gets a unique random permutation of
+                // project_instance_indexes. annotator_instance_index is sequential; the project
+                // side (and its paired dataset_instance_id) varies per annotator.
+                $orderedProjectIndices = $data['shuffle']
+                    ? Arr::shuffle($projectIndices)
+                    : $projectIndices;
+
+                foreach ($orderedProjectIndices as $annotatorPos => $projectIndex) {
                     $annotationRows[] = [
                         'annotation_assignment_id' => $assignmentId,
-                        'dataset_instance_id' => $instanceIdByIndex[$index],
-                        'index' => $index,
+                        'dataset_instance_id' => $instanceIdByIndex[$projectIndex],
+                        'project_instance_index' => $projectIndex,
+                        'annotator_instance_index' => $firstIndex + $annotatorPos,
                         'annotations' => null,
                         'pending' => false,
                         'is_flagged' => false,

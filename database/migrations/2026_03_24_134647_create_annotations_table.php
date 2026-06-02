@@ -15,7 +15,11 @@ return new class() extends Migration {
             $table->id();
             $table->foreignId('annotation_assignment_id')->constrained();
             $table->foreignId('dataset_instance_id')->constrained();
-            $table->unsignedMediumInteger('index');
+            // Index of the instance as ordered by the Project (reflects dataset-level shuffle if enabled)
+            $table->unsignedMediumInteger('project_instance_index');
+            // Index of the instance as ordered for this annotator (equals project_instance_index
+            // unless per-annotator shuffle is active on the annotation_assignment)
+            $table->unsignedMediumInteger('annotator_instance_index');
             $table->unique(['annotation_assignment_id', 'dataset_instance_id']);
             $table->json('annotations')->nullable()->default(null);
             $table->boolean('pending')->default(false);

@@ -15,7 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $annotation_assignment_id
  * @property int $dataset_instance_id
- * @property int $index
+ * @property int $project_instance_index index as ordered by the Project (dataset-level shuffle)
+ * @property int $annotator_instance_index index as ordered for this annotator (equals project_instance_index unless per-annotator shuffle is active)
  * @property array<string, mixed>|null $annotations
  * @property bool $pending
  * @property bool $is_flagged
@@ -26,7 +27,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'annotation_assignment_id',
     'dataset_instance_id',
-    'index',
+    'project_instance_index',
+    'annotator_instance_index',
     'annotations',
     'pending',
     'is_flagged',
