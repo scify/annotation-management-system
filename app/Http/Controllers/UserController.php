@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\RolesEnum;
 use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserStoreRequest;
 use App\Http\Requests\User\UserUpdateRequest;
@@ -65,16 +66,36 @@ class UserController extends Controller {
      * Show the form for creating a new user.
      */
     public function create(UserCreateRequest $request): Response {
-        // $this->authorize(gt'create', [User::class, $type]);
         $request->authorize();
-        // $inputData is an array of key-value pairs that has been validated by UserCreateRequest, so we can safely use it here.
-        // we should use ->validated() instead of ->all() to ensure we only get the validated data.
-        // for example, if an attacker tries to inject additional fields via HTML or JS, they won't be included in $inputData.
         $request->validated();
 
-        return Inertia::render('users/create', [
-            'roles' => $this->userService->getRolesForForm(),
-        ]);
+        /** @var User $currentUser */
+        $currentUser = $request->user();
+
+        /** @var RolesEnum $type */
+        $type = $request->enum('type', RolesEnum::class);
+
+        $props = match ($type) {
+            RolesEnum::ADMIN => [
+                'type' => RolesEnum::ADMIN->value,
+                'admin_data' => $this->userManagementService->getAdminDataForCreate($currentUser),
+            ],
+            RolesEnum::ANNOTATION_MANAGER => [
+                'type' => RolesEnum::ANNOTATION_MANAGER->value,
+                // TODO: manager_data
+            ],
+            RolesEnum::ANNOTATOR => [
+                'type' => RolesEnum::ANNOTATOR->value,
+                'roles' => $this->userService->getRolesForForm(),
+            ],
+        };
+
+        $json = json_encode($props, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (is_string($json)) {
+            Storage::disk('local')->put('user-management-create-user-data.json', $json);
+        }
+
+        return Inertia::render('users/create', $props);
     }
 
     /**
