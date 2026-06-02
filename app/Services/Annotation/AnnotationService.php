@@ -30,7 +30,7 @@ readonly class AnnotationService {
      *         last_edited_by_data: array{user_id: int, username: string|null, role: string|null}|null,
      *         updated_at: string|null,
      *         confidence: ConfidenceEnum|null,
-     *         pending: bool
+     *         status: string
      *     }>
      * }>
      */

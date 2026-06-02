@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Queries;
 
+use App\Enums\AnnotationStatusEnum;
 use App\Enums\ConfidenceEnum;
 use App\Models\Annotation;
 use App\Models\User;
@@ -16,7 +17,7 @@ final readonly class GetAnnotationsBySubProjectQuery {
      *     annotated: int,
      *     planned_annotations: int,
      *     annotations_values: array<int, array{annotations: array<string, mixed>|null, pending: bool}>,
-     *     annotations: array<int, array{id: int, annotator_data: array{user_id: int, username: string, role: string|null}, last_edited_by_data: array{user_id: int, username: string|null, role: string|null}|null, updated_at: string|null, confidence: ConfidenceEnum|null, pending: bool}>
+     *     annotations: array<int, array{id: int, annotator_data: array{user_id: int, username: string, role: string|null}, last_edited_by_data: array{user_id: int, username: string|null, role: string|null}|null, updated_at: string|null, confidence: ConfidenceEnum|null, status: string}>
      * }>
      */
     public function get(int $subProjectId): array {
@@ -99,7 +100,11 @@ final readonly class GetAnnotationsBySubProjectQuery {
                 ] : null,
                 'updated_at' => $hasEditor ? $row->updated_at?->toDateTimeString() : null,
                 'confidence' => $row->confidence,
-                'pending' => $row->pending,
+                'status' => match (true) {
+                    $row->pending => AnnotationStatusEnum::PENDING->value,
+                    $row->annotations === null => AnnotationStatusEnum::NOT_ANNOTATED->value,
+                    default => AnnotationStatusEnum::SUBMITTED->value,
+                },
             ];
 
             $result[$dsId] = $entry;
