@@ -282,6 +282,56 @@ readonly class ProjectService {
     }
 
     /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getAllProjects(): array {
+        $data = $this->projectsQuery->get()
+            ->map(fn (Project $project): array => array_merge(
+                $project->toArray(),
+                ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
+            ))
+            ->values()
+            ->all();
+
+        $progressBySubProject = $this->subProjectService->getProgress($this->extractSubProjectIds($data));
+        $this->augmentProjectData($data, $progressBySubProject);
+
+        return $data;
+    }
+
+    /**
+     * When $allProjects is provided (admin case), filters from the already-loaded set
+     * instead of issuing a second query.
+     *
+     * @param  array<int, array<string, mixed>>|null  $allProjects
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getMyProjects(int $userId, ?array $allProjects = null): array {
+        if ($allProjects === null) {
+            $data = $this->userProjectsQuery->get($userId)
+                ->map(fn (Project $project): array => array_merge(
+                    $project->toArray(),
+                    ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
+                ))
+                ->values()
+                ->all();
+
+            $progressBySubProject = $this->subProjectService->getProgress($this->extractSubProjectIds($data));
+            $this->augmentProjectData($data, $progressBySubProject);
+
+            return $data;
+        }
+
+        $myProjectIds = $this->projectIdsByManagerQuery->get($userId);
+
+        return array_values(array_filter(
+            $allProjects,
+            fn (array $project): bool => is_int($project['id']) && in_array($project['id'], $myProjectIds, true),
+        ));
+    }
+
+    /**
      * @return array<int, array{id: int, username: string, email: string, status: string, owner: bool, accepted: bool}>
      */
     private function buildCoManagersData(Project $project): array {
@@ -316,56 +366,6 @@ readonly class ProjectService {
             'dataset_name' => $project->dataset->name,
             'project_progress' => $progress,
         ];
-    }
-
-    /**
-     * @return array<int, array<string, mixed>>
-     */
-    private function getAllProjects(): array {
-        $data = $this->projectsQuery->get()
-            ->map(fn (Project $project): array => array_merge(
-                $project->toArray(),
-                ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
-            ))
-            ->values()
-            ->all();
-
-        $progressBySubProject = $this->subProjectService->getProgress($this->extractSubProjectIds($data));
-        $this->augmentProjectData($data, $progressBySubProject);
-
-        return $data;
-    }
-
-    /**
-     * When $allProjects is provided (admin case), filters from the already-loaded set
-     * instead of issuing a second query.
-     *
-     * @param  array<int, array<string, mixed>>|null  $allProjects
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function getMyProjects(int $userId, ?array $allProjects = null): array {
-        if ($allProjects === null) {
-            $data = $this->userProjectsQuery->get($userId)
-                ->map(fn (Project $project): array => array_merge(
-                    $project->toArray(),
-                    ['is_delayed_to_start' => $project->isDelayedToStart(), 'is_delayed_to_end' => $project->isDelayedToEnd()]
-                ))
-                ->values()
-                ->all();
-
-            $progressBySubProject = $this->subProjectService->getProgress($this->extractSubProjectIds($data));
-            $this->augmentProjectData($data, $progressBySubProject);
-
-            return $data;
-        }
-
-        $myProjectIds = $this->projectIdsByManagerQuery->get($userId);
-
-        return array_values(array_filter(
-            $allProjects,
-            fn (array $project): bool => is_int($project['id']) && in_array($project['id'], $myProjectIds, true),
-        ));
     }
 
     /**
