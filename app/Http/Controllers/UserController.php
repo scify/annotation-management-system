@@ -82,7 +82,7 @@ class UserController extends Controller {
             ],
             RolesEnum::ANNOTATION_MANAGER => [
                 'type' => RolesEnum::ANNOTATION_MANAGER->value,
-                // TODO: manager_data
+                'manager_data' => $this->userManagementService->getManagerDataForCreate($currentUser),
             ],
             RolesEnum::ANNOTATOR => [
                 'type' => RolesEnum::ANNOTATOR->value,

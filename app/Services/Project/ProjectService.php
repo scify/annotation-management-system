@@ -332,6 +332,39 @@ readonly class ProjectService {
     }
 
     /**
+     * Returns annotation tasks the given user is allowed to see:
+     *   - ADMIN            → all tasks
+     *   - ANNOTATION_MANAGER → only tasks linked via annotation_task_user
+     *   - ANNOTATOR        → none
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getAnnotationTasks(User $user): array {
+        $roleName = $user->getRoleNames()->first();
+
+        if ($roleName === RolesEnum::ANNOTATOR->value) {
+            return [];
+        }
+
+        $userId = $roleName === RolesEnum::ANNOTATION_MANAGER->value ? $user->id : null;
+
+        return $this->getAnnotationTasksQuery->get($userId)
+            ->map(fn (AnnotationTask $task): array => [
+                'id' => $task->id,
+                'title' => $task->title,
+                'description' => $task->description,
+                'short_description' => $task->short_description,
+                'guidelines_url' => $task->guidelines_url,
+                'customization_options' => $task->customization_options !== null
+                    ? Arr::map($task->customization_options, fn (array $option): array => Arr::except($option, 'parameters'))
+                    : null,
+                'tags' => $this->formatTags($task),
+                'datasets' => $this->formatDatasets($task),
+            ])
+            ->all();
+    }
+
+    /**
      * @return array<int, array{id: int, username: string, email: string, status: string, owner: bool, accepted: bool}>
      */
     private function buildCoManagersData(Project $project): array {
@@ -484,39 +517,6 @@ readonly class ProjectService {
                 'status' => $user->status->value,
             ])
             ->values()
-            ->all();
-    }
-
-    /**
-     * Returns annotation tasks the given user is allowed to see:
-     *   - ADMIN            → all tasks
-     *   - ANNOTATION_MANAGER → only tasks linked via annotation_task_user
-     *   - ANNOTATOR        → none
-     *
-     * @return array<int, array<string, mixed>>
-     */
-    private function getAnnotationTasks(User $user): array {
-        $roleName = $user->getRoleNames()->first();
-
-        if ($roleName === RolesEnum::ANNOTATOR->value) {
-            return [];
-        }
-
-        $userId = $roleName === RolesEnum::ANNOTATION_MANAGER->value ? $user->id : null;
-
-        return $this->getAnnotationTasksQuery->get($userId)
-            ->map(fn (AnnotationTask $task): array => [
-                'id' => $task->id,
-                'title' => $task->title,
-                'description' => $task->description,
-                'short_description' => $task->short_description,
-                'guidelines_url' => $task->guidelines_url,
-                'customization_options' => $task->customization_options !== null
-                    ? Arr::map($task->customization_options, fn (array $option): array => Arr::except($option, 'parameters'))
-                    : null,
-                'tags' => $this->formatTags($task),
-                'datasets' => $this->formatDatasets($task),
-            ])
             ->all();
     }
 
