@@ -335,7 +335,7 @@ class DummyProjectSeeder extends Seeder {
                             'project_instance_index' => $projectPos,
                             'annotator_instance_index' => $annotatorIndex,
                             'annotations' => $isDone ? '{}' : null,
-                            'pending' => $isDone && $canBePending && (bool) random_int(0, 1),
+                            'pending' => false,
                             'is_flagged' => $isFlagged,
                             'confidence' => $expectsConfidence && $isDone
                                 ? $confidenceCases[random_int(0, count($confidenceCases) - 1)]->value
@@ -344,6 +344,17 @@ class DummyProjectSeeder extends Seeder {
                             'created_at' => $now,
                             'updated_at' => $now,
                         ];
+                    }
+
+                    // Force the last annotated row for this annotator to pending.
+                    if ($canBePending) {
+                        for ($i = count($rows) - 1; $i >= 0; $i--) {
+                            if ($rows[$i]['annotations'] !== null) {
+                                $rows[$i]['pending'] = true;
+
+                                break;
+                            }
+                        }
                     }
 
                     Annotation::query()->insertOrIgnore($rows);
