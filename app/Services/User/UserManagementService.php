@@ -41,6 +41,30 @@ readonly class UserManagementService {
 
     /**
      * @return array{
+     *     my_projects: array<int, array<string, mixed>>,
+     *     my_annotators: array<int, array{id: int, name: string, username: string, status: string}>,
+     *     annotation_tasks: array<int, array<string, mixed>>,
+     *     all_projects?: array<int, array<string, mixed>>,
+     *     all_annotators?: array<int, array{id: int, name: string, username: string, status: string}>
+     * }
+     */
+    public function getManagerDataForCreate(User $currentUser): array {
+        $data = [
+            'my_projects' => $this->projectService->getMyProjects($currentUser->id),
+            'my_annotators' => $this->getMyAnnotatorsForCreate($currentUser->id),
+            'annotation_tasks' => $this->projectService->getAnnotationTasks($currentUser),
+        ];
+
+        if ($currentUser->hasRole(RolesEnum::ADMIN)) {
+            $data['all_projects'] = $this->projectService->getAllProjects();
+            $data['all_annotators'] = $this->getAllAnnotators();
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return array{
      *     all_projects: array<int, array<string, mixed>>,
      *     my_projects: array<int, array<string, mixed>>,
      *     all_annotators: array<int, array{id: int, name: string, username: string, status: string}>,
