@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Throwable;
 
 class SubProjectController extends Controller {
     use AuthorizesRequests;
@@ -34,6 +35,9 @@ class SubProjectController extends Controller {
         ]);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function store(SubProjectStoreRequest $request, int $id): RedirectResponse {
         $validated = $request->validated();
 

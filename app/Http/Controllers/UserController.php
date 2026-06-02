@@ -9,9 +9,11 @@ use App\Http\Requests\User\UserStoreRequest;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Http\Requests\User\UserViewRequest;
 use App\Models\User;
+use App\Services\User\UserManagementService;
 use App\Services\User\UserService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,7 +21,8 @@ class UserController extends Controller {
     use AuthorizesRequests;
 
     public function __construct(
-        private readonly UserService $userService
+        private readonly UserService $userService,
+        private readonly UserManagementService $userManagementService,
     ) {}
 
     /**
@@ -33,10 +36,18 @@ class UserController extends Controller {
 
         $users = $this->userService->getUsers(search: $search);
 
+        $management = $this->userManagementService->getUsersByRole();
+
+        $json = json_encode($management, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (is_string($json)) {
+            Storage::disk('local')->put('user-management-data.json', $json);
+        }
+
         $canRestore = $currentUser->can('restore', User::class);
 
         return Inertia::render('users/index', [
             'users' => $users,
+            'management' => $management,
             'filters' => [
                 'search' => $search,
             ],
