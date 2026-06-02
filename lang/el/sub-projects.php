@@ -82,6 +82,8 @@ return [
         'browsing_label' => 'Περιήγηση και Υποβολή',
         'flexible_browsing_label' => 'Ευέλικτη Περιήγηση',
         'flexible_browsing_description' => 'Επιτρέπει στον επισημειωτή να πλοηγείται μπρος-πίσω στα παραδείγματα',
+        'toggle_on' => 'Ενεργό',
+        'toggle_off' => 'Ανενεργό',
         'submission_auto' => 'Αυτόματα ανά παράδειγμα',
         'submission_auto_description' => 'Η επισημείωση υποβάλλεται με τη συνέχεια στο επόμενο παράδειγμα',
         'submission_manual' => 'Με επιβεβαίωση του Επισημειωτή',
