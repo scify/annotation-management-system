@@ -1,12 +1,14 @@
 import { useTranslations } from '@/hooks/use-translations';
+import { type ManagerCreateData } from '@/types';
+import { Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { CreateManagerStepper } from './create-manager-stepper';
 import { ConnectAnnotatorsStep } from './steps/connect-annotators-step';
-import { ConnectProjectsStep, MOCK_PROJECT_ANNOTATORS } from './steps/connect-projects-step';
+import { ConnectProjectsStep } from './steps/connect-projects-step';
 import { DatasetsStep } from './steps/datasets-step';
 import { PersonalInfoStep } from './steps/personal-info-step';
-import { MOCK_TASK_TYPES, TasksAccessStep } from './steps/tasks-access-step';
+import { TasksAccessStep } from './steps/tasks-access-step';
 
 export interface CreateManagerFormData {
     name: string;
@@ -22,12 +24,12 @@ export interface CreateManagerFormData {
 }
 
 interface CreateManagerFormProps {
-    onCancel: () => void;
+    managerData: ManagerCreateData;
 }
 
 const LAST_STEP = 4;
 
-export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
+export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
     const { t } = useTranslations();
     const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState<CreateManagerFormData>({
@@ -50,11 +52,6 @@ export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
         { label: t('users.steps.connect_projects') },
         { label: t('users.steps.connect_annotators') },
     ];
-
-    const lockedAnnotatorIds = useMemo(
-        () => [...new Set(formData.project_ids.flatMap((id) => MOCK_PROJECT_ANNOTATORS[id] ?? []))],
-        [formData.project_ids]
-    );
 
     function handleChange(updates: Partial<CreateManagerFormData>) {
         setFormData((prev) => ({ ...prev, ...updates }));
@@ -89,13 +86,14 @@ export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
                 )}
                 {currentStep === 1 && (
                     <TasksAccessStep
+                        annotationTasks={managerData.annotation_tasks}
                         selectedIds={formData.task_type_ids}
                         onSelectionChange={(ids) => handleChange({ task_type_ids: ids })}
                     />
                 )}
                 {currentStep === 2 && (
                     <DatasetsStep
-                        taskTypes={MOCK_TASK_TYPES.filter((tt) =>
+                        taskTypes={managerData.annotation_tasks.filter((tt) =>
                             formData.task_type_ids.includes(tt.id)
                         )}
                         selectedDatasetIds={formData.dataset_ids}
@@ -104,28 +102,31 @@ export function CreateManagerForm({ onCancel }: CreateManagerFormProps) {
                 )}
                 {currentStep === 3 && (
                     <ConnectProjectsStep
+                        projects={managerData.all_projects}
+                        myProjects={managerData.my_projects}
                         selectedProjectIds={formData.project_ids}
                         onSelectionChange={(ids) => handleChange({ project_ids: ids })}
                     />
                 )}
                 {currentStep === 4 && (
                     <ConnectAnnotatorsStep
+                        annotators={managerData.all_annotators}
+                        myAnnotators={managerData.my_annotators}
                         selectedAnnotatorIds={formData.annotator_ids}
                         onSelectionChange={(ids) => handleChange({ annotator_ids: ids })}
-                        lockedAnnotatorIds={lockedAnnotatorIds}
+                        lockedAnnotatorIds={[]}
                     />
                 )}
             </div>
 
             <div className="flex items-center justify-end gap-3">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="focus-visible:ring-brand-blue-500 border-brand-blue-500 text-brand-blue-800 hover:bg-brand-blue-50 inline-flex h-10 items-center gap-1.5 rounded-lg border bg-white px-4 text-sm font-semibold hover:cursor-pointer focus-visible:ring-2 focus-visible:outline-none"
+                <Link
+                    href={route('users.index')}
+                    className="focus-visible:ring-brand-blue-500 border-brand-blue-500 text-brand-blue-800 hover:bg-brand-blue-50 inline-flex h-10 items-center gap-1.5 rounded-lg border bg-white px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                 >
                     <X className="h-4 w-4" aria-hidden="true" />
                     {t('users.actions.cancel')}
-                </button>
+                </Link>
 
                 <button
                     type="button"

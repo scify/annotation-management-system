@@ -162,3 +162,57 @@ export enum RolesEnum {
     ANNOTATION_MANAGER = 'annotation-manager',
     ANNOTATOR = 'annotator',
 }
+
+export interface AnnotationTaskOption {
+    id: number;
+    title: string;
+    description: string;
+    short_description: string;
+    guidelines_url: string | null;
+    customization_options: unknown[];
+    tags: Array<{ id: number; name: string }>;
+    datasets: Array<{ id: number; name: string; description: string; instances_count: number }>;
+}
+
+export interface ManagerCreateData {
+    my_projects: Project[];
+    my_annotators: AnnotatorSelectOption[];
+    annotation_tasks: AnnotationTaskOption[];
+    all_projects: Project[];
+    all_annotators: AnnotatorSelectOption[];
+}
+
+/** Annotator entry as returned in admin_data for user creation */
+export interface AnnotatorSelectOption {
+    id: number;
+    name: string;
+    username: string;
+    status: 'active' | 'inactive' | 'pending';
+}
+
+/** Shape of the admin_data Inertia prop on /users/create?type=admin */
+export interface AdminCreateData {
+    all_projects: Project[];
+    my_projects: Project[];
+    all_annotators: AnnotatorSelectOption[];
+    my_annotators: AnnotatorSelectOption[];
+}
+
+/** A user entry as returned by UserManagementService — lighter than the full User model */
+export interface ManagedUser {
+    id: number;
+    name: string;
+    username: string;
+    email?: string;
+    status: 'active' | 'inactive' | 'pending';
+    role: RolesEnum;
+}
+
+/** Shape of the `management` Inertia prop — fields are role-conditional */
+export interface UserManagement {
+    admins?: ManagedUser[];
+    all_managers?: ManagedUser[];
+    my_managers?: ManagedUser[];
+    all_annotators?: ManagedUser[];
+    my_annotators?: ManagedUser[];
+}

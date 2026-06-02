@@ -1,7 +1,7 @@
 import AppLayout from '@/layouts/app-layout';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslations } from '@/hooks/use-translations';
-import { type User, RolesEnum } from '@/types';
+import { type User, type UserManagement } from '@/types';
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
 import { AdminsTab } from './components/tabs/admins-tab';
@@ -11,20 +11,21 @@ import { UsersTabs, type UserTab } from './components/tabs/users-tabs';
 
 interface Props {
     users: User[];
+    management: UserManagement;
     filters: {
         search: string | null;
     };
 }
 
-export default function UsersIndex({ users }: Props) {
+export default function UsersIndex({ management }: Props) {
     const { t } = useTranslations();
     const { isAdmin, isAnnotationManager } = useAuth();
     const [activeTab, setActiveTab] = useState<UserTab>(isAdmin() ? 'admins' : 'managers');
 
     const counts = {
-        admins: users.filter((u) => u.role === RolesEnum.ADMIN).length,
-        managers: users.filter((u) => u.role === RolesEnum.ANNOTATION_MANAGER).length,
-        annotators: users.filter((u) => u.role === RolesEnum.ANNOTATOR).length,
+        admins: management.admins?.length ?? 0,
+        managers: management.all_managers?.length ?? 0,
+        annotators: (management.all_annotators ?? management.my_annotators)?.length ?? 0,
     };
 
     return (
@@ -43,9 +44,21 @@ export default function UsersIndex({ users }: Props) {
                     id={`tabpanel-${activeTab}`}
                     aria-labelledby={`tab-${activeTab}`}
                 >
-                    {activeTab === 'managers' && <ManagersTab />}
-                    {activeTab === 'admins' && !isAnnotationManager() && <AdminsTab />}
-                    {activeTab === 'annotators' && <AnnotatorsTab />}
+                    {activeTab === 'admins' && !isAnnotationManager() && (
+                        <AdminsTab admins={management.admins ?? []} />
+                    )}
+                    {activeTab === 'managers' && (
+                        <ManagersTab
+                            allManagers={management.all_managers ?? []}
+                            myManagers={management.my_managers ?? []}
+                        />
+                    )}
+                    {activeTab === 'annotators' && (
+                        <AnnotatorsTab
+                            allAnnotators={management.all_annotators}
+                            myAnnotators={management.my_annotators ?? []}
+                        />
+                    )}
                 </div>
             </div>
         </AppLayout>

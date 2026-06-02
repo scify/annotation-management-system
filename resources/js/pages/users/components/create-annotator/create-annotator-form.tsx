@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
+import { Link } from '@inertiajs/react';
 import { Check } from 'lucide-react';
 import { useState } from 'react';
 
@@ -87,11 +88,7 @@ function Field({ label, children }: FieldProps) {
     );
 }
 
-interface CreateAnnotatorFormProps {
-    onCancel: () => void;
-}
-
-export function CreateAnnotatorForm({ onCancel }: CreateAnnotatorFormProps) {
+export function CreateAnnotatorForm() {
     const { t, trans } = useTranslations();
     const [formData, setFormData] = useState<CreateAnnotatorFormData>({
         name: '',
@@ -120,7 +117,7 @@ export function CreateAnnotatorForm({ onCancel }: CreateAnnotatorFormProps) {
                 {t('users.actions.create_annotator')}
             </h1>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
                 <div className="flex flex-col gap-4">
                     <h2 className="text-xl font-medium text-slate-800">
                         {t('users.create_annotator.user_details')}
@@ -188,7 +185,7 @@ export function CreateAnnotatorForm({ onCancel }: CreateAnnotatorFormProps) {
                             })}
                         </p>
                     </div>
-                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4">
                         <div className="max-h-[380px] overflow-y-auto">
                             {MOCK_MANAGERS.map((manager) => (
                                 <ManagerRow
@@ -201,13 +198,12 @@ export function CreateAnnotatorForm({ onCancel }: CreateAnnotatorFormProps) {
                         </div>
                     </div>
                     <div className="flex items-center justify-end gap-4">
-                        <button
-                            type="button"
-                            onClick={onCancel}
-                            className="bg-brand-yellow-300 text-brand-blue-900 hover:bg-brand-yellow-400 focus-visible:ring-brand-yellow-300 inline-flex h-10 min-w-[100px] items-center justify-center rounded-lg px-3.5 text-sm font-semibold hover:cursor-pointer focus-visible:ring-2 focus-visible:outline-none"
+                        <Link
+                            href={route('users.index')}
+                            className="bg-brand-yellow-300 text-brand-blue-900 hover:bg-brand-yellow-400 focus-visible:ring-brand-yellow-300 inline-flex h-10 min-w-[100px] items-center justify-center rounded-lg px-3.5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                         >
                             {t('users.actions.cancel')}
-                        </button>
+                        </Link>
                         <button
                             type="button"
                             className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex h-10 min-w-[100px] items-center justify-center rounded-lg px-3.5 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:outline-none"

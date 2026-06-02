@@ -20,7 +20,7 @@ import {
     Search,
     UserRound,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 export const MOCK_PROJECT_ANNOTATORS: Record<number, number[]> = {
     1: [1, 2],
@@ -28,108 +28,6 @@ export const MOCK_PROJECT_ANNOTATORS: Record<number, number[]> = {
     3: [3, 4],
     4: [4, 5],
 };
-
-const MOCK_PROJECTS: Project[] = [
-    {
-        id: 1,
-        name: 'Project New Nov_26',
-        owner_user_id: 1,
-        annotation_task_id: 1,
-        status: 'in_progress',
-        dataset_id: 1,
-        annotation_task_title: "Explore word's meaning in medieval textes v...",
-        dataset_name: 'Text Dataset 8',
-        subprojects_count: 3,
-        annotators_count: 3,
-        notifications_count: 3,
-        owner_name: 'akosmo',
-        co_managers: [
-            { id: 2, username: 'nellysav' },
-            { id: 3, username: 'nazpapadaki' },
-        ],
-        project_progress: 0.75,
-        started_at: '2026-01-15',
-        completed_at: null,
-        scheduled_at: '2026-01-26',
-        deadline_at: '2026-02-02',
-        is_delayed_to_start: false,
-        is_delayed_to_end: false,
-    },
-    {
-        id: 2,
-        name: 'Project New Nov_26',
-        owner_user_id: 1,
-        annotation_task_id: 2,
-        status: 'in_progress',
-        dataset_id: 2,
-        annotation_task_title: 'Instances: 200–1050',
-        dataset_name: 'Instances: 200–1050',
-        subprojects_count: 3,
-        annotators_count: 3,
-        notifications_count: 3,
-        owner_name: 'akosmo',
-        co_managers: [
-            { id: 2, username: 'nellysav' },
-            { id: 3, username: 'nazpapadaki' },
-        ],
-        project_progress: 0.75,
-        started_at: '2026-01-15',
-        completed_at: null,
-        scheduled_at: '2026-01-26',
-        deadline_at: '2026-02-02',
-        is_delayed_to_start: false,
-        is_delayed_to_end: false,
-    },
-    {
-        id: 3,
-        name: 'Project Alpha Revamp',
-        owner_user_id: 2,
-        annotation_task_id: 3,
-        status: 'in_progress',
-        dataset_id: 3,
-        annotation_task_title: 'Task: Redesign user interface based on latest fee...',
-        dataset_name: 'Dataset: User Feedback',
-        subprojects_count: 5,
-        annotators_count: 2,
-        notifications_count: 4,
-        owner_name: 'johndoe',
-        co_managers: [
-            { id: 4, username: 'janedoe' },
-            { id: 5, username: 'alexsmith' },
-        ],
-        project_progress: 0.4,
-        started_at: '2026-01-15',
-        completed_at: null,
-        scheduled_at: '2026-01-26',
-        deadline_at: '2026-02-02',
-        is_delayed_to_start: false,
-        is_delayed_to_end: false,
-    },
-    {
-        id: 4,
-        name: 'Sentiment Analysis Batch',
-        owner_user_id: 3,
-        annotation_task_id: 4,
-        status: 'pending',
-        dataset_id: 4,
-        annotation_task_title: 'Sentiment Analysis – Product Reviews',
-        dataset_name: 'E-Commerce Reviews',
-        subprojects_count: 2,
-        annotators_count: 8,
-        notifications_count: 1,
-        owner_name: 'msmith',
-        co_managers: null,
-        project_progress: 0,
-        started_at: null,
-        completed_at: null,
-        scheduled_at: '2026-03-01',
-        deadline_at: '2026-04-30',
-        is_delayed_to_start: false,
-        is_delayed_to_end: false,
-    },
-];
-
-const PARTICIPATING_IDS = new Set([1, 3]);
 
 interface SelectableProjectItemProps {
     project: Project;
@@ -364,11 +262,15 @@ function SelectableProjectItem({
 }
 
 interface ConnectProjectsStepProps {
+    projects: Project[];
+    myProjects: Project[];
     selectedProjectIds: number[];
     onSelectionChange: (ids: number[]) => void;
 }
 
 export function ConnectProjectsStep({
+    projects,
+    myProjects,
     selectedProjectIds,
     onSelectionChange,
 }: ConnectProjectsStepProps) {
@@ -376,10 +278,11 @@ export function ConnectProjectsStep({
     const [searchQuery, setSearchQuery] = useState('');
     const [showOnlyMine, setShowOnlyMine] = useState(false);
 
-    const filtered = MOCK_PROJECTS.filter(
-        (p) =>
-            (!showOnlyMine || PARTICIPATING_IDS.has(p.id)) &&
-            p.name.toLowerCase().includes(searchQuery.toLowerCase())
+    const source = showOnlyMine ? myProjects : projects;
+
+    const filtered = useMemo(
+        () => source.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())),
+        [source, searchQuery]
     );
 
     const allSelected =

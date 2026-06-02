@@ -1,4 +1,6 @@
 import { useTranslations } from '@/hooks/use-translations';
+import { type AdminCreateData } from '@/types';
+import { Link } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useState } from 'react';
 import { CreateManagerStepper } from '../create-manager/create-manager-stepper';
@@ -18,12 +20,12 @@ export interface CreateAdminFormData {
 }
 
 interface CreateAdminFormProps {
-    onCancel: () => void;
+    adminData: AdminCreateData;
 }
 
 const LAST_STEP = 2;
 
-export function CreateAdminForm({ onCancel }: CreateAdminFormProps) {
+export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
     const { t } = useTranslations();
     const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState<CreateAdminFormData>({
@@ -76,12 +78,16 @@ export function CreateAdminForm({ onCancel }: CreateAdminFormProps) {
                 )}
                 {currentStep === 1 && (
                     <ConnectProjectsStep
+                        projects={adminData.all_projects}
+                        myProjects={adminData.my_projects}
                         selectedProjectIds={formData.project_ids}
                         onSelectionChange={(ids) => handleChange({ project_ids: ids })}
                     />
                 )}
                 {currentStep === 2 && (
                     <ConnectAnnotatorsStep
+                        annotators={adminData.all_annotators}
+                        myAnnotators={adminData.my_annotators}
                         selectedAnnotatorIds={formData.annotator_ids}
                         onSelectionChange={(ids) => handleChange({ annotator_ids: ids })}
                     />
@@ -89,14 +95,13 @@ export function CreateAdminForm({ onCancel }: CreateAdminFormProps) {
             </div>
 
             <div className="flex items-center justify-end gap-3">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="focus-visible:ring-brand-blue-500 border-brand-blue-500 text-brand-blue-800 hover:bg-brand-blue-50 inline-flex h-10 items-center gap-1.5 rounded-lg border bg-white px-4 text-sm font-semibold hover:cursor-pointer focus-visible:ring-2 focus-visible:outline-none"
+                <Link
+                    href={route('users.index')}
+                    className="focus-visible:ring-brand-blue-500 border-brand-blue-500 text-brand-blue-800 hover:bg-brand-blue-50 inline-flex h-10 items-center gap-1.5 rounded-lg border bg-white px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                 >
                     <X className="h-4 w-4" aria-hidden="true" />
                     {t('users.actions.cancel')}
-                </button>
+                </Link>
 
                 <button
                     type="button"

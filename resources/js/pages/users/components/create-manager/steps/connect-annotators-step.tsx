@@ -16,108 +16,52 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { useTranslations } from '@/hooks/use-translations';
+import { type AnnotatorSelectOption } from '@/types';
 import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
-
-interface ConnectAnnotatorRowData {
-    id: number;
-    name: string;
-    total_projects: number;
-    total_subprojects: number;
-    total_annotations: number;
-    total_flags: number;
-    average_velocity: number;
-}
-
-const MOCK_ANNOTATORS: ConnectAnnotatorRowData[] = [
-    {
-        id: 1,
-        name: 'ggiannakopoulou',
-        total_projects: 23,
-        total_subprojects: 23,
-        total_annotations: 23,
-        total_flags: 23,
-        average_velocity: 23,
-    },
-    {
-        id: 2,
-        name: 'nellisavrani',
-        total_projects: 12,
-        total_subprojects: 4,
-        total_annotations: 23,
-        total_flags: 23,
-        average_velocity: 23,
-    },
-    {
-        id: 3,
-        name: 'alexpapadopoulos',
-        total_projects: 23,
-        total_subprojects: 23,
-        total_annotations: 23,
-        total_flags: 23,
-        average_velocity: 23,
-    },
-    {
-        id: 4,
-        name: 'mariakonstantinou',
-        total_projects: 8,
-        total_subprojects: 12,
-        total_annotations: 23,
-        total_flags: 23,
-        average_velocity: 23,
-    },
-    {
-        id: 5,
-        name: 'dimitrispappas',
-        total_projects: 5,
-        total_subprojects: 7,
-        total_annotations: 23,
-        total_flags: 23,
-        average_velocity: 23,
-    },
-];
-
-const MOCK_MY_ANNOTATORS = MOCK_ANNOTATORS.slice(0, 2);
+import { StatusBadge } from '../../shared/status-badge';
 
 interface ConnectAnnotatorsStepProps {
+    annotators: AnnotatorSelectOption[];
+    myAnnotators: AnnotatorSelectOption[];
     selectedAnnotatorIds: number[];
     onSelectionChange: (ids: number[]) => void;
     lockedAnnotatorIds?: number[];
 }
 
 export function ConnectAnnotatorsStep({
+    annotators,
+    myAnnotators,
     selectedAnnotatorIds,
     onSelectionChange,
     lockedAnnotatorIds,
 }: ConnectAnnotatorsStepProps) {
     const { t, trans } = useTranslations();
     const [sortByName, setSortByName] = useState('');
-    const [sortByVelocity, setSortByVelocity] = useState('');
     const [search, setSearch] = useState('');
     const [showMyOnly, setShowMyOnly] = useState(false);
 
     const ns = 'users.select_annotators' as const;
     const selectedIds = new Set(selectedAnnotatorIds);
     const lockedSet = new Set(lockedAnnotatorIds ?? []);
-    const baseAnnotators = showMyOnly ? MOCK_MY_ANNOTATORS : MOCK_ANNOTATORS;
+    const source = showMyOnly ? myAnnotators : annotators;
 
     const filteredAnnotators = useMemo(() => {
-        let result = [...baseAnnotators];
+        let result = [...source];
 
         if (search.trim()) {
             const query = search.toLowerCase();
-            result = result.filter((a) => a.name.toLowerCase().includes(query));
+            result = result.filter(
+                (a) =>
+                    a.username.toLowerCase().includes(query) || a.name.toLowerCase().includes(query)
+            );
         }
 
-        if (sortByName === 'asc') result.sort((a, b) => a.name.localeCompare(b.name));
-        if (sortByName === 'desc') result.sort((a, b) => b.name.localeCompare(a.name));
-        if (sortByVelocity === 'asc')
-            result.sort((a, b) => a.average_velocity - b.average_velocity);
-        if (sortByVelocity === 'desc')
-            result.sort((a, b) => b.average_velocity - a.average_velocity);
+        if (sortByName === 'asc') result.sort((a, b) => a.username.localeCompare(b.username));
+        if (sortByName === 'desc') result.sort((a, b) => b.username.localeCompare(a.username));
 
         return result;
-    }, [baseAnnotators, search, sortByName, sortByVelocity]);
+    }, [source, search, sortByName]);
 
     const selectableAnnotators = filteredAnnotators.filter((a) => !lockedSet.has(a.id));
     const allSelected =
@@ -166,20 +110,6 @@ export function ConnectAnnotatorsStep({
                     <SelectContent>
                         <SelectItem value="asc">{t(`${ns}.sort_asc_name`)}</SelectItem>
                         <SelectItem value="desc">{t(`${ns}.sort_desc_name`)}</SelectItem>
-                    </SelectContent>
-                </Select>
-
-                <Select
-                    aria-label={t(`${ns}.sort_by_velocity`)}
-                    value={sortByVelocity}
-                    onValueChange={setSortByVelocity}
-                >
-                    <SelectTrigger className="h-10 bg-white px-4">
-                        <SelectValue placeholder={t(`${ns}.sort_by_velocity`).trim()} />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="asc">{t(`${ns}.sort_asc_velocity`)}</SelectItem>
-                        <SelectItem value="desc">{t(`${ns}.sort_desc_velocity`)}</SelectItem>
                     </SelectContent>
                 </Select>
 
@@ -244,99 +174,79 @@ export function ConnectAnnotatorsStep({
                             <TableHead className="w-10 pl-4">
                                 <span className="sr-only">Select</span>
                             </TableHead>
-                            <TableHead
-                                colSpan={2}
-                                className="pl-2 text-sm font-semibold text-slate-800"
-                            >
+                            <TableHead className="pl-2 text-sm font-semibold text-slate-800">
                                 {t(`${ns}.table_username`)}
                             </TableHead>
-                            <TableHead className="text-right text-sm font-semibold text-slate-800">
-                                {t(`${ns}.table_total_projects`)}
-                            </TableHead>
-                            <TableHead className="text-right text-sm font-semibold text-slate-800">
-                                {t(`${ns}.table_total_subprojects`)}
-                            </TableHead>
-                            <TableHead className="text-right text-sm font-semibold text-slate-800">
-                                {t(`${ns}.table_total_annotations`)}
-                            </TableHead>
-                            <TableHead className="text-right text-sm font-semibold text-slate-800">
-                                {t(`${ns}.table_total_flags`)}
+                            <TableHead className="text-sm font-semibold text-slate-800">
+                                {t('users.labels.name')}
                             </TableHead>
                             <TableHead className="text-center text-sm font-semibold text-slate-800">
-                                {t(`${ns}.table_velocity`)}
+                                {t('users.labels.status')}
                             </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredAnnotators.map((annotator) => {
-                            const isLocked = lockedSet.has(annotator.id);
-                            const isSelected = isLocked || selectedIds.has(annotator.id);
-
-                            return (
-                                <TableRow
-                                    key={annotator.id}
-                                    className={`h-14 border-b border-slate-300 ${isSelected ? 'bg-brand-blue-50 hover:bg-brand-blue-50' : 'hover:bg-brand-blue-50 bg-white'}`}
+                        {filteredAnnotators.length === 0 ? (
+                            <TableRow className="bg-white hover:bg-white">
+                                <TableCell
+                                    colSpan={4}
+                                    className="py-10 text-center text-sm text-slate-400"
                                 >
-                                    <TableCell className="pl-4">
-                                        <label
-                                            className={`flex ${isLocked ? 'cursor-default' : 'cursor-pointer'}`}
-                                        >
-                                            <Checkbox
-                                                checked={isSelected}
-                                                disabled={isLocked}
-                                                onCheckedChange={
-                                                    isLocked
-                                                        ? undefined
-                                                        : (checked) =>
-                                                              handleSingleChange(
-                                                                  annotator.id,
-                                                                  checked
-                                                              )
-                                                }
-                                                aria-label={`Select ${annotator.name}`}
-                                            />
-                                        </label>
-                                    </TableCell>
-                                    <TableCell className="w-10 px-1">
-                                        <div className="bg-brand-blue-700 flex size-[29px] items-center justify-center rounded-full">
-                                            <span className="text-sm font-semibold text-white">
-                                                {annotator.name.charAt(0).toUpperCase()}
-                                            </span>
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="pl-2">
-                                        <span className="text-base font-medium text-slate-800">
-                                            @{annotator.name}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <span className="text-base font-medium text-slate-800">
-                                            {annotator.total_projects}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <span className="text-base font-medium text-slate-800">
-                                            {annotator.total_subprojects}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <span className="text-base font-medium text-slate-800">
-                                            {annotator.total_annotations}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-right">
-                                        <span className="text-base font-medium text-slate-800">
-                                            {annotator.total_flags}
-                                        </span>
-                                    </TableCell>
-                                    <TableCell className="text-center">
-                                        <span className="text-base font-medium text-slate-800">
-                                            {annotator.average_velocity}
-                                        </span>
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })}
+                                    {t('users.empty.annotators')}
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            filteredAnnotators.map((annotator) => {
+                                const isLocked = lockedSet.has(annotator.id);
+                                const isSelected = isLocked || selectedIds.has(annotator.id);
+
+                                return (
+                                    <TableRow
+                                        key={annotator.id}
+                                        className={`h-14 border-b border-slate-300 ${isSelected ? 'bg-brand-blue-50 hover:bg-brand-blue-50' : 'hover:bg-brand-blue-50 bg-white'}`}
+                                    >
+                                        <TableCell className="pl-4">
+                                            <label
+                                                className={`flex ${isLocked ? 'cursor-default' : 'cursor-pointer'}`}
+                                            >
+                                                <Checkbox
+                                                    checked={isSelected}
+                                                    disabled={isLocked}
+                                                    onCheckedChange={
+                                                        isLocked
+                                                            ? undefined
+                                                            : (checked) =>
+                                                                  handleSingleChange(
+                                                                      annotator.id,
+                                                                      checked
+                                                                  )
+                                                    }
+                                                    aria-label={`Select ${annotator.username}`}
+                                                />
+                                            </label>
+                                        </TableCell>
+                                        <TableCell className="pl-2">
+                                            <div className="flex items-center gap-2">
+                                                <div className="bg-brand-blue-700 flex size-[29px] shrink-0 items-center justify-center rounded-full">
+                                                    <span className="text-sm font-semibold text-white">
+                                                        {annotator.username.charAt(0).toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                <span className="text-base font-medium text-slate-800">
+                                                    @{annotator.username}
+                                                </span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-sm text-slate-800">
+                                            {annotator.name}
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                            <StatusBadge status={annotator.status} />
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })
+                        )}
                     </TableBody>
                 </Table>
             </div>

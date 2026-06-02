@@ -1,10 +1,10 @@
-import { type TaskTypeCardData } from '@/components/project/select-task-type-step';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
+import { type AnnotationTaskOption } from '@/types';
 import { Check, ChevronDown, ChevronUp, Container, Database } from 'lucide-react';
 import { useState } from 'react';
 
-type DatasetEntry = TaskTypeCardData['datasets'][number];
+type DatasetEntry = AnnotationTaskOption['datasets'][number];
 
 interface DatasetCardProps {
     dataset: DatasetEntry;
@@ -60,7 +60,7 @@ function DatasetCard({ dataset, isSelected, onToggle }: Readonly<DatasetCardProp
 }
 
 interface AccordionSectionProps {
-    taskType: TaskTypeCardData;
+    taskType: AnnotationTaskOption;
     isExpanded: boolean;
     onToggleExpand: () => void;
     selectedDatasetIds: number[];
@@ -120,7 +120,7 @@ function AccordionSection({
 }
 
 interface DatasetsStepProps {
-    taskTypes: TaskTypeCardData[];
+    taskTypes: AnnotationTaskOption[];
     selectedDatasetIds: number[];
     onSelectionChange: (ids: number[]) => void;
 }

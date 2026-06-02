@@ -1,147 +1,12 @@
 import { Input } from '@/components/ui/input';
-import { type TaskTypeCardData } from '@/components/project/select-task-type-step';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
+import { type AnnotationTaskOption } from '@/types';
 import { BookSearch, Check, Container, Search } from 'lucide-react';
 import { useState } from 'react';
 
-export const MOCK_TASK_TYPES: TaskTypeCardData[] = [
-    {
-        id: 1,
-        title: 'Text Annotation – English Poetry',
-        short_description: 'Identify and label poetic devices in English poetry excerpts.',
-        description:
-            'Annotators read short passages of English poetry and mark instances of metaphor, simile, alliteration, and other rhetorical figures.',
-        guidelines_url: null,
-        tags: [
-            { id: 1, name: 'text' },
-            { id: 2, name: 'poetry' },
-            { id: 3, name: 'english' },
-        ],
-        datasets: [
-            {
-                id: 1,
-                name: 'Poetry Corpus',
-                description: 'A curated collection of English poetry from 1800–2000.',
-                instances_count: 1200,
-            },
-        ],
-        customization_options: [],
-    },
-    {
-        id: 2,
-        title: 'Sentiment Analysis – Product Reviews',
-        short_description: 'Classify the sentiment of customer product reviews.',
-        description:
-            'Annotators assign a positive, negative, or neutral label to each product review, and optionally highlight the key sentiment-bearing phrase.',
-        guidelines_url: null,
-        tags: [
-            { id: 4, name: 'sentiment' },
-            { id: 5, name: 'reviews' },
-            { id: 6, name: 'classification' },
-        ],
-        datasets: [
-            {
-                id: 2,
-                name: 'E-Commerce Reviews',
-                description: 'Product reviews from multiple e-commerce platforms.',
-                instances_count: 4500,
-            },
-        ],
-        customization_options: [],
-    },
-    {
-        id: 3,
-        title: 'Read Text – Recognise Meaning Changes',
-        short_description: 'Detect shifts in word meaning across historical text samples.',
-        description:
-            'Annotators compare pairs of sentences from different time periods and mark whether the target word has changed in meaning.',
-        guidelines_url: null,
-        tags: [
-            { id: 7, name: 'semantics' },
-            { id: 8, name: 'historical' },
-            { id: 9, name: 'comparison' },
-        ],
-        datasets: [
-            {
-                id: 3,
-                name: 'Historical Corpus',
-                description: 'Text samples spanning 200 years of written English.',
-                instances_count: 800,
-            },
-        ],
-        customization_options: [],
-    },
-    {
-        id: 4,
-        title: 'Named Entity Recognition – News',
-        short_description: 'Tag persons, organisations, and locations in news articles.',
-        description:
-            'Annotators highlight spans in news text and assign entity type labels (PERSON, ORG, LOC, MISC) following the CoNLL-2003 scheme.',
-        guidelines_url: null,
-        tags: [
-            { id: 10, name: 'NER' },
-            { id: 11, name: 'news' },
-            { id: 12, name: 'entities' },
-        ],
-        datasets: [
-            {
-                id: 4,
-                name: 'News Wire Dataset',
-                description: 'English news articles from major wire services.',
-                instances_count: 3200,
-            },
-        ],
-        customization_options: [],
-    },
-    {
-        id: 5,
-        title: 'Image Classification – Wildlife',
-        short_description: 'Assign wildlife species labels to photographs.',
-        description:
-            'Annotators view wildlife photographs and select the correct species from a predefined taxonomy. Multiple subjects per image are supported.',
-        guidelines_url: null,
-        tags: [
-            { id: 13, name: 'image' },
-            { id: 14, name: 'wildlife' },
-            { id: 15, name: 'classification' },
-        ],
-        datasets: [
-            {
-                id: 5,
-                name: 'Wildlife Photo Bank',
-                description: 'Camera-trap images from national parks.',
-                instances_count: 6700,
-            },
-        ],
-        customization_options: [],
-    },
-    {
-        id: 6,
-        title: 'Relation Extraction – Biomedical',
-        short_description: 'Mark relationships between biomedical entities in research abstracts.',
-        description:
-            'Annotators identify pairs of biomedical entities in PubMed abstracts and label the semantic relation between them (e.g. treats, causes, inhibits).',
-        guidelines_url: null,
-        tags: [
-            { id: 16, name: 'biomedical' },
-            { id: 17, name: 'relations' },
-            { id: 18, name: 'NLP' },
-        ],
-        datasets: [
-            {
-                id: 6,
-                name: 'PubMed Abstracts',
-                description: 'Biomedical research abstracts from PubMed.',
-                instances_count: 2100,
-            },
-        ],
-        customization_options: [],
-    },
-];
-
 interface TaskTypeCardProps {
-    taskType: TaskTypeCardData;
+    taskType: AnnotationTaskOption;
     isSelected: boolean;
     onToggle: () => void;
 }
@@ -260,22 +125,27 @@ function TaskTypeCard({ taskType, isSelected, onToggle }: Readonly<TaskTypeCardP
 }
 
 interface TasksAccessStepProps {
+    annotationTasks: AnnotationTaskOption[];
     selectedIds: number[];
     onSelectionChange: (ids: number[]) => void;
 }
 
-export function TasksAccessStep({ selectedIds, onSelectionChange }: TasksAccessStepProps) {
+export function TasksAccessStep({
+    annotationTasks,
+    selectedIds,
+    onSelectionChange,
+}: TasksAccessStepProps) {
     const { t } = useTranslations();
     const [searchQuery, setSearchQuery] = useState('');
 
     const filtered = searchQuery
-        ? MOCK_TASK_TYPES.filter(
+        ? annotationTasks.filter(
               (tt) =>
                   tt.tags.some((tag) =>
                       tag.name.toLowerCase().includes(searchQuery.toLowerCase())
                   ) || tt.title.toLowerCase().includes(searchQuery.toLowerCase())
           )
-        : MOCK_TASK_TYPES;
+        : annotationTasks;
 
     function handleToggle(id: number) {
         onSelectionChange(

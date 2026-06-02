@@ -19,82 +19,47 @@ import { SendMessageDialog } from '@/components/send-message-dialog';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { RolesEnum } from '@/types';
+import { type ManagedUser, RolesEnum } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Mail, Plus } from 'lucide-react';
-import { useState } from 'react';
-import { CreateAnnotatorForm } from '../create-annotator/create-annotator-form';
+import { useMemo, useState } from 'react';
 import { RoleBadge } from '../shared/role-badge';
 import { StatusBadge } from '../shared/status-badge';
 
-interface MockAnnotator {
-    id: number;
-    username: string;
-    name: string;
-    email: string;
-    status: 'active' | 'inactive';
+interface AnnotatorsTabProps {
+    allAnnotators?: ManagedUser[];
+    myAnnotators: ManagedUser[];
 }
-
-const MOCK_ANNOTATORS: MockAnnotator[] = [
-    {
-        id: 1,
-        username: 'nazpapad',
-        name: 'Nazeli Papadaki',
-        email: 'nazpapad@scify.org',
-        status: 'active',
-    },
-    {
-        id: 2,
-        username: 'fpapa',
-        name: 'Fotis Papastergiou',
-        email: 'fpapa@scify.org',
-        status: 'active',
-    },
-    {
-        id: 3,
-        username: 'kChalaris',
-        name: 'Kostas Chalaris',
-        email: 'kchalaris@scify.org',
-        status: 'inactive',
-    },
-    {
-        id: 4,
-        username: 'NellySav',
-        name: 'Nelly Sav',
-        email: 'nellysav@scify.org',
-        status: 'active',
-    },
-];
 
 type StatusFilter = 'all' | 'active' | 'inactive';
 
-export function AnnotatorsTab() {
+export function AnnotatorsTab({ allAnnotators, myAnnotators }: AnnotatorsTabProps) {
     const { t } = useTranslations();
     const { can } = useAuth();
-    const [showCreateForm, setShowCreateForm] = useState(false);
     const [showOnlyMine, setShowOnlyMine] = useState(false);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [search, setSearch] = useState('');
-    const [messageTarget, setMessageTarget] = useState<MockAnnotator | null>(null);
+    const [messageTarget, setMessageTarget] = useState<ManagedUser | null>(null);
 
-    if (showCreateForm) {
-        return <CreateAnnotatorForm onCancel={() => setShowCreateForm(false)} />;
-    }
+    const source = showOnlyMine || !allAnnotators ? myAnnotators : allAnnotators;
 
-    const filtered = MOCK_ANNOTATORS.filter((a) => {
-        if (statusFilter !== 'all' && a.status !== statusFilter) return false;
-        if (search.trim()) {
-            const q = search.toLowerCase();
-            if (
-                !a.username.toLowerCase().includes(q) &&
-                !a.name.toLowerCase().includes(q) &&
-                !a.email.toLowerCase().includes(q)
-            ) {
-                return false;
-            }
-        }
-        return true;
-    });
+    const filtered = useMemo(
+        () =>
+            source.filter((a) => {
+                if (statusFilter !== 'all' && a.status !== statusFilter) return false;
+                if (search.trim()) {
+                    const q = search.toLowerCase();
+                    if (
+                        !a.username.toLowerCase().includes(q) &&
+                        !a.name.toLowerCase().includes(q)
+                    ) {
+                        return false;
+                    }
+                }
+                return true;
+            }),
+        [source, statusFilter, search]
+    );
 
     return (
         <div className="flex flex-col gap-4">
@@ -128,14 +93,13 @@ export function AnnotatorsTab() {
                 </div>
 
                 {can('create_annotators') && (
-                    <button
-                        type="button"
-                        onClick={() => setShowCreateForm(true)}
-                        className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    <Link
+                        href={route('users.create', { type: RolesEnum.ANNOTATOR })}
+                        className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         {t('users.actions.create_annotator')}
                         <Plus className="h-4 w-4" aria-hidden="true" />
-                    </button>
+                    </Link>
                 )}
             </div>
 
@@ -200,7 +164,7 @@ export function AnnotatorsTab() {
                                     colSpan={5}
                                     className="py-10 text-center text-sm text-slate-400"
                                 >
-                                    No annotators found.
+                                    {t('users.empty.annotators')}
                                 </TableCell>
                             </TableRow>
                         ) : (

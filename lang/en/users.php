@@ -22,6 +22,7 @@ return [
         'restore' => 'Restore User',
         'view_edit' => 'View/Edit',
         'view' => 'View',
+        'connect_to_annotators' => 'Connect to Annotators',
         'create_manager' => 'Create New Manager',
         'create_admin' => 'Create New Admin',
         'create_annotator' => 'Create New Annotator',

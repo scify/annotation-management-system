@@ -1,29 +1,57 @@
 import AppLayout from '@/layouts/app-layout';
 import { useTranslations } from '@/hooks/use-translations';
+import { type AdminCreateData, type ManagerCreateData, RolesEnum } from '@/types';
 import { Head } from '@inertiajs/react';
-import { UserForm } from './components/user-form';
+import { CreateAdminForm } from './components/create-admin/create-admin-form';
+import { CreateAnnotatorForm } from './components/create-annotator/create-annotator-form';
+import { CreateManagerForm } from './components/create-manager/create-manager-form';
 
 interface CreateUserProps {
-    roles: {
-        name: string;
-        label: string;
-    }[];
+    type: RolesEnum;
+    admin_data?: AdminCreateData;
+    manager_data?: ManagerCreateData;
 }
 
-export default function Create({ roles }: Readonly<CreateUserProps>) {
+const EMPTY_ADMIN_DATA: AdminCreateData = {
+    all_projects: [],
+    my_projects: [],
+    all_annotators: [],
+    my_annotators: [],
+};
+
+const EMPTY_MANAGER_DATA: ManagerCreateData = {
+    my_projects: [],
+    my_annotators: [],
+    annotation_tasks: [],
+    all_projects: [],
+    all_annotators: [],
+};
+
+export default function Create({ type, admin_data, manager_data }: Readonly<CreateUserProps>) {
     const { t } = useTranslations();
+
+    const breadcrumbTitle = {
+        [RolesEnum.ADMIN]: t('users.actions.create_admin'),
+        [RolesEnum.ANNOTATION_MANAGER]: t('users.actions.create_manager'),
+        [RolesEnum.ANNOTATOR]: t('users.actions.create_annotator'),
+    }[type];
 
     return (
         <AppLayout
             breadcrumbs={[
                 { title: t('users.title'), href: route('users.index') },
-                { title: t('users.actions.new'), href: route('users.create') },
+                { title: breadcrumbTitle, href: route('users.create', { type }) },
             ]}
         >
-            <Head title={t('users.actions.new')} />
+            <Head title={breadcrumbTitle} />
             <div className="p-6">
-                <h1 className="mb-6 text-2xl font-semibold">{t('users.actions.new_big_button')}</h1>
-                <UserForm action={route('users.store')} roles={roles} />
+                {type === RolesEnum.ADMIN && (
+                    <CreateAdminForm adminData={admin_data ?? EMPTY_ADMIN_DATA} />
+                )}
+                {type === RolesEnum.ANNOTATION_MANAGER && (
+                    <CreateManagerForm managerData={manager_data ?? EMPTY_MANAGER_DATA} />
+                )}
+                {type === RolesEnum.ANNOTATOR && <CreateAnnotatorForm />}
             </div>
         </AppLayout>
     );

@@ -19,75 +19,48 @@ import { SendMessageDialog } from '@/components/send-message-dialog';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { RolesEnum } from '@/types';
+import { type ManagedUser, RolesEnum } from '@/types';
 import { Link } from '@inertiajs/react';
 import { Mail, Plus } from 'lucide-react';
-import { useState } from 'react';
-import { CreateManagerForm } from '../create-manager/create-manager-form';
+import { useMemo, useState } from 'react';
 import { RoleBadge } from '../shared/role-badge';
 import { StatusBadge } from '../shared/status-badge';
 
-interface MockManager {
-    id: number;
-    username: string;
-    name: string;
-    email: string;
-    deleted_at: string | null;
-    status: 'active' | 'inactive' | 'pending';
+interface ManagersTabProps {
+    allManagers: ManagedUser[];
+    myManagers: ManagedUser[];
 }
-
-const MOCK_MANAGERS: MockManager[] = [
-    {
-        id: 1,
-        username: 'akosmo',
-        name: 'Aris Kosmopoulos',
-        email: 'akosmo@scify.org',
-        deleted_at: null,
-        status: 'pending',
-    },
-    {
-        id: 2,
-        username: 'paulisar',
-        name: 'Paul Isaris',
-        email: 'paulisar@scify.org',
-        deleted_at: null,
-        status: 'active',
-    },
-    {
-        id: 3,
-        username: 'NellySav',
-        name: 'Nelly Savvidou',
-        email: 'nellysav@scify.org',
-        deleted_at: null,
-        status: 'active',
-    },
-];
 
 type StatusFilter = 'all' | 'active' | 'inactive' | 'pending';
 
-export function ManagersTab() {
+export function ManagersTab({ allManagers, myManagers }: ManagersTabProps) {
     const { t } = useTranslations();
-    const { can } = useAuth();
-    const [showCreateForm, setShowCreateForm] = useState(false);
+    const { can, isAnnotationManager } = useAuth();
     const [showOnlyMine, setShowOnlyMine] = useState(false);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [search, setSearch] = useState('');
-    const [messageTarget, setMessageTarget] = useState<MockManager | null>(null);
+    const [messageTarget, setMessageTarget] = useState<ManagedUser | null>(null);
 
-    const filtered = MOCK_MANAGERS.filter((m) => {
-        if (statusFilter !== 'all' && m.status !== statusFilter) return false;
-        if (search.trim()) {
-            const q = search.toLowerCase();
-            if (!m.name.toLowerCase().includes(q) && !m.email.toLowerCase().includes(q)) {
-                return false;
-            }
-        }
-        return true;
-    });
+    const source = showOnlyMine ? myManagers : allManagers;
 
-    if (showCreateForm) {
-        return <CreateManagerForm onCancel={() => setShowCreateForm(false)} />;
-    }
+    const filtered = useMemo(
+        () =>
+            source.filter((m) => {
+                if (statusFilter !== 'all' && m.status !== statusFilter) return false;
+                if (search.trim()) {
+                    const q = search.toLowerCase();
+                    if (
+                        !m.name.toLowerCase().includes(q) &&
+                        !m.username.toLowerCase().includes(q) &&
+                        !(m.email ?? '').toLowerCase().includes(q)
+                    ) {
+                        return false;
+                    }
+                }
+                return true;
+            }),
+        [source, statusFilter, search]
+    );
 
     return (
         <div className="flex flex-col gap-4">
@@ -121,14 +94,13 @@ export function ManagersTab() {
                 </div>
 
                 {can('create_managers') && (
-                    <button
-                        type="button"
-                        onClick={() => setShowCreateForm(true)}
-                        className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    <Link
+                        href={route('users.create', { type: RolesEnum.ANNOTATION_MANAGER })}
+                        className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2.5 text-sm font-semibold text-white focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                     >
                         {t('users.actions.create_manager')}
                         <Plus className="h-4 w-4" aria-hidden="true" />
-                    </button>
+                    </Link>
                 )}
             </div>
 
@@ -196,7 +168,7 @@ export function ManagersTab() {
                                     colSpan={5}
                                     className="py-10 text-center text-sm text-slate-400"
                                 >
-                                    No managers found.
+                                    {t('users.empty.managers')}
                                 </TableCell>
                             </TableRow>
                         ) : (
@@ -233,7 +205,9 @@ export function ManagersTab() {
                                                 href={route('users.show', manager.id)}
                                                 className="bg-brand-yellow-300 text-brand-blue-900 hover:bg-brand-yellow-400 focus-visible:ring-brand-yellow-300 inline-flex h-[30px] min-w-[100px] items-center justify-center rounded-lg px-3.5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                                             >
-                                                {t('users.actions.view_edit')}
+                                                {isAnnotationManager()
+                                                    ? t('users.actions.connect_to_annotators')
+                                                    : t('users.actions.view_edit')}
                                             </Link>
                                             <button
                                                 type="button"
