@@ -20,6 +20,14 @@ class HandleInertiaRequests extends Middleware {
      */
     protected $rootView = 'app';
 
+    public function version(Request $request): ?string {
+        $base = parent::version($request);
+        $user = $request->user();
+        $userId = $user !== null ? (string) $user->id : '0';
+
+        return md5(($base ?? '') . '|' . $userId);
+    }
+
     /**
      * Define the props that are shared by default.
      *

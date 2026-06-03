@@ -1,27 +1,35 @@
 import { type SharedData } from '@/types';
-import { usePage } from '@inertiajs/react';
-import { useEffect } from 'react';
+import { router, usePage } from '@inertiajs/react';
+import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
+
+function showFlashToasts(flash: SharedData['flash'], errors?: Record<string, string>) {
+    if (flash.success) toast.success(flash.success);
+    if (flash.error) toast.error(flash.error);
+    if (flash.warning) toast.warning(flash.warning);
+    if (flash.info) toast.info(flash.info);
+    Object.values(errors ?? {})
+        .filter(Boolean)
+        .forEach((msg) => toast.error(msg));
+}
 
 export function useFlashMessages() {
     const { flash, errors } = usePage<SharedData>().props;
-    const { success, error, warning, info } = flash;
 
-    useEffect(() => {
-        if (success) toast.success(success);
-        if (error) toast.error(error);
-        if (warning) toast.warning(warning);
-        if (info) toast.info(info);
-    }, [success, error, warning, info]);
+    // Capture values in refs so the mount-only effect below has no reactive deps
+    const mountFlashRef = useRef(flash);
+    const mountErrorsRef = useRef(errors);
 
-    // Stable string dep: join sorted values with null byte (cannot appear in validation messages)
-    const errorKey = Object.values(errors ?? {})
-        .sort((a, b) => a.localeCompare(b))
-        .join('\0');
+    // Fire once on mount for flash present on the initial server-rendered page
     useEffect(() => {
-        errorKey
-            .split('\0')
-            .filter(Boolean)
-            .forEach((msg) => toast.error(msg));
-    }, [errorKey]);
+        showFlashToasts(mountFlashRef.current, mountErrorsRef.current);
+    }, []);
+
+    // Fire on every subsequent Inertia visit — handles repeated same-string flashes
+    useEffect(() => {
+        return router.on('success', (event) => {
+            const { flash: f, errors: e } = event.detail.page.props as unknown as SharedData;
+            showFlashToasts(f, e);
+        });
+    }, []);
 }

@@ -102,7 +102,7 @@ export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
                 )}
                 {currentStep === 3 && (
                     <ConnectProjectsStep
-                        projects={managerData.all_projects}
+                        projects={managerData.all_projects ?? []}
                         myProjects={managerData.my_projects}
                         selectedProjectIds={formData.project_ids}
                         onSelectionChange={(ids) => handleChange({ project_ids: ids })}
@@ -110,7 +110,7 @@ export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
                 )}
                 {currentStep === 4 && (
                     <ConnectAnnotatorsStep
-                        annotators={managerData.all_annotators}
+                        annotators={managerData.all_annotators ?? []}
                         myAnnotators={managerData.my_annotators}
                         selectedAnnotatorIds={formData.annotator_ids}
                         onSelectionChange={(ids) => handleChange({ annotator_ids: ids })}

@@ -178,8 +178,8 @@ export interface ManagerCreateData {
     my_projects: Project[];
     my_annotators: AnnotatorSelectOption[];
     annotation_tasks: AnnotationTaskOption[];
-    all_projects: Project[];
-    all_annotators: AnnotatorSelectOption[];
+    all_projects?: Project[];
+    all_annotators?: AnnotatorSelectOption[];
 }
 
 /** Annotator entry as returned in admin_data for user creation */
