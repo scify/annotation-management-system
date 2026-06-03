@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Queries\GetAnnotatorsByManagerQuery;
 use App\Queries\GetAnnotatorsQuery;
 use App\Queries\GetUsersByRoleQuery;
+use App\Services\Annotation\AnnotatorStatsService;
 use App\Services\Project\ProjectService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
@@ -19,6 +20,7 @@ readonly class UserManagementService {
         private GetAnnotatorsByManagerQuery $getAnnotatorsByManagerQuery,
         private GetAnnotatorsQuery $getAnnotatorsQuery,
         private ProjectService $projectService,
+        private AnnotatorStatsService $annotatorStatsService,
     ) {}
 
     /**
@@ -42,17 +44,17 @@ readonly class UserManagementService {
     /**
      * @return array{
      *     my_projects: array<int, array<string, mixed>>,
-     *     my_annotators: array<int, array{id: int, name: string, username: string, status: string}>,
+     *     my_annotators: array<int, array<string, mixed>>,
      *     annotation_tasks: array<int, array<string, mixed>>,
      *     all_projects?: array<int, array<string, mixed>>,
-     *     all_annotators?: array<int, array{id: int, name: string, username: string, status: string}>
+     *     all_annotators?: array<int, array<string, mixed>>
      * }
      */
-    public function getManagerDataForCreate(User $currentUser): array {
+    public function getDataForCreateNewManager(User $currentUser): array {
         $data = [
             'my_projects' => $this->projectService->getMyProjects($currentUser->id),
             'my_annotators' => $this->getMyAnnotatorsForCreate($currentUser->id),
-            'annotation_tasks' => $this->projectService->getAnnotationTasks($currentUser),
+            'annotation_tasks' => $this->projectService->getAnnotationTasks($currentUser, includeCustomizationOptions: false),
         ];
 
         if ($currentUser->hasRole(RolesEnum::ADMIN)) {
@@ -67,11 +69,11 @@ readonly class UserManagementService {
      * @return array{
      *     all_projects: array<int, array<string, mixed>>,
      *     my_projects: array<int, array<string, mixed>>,
-     *     all_annotators: array<int, array{id: int, name: string, username: string, status: string}>,
-     *     my_annotators: array<int, array{id: int, name: string, username: string, status: string}>
+     *     all_annotators: array<int, array<string, mixed>>,
+     *     my_annotators: array<int, array<string, mixed>>
      * }
      */
-    public function getAdminDataForCreate(User $currentUser): array {
+    public function getDataForCreateNewAdmin(User $currentUser): array {
         $allProjects = $this->projectService->getAllProjects();
 
         return [
@@ -162,33 +164,23 @@ readonly class UserManagementService {
     }
 
     /**
-     * @return array<int, array{id: int, name: string, username: string, status: string}>
+     * @return array<int, array<string, mixed>>
      */
     private function getAllAnnotators(): array {
-        return $this->getAnnotatorsQuery->getAll()
-            ->map(fn (User $user): array => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'status' => $user->status->value,
-            ])
-            ->values()
-            ->all();
+        return $this->annotatorStatsService->buildAnnotatorsData(
+            $this->getAnnotatorsQuery->getAll(),
+            includeSubprojects: false,
+        );
     }
 
     /**
-     * @return array<int, array{id: int, name: string, username: string, status: string}>
+     * @return array<int, array<string, mixed>>
      */
     private function getMyAnnotatorsForCreate(int $managerId): array {
-        return $this->getAnnotatorsByManagerQuery->get($managerId)
-            ->map(fn (User $user): array => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'username' => $user->username,
-                'status' => $user->status->value,
-            ])
-            ->values()
-            ->all();
+        return $this->annotatorStatsService->buildAnnotatorsData(
+            $this->getAnnotatorsByManagerQuery->get($managerId),
+            includeSubprojects: false,
+        );
     }
 
     /**

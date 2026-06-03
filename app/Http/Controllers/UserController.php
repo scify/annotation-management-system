@@ -78,11 +78,11 @@ class UserController extends Controller {
         $props = match ($type) {
             RolesEnum::ADMIN => [
                 'type' => RolesEnum::ADMIN->value,
-                'admin_data' => $this->userManagementService->getAdminDataForCreate($currentUser),
+                'admin_data' => $this->userManagementService->getDataForCreateNewAdmin($currentUser),
             ],
             RolesEnum::ANNOTATION_MANAGER => [
                 'type' => RolesEnum::ANNOTATION_MANAGER->value,
-                'manager_data' => $this->userManagementService->getManagerDataForCreate($currentUser),
+                'manager_data' => $this->userManagementService->getDataForCreateNewManager($currentUser),
             ],
             RolesEnum::ANNOTATOR => [
                 'type' => RolesEnum::ANNOTATOR->value,

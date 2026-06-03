@@ -339,7 +339,7 @@ readonly class ProjectService {
      *
      * @return array<int, array<string, mixed>>
      */
-    public function getAnnotationTasks(User $user): array {
+    public function getAnnotationTasks(User $user, bool $includeCustomizationOptions = true): array {
         $roleName = $user->getRoleNames()->first();
 
         if ($roleName === RolesEnum::ANNOTATOR->value) {
@@ -355,9 +355,11 @@ readonly class ProjectService {
                 'description' => $task->description,
                 'short_description' => $task->short_description,
                 'guidelines_url' => $task->guidelines_url,
-                'customization_options' => $task->customization_options !== null
-                    ? Arr::map($task->customization_options, fn (array $option): array => Arr::except($option, 'parameters'))
-                    : null,
+                ...($includeCustomizationOptions ? [
+                    'customization_options' => $task->customization_options !== null
+                        ? Arr::map($task->customization_options, fn (array $option): array => Arr::except($option, 'parameters'))
+                        : null,
+                ] : []),
                 'tags' => $this->formatTags($task),
                 'datasets' => $this->formatDatasets($task),
             ])
