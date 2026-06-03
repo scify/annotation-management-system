@@ -81,13 +81,13 @@ describe('UserController', function (): void {
         $this->actingAs($this->admin)
             ->get($url)
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('users/create')->has('roles'));
+            ->assertInertia(fn ($page) => $page->component('users/create')->has('annotator_data'));
 
         // Annotation manager can view create form for an annotator-type target user
         $this->actingAs($this->annotationManager)
             ->get($url)
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('users/create')->has('roles'));
+            ->assertInertia(fn ($page) => $page->component('users/create')->has('annotator_data'));
 
         // Annotator cannot view create form
         $this->actingAs($this->annotator)
@@ -101,29 +101,30 @@ describe('UserController', function (): void {
             ->assertRedirect(route('users.index'));
     });
 
-    it('creates a new user', function (): void {
+    it('creates a new annotator', function (): void {
         // Arrange
-        $this->actingAs($this->admin)->get(route('users.create'));
-        $email = $this->faker->unique()->safeEmail();
+        $this->actingAs($this->admin)->get(route('users.create', ['type' => RolesEnum::ANNOTATOR->value]));
+        $username = $this->faker->unique()->userName();
 
         // Act
         $response = $this->post(route('users.store'), [
-            'name' => 'Test User',
-            'username' => $this->faker->unique()->userName(),
-            'email' => $email,
+            'type' => RolesEnum::ANNOTATOR->value,
+            'name' => 'Test Annotator',
+            'username' => $username,
             'password' => 'password123',
             'password_confirmation' => 'password123',
-            'role' => RolesEnum::ANNOTATOR->value,
+            'manager_ids' => [$this->annotationManager->id],
             '_token' => session('_token'),
         ]);
 
         // Assert
         $response->assertRedirect(route('users.index'));
 
-        $user = User::query()->where('email', $email)->first();
+        $user = User::query()->where('username', $username)->first();
 
         expect($user)
-            ->name->toBe('Test User')
+            ->not->toBeNull()
+            ->name->toBe('Test Annotator')
             ->and($user->hasRole(RolesEnum::ANNOTATOR->value))->toBeTrue();
     });
 

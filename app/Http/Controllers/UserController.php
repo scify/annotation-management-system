@@ -6,7 +6,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\RolesEnum;
 use App\Http\Requests\User\UserCreateRequest;
-use App\Http\Requests\User\UserStoreRequest;
+use App\Http\Requests\User\UserStoreAdminRequest;
+use App\Http\Requests\User\UserStoreAnnotatorRequest;
+use App\Http\Requests\User\UserStoreManagerRequest;
 use App\Http\Requests\User\UserUpdateRequest;
 use App\Http\Requests\User\UserViewRequest;
 use App\Models\User;
@@ -14,6 +16,7 @@ use App\Services\User\UserManagementService;
 use App\Services\User\UserService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -101,10 +104,24 @@ class UserController extends Controller {
     /**
      * Store a newly created user.
      */
-    public function store(UserStoreRequest $userStoreRequest): RedirectResponse {
-        $this->authorize('create', User::class);
+    public function store(Request $request): RedirectResponse {
+        $type = $request->enum('type', RolesEnum::class);
 
-        $this->userService->create($userStoreRequest->validated());
+        abort_if($type === null, 422);
+
+        $requestClass = match ($type) {
+            RolesEnum::ADMIN => UserStoreAdminRequest::class,
+            RolesEnum::ANNOTATION_MANAGER => UserStoreManagerRequest::class,
+            RolesEnum::ANNOTATOR => UserStoreAnnotatorRequest::class,
+        };
+
+        /** @var UserStoreAdminRequest|UserStoreAnnotatorRequest|UserStoreManagerRequest $storeRequest */
+        $storeRequest = resolve($requestClass);
+        $storeRequest->validateResolved();
+
+        $this->userService->create(
+            array_merge($storeRequest->validated(), ['role' => $type->value])
+        );
 
         return to_route('users.index')
             ->with('success', __('users.messages.created'));

@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Queries\FindUserByEmailQuery;
 use App\Queries\GetUsersQuery;
 use App\Queries\GetWorkloadsByAnnotatorsQuery;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
 readonly class UserService {
@@ -24,9 +25,10 @@ readonly class UserService {
      */
     public function create(array $data): User {
         $role = $data['role'] ?? RolesEnum::ANNOTATOR->value;
-        unset($data['role']);
 
-        $user = User::query()->create($data);
+        $user = User::query()->create(
+            Arr::only($data, ['name', 'username', 'email', 'password'])
+        );
         $user->syncRoles([$role]);
 
         return $user;
