@@ -67,6 +67,19 @@ readonly class UserManagementService {
 
     /**
      * @return array{
+     *     all_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>
+     * }
+     */
+    public function getDataForCreateNewAnnotator(): array {
+        return [
+            'all_managers' => $this->mapWithEmail(
+                $this->getUsersByRoleQuery->getAllManagers()
+            ),
+        ];
+    }
+
+    /**
+     * @return array{
      *     all_projects: array<int, array<string, mixed>>,
      *     my_projects: array<int, array<string, mixed>>,
      *     all_annotators: array<int, array<string, mixed>>,

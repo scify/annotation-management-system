@@ -86,7 +86,7 @@ class UserController extends Controller {
             ],
             RolesEnum::ANNOTATOR => [
                 'type' => RolesEnum::ANNOTATOR->value,
-                'roles' => $this->userService->getRolesForForm(),
+                'annotator_data' => $this->userManagementService->getDataForCreateNewAnnotator(),
             ],
         };
 
