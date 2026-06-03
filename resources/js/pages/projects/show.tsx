@@ -46,6 +46,7 @@ interface BackendAnnotatorData {
     active_subprojects_count: number;
     annotator_progress: number;
     workload: number;
+    can_flag: boolean;
 }
 
 interface BackendManagerData {
@@ -102,6 +103,7 @@ export default function ProjectShow({
         active_projects_count: a.active_projects_count,
         active_subprojects_count: a.active_subprojects_count,
         workload: a.workload,
+        allow_flagging: a.can_flag,
     }));
 
     const managers: ProjectManagerRowData[] = comanagers_data.map((m) => ({
@@ -210,7 +212,9 @@ export default function ProjectShow({
                         }
                     />
                 )}
-                {activeTab === 'annotators' && <AnnotatorsTab annotators={annotators} />}
+                {activeTab === 'annotators' && (
+                    <AnnotatorsTab annotators={annotators} projectId={project_data.id} />
+                )}
                 {activeTab === 'managers' && <ManagersTab initialManagers={managers} />}
                 {activeTab === 'export' && (
                     <ExportTab projectId={project_data.id} subProjects={subProjects} />

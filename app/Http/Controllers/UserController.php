@@ -92,7 +92,7 @@ class UserController extends Controller {
 
         $json = json_encode($props, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if (is_string($json)) {
-            Storage::disk('local')->put('user-management-create-user-data.json', $json);
+            Storage::disk('local')->put('user-management-create-user-data-' . $type->value . '.json', $json);
         }
 
         return Inertia::render('users/create', $props);

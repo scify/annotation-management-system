@@ -2,7 +2,9 @@ import { AnnotatorsTable } from '@/components/annotator/annotators-table';
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
+import { router } from '@inertiajs/react';
 import { Plus } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
     {
@@ -33,15 +35,45 @@ const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
 
 interface AnnotatorsTabProps {
     annotators?: ProjectAnnotatorRowData[];
+    projectId: number;
     /** Called after an annotator is successfully removed */
     onAnnotatorRemoved?: (id: number) => void;
 }
 
 export function AnnotatorsTab({
     annotators = MOCK_ANNOTATORS,
+    projectId,
     onAnnotatorRemoved,
 }: AnnotatorsTabProps) {
     const { t } = useTranslations();
+
+    const [flaggingState, setFlaggingState] = useState<Record<number, boolean>>(() =>
+        Object.fromEntries(annotators.map((a) => [a.id, a.allow_flagging ?? false]))
+    );
+
+    useEffect(() => {
+        setFlaggingState(
+            Object.fromEntries(annotators.map((a) => [a.id, a.allow_flagging ?? false]))
+        );
+    }, [annotators]);
+
+    function handleAllowFlaggingChange(id: number, enabled: boolean) {
+        setFlaggingState((prev) => ({ ...prev, [id]: enabled }));
+        router.post(
+            route('projects.toggle-can-flag'),
+            { project_id: projectId, annotator_id: id },
+            {
+                preserveScroll: true,
+                onError: () => setFlaggingState((prev) => ({ ...prev, [id]: !enabled })),
+            }
+        );
+    }
+
+    const annotatorsWithFlagging = annotators.map((a) => ({
+        ...a,
+        allow_flagging: flaggingState[a.id] ?? a.allow_flagging ?? false,
+    }));
+
     return (
         <div
             id="tabpanel-annotators"
@@ -58,8 +90,9 @@ export function AnnotatorsTab({
             </div>
             <AnnotatorsTable
                 mode="remove"
-                annotators={annotators}
+                annotators={annotatorsWithFlagging}
                 onAnnotatorRemoved={onAnnotatorRemoved}
+                onAllowFlaggingChange={handleAllowFlaggingChange}
             />
         </div>
     );
