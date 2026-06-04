@@ -1,8 +1,15 @@
 import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { type AnnotatorCreateData, RolesEnum } from '@/types';
+import { type AnnotatorCreateData, type AnnotatorEditUser, RolesEnum } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import { Check, Info, LoaderCircle } from 'lucide-react';
 
@@ -11,11 +18,13 @@ export interface CreateAnnotatorFormData {
     username: string;
     password: string;
     password_confirmation: string;
+    status: 'active' | 'inactive' | 'pending';
     manager_ids: number[];
 }
 
 interface CreateAnnotatorFormProps {
     annotatorData: AnnotatorCreateData;
+    user?: AnnotatorEditUser;
 }
 
 interface ManagerRowProps {
@@ -80,15 +89,21 @@ function Field({ label, required, children }: FieldProps) {
     );
 }
 
-export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps) {
+function isPasswordStrong(password: string): boolean {
+    return password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password);
+}
+
+export function CreateAnnotatorForm({ annotatorData, user }: CreateAnnotatorFormProps) {
     const { t, trans } = useTranslations();
+    const isEditing = user !== undefined;
 
     const form = useForm<CreateAnnotatorFormData>({
-        name: '',
-        username: '',
+        name: user?.name ?? '',
+        username: user?.username ?? '',
         password: '',
         password_confirmation: '',
-        manager_ids: [],
+        status: user?.status ?? 'pending',
+        manager_ids: user?.manager_ids ?? [],
     });
 
     function handleChange(updates: Partial<CreateAnnotatorFormData>) {
@@ -103,24 +118,43 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
         );
     }
 
+    const passwordValid = isEditing
+        ? form.data.password === '' ||
+          (isPasswordStrong(form.data.password) &&
+              form.data.password === form.data.password_confirmation)
+        : form.data.password !== '' &&
+          form.data.password_confirmation !== '' &&
+          form.data.password === form.data.password_confirmation;
+
     const isValid =
         form.data.name.trim() !== '' &&
         form.data.username.trim() !== '' &&
-        form.data.password !== '' &&
-        form.data.password_confirmation !== '' &&
-        form.data.password === form.data.password_confirmation &&
+        passwordValid &&
         form.data.manager_ids.length >= 1;
 
     function handleSubmit() {
-        form.transform((data) => ({ ...data, type: RolesEnum.ANNOTATOR }));
-        form.post(route('users.store'));
+        form.transform((data) => {
+            const payload: Record<string, unknown> = { ...data, type: RolesEnum.ANNOTATOR };
+            if (!payload.password) {
+                delete payload.password;
+                delete payload.password_confirmation;
+            }
+            return payload;
+        });
+        if (isEditing) {
+            form.put(route('users.update', user.id));
+        } else {
+            form.post(route('users.store'));
+        }
     }
 
+    const title = isEditing
+        ? t('users.actions.edit_annotator')
+        : t('users.actions.create_annotator');
+
     return (
-        <section aria-label={t('users.actions.create_annotator')} className="flex flex-col gap-6">
-            <h1 className="text-3xl font-light text-slate-800">
-                {t('users.actions.create_annotator')}
-            </h1>
+        <section aria-label={title} className="flex flex-col gap-6">
+            <h1 className="text-3xl font-light text-slate-800">{title}</h1>
 
             <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
                 <div className="flex flex-col gap-4">
@@ -158,29 +192,39 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                                 </p>
                             )}
                         </Field>
-                        <Field label={t('users.labels.password')} required>
+                        <Field label={t('users.labels.password')} required={!isEditing}>
                             <Input
                                 type="password"
+                                name="password"
                                 value={form.data.password}
                                 onChange={(e) => handleChange({ password: e.target.value })}
                                 autoComplete="new-password"
-                                required
+                                required={!isEditing}
                             />
+                            {isEditing && (
+                                <p className="text-xs text-slate-500">
+                                    {t('users.validation.password_keep_hint')}
+                                </p>
+                            )}
                             {form.errors.password && (
                                 <p role="alert" className="text-sm font-medium text-red-500">
                                     {form.errors.password}
                                 </p>
                             )}
                         </Field>
-                        <Field label={t('users.labels.password_confirmation')} required>
+                        <Field
+                            label={t('users.labels.password_confirmation')}
+                            required={!isEditing}
+                        >
                             <Input
                                 type="password"
+                                name="password_confirmation"
                                 value={form.data.password_confirmation}
                                 onChange={(e) =>
                                     handleChange({ password_confirmation: e.target.value })
                                 }
                                 autoComplete="new-password"
-                                required
+                                required={!isEditing}
                             />
                             {form.errors.password_confirmation && (
                                 <p role="alert" className="text-sm font-medium text-red-500">
@@ -189,21 +233,50 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                             )}
                         </Field>
                         <Field label={t('users.labels.status')}>
-                            <div className="flex h-10 w-full items-center rounded-md border border-slate-200 bg-white px-2.5 text-base text-slate-500">
-                                {t('users.status.pending')}
-                            </div>
-                            <div
-                                role="note"
-                                className="border-brand-blue-300 bg-brand-blue-50 flex items-start gap-2 rounded-md border p-4"
-                            >
-                                <Info
-                                    className="text-brand-blue-700 h-6 w-6 shrink-0"
-                                    aria-hidden="true"
-                                />
-                                <p className="text-brand-blue-800 text-sm font-medium">
-                                    {t('users.status.pending_note')}
-                                </p>
-                            </div>
+                            {isEditing ? (
+                                <Select
+                                    aria-label={t('users.labels.status')}
+                                    value={form.data.status}
+                                    onValueChange={(value) =>
+                                        handleChange({
+                                            status: value as CreateAnnotatorFormData['status'],
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="active">
+                                            {t('users.status.active')}
+                                        </SelectItem>
+                                        <SelectItem value="inactive">
+                                            {t('users.status.inactive')}
+                                        </SelectItem>
+                                        <SelectItem value="pending">
+                                            {t('users.status.pending')}
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <>
+                                    <div className="flex h-10 w-full items-center rounded-md border border-slate-200 bg-white px-2.5 text-base text-slate-500">
+                                        {t('users.status.pending')}
+                                    </div>
+                                    <div
+                                        role="note"
+                                        className="border-brand-blue-300 bg-brand-blue-50 flex items-start gap-2 rounded-md border p-4"
+                                    >
+                                        <Info
+                                            className="text-brand-blue-700 h-6 w-6 shrink-0"
+                                            aria-hidden="true"
+                                        />
+                                        <p className="text-brand-blue-800 text-sm font-medium">
+                                            {t('users.status.pending_note')}
+                                        </p>
+                                    </div>
+                                </>
+                            )}
                         </Field>
                     </div>
                 </div>
@@ -246,8 +319,7 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                                     : form.data.manager_ids.length === 0 &&
                                         form.data.name.trim() !== '' &&
                                         form.data.username.trim() !== '' &&
-                                        form.data.password !== '' &&
-                                        form.data.password_confirmation !== ''
+                                        passwordValid
                                       ? t('users.create_annotator.min_one_required')
                                       : t('users.steps.personal_info_hint')}
                             </p>
@@ -267,7 +339,9 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                             {form.processing && (
                                 <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                             )}
-                            {t('users.actions.create_simple')}
+                            {isEditing
+                                ? t('users.actions.update')
+                                : t('users.actions.create_simple')}
                         </button>
                     </div>
                 </div>

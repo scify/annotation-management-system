@@ -27,6 +27,9 @@ return [
         'create_admin' => 'Create New Admin',
         'create_annotator' => 'Create New Annotator',
         'create_simple' => 'Create',
+        'edit_admin' => 'Edit Admin',
+        'edit_manager' => 'Edit Manager',
+        'edit_annotator' => 'Edit Annotator',
         'next' => 'Next',
         'back' => 'Back',
         'cancel' => 'Cancel',
@@ -138,6 +141,7 @@ return [
         'password_mismatch' => 'The passwords do not match.',
         'password_hint' => 'At least 8 characters, one letter and one number.',
         'password_weak' => 'Password must be at least 8 characters and contain at least one letter and one number.',
+        'password_keep_hint' => 'Leave blank to keep the current password.',
     ],
     'delete' => [
         'title' => 'Delete User',

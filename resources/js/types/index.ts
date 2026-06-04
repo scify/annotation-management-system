@@ -209,6 +209,47 @@ export interface AnnotatorCreateData {
     all_managers: ManagedUser[];
 }
 
+/** User sub-object embedded in admin_data when returned by the edit() controller method */
+export interface AdminEditUser {
+    id: number;
+    name: string;
+    username: string;
+    email: string;
+    status: 'active' | 'inactive' | 'pending';
+    project_ids: number[];
+    annotator_ids: number[];
+}
+
+/** User sub-object embedded in manager_data when returned by the edit() controller method */
+export interface ManagerEditUser extends AdminEditUser {
+    annotation_task_ids: number[];
+    dataset_ids: number[];
+}
+
+/** User sub-object embedded in annotator_data when returned by the edit() controller method */
+export interface AnnotatorEditUser {
+    id: number;
+    name: string;
+    username: string;
+    status: 'active' | 'inactive' | 'pending';
+    manager_ids: number[];
+}
+
+/** Shape of the admin_data Inertia prop on /users/{id}/edit for an admin */
+export interface AdminEditData extends AdminCreateData {
+    user: AdminEditUser;
+}
+
+/** Shape of the manager_data Inertia prop on /users/{id}/edit for a manager */
+export interface ManagerEditData extends ManagerCreateData {
+    user: ManagerEditUser;
+}
+
+/** Shape of the annotator_data Inertia prop on /users/{id}/edit for an annotator */
+export interface AnnotatorEditData extends AnnotatorCreateData {
+    user: AnnotatorEditUser;
+}
+
 /** A user entry as returned by UserManagementService — lighter than the full User model */
 export interface ManagedUser {
     id: number;

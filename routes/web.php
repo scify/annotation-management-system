@@ -35,7 +35,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('projects/{id}/subprojects', [SubProjectController::class, 'store'])->name('projects.subprojects.store');
     Route::get('projects/{projectId}/subprojects/{subprojectId}/edit', [SubProjectController::class, 'edit'])->name('projects.subprojects.edit');
 
-    Route::resource('users', UserController::class);
+    Route::resource('users', UserController::class)->except('show');
 
     Route::put('/users/{user}/restore', UserRestoreController::class)->name('users.restore')->withTrashed();
 });

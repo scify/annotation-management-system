@@ -1,4 +1,11 @@
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import { Info } from 'lucide-react';
 
@@ -15,6 +22,7 @@ interface PersonalInfoStepProps {
     data: PersonalInfoData;
     onChange: (updates: Partial<PersonalInfoData>) => void;
     errors?: Partial<Record<string, string>>;
+    isEditing?: boolean;
 }
 
 interface FieldProps {
@@ -39,7 +47,12 @@ function Field({ label, required, children }: FieldProps) {
     );
 }
 
-export function PersonalInfoStep({ data, onChange, errors }: PersonalInfoStepProps) {
+export function PersonalInfoStep({
+    data,
+    onChange,
+    errors,
+    isEditing = false,
+}: PersonalInfoStepProps) {
     const { t } = useTranslations();
 
     return (
@@ -92,16 +105,19 @@ export function PersonalInfoStep({ data, onChange, errors }: PersonalInfoStepPro
                             </p>
                         )}
                     </Field>
-                    <Field label={t('users.labels.password')} required>
+                    <Field label={t('users.labels.password')} required={!isEditing}>
                         <Input
                             type="password"
+                            name="password"
                             value={data.password}
                             onChange={(e) => onChange({ password: e.target.value })}
                             autoComplete="new-password"
-                            required
+                            required={!isEditing}
                         />
                         <p className="text-xs text-slate-500">
-                            {t('users.validation.password_hint')}
+                            {isEditing
+                                ? t('users.validation.password_keep_hint')
+                                : t('users.validation.password_hint')}
                         </p>
                         {errors?.password && (
                             <p role="alert" className="text-sm font-medium text-red-500">
@@ -109,13 +125,14 @@ export function PersonalInfoStep({ data, onChange, errors }: PersonalInfoStepPro
                             </p>
                         )}
                     </Field>
-                    <Field label={t('users.labels.password_confirmation')} required>
+                    <Field label={t('users.labels.password_confirmation')} required={!isEditing}>
                         <Input
                             type="password"
+                            name="password_confirmation"
                             value={data.password_confirmation}
                             onChange={(e) => onChange({ password_confirmation: e.target.value })}
                             autoComplete="new-password"
-                            required
+                            required={!isEditing}
                         />
                         {errors?.password_confirmation && (
                             <p role="alert" className="text-sm font-medium text-red-500">
@@ -127,21 +144,48 @@ export function PersonalInfoStep({ data, onChange, errors }: PersonalInfoStepPro
 
                 <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-7">
                     <Field label={t('users.labels.status')}>
-                        <div className="flex h-10 w-full items-center rounded-md border border-slate-200 bg-white px-2.5 text-base text-slate-500">
-                            {t('users.status.pending')}
-                        </div>
-                        <div
-                            role="note"
-                            className="border-brand-blue-300 bg-brand-blue-50 flex items-start gap-2 rounded-md border p-4"
-                        >
-                            <Info
-                                className="text-brand-blue-700 h-6 w-6 shrink-0"
-                                aria-hidden="true"
-                            />
-                            <p className="text-brand-blue-800 text-sm font-medium">
-                                {t('users.status.pending_note')}
-                            </p>
-                        </div>
+                        {isEditing ? (
+                            <Select
+                                aria-label={t('users.labels.status')}
+                                value={data.status}
+                                onValueChange={(value) =>
+                                    onChange({ status: value as PersonalInfoData['status'] })
+                                }
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="active">
+                                        {t('users.status.active')}
+                                    </SelectItem>
+                                    <SelectItem value="inactive">
+                                        {t('users.status.inactive')}
+                                    </SelectItem>
+                                    <SelectItem value="pending">
+                                        {t('users.status.pending')}
+                                    </SelectItem>
+                                </SelectContent>
+                            </Select>
+                        ) : (
+                            <>
+                                <div className="flex h-10 w-full items-center rounded-md border border-slate-200 bg-white px-2.5 text-base text-slate-500">
+                                    {t('users.status.pending')}
+                                </div>
+                                <div
+                                    role="note"
+                                    className="border-brand-blue-300 bg-brand-blue-50 flex items-start gap-2 rounded-md border p-4"
+                                >
+                                    <Info
+                                        className="text-brand-blue-700 h-6 w-6 shrink-0"
+                                        aria-hidden="true"
+                                    />
+                                    <p className="text-brand-blue-800 text-sm font-medium">
+                                        {t('users.status.pending_note')}
+                                    </p>
+                                </div>
+                            </>
+                        )}
                     </Field>
                 </div>
             </div>

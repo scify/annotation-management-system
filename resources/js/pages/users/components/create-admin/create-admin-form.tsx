@@ -1,5 +1,5 @@
 import { useTranslations } from '@/hooks/use-translations';
-import { type AdminCreateData, RolesEnum } from '@/types';
+import { type AdminCreateData, type AdminEditUser, RolesEnum } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, LoaderCircle, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -21,6 +21,7 @@ export interface CreateAdminFormData {
 
 interface CreateAdminFormProps {
     adminData: AdminCreateData;
+    user?: AdminEditUser;
 }
 
 const LAST_STEP = 2;
@@ -39,19 +40,20 @@ const FIELD_TO_STEP: Record<string, number> = {
     annotator_ids: 2,
 };
 
-export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
+export function CreateAdminForm({ adminData, user }: CreateAdminFormProps) {
     const { t } = useTranslations();
     const [currentStep, setCurrentStep] = useState(0);
+    const isEditing = user !== undefined;
 
     const form = useForm<CreateAdminFormData>({
-        name: '',
-        username: '',
-        email: '',
+        name: user?.name ?? '',
+        username: user?.username ?? '',
+        email: user?.email ?? '',
         password: '',
         password_confirmation: '',
-        status: 'active',
-        project_ids: [],
-        annotator_ids: [],
+        status: user?.status ?? 'active',
+        project_ids: user?.project_ids ?? [],
+        annotator_ids: user?.annotator_ids ?? [],
     });
 
     const steps = [
@@ -91,15 +93,20 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
 
     function isStepValid(step: number): boolean {
         switch (step) {
-            case 0:
-                return (
+            case 0: {
+                const personalInfoFilled =
                     form.data.name.trim() !== '' &&
                     form.data.username.trim() !== '' &&
-                    form.data.email.trim() !== '' &&
-                    isPasswordStrong(form.data.password) &&
-                    form.data.password_confirmation !== '' &&
-                    form.data.password === form.data.password_confirmation
-                );
+                    form.data.email.trim() !== '';
+                const passwordValid = isEditing
+                    ? form.data.password === '' ||
+                      (isPasswordStrong(form.data.password) &&
+                          form.data.password === form.data.password_confirmation)
+                    : isPasswordStrong(form.data.password) &&
+                      form.data.password_confirmation !== '' &&
+                      form.data.password === form.data.password_confirmation;
+                return personalInfoFilled && passwordValid;
+            }
             case 1:
                 return form.data.project_ids.length >= 1;
             case 2:
@@ -113,12 +120,23 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
         if (!isStepValid(currentStep)) return;
 
         if (currentStep === LAST_STEP) {
-            form.transform((data) => ({
-                ...data,
-                type: RolesEnum.ADMIN,
-                annotator_ids: [...new Set([...data.annotator_ids, ...lockedAnnotatorIds])],
-            }));
-            form.post(route('users.store'));
+            form.transform((data) => {
+                const payload: Record<string, unknown> = {
+                    ...data,
+                    type: RolesEnum.ADMIN,
+                    annotator_ids: [...new Set([...data.annotator_ids, ...lockedAnnotatorIds])],
+                };
+                if (!payload.password) {
+                    delete payload.password;
+                    delete payload.password_confirmation;
+                }
+                return payload;
+            });
+            if (isEditing) {
+                form.put(route('users.update', user.id));
+            } else {
+                form.post(route('users.store'));
+            }
             return;
         }
 
@@ -131,11 +149,11 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
         }
     }
 
+    const title = isEditing ? t('users.actions.edit_admin') : t('users.actions.create_admin');
+
     return (
-        <section aria-label={t('users.actions.create_admin')} className="flex flex-col gap-6">
-            <h1 className="text-3xl font-light text-slate-800">
-                {t('users.actions.create_admin')}
-            </h1>
+        <section aria-label={title} className="flex flex-col gap-6">
+            <h1 className="text-3xl font-light text-slate-800">{title}</h1>
 
             <CreateManagerStepper
                 currentStep={currentStep}
@@ -149,6 +167,7 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
                         data={form.data}
                         onChange={(updates) => handleChange(updates)}
                         errors={form.errors}
+                        isEditing={isEditing}
                     />
                 )}
                 {currentStep === 1 && (
@@ -213,7 +232,9 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
                         <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                     )}
                     {currentStep === LAST_STEP
-                        ? t('users.actions.create_admin')
+                        ? isEditing
+                            ? t('users.actions.update')
+                            : t('users.actions.create_admin')
                         : t('users.actions.next')}
                     {!form.processing && <ChevronRight className="h-4 w-4" aria-hidden="true" />}
                 </button>

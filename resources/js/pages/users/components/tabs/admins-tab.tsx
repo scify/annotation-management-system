@@ -129,7 +129,7 @@ export function AdminsTab({ admins }: AdminsTabProps) {
                                     <TableCell>
                                         <div className="flex items-center justify-center gap-2">
                                             <Link
-                                                href={route('users.show', admin.id)}
+                                                href={route('users.edit', admin.id)}
                                                 className="bg-brand-yellow-300 text-brand-blue-900 hover:bg-brand-yellow-400 focus-visible:ring-brand-yellow-300 inline-flex h-[30px] min-w-[100px] items-center justify-center rounded-lg px-3.5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                                             >
                                                 {t('users.actions.view_edit')}

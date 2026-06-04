@@ -412,7 +412,7 @@ Page components live in `resources/js/pages/` with **lowercase directories**:
 pages/
 ├── auth/               # login.tsx, register.tsx, etc.
 ├── settings/           # profile.tsx, password.tsx, appearance.tsx
-├── users/              # index.tsx, create.tsx, edit.tsx, show.tsx
+├── users/              # index.tsx, create.tsx, edit.tsx
 │   └── components/    # Page-local components (delete-user-modal.tsx, etc.)
 └── dashboard.tsx
 ```

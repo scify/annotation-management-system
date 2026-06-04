@@ -128,6 +128,7 @@
         "test": "pest --exclude-testsuite=Browser",
         "test:backend": "pest --exclude-testsuite=Browser",
         "test:browser": [
+            "npm run build",
             "@php -r \"file_exists('public/hot') && unlink('public/hot');\"",
             "pest --testsuite=Browser"
         ],
