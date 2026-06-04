@@ -33,7 +33,7 @@ Copy the `.github/actions/scan-dev-configs/` directory into your repo, then refe
 
 ```yaml
 steps:
-  - uses: actions/checkout@v6
+  - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
   - uses: ./.github/actions/scan-dev-configs
 ```
 
@@ -43,7 +43,7 @@ Move the action to a dedicated repo (e.g. `scify/scan-dev-configs`), tag a relea
 
 ```yaml
 steps:
-  - uses: actions/checkout@v6
+  - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
   - uses: scify/scan-dev-configs@v1
 ```
 

@@ -60,7 +60,7 @@ Copy the `.github/actions/verify-npm-hardening/` directory into your repo, then 
 
 ```yaml
 steps:
-  - uses: actions/checkout@v6
+  - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
   - uses: ./.github/actions/verify-npm-hardening
   - run: npm ci
 ```
@@ -71,7 +71,7 @@ Move the action to a dedicated repo (e.g. `scify/verify-npm-hardening`), tag a r
 
 ```yaml
 steps:
-  - uses: actions/checkout@v6
+  - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
   - uses: scify/verify-npm-hardening@v1
   - run: npm ci
 ```

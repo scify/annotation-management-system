@@ -21,6 +21,7 @@ interface BackendProjectData {
     annotation_task_title: string;
     dataset_name: string;
     project_progress: number;
+    status: 'pending' | 'in_progress' | 'completed';
 }
 
 interface BackendSubprojectData {
@@ -213,7 +214,11 @@ export default function ProjectShow({
                     />
                 )}
                 {activeTab === 'annotators' && (
-                    <AnnotatorsTab annotators={annotators} projectId={project_data.id} />
+                    <AnnotatorsTab
+                        annotators={annotators}
+                        projectId={project_data.id}
+                        projectStatus={project_data.status}
+                    />
                 )}
                 {activeTab === 'managers' && <ManagersTab initialManagers={managers} />}
                 {activeTab === 'export' && (

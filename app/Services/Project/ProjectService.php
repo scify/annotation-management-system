@@ -376,6 +376,7 @@ readonly class ProjectService {
             'annotation_task_title' => $project->annotationTask->title,
             'dataset_name' => $project->dataset->name,
             'project_progress' => $progress,
+            'status' => $project->status->value,
         ];
     }
 

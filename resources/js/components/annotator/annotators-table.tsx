@@ -44,6 +44,8 @@ type AnnotatorsTableProps =
     | {
           mode: 'remove';
           annotators: ProjectAnnotatorRowData[];
+          /** When false, the remove button is rendered disabled */
+          canRemoveAnnotator?: boolean;
           /** Called when the remove button for a row is clicked */
           onAnnotatorRemoved?: (id: number) => void;
           /** Called when the Allow Flagging toggle is changed for a row */
@@ -60,6 +62,7 @@ type AnnotatorsTableProps =
 
 export function AnnotatorsTable(props: AnnotatorsTableProps) {
     const { mode, annotators } = props;
+    const canRemoveAnnotator = mode === 'remove' ? (props.canRemoveAnnotator ?? true) : false;
     const { t } = useTranslations();
 
     return (
@@ -219,7 +222,8 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
-                                                    className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 rounded-lg"
+                                                    className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
+                                                    disabled={!canRemoveAnnotator}
                                                     aria-label={`Remove ${annotator.name} from subproject`}
                                                     onClick={() =>
                                                         props.onAnnotatorRemoved?.(annotator.id)
