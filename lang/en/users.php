@@ -60,6 +60,11 @@ return [
         'table_total_annotations' => 'Total Annotations',
         'table_total_flags' => 'Total Flags',
         'table_velocity' => 'Av.Velocity',
+        'filter_button' => 'Filter',
+        'filter_status_section' => 'Status',
+        'filter_tag_is' => 'is',
+        'sort_button' => 'Sort',
+        'sort_not_selected' => 'Not selected',
     ],
     'connect_projects' => [
         'heading' => 'Connect to Projects',

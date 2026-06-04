@@ -60,6 +60,11 @@ return [
         'table_total_annotations' => 'Σύνολο Επισημειώσεων',
         'table_total_flags' => 'Σύνολο Σημαιών',
         'table_velocity' => 'Μ.Ο. Ταχύτητας',
+        'filter_button' => 'Φίλτρο',
+        'filter_status_section' => 'Κατάσταση',
+        'filter_tag_is' => 'είναι',
+        'sort_button' => 'Ταξινόμηση',
+        'sort_not_selected' => 'Δεν επιλέχθηκε',
     ],
     'connect_projects' => [
         'heading' => 'Σύνδεση με Έργα',
