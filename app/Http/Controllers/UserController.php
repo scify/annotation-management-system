@@ -10,7 +10,9 @@ use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserStoreAdminRequest;
 use App\Http\Requests\User\UserStoreAnnotatorRequest;
 use App\Http\Requests\User\UserStoreManagerRequest;
-use App\Http\Requests\User\UserUpdateRequest;
+use App\Http\Requests\User\UserUpdateAdminRequest;
+use App\Http\Requests\User\UserUpdateAnnotatorRequest;
+use App\Http\Requests\User\UserUpdateManagerRequest;
 use App\Http\Requests\User\UserViewRequest;
 use App\Models\User;
 use App\Services\User\UserManagementService;
@@ -146,22 +148,64 @@ class UserController extends Controller {
     /**
      * Show the form for editing the specified user.
      */
-    public function edit(User $user): Response {
+    public function edit(Request $request, User $user): Response {
         $this->authorize('update', $user);
 
-        return Inertia::render('users/edit', [
-            'user' => $user,
-            'roles' => $this->userService->getRolesForForm(),
-        ]);
+        /** @var User $currentUser */
+        $currentUser = $request->user();
+
+        $roleValue = $user->getRoleNames()->first();
+        $role = is_string($roleValue) ? RolesEnum::tryFrom($roleValue) : null;
+
+        abort_if($role === null, 422);
+
+        $props = match ($role) {
+            RolesEnum::ADMIN => [
+                'type' => RolesEnum::ADMIN->value,
+                'admin_data' => $this->userManagementService->getDataForEditAdmin($currentUser, $user),
+            ],
+            RolesEnum::ANNOTATION_MANAGER => [
+                'type' => RolesEnum::ANNOTATION_MANAGER->value,
+                'manager_data' => $this->userManagementService->getDataForEditManager($currentUser, $user),
+            ],
+            RolesEnum::ANNOTATOR => [
+                'type' => RolesEnum::ANNOTATOR->value,
+                'annotator_data' => $this->userManagementService->getDataForEditAnnotator($user),
+            ],
+        };
+
+        $json = json_encode($props, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (is_string($json)) {
+            Storage::disk('local')->put('user-management-edit-user-data-' . $role->value . '.json', $json);
+        }
+
+        return Inertia::render('users/edit', $props);
     }
 
     /**
      * Update the specified user.
      */
-    public function update(UserUpdateRequest $userUpdateRequest, User $user): RedirectResponse {
+    public function update(Request $request, User $user): RedirectResponse {
         $this->authorize('update', $user);
 
-        $this->userService->update($user, $userUpdateRequest->validated());
+        $type = $request->enum('type', RolesEnum::class);
+
+        abort_if($type === null, 422);
+
+        $requestClass = match ($type) {
+            RolesEnum::ADMIN => UserUpdateAdminRequest::class,
+            RolesEnum::ANNOTATION_MANAGER => UserUpdateManagerRequest::class,
+            RolesEnum::ANNOTATOR => UserUpdateAnnotatorRequest::class,
+        };
+
+        /** @var UserUpdateAdminRequest|UserUpdateAnnotatorRequest|UserUpdateManagerRequest $updateRequest */
+        $updateRequest = resolve($requestClass);
+
+        try {
+            $this->userService->update($user, array_merge($updateRequest->validated(), ['role' => $type->value]));
+        } catch (PresentableError $presentableError) {
+            return back()->with('error', $presentableError->getUserMessage());
+        }
 
         return to_route('users.index')
             ->with('success', __('users.messages.updated'));

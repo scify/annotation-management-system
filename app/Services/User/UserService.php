@@ -21,6 +21,11 @@ use App\Queries\FindUserByNameQuery;
 use App\Queries\FindUserByUsernameQuery;
 use App\Queries\GetUsersQuery;
 use App\Queries\GetWorkloadsByAnnotatorsQuery;
+use App\Queries\SyncAnnotationTasksForManagerQuery;
+use App\Queries\SyncAnnotatorsForManagerQuery;
+use App\Queries\SyncDatasetsForManagerQuery;
+use App\Queries\SyncManagersForAnnotatorQuery;
+use App\Queries\SyncProjectsForManagerQuery;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -39,6 +44,11 @@ readonly class UserService {
         private CreateManagerQuery $createManagerQuery,
         private ConnectManagerToAnnotationTasksQuery $connectManagerToAnnotationTasksQuery,
         private ConnectManagerToDatasetsQuery $connectManagerToDatasetsQuery,
+        private SyncManagersForAnnotatorQuery $syncManagersForAnnotatorQuery,
+        private SyncAnnotatorsForManagerQuery $syncAnnotatorsForManagerQuery,
+        private SyncProjectsForManagerQuery $syncProjectsForManagerQuery,
+        private SyncAnnotationTasksForManagerQuery $syncAnnotationTasksForManagerQuery,
+        private SyncDatasetsForManagerQuery $syncDatasetsForManagerQuery,
     ) {}
 
     /**
@@ -72,13 +82,25 @@ readonly class UserService {
      * @param  array<string, mixed>  $data
      */
     public function update(User $user, array $data): User {
-        $role = $data['role'] ?? $user->getRoleNames()->first();
-        unset($data['role']);
+        $roleValue = $data['role'] ?? null;
+        $role = is_string($roleValue) ? RolesEnum::tryFrom($roleValue) : null;
 
-        $user->update($data);
-        $user->syncRoles([$role]);
+        if ($role === RolesEnum::ANNOTATOR) {
+            /** @var array{name: string, username: string, password?: string, manager_ids: array<int, int>, role: string} $data */
+            return $this->updateAnnotator($user, $data);
+        }
 
-        return $user;
+        if ($role === RolesEnum::ADMIN) {
+            /** @var array{name: string, username: string, email: string, password?: string, project_ids: array<int, int>, annotator_ids: array<int, int>, role: string} $data */
+            return $this->updateAdmin($user, $data);
+        }
+
+        if ($role === RolesEnum::ANNOTATION_MANAGER) {
+            /** @var array{name: string, username: string, email: string, password?: string, project_ids: array<int, int>, annotator_ids: array<int, int>, annotation_task_ids: array<int, int>, dataset_ids: array<int, int>, role: string} $data */
+            return $this->updateManager($user, $data);
+        }
+
+        throw new InvalidArgumentException('Unknown role');
     }
 
     public function delete(User $user): ?bool {
@@ -135,6 +157,64 @@ readonly class UserService {
             'name' => $rolesEnum->value,
             'label' => 'roles.' . $rolesEnum->value,
         ])->values();
+    }
+
+    /**
+     * @param  array{name: string, username: string, password?: string, manager_ids: array<int, int>, role: string}  $data
+     */
+    private function updateAnnotator(User $user, array $data): User {
+        $fields = ['name' => $data['name'], 'username' => $data['username']];
+        if (isset($data['password'])) {
+            $fields['password'] = $data['password'];
+        }
+
+        $user->update($fields);
+        $user->syncRoles([RolesEnum::ANNOTATOR]);
+
+        $this->syncManagersForAnnotatorQuery->sync(
+            annotatorId: $user->id,
+            managerIds: $data['manager_ids'],
+        );
+
+        return $user;
+    }
+
+    /**
+     * @param  array{name: string, username: string, email: string, password?: string, project_ids: array<int, int>, annotator_ids: array<int, int>, role: string}  $data
+     */
+    private function updateAdmin(User $user, array $data): User {
+        $fields = ['name' => $data['name'], 'username' => $data['username'], 'email' => $data['email']];
+        if (isset($data['password'])) {
+            $fields['password'] = $data['password'];
+        }
+
+        $user->update($fields);
+        $user->syncRoles([RolesEnum::ADMIN]);
+
+        $this->syncProjectsForManagerQuery->sync(managerId: $user->id, projectIds: $data['project_ids']);
+        $this->syncAnnotatorsForManagerQuery->sync(managerId: $user->id, annotatorIds: $data['annotator_ids']);
+
+        return $user;
+    }
+
+    /**
+     * @param  array{name: string, username: string, email: string, password?: string, project_ids: array<int, int>, annotator_ids: array<int, int>, annotation_task_ids: array<int, int>, dataset_ids: array<int, int>, role: string}  $data
+     */
+    private function updateManager(User $user, array $data): User {
+        $fields = ['name' => $data['name'], 'username' => $data['username'], 'email' => $data['email']];
+        if (isset($data['password'])) {
+            $fields['password'] = $data['password'];
+        }
+
+        $user->update($fields);
+        $user->syncRoles([RolesEnum::ANNOTATION_MANAGER]);
+
+        $this->syncProjectsForManagerQuery->sync(managerId: $user->id, projectIds: $data['project_ids']);
+        $this->syncAnnotatorsForManagerQuery->sync(managerId: $user->id, annotatorIds: $data['annotator_ids']);
+        $this->syncAnnotationTasksForManagerQuery->sync(managerId: $user->id, annotationTaskIds: $data['annotation_task_ids']);
+        $this->syncDatasetsForManagerQuery->sync(managerId: $user->id, datasetIds: $data['dataset_ids']);
+
+        return $user;
     }
 
     /**
