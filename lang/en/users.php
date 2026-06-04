@@ -136,6 +136,8 @@ return [
         'name_taken' => 'A user with this name already exists.',
         'username_taken' => 'A user with this username already exists.',
         'password_mismatch' => 'The passwords do not match.',
+        'password_hint' => 'At least 8 characters, one letter and one number.',
+        'password_weak' => 'Password must be at least 8 characters and contain at least one letter and one number.',
     ],
     'delete' => [
         'title' => 'Delete User',

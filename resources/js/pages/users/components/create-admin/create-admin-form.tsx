@@ -25,6 +25,10 @@ interface CreateAdminFormProps {
 
 const LAST_STEP = 2;
 
+function isPasswordStrong(password: string): boolean {
+    return password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password);
+}
+
 const FIELD_TO_STEP: Record<string, number> = {
     name: 0,
     username: 0,
@@ -81,7 +85,7 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
                     form.data.name.trim() !== '' &&
                     form.data.username.trim() !== '' &&
                     form.data.email.trim() !== '' &&
-                    form.data.password !== '' &&
+                    isPasswordStrong(form.data.password) &&
                     form.data.password_confirmation !== '' &&
                     form.data.password === form.data.password_confirmation
                 );
@@ -159,7 +163,9 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
                             form.data.password_confirmation !== '' &&
                             form.data.password !== form.data.password_confirmation
                                 ? t('users.validation.password_mismatch')
-                                : t('users.steps.personal_info_hint'))}
+                                : form.data.password !== '' && !isPasswordStrong(form.data.password)
+                                  ? t('users.validation.password_weak')
+                                  : t('users.steps.personal_info_hint'))}
                         {currentStep === 1 && t('users.connect_projects.min_one_required')}
                         {currentStep === 2 && t('users.select_annotators.min_one_required')}
                     </p>
