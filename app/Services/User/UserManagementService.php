@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services\User;
 
 use App\Enums\RolesEnum;
+use App\Models\AnnotatorOfProject;
 use App\Models\User;
 use App\Queries\GetAnnotatorsByManagerQuery;
 use App\Queries\GetAnnotatorsQuery;
@@ -51,14 +52,19 @@ readonly class UserManagementService {
      * }
      */
     public function getDataForCreateNewManager(User $currentUser): array {
+        $myProjects = $this->projectService->getMyProjects($currentUser->id);
+        $this->augmentProjectsWithAnnotatorIds($myProjects);
+
         $data = [
-            'my_projects' => $this->projectService->getMyProjects($currentUser->id),
+            'my_projects' => $myProjects,
             'my_annotators' => $this->getMyAnnotatorsForCreate($currentUser->id),
             'annotation_tasks' => $this->projectService->getAnnotationTasks($currentUser, includeCustomizationOptions: false),
         ];
 
         if ($currentUser->hasRole(RolesEnum::ADMIN)) {
-            $data['all_projects'] = $this->projectService->getAllProjects();
+            $allProjects = $this->projectService->getAllProjects();
+            $this->augmentProjectsWithAnnotatorIds($allProjects);
+            $data['all_projects'] = $allProjects;
             $data['all_annotators'] = $this->getAllAnnotators();
         }
 
@@ -88,6 +94,7 @@ readonly class UserManagementService {
      */
     public function getDataForCreateNewAdmin(User $currentUser): array {
         $allProjects = $this->projectService->getAllProjects();
+        $this->augmentProjectsWithAnnotatorIds($allProjects);
 
         return [
             'all_projects' => $allProjects,
@@ -194,6 +201,32 @@ readonly class UserManagementService {
             $this->getAnnotatorsByManagerQuery->get($managerId),
             includeSubprojects: false,
         );
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $projects
+     */
+    private function augmentProjectsWithAnnotatorIds(array &$projects): void {
+        if ($projects === []) {
+            return;
+        }
+
+        $projectIds = array_column($projects, 'id');
+
+        $rows = AnnotatorOfProject::query()
+            ->whereIn('project_id', $projectIds)
+            ->get(['project_id', 'user_id']);
+
+        /** @var array<int, array<int, int>> $annotatorIdsByProject */
+        $annotatorIdsByProject = [];
+        foreach ($rows as $row) {
+            $annotatorIdsByProject[$row->project_id][] = $row->user_id;
+        }
+
+        foreach ($projects as &$project) {
+            $id = $project['id'];
+            $project['annotators'] = is_int($id) ? ($annotatorIdsByProject[$id] ?? []) : [];
+        }
     }
 
     /**
