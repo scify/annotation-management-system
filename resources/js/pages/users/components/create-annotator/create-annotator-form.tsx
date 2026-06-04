@@ -237,7 +237,7 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                             {form.processing && (
                                 <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
                             )}
-                            {t('users.actions.create_annotator')}
+                            {t('users.actions.create_simple')}
                         </button>
                     </div>
                 </div>
