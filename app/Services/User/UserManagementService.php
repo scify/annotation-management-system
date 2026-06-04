@@ -7,8 +7,13 @@ namespace App\Services\User;
 use App\Enums\RolesEnum;
 use App\Models\AnnotatorOfProject;
 use App\Models\User;
+use App\Queries\GetAnnotationTaskIdsByManagerQuery;
+use App\Queries\GetAnnotatorIdsByManagerQuery;
 use App\Queries\GetAnnotatorsByManagerQuery;
 use App\Queries\GetAnnotatorsQuery;
+use App\Queries\GetConnectedProjectIdsByUserQuery;
+use App\Queries\GetDatasetIdsByManagerQuery;
+use App\Queries\GetManagerIdsByAnnotatorQuery;
 use App\Queries\GetUsersByRoleQuery;
 use App\Services\Annotation\AnnotatorStatsService;
 use App\Services\Project\ProjectService;
@@ -22,6 +27,11 @@ readonly class UserManagementService {
         private GetAnnotatorsQuery $getAnnotatorsQuery,
         private ProjectService $projectService,
         private AnnotatorStatsService $annotatorStatsService,
+        private GetManagerIdsByAnnotatorQuery $getManagerIdsByAnnotatorQuery,
+        private GetAnnotatorIdsByManagerQuery $getAnnotatorIdsByManagerQuery,
+        private GetConnectedProjectIdsByUserQuery $getConnectedProjectIdsByUserQuery,
+        private GetAnnotationTaskIdsByManagerQuery $getAnnotationTaskIdsByManagerQuery,
+        private GetDatasetIdsByManagerQuery $getDatasetIdsByManagerQuery,
     ) {}
 
     /**
@@ -82,6 +92,60 @@ readonly class UserManagementService {
                 $this->getUsersByRoleQuery->getAllManagers()
             ),
         ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDataForEditAnnotator(User $targetUser): array {
+        return array_merge(
+            $this->getDataForCreateNewAnnotator(),
+            ['user' => [
+                'id' => $targetUser->id,
+                'name' => $targetUser->name,
+                'username' => $targetUser->username,
+                'status' => $targetUser->status->value,
+                'manager_ids' => $this->getManagerIdsByAnnotatorQuery->get($targetUser->id),
+            ]],
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDataForEditAdmin(User $currentUser, User $targetUser): array {
+        return array_merge(
+            $this->getDataForCreateNewAdmin($currentUser),
+            ['user' => [
+                'id' => $targetUser->id,
+                'name' => $targetUser->name,
+                'username' => $targetUser->username,
+                'email' => $targetUser->email,
+                'status' => $targetUser->status->value,
+                'project_ids' => $this->getConnectedProjectIdsByUserQuery->get($targetUser->id),
+                'annotator_ids' => $this->getAnnotatorIdsByManagerQuery->get($targetUser->id),
+            ]],
+        );
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDataForEditManager(User $currentUser, User $targetUser): array {
+        return array_merge(
+            $this->getDataForCreateNewManager($currentUser),
+            ['user' => [
+                'id' => $targetUser->id,
+                'name' => $targetUser->name,
+                'username' => $targetUser->username,
+                'email' => $targetUser->email,
+                'status' => $targetUser->status->value,
+                'project_ids' => $this->getConnectedProjectIdsByUserQuery->get($targetUser->id),
+                'annotator_ids' => $this->getAnnotatorIdsByManagerQuery->get($targetUser->id),
+                'annotation_task_ids' => $this->getAnnotationTaskIdsByManagerQuery->get($targetUser->id),
+                'dataset_ids' => $this->getDatasetIdsByManagerQuery->get($targetUser->id),
+            ]],
+        );
     }
 
     /**

@@ -146,13 +146,38 @@ class UserController extends Controller {
     /**
      * Show the form for editing the specified user.
      */
-    public function edit(User $user): Response {
+    public function edit(Request $request, User $user): Response {
         $this->authorize('update', $user);
 
-        return Inertia::render('users/edit', [
-            'user' => $user,
-            'roles' => $this->userService->getRolesForForm(),
-        ]);
+        /** @var User $currentUser */
+        $currentUser = $request->user();
+
+        $roleValue = $user->getRoleNames()->first();
+        $role = is_string($roleValue) ? RolesEnum::tryFrom($roleValue) : null;
+
+        abort_if($role === null, 422);
+
+        $props = match ($role) {
+            RolesEnum::ADMIN => [
+                'type' => RolesEnum::ADMIN->value,
+                'admin_data' => $this->userManagementService->getDataForEditAdmin($currentUser, $user),
+            ],
+            RolesEnum::ANNOTATION_MANAGER => [
+                'type' => RolesEnum::ANNOTATION_MANAGER->value,
+                'manager_data' => $this->userManagementService->getDataForEditManager($currentUser, $user),
+            ],
+            RolesEnum::ANNOTATOR => [
+                'type' => RolesEnum::ANNOTATOR->value,
+                'annotator_data' => $this->userManagementService->getDataForEditAnnotator($user),
+            ],
+        };
+
+        $json = json_encode($props, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (is_string($json)) {
+            Storage::disk('local')->put('user-management-edit-user-data-' . $role->value . '.json', $json);
+        }
+
+        return Inertia::render('users/edit', $props);
     }
 
     /**
