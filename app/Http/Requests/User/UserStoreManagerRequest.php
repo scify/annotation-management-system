@@ -25,6 +25,7 @@ class UserStoreManagerRequest extends FormRequest {
             'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')],
             'email' => ['required', 'email', Rule::unique('users', 'email')],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'password_confirmation' => ['required', 'string'],
             'project_ids' => ['required', 'array', 'min:1'],
             'project_ids.*' => ['integer', Rule::exists('projects', 'id')],
             'annotator_ids' => ['required', 'array', 'min:1'],

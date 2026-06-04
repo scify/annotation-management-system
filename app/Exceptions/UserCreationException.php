@@ -15,6 +15,10 @@ class UserCreationException extends RuntimeException implements PresentableError
         return new self((string) __('users.validation.username_taken'));
     }
 
+    public static function duplicateEmail(): self {
+        return new self((string) __('users.validation.email_taken'));
+    }
+
     public static function passwordMismatch(): self {
         return new self((string) __('users.validation.password_mismatch'));
     }

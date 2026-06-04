@@ -133,9 +133,10 @@ return [
         'restored' => 'User restored successfully',
     ],
     'validation' => [
+        'email_taken' => 'A user with this email already exists.',
         'name_taken' => 'A user with this name already exists.',
-        'username_taken' => 'A user with this username already exists.',
         'password_mismatch' => 'The passwords do not match.',
+        'username_taken' => 'A user with this username already exists.',
     ],
     'delete' => [
         'title' => 'Delete User',

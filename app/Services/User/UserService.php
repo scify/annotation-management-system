@@ -9,13 +9,18 @@ use App\Enums\StatusEnum;
 use App\Exceptions\UserCreationException;
 use App\Models\User;
 use App\Queries\ConnectAnnotatorToManagersQuery;
+use App\Queries\ConnectManagerToAnnotationTasksQuery;
+use App\Queries\ConnectManagerToAnnotatorsQuery;
+use App\Queries\ConnectManagerToDatasetsQuery;
+use App\Queries\ConnectManagerToProjectsQuery;
+use App\Queries\CreateAdminQuery;
 use App\Queries\CreateAnnotatorQuery;
+use App\Queries\CreateManagerQuery;
 use App\Queries\FindUserByEmailQuery;
 use App\Queries\FindUserByNameQuery;
 use App\Queries\FindUserByUsernameQuery;
 use App\Queries\GetUsersQuery;
 use App\Queries\GetWorkloadsByAnnotatorsQuery;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
 
@@ -28,6 +33,12 @@ readonly class UserService {
         private GetUsersQuery $getUsersQuery,
         private CreateAnnotatorQuery $createAnnotatorQuery,
         private ConnectAnnotatorToManagersQuery $connectAnnotatorToManagersQuery,
+        private CreateAdminQuery $createAdminQuery,
+        private ConnectManagerToProjectsQuery $connectManagerToProjectsQuery,
+        private ConnectManagerToAnnotatorsQuery $connectManagerToAnnotatorsQuery,
+        private CreateManagerQuery $createManagerQuery,
+        private ConnectManagerToAnnotationTasksQuery $connectManagerToAnnotationTasksQuery,
+        private ConnectManagerToDatasetsQuery $connectManagerToDatasetsQuery,
     ) {}
 
     /**
@@ -44,11 +55,17 @@ readonly class UserService {
             return $this->createAnnotator($data);
         }
 
-        return match ($role) {
-            RolesEnum::ADMIN => $this->createAdmin($data),
-            RolesEnum::ANNOTATION_MANAGER => $this->createManager($data),
-            default => throw new InvalidArgumentException('Unknown role'),
-        };
+        if ($role === RolesEnum::ADMIN) {
+            /** @var array{name: string, username: string, email: string, password: string, password_confirmation: string, project_ids: array<int, int>, annotator_ids: array<int, int>, role: string} $data */
+            return $this->createAdmin($data);
+        }
+
+        if ($role === RolesEnum::ANNOTATION_MANAGER) {
+            /** @var array{name: string, username: string, email: string, password: string, password_confirmation: string, project_ids: array<int, int>, annotator_ids: array<int, int>, annotation_task_ids: array<int, int>, dataset_ids: array<int, int>, role: string} $data */
+            return $this->createManager($data);
+        }
+
+        throw new InvalidArgumentException('Unknown role');
     }
 
     /**
@@ -153,21 +170,95 @@ readonly class UserService {
     }
 
     /**
-     * @param  array<string, mixed>  $data
+     * @param  array{name: string, username: string, email: string, password: string, password_confirmation: string, project_ids: array<int, int>, annotator_ids: array<int, int>, role: string}  $data
+     *
+     * @throws UserCreationException
      */
     private function createAdmin(array $data): User {
-        $user = User::query()->create(Arr::only($data, ['name', 'username', 'email', 'password']));
-        $user->syncRoles([RolesEnum::ADMIN]);
+        if ($this->findUserByNameQuery->exists($data['name'])) {
+            throw UserCreationException::duplicateName();
+        }
+
+        if ($this->findUserByUsernameQuery->exists($data['username'])) {
+            throw UserCreationException::duplicateUsername();
+        }
+
+        if ($this->findUserByEmailQuery->exists($data['email'])) {
+            throw UserCreationException::duplicateEmail();
+        }
+
+        if ($data['password'] !== $data['password_confirmation']) {
+            throw UserCreationException::passwordMismatch();
+        }
+
+        $user = $this->createAdminQuery->create(
+            name: $data['name'],
+            username: $data['username'],
+            email: $data['email'],
+            password: $data['password'],
+        );
+
+        $this->connectManagerToProjectsQuery->connect(
+            managerId: $user->id,
+            projectIds: $data['project_ids'],
+        );
+
+        $this->connectManagerToAnnotatorsQuery->connect(
+            managerId: $user->id,
+            annotatorIds: $data['annotator_ids'],
+        );
 
         return $user;
     }
 
     /**
-     * @param  array<string, mixed>  $data
+     * @param  array{name: string, username: string, email: string, password: string, password_confirmation: string, project_ids: array<int, int>, annotator_ids: array<int, int>, annotation_task_ids: array<int, int>, dataset_ids: array<int, int>, role: string}  $data
+     *
+     * @throws UserCreationException
      */
     private function createManager(array $data): User {
-        $user = User::query()->create(Arr::only($data, ['name', 'username', 'email', 'password']));
-        $user->syncRoles([RolesEnum::ANNOTATION_MANAGER]);
+        if ($this->findUserByNameQuery->exists($data['name'])) {
+            throw UserCreationException::duplicateName();
+        }
+
+        if ($this->findUserByUsernameQuery->exists($data['username'])) {
+            throw UserCreationException::duplicateUsername();
+        }
+
+        if ($this->findUserByEmailQuery->exists($data['email'])) {
+            throw UserCreationException::duplicateEmail();
+        }
+
+        if ($data['password'] !== $data['password_confirmation']) {
+            throw UserCreationException::passwordMismatch();
+        }
+
+        $user = $this->createManagerQuery->create(
+            name: $data['name'],
+            username: $data['username'],
+            email: $data['email'],
+            password: $data['password'],
+        );
+
+        $this->connectManagerToProjectsQuery->connect(
+            managerId: $user->id,
+            projectIds: $data['project_ids'],
+        );
+
+        $this->connectManagerToAnnotatorsQuery->connect(
+            managerId: $user->id,
+            annotatorIds: $data['annotator_ids'],
+        );
+
+        $this->connectManagerToAnnotationTasksQuery->connect(
+            managerId: $user->id,
+            annotationTaskIds: $data['annotation_task_ids'],
+        );
+
+        $this->connectManagerToDatasetsQuery->connect(
+            managerId: $user->id,
+            datasetIds: $data['dataset_ids'],
+        );
 
         return $user;
     }
