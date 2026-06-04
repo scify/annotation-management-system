@@ -189,7 +189,7 @@ export default function MonitorIndex({
     const initialTab: TabKey =
         annotator_progress_tab_data !== undefined ? 'annotator_progress' : 'annotator_history';
     const [activeTab, setActiveTab] = useState<TabKey>(initialTab);
-    const [showOnlyMine, setShowOnlyMine] = useState(false);
+    const [showOnlyMine, setShowOnlyMine] = useState(isAnnotationManager);
     const [search, setSearch] = useState('');
     const [sortNameDir, setSortNameDir] = useState<SortDir>('none');
     const [sortWorkloadDir, setSortWorkloadDir] = useState<SortDir>('none');

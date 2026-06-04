@@ -184,7 +184,7 @@ export function HistoryAnnotatorRow({ annotator }: HistoryAnnotatorRowProps) {
                                 )}
                             </span>
                             <span className="w-[126px] text-center text-xs font-medium text-slate-800">
-                                {sp.dateCompleted || '—'}
+                                {sp.dateCompleted || t('monitor.in_progress')}
                             </span>
                         </div>
                     ))}

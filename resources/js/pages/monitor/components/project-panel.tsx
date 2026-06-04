@@ -121,7 +121,10 @@ export function ProjectPanel({ project, annotatorUsername }: ProjectPanelProps) 
                                 <StatusBadge status={project.status} />
                                 <span className="ml-auto text-sm text-slate-400">
                                     ({formatDate(project.started_at)} –{' '}
-                                    {formatDate(project.completed_at)})
+                                    {project.completed_at
+                                        ? formatDate(project.completed_at)
+                                        : t('monitor.in_progress')}
+                                    )
                                 </span>
                             </div>
                         </div>
