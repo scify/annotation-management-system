@@ -26,6 +26,7 @@ return [
         'create_manager' => 'Create New Manager',
         'create_admin' => 'Create New Admin',
         'create_annotator' => 'Create New Annotator',
+        'create_simple' => 'Create',
         'next' => 'Next',
         'back' => 'Back',
         'cancel' => 'Cancel',
