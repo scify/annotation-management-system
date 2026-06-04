@@ -141,44 +141,20 @@ readonly class ProjectService {
     /**
      * @return array<string, mixed>
      */
-    public function getDataForProjectsPage(User $user, bool $withFilters = true): array {
+    public function getDataForProjectsPage(User $user): array {
         $roleName = $user->getRoleNames()->first();
 
         if ($roleName === RolesEnum::ADMIN->value) {
             $allProjects = $this->getAllProjects();
             $myProjects = $this->getMyProjects($user->id, $allProjects);
 
-            $data = [
+            return [
                 'all_projects' => $allProjects,
                 'my_projects' => $myProjects,
             ];
-
-            if ($withFilters) {
-                $data['all_data_filter'] = [
-                    'tasks_filter' => $this->extractTaskFilters($allProjects),
-                    'datasets_filter' => $this->extractDatasetFilters($allProjects),
-                ];
-                $data['my_data_filter'] = [
-                    'tasks_filter' => $this->extractTaskFilters($myProjects),
-                    'datasets_filter' => $this->extractDatasetFilters($myProjects),
-                ];
-            }
-
-            return $data;
         }
 
-        $myProjects = $this->getMyProjects($user->id);
-
-        $data = ['my_projects' => $myProjects];
-
-        if ($withFilters) {
-            $data['my_data_filter'] = [
-                'tasks_filter' => $this->extractTaskFilters($myProjects),
-                'datasets_filter' => $this->extractDatasetFilters($myProjects),
-            ];
-        }
-
-        return $data;
+        return ['my_projects' => $this->getMyProjects($user->id)];
     }
 
     /**
@@ -546,46 +522,6 @@ readonly class ProjectService {
             ->map(fn (TaskTag $tag): array => ['id' => $tag->id, 'name' => $tag->name])
             ->values()
             ->all();
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $projects
-     *
-     * @return array<int, array{id: mixed, title: mixed}>
-     */
-    private function extractTaskFilters(array $projects): array {
-        $seen = [];
-        $tasks = [];
-        foreach ($projects as $project) {
-            /** @var int|string $id */
-            $id = $project['annotation_task_id'];
-            if (! isset($seen[$id])) {
-                $seen[$id] = true;
-                $tasks[] = ['id' => $id, 'title' => $project['annotation_task_title']];
-            }
-        }
-
-        return $tasks;
-    }
-
-    /**
-     * @param  array<int, array<string, mixed>>  $projects
-     *
-     * @return array<int, array{id: mixed, name: mixed}>
-     */
-    private function extractDatasetFilters(array $projects): array {
-        $seen = [];
-        $datasets = [];
-        foreach ($projects as $project) {
-            /** @var int|string $id */
-            $id = $project['dataset_id'];
-            if (! isset($seen[$id])) {
-                $seen[$id] = true;
-                $datasets[] = ['id' => $id, 'name' => $project['dataset_name']];
-            }
-        }
-
-        return $datasets;
     }
 
     /**

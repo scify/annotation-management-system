@@ -1,26 +1,21 @@
-import { InitialsAvatar } from '@/components/ui/initials-avatar';
-import { Input } from '@/components/ui/input';
+import { FilterableProjectList } from '@/components/project/filterable-project-list';
 import { STATUS_VARIANT, toInitials } from '@/components/project/project-card';
 import { Badge } from '@/components/ui/badge';
+import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import type { Project } from '@/types';
 import { formatDateDMY } from '@/utils/format';
 import {
-    ArrowUpDown,
     BellRing,
     Check,
-    ChevronDown,
     CircleAlert,
     Container,
     Database,
     FolderDot,
     FolderOpenDot,
-    ListFilter,
-    Search,
     UserRound,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
 
 export const MOCK_PROJECT_ANNOTATORS: Record<number, number[]> = {
     1: [1, 2],
@@ -269,6 +264,53 @@ interface ConnectProjectsStepProps {
     showMineToggle?: boolean;
 }
 
+function SelectAllButton({
+    displayedProjects,
+    selectedProjectIds,
+    onSelectionChange,
+}: {
+    displayedProjects: Project[];
+    selectedProjectIds: number[];
+    onSelectionChange: (ids: number[]) => void;
+}) {
+    const { t } = useTranslations();
+    const allSelected =
+        displayedProjects.length > 0 &&
+        displayedProjects.every((p) => selectedProjectIds.includes(p.id));
+
+    function toggleAll() {
+        if (allSelected) {
+            const displayedIds = new Set(displayedProjects.map((p) => p.id));
+            onSelectionChange(selectedProjectIds.filter((id) => !displayedIds.has(id)));
+        } else {
+            onSelectionChange([
+                ...new Set([...selectedProjectIds, ...displayedProjects.map((p) => p.id)]),
+            ]);
+        }
+    }
+
+    return (
+        <button
+            type="button"
+            onClick={toggleAll}
+            className="flex w-fit items-center gap-3 text-sm text-slate-700"
+        >
+            <span
+                aria-hidden="true"
+                className={cn(
+                    'flex size-[18px] shrink-0 items-center justify-center rounded border-2',
+                    allSelected
+                        ? 'border-brand-blue-700 bg-brand-blue-700'
+                        : 'border-slate-300 bg-white'
+                )}
+            >
+                {allSelected && <Check className="size-3 text-white" strokeWidth={3} />}
+            </span>
+            {t('users.connect_projects.select_all')}
+        </button>
+    );
+}
+
 export function ConnectProjectsStep({
     projects,
     myProjects,
@@ -277,18 +319,6 @@ export function ConnectProjectsStep({
     showMineToggle = true,
 }: ConnectProjectsStepProps) {
     const { t, trans } = useTranslations();
-    const [searchQuery, setSearchQuery] = useState('');
-    const [showOnlyMine, setShowOnlyMine] = useState(false);
-
-    const source = showOnlyMine ? myProjects : projects;
-
-    const filtered = useMemo(
-        () => source.filter((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase())),
-        [source, searchQuery]
-    );
-
-    const allSelected =
-        filtered.length > 0 && filtered.every((p) => selectedProjectIds.includes(p.id));
 
     function toggleProject(id: number) {
         onSelectionChange(
@@ -298,136 +328,44 @@ export function ConnectProjectsStep({
         );
     }
 
-    function toggleAll() {
-        if (allSelected) {
-            const filteredIds = new Set(filtered.map((p) => p.id));
-            onSelectionChange(selectedProjectIds.filter((id) => !filteredIds.has(id)));
-        } else {
-            onSelectionChange([...new Set([...selectedProjectIds, ...filtered.map((p) => p.id)])]);
-        }
-    }
-
     return (
         <div className="flex flex-col gap-4">
             {/* Heading row */}
-            <div className="flex items-start justify-between gap-4">
-                <div className="flex flex-col gap-0.5">
-                    <h2 className="text-xl font-medium text-slate-800">
-                        {t('users.connect_projects.heading')}
-                    </h2>
-                    <p className="text-sm text-slate-500">
-                        {trans('users.connect_projects.selected', {
-                            count: selectedProjectIds.length,
-                        })}
-                    </p>
-                </div>
+            <div className="flex flex-col gap-0.5">
+                <h2 className="text-xl font-medium text-slate-800">
+                    {t('users.connect_projects.heading')}
+                </h2>
+                <p className="text-sm text-slate-500">
+                    {trans('users.connect_projects.selected', {
+                        count: selectedProjectIds.length,
+                    })}
+                </p>
+            </div>
 
-                {showMineToggle && (
-                    <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
-                        <button
-                            type="button"
-                            role="switch"
-                            aria-checked={showOnlyMine}
-                            onClick={() => setShowOnlyMine((v) => !v)}
-                            className={cn(
-                                'focus-visible:ring-brand-blue-700 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:ring-2 focus-visible:outline-none',
-                                showOnlyMine ? 'bg-brand-blue-700' : 'bg-slate-200'
-                            )}
-                        >
-                            <span
-                                className={cn(
-                                    'pointer-events-none inline-block size-5 rounded-full bg-white shadow-lg transition-transform',
-                                    showOnlyMine ? 'translate-x-5' : 'translate-x-0'
-                                )}
-                            />
-                        </button>
-                        {t('users.connect_projects.show_only_mine')}
-                    </label>
+            <FilterableProjectList
+                projects={projects}
+                myProjects={myProjects}
+                showMineToggle={showMineToggle}
+                mineToggleLabel={t('users.connect_projects.show_only_mine')}
+                searchPlaceholder={t('users.connect_projects.search_placeholder')}
+                emptyLabel={t('users.connect_projects.no_projects')}
+                listClassName="flex flex-col gap-3"
+                listAriaLabel={t('users.connect_projects.heading')}
+                renderBeforeList={(displayedProjects) => (
+                    <SelectAllButton
+                        displayedProjects={displayedProjects}
+                        selectedProjectIds={selectedProjectIds}
+                        onSelectionChange={onSelectionChange}
+                    />
                 )}
-            </div>
-
-            {/* Filter/search bar */}
-            <div className="flex items-center gap-3">
-                {/* TODO: wire filter/sort when backend connected */}
-                <button
-                    type="button"
-                    disabled
-                    className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 opacity-60"
-                >
-                    <ListFilter className="size-4 shrink-0 text-slate-500" aria-hidden="true" />
-                    {t('users.connect_projects.filter')}
-                    <ChevronDown className="size-4 shrink-0 text-slate-400" aria-hidden="true" />
-                </button>
-                <button
-                    type="button"
-                    disabled
-                    className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 opacity-60"
-                >
-                    <ArrowUpDown className="size-4 shrink-0 text-slate-500" aria-hidden="true" />
-                    {t('users.connect_projects.sorting')}
-                    <ChevronDown className="size-4 shrink-0 text-slate-400" aria-hidden="true" />
-                </button>
-
-                <div className="relative ml-auto w-72">
-                    <Search
-                        className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400"
-                        aria-hidden="true"
+                renderItem={(project) => (
+                    <SelectableProjectItem
+                        project={project}
+                        isSelected={selectedProjectIds.includes(project.id)}
+                        onToggle={() => toggleProject(project.id)}
                     />
-                    <Input
-                        type="search"
-                        name="project-search"
-                        placeholder={t('users.connect_projects.search_placeholder')}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-9"
-                        aria-label={t('users.connect_projects.search_placeholder')}
-                    />
-                </div>
-            </div>
-
-            {/* Select all */}
-            <button
-                type="button"
-                onClick={toggleAll}
-                className="flex w-fit items-center gap-3 text-sm text-slate-700"
-            >
-                <span
-                    aria-hidden="true"
-                    className={cn(
-                        'flex size-[18px] shrink-0 items-center justify-center rounded border-2',
-                        allSelected
-                            ? 'border-brand-blue-700 bg-brand-blue-700'
-                            : 'border-slate-300 bg-white'
-                    )}
-                >
-                    {allSelected && <Check className="size-3 text-white" strokeWidth={3} />}
-                </span>
-                {t('users.connect_projects.select_all')}
-            </button>
-
-            {/* Project list */}
-            {filtered.length === 0 ? (
-                <div className="flex items-center justify-center rounded-2xl border border-slate-200 bg-white p-14">
-                    <p className="text-sm text-slate-400">
-                        {t('users.connect_projects.no_projects')}
-                    </p>
-                </div>
-            ) : (
-                <div
-                    role="group"
-                    aria-label={t('users.connect_projects.heading')}
-                    className="flex flex-col gap-3"
-                >
-                    {filtered.map((project) => (
-                        <SelectableProjectItem
-                            key={project.id}
-                            project={project}
-                            isSelected={selectedProjectIds.includes(project.id)}
-                            onToggle={() => toggleProject(project.id)}
-                        />
-                    ))}
-                </div>
-            )}
+                )}
+            />
         </div>
     );
 }
