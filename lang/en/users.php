@@ -126,6 +126,11 @@ return [
         'deleted' => 'User deleted successfully',
         'restored' => 'User restored successfully',
     ],
+    'validation' => [
+        'name_taken' => 'A user with this name already exists.',
+        'username_taken' => 'A user with this username already exists.',
+        'password_mismatch' => 'The passwords do not match.',
+    ],
     'delete' => [
         'title' => 'Delete User',
         'description' => 'Are you sure you want to delete this user?',

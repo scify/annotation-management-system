@@ -6,32 +6,49 @@ namespace App\Services\User;
 
 use App\Enums\RolesEnum;
 use App\Enums\StatusEnum;
+use App\Exceptions\UserCreationException;
 use App\Models\User;
+use App\Queries\ConnectAnnotatorToManagersQuery;
+use App\Queries\CreateAnnotatorQuery;
 use App\Queries\FindUserByEmailQuery;
+use App\Queries\FindUserByNameQuery;
+use App\Queries\FindUserByUsernameQuery;
 use App\Queries\GetUsersQuery;
 use App\Queries\GetWorkloadsByAnnotatorsQuery;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 
 readonly class UserService {
     public function __construct(
         private FindUserByEmailQuery $findUserByEmailQuery,
+        private FindUserByNameQuery $findUserByNameQuery,
+        private FindUserByUsernameQuery $findUserByUsernameQuery,
         private GetWorkloadsByAnnotatorsQuery $getUserWorkloadsQuery,
         private GetUsersQuery $getUsersQuery,
+        private CreateAnnotatorQuery $createAnnotatorQuery,
+        private ConnectAnnotatorToManagersQuery $connectAnnotatorToManagersQuery,
     ) {}
 
     /**
      * @param  array<string, mixed>  $data
+     *
+     * @throws UserCreationException
      */
     public function create(array $data): User {
-        $role = $data['role'] ?? RolesEnum::ANNOTATOR->value;
+        $roleValue = $data['role'] ?? null;
+        $role = is_string($roleValue) ? RolesEnum::tryFrom($roleValue) : null;
 
-        $user = User::query()->create(
-            Arr::only($data, ['name', 'username', 'email', 'password'])
-        );
-        $user->syncRoles([$role]);
+        if ($role === RolesEnum::ANNOTATOR) {
+            /** @var array{name: string, username: string, password: string, password_confirmation: string, manager_ids: array<int, int>, role: string} $data */
+            return $this->createAnnotator($data);
+        }
 
-        return $user;
+        return match ($role) {
+            RolesEnum::ADMIN => $this->createAdmin($data),
+            RolesEnum::ANNOTATION_MANAGER => $this->createManager($data),
+            default => throw new InvalidArgumentException('Unknown role'),
+        };
     }
 
     /**
@@ -101,5 +118,57 @@ readonly class UserService {
             'name' => $rolesEnum->value,
             'label' => 'roles.' . $rolesEnum->value,
         ])->values();
+    }
+
+    /**
+     * @param  array{name: string, username: string, password: string, password_confirmation: string, manager_ids: array<int, int>, role: string}  $data
+     *
+     * @throws UserCreationException
+     */
+    private function createAnnotator(array $data): User {
+        if ($this->findUserByNameQuery->exists($data['name'])) {
+            throw UserCreationException::duplicateName();
+        }
+
+        if ($this->findUserByUsernameQuery->exists($data['username'])) {
+            throw UserCreationException::duplicateUsername();
+        }
+
+        if ($data['password'] !== $data['password_confirmation']) {
+            throw UserCreationException::passwordMismatch();
+        }
+
+        $user = $this->createAnnotatorQuery->create(
+            name: $data['name'],
+            username: $data['username'],
+            password: $data['password'],
+        );
+
+        $this->connectAnnotatorToManagersQuery->connect(
+            annotatorId: $user->id,
+            managerIds: $data['manager_ids'],
+        );
+
+        return $user;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function createAdmin(array $data): User {
+        $user = User::query()->create(Arr::only($data, ['name', 'username', 'email', 'password']));
+        $user->syncRoles([RolesEnum::ADMIN]);
+
+        return $user;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function createManager(array $data): User {
+        $user = User::query()->create(Arr::only($data, ['name', 'username', 'email', 'password']));
+        $user->syncRoles([RolesEnum::ANNOTATION_MANAGER]);
+
+        return $user;
     }
 }

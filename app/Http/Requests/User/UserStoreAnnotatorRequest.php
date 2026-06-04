@@ -24,6 +24,7 @@ class UserStoreAnnotatorRequest extends FormRequest {
             'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')],
             'password' => ['required', 'confirmed', Password::defaults()],
+            'password_confirmation' => ['required', 'string'],
             'manager_ids' => ['required', 'array', 'min:1'],
             'manager_ids.*' => ['integer', Rule::exists('users', 'id')],
         ];

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\RolesEnum;
+use App\Exceptions\PresentableError;
 use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserStoreAdminRequest;
 use App\Http\Requests\User\UserStoreAnnotatorRequest;
@@ -119,9 +120,13 @@ class UserController extends Controller {
         $storeRequest = resolve($requestClass);
         $storeRequest->validateResolved();
 
-        $this->userService->create(
-            array_merge($storeRequest->validated(), ['role' => $type->value])
-        );
+        try {
+            $this->userService->create(
+                array_merge($storeRequest->validated(), ['role' => $type->value])
+            );
+        } catch (PresentableError $presentableError) {
+            return back()->with('error', $presentableError->getUserMessage());
+        }
 
         return to_route('users.index')
             ->with('success', __('users.messages.created'));
