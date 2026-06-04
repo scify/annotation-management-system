@@ -1,24 +1,16 @@
 import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { type AnnotatorCreateData, RolesEnum } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
-import { Check, LoaderCircle } from 'lucide-react';
+import { Check, Info, LoaderCircle } from 'lucide-react';
 
 export interface CreateAnnotatorFormData {
     name: string;
     username: string;
     password: string;
     password_confirmation: string;
-    status: 'active' | 'inactive';
     manager_ids: number[];
 }
 
@@ -96,7 +88,6 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
         username: '',
         password: '',
         password_confirmation: '',
-        status: 'active',
         manager_ids: [],
     });
 
@@ -177,26 +168,21 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                             />
                         </Field>
                         <Field label={t('users.labels.status')}>
-                            <Select
-                                value={form.data.status}
-                                onValueChange={(v) =>
-                                    handleChange({
-                                        status: v as CreateAnnotatorFormData['status'],
-                                    })
-                                }
+                            <div className="flex h-10 w-full items-center rounded-md border border-slate-200 bg-white px-2.5 text-base text-slate-500">
+                                {t('users.status.pending')}
+                            </div>
+                            <div
+                                role="note"
+                                className="border-brand-blue-300 bg-brand-blue-50 flex items-start gap-2 rounded-md border p-4"
                             >
-                                <SelectTrigger className="bg-white">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="active">
-                                        {t('users.status.active')}
-                                    </SelectItem>
-                                    <SelectItem value="inactive">
-                                        {t('users.status.inactive')}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                                <Info
+                                    className="text-brand-blue-700 h-6 w-6 shrink-0"
+                                    aria-hidden="true"
+                                />
+                                <p className="text-brand-blue-800 text-sm font-medium">
+                                    {t('users.status.pending_note')}
+                                </p>
+                            </div>
                         </Field>
                     </div>
                 </div>
