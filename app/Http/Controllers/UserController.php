@@ -10,7 +10,9 @@ use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserStoreAdminRequest;
 use App\Http\Requests\User\UserStoreAnnotatorRequest;
 use App\Http\Requests\User\UserStoreManagerRequest;
-use App\Http\Requests\User\UserUpdateRequest;
+use App\Http\Requests\User\UserUpdateAdminRequest;
+use App\Http\Requests\User\UserUpdateAnnotatorRequest;
+use App\Http\Requests\User\UserUpdateManagerRequest;
 use App\Http\Requests\User\UserViewRequest;
 use App\Models\User;
 use App\Services\User\UserManagementService;
@@ -183,10 +185,27 @@ class UserController extends Controller {
     /**
      * Update the specified user.
      */
-    public function update(UserUpdateRequest $userUpdateRequest, User $user): RedirectResponse {
+    public function update(Request $request, User $user): RedirectResponse {
         $this->authorize('update', $user);
 
-        $this->userService->update($user, $userUpdateRequest->validated());
+        $type = $request->enum('type', RolesEnum::class);
+
+        abort_if($type === null, 422);
+
+        $requestClass = match ($type) {
+            RolesEnum::ADMIN => UserUpdateAdminRequest::class,
+            RolesEnum::ANNOTATION_MANAGER => UserUpdateManagerRequest::class,
+            RolesEnum::ANNOTATOR => UserUpdateAnnotatorRequest::class,
+        };
+
+        /** @var UserUpdateAdminRequest|UserUpdateAnnotatorRequest|UserUpdateManagerRequest $updateRequest */
+        $updateRequest = resolve($requestClass);
+
+        try {
+            $this->userService->update($user, array_merge($updateRequest->validated(), ['role' => $type->value]));
+        } catch (PresentableError $presentableError) {
+            return back()->with('error', $presentableError->getUserMessage());
+        }
 
         return to_route('users.index')
             ->with('success', __('users.messages.updated'));
