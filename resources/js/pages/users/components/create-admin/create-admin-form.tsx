@@ -2,7 +2,7 @@ import { useTranslations } from '@/hooks/use-translations';
 import { type AdminCreateData, RolesEnum } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, LoaderCircle, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CreateManagerStepper } from '../create-manager/create-manager-stepper';
 import { ConnectAnnotatorsStep } from '../create-manager/steps/connect-annotators-step';
 import { ConnectProjectsStep } from '../create-manager/steps/connect-projects-step';
@@ -25,6 +25,16 @@ interface CreateAdminFormProps {
 
 const LAST_STEP = 2;
 
+const FIELD_TO_STEP: Record<string, number> = {
+    name: 0,
+    username: 0,
+    email: 0,
+    password: 0,
+    password_confirmation: 0,
+    project_ids: 1,
+    annotator_ids: 2,
+};
+
 export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
     const { t } = useTranslations();
     const [currentStep, setCurrentStep] = useState(0);
@@ -46,6 +56,20 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
         { label: t('users.steps.connect_annotators') },
     ];
 
+    useEffect(() => {
+        const errorKeys = Object.keys(form.errors);
+        if (errorKeys.length === 0) return;
+        const firstStep = errorKeys.reduce(
+            (min, field) => Math.min(min, FIELD_TO_STEP[field] ?? 0),
+            Infinity
+        );
+        if (Number.isFinite(firstStep)) setCurrentStep(firstStep);
+    }, [form.errors]);
+
+    const stepsWithErrors = [
+        ...new Set(Object.keys(form.errors).map((field) => FIELD_TO_STEP[field] ?? 0)),
+    ];
+
     function handleChange(updates: Partial<CreateAdminFormData>) {
         form.setData({ ...form.data, ...updates });
     }
@@ -58,7 +82,8 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
                     form.data.username.trim() !== '' &&
                     form.data.email.trim() !== '' &&
                     form.data.password !== '' &&
-                    form.data.password_confirmation !== ''
+                    form.data.password_confirmation !== '' &&
+                    form.data.password === form.data.password_confirmation
                 );
             case 1:
                 return form.data.project_ids.length >= 1;
@@ -93,13 +118,18 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
                 {t('users.actions.create_admin')}
             </h1>
 
-            <CreateManagerStepper currentStep={currentStep} steps={steps} />
+            <CreateManagerStepper
+                currentStep={currentStep}
+                steps={steps}
+                stepsWithErrors={stepsWithErrors}
+            />
 
             <div>
                 {currentStep === 0 && (
                     <PersonalInfoStep
                         data={form.data}
                         onChange={(updates) => handleChange(updates)}
+                        errors={form.errors}
                     />
                 )}
                 {currentStep === 1 && (
@@ -124,7 +154,12 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
             <div className="flex items-center justify-end gap-3">
                 {!isStepValid(currentStep) && (
                     <p role="alert" className="mr-auto text-sm text-slate-500">
-                        {currentStep === 0 && t('users.steps.personal_info_hint')}
+                        {currentStep === 0 &&
+                            (form.data.password !== '' &&
+                            form.data.password_confirmation !== '' &&
+                            form.data.password !== form.data.password_confirmation
+                                ? t('users.validation.password_mismatch')
+                                : t('users.steps.personal_info_hint'))}
                         {currentStep === 1 && t('users.connect_projects.min_one_required')}
                         {currentStep === 2 && t('users.select_annotators.min_one_required')}
                     </p>

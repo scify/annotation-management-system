@@ -118,7 +118,6 @@ class UserController extends Controller {
 
         /** @var UserStoreAdminRequest|UserStoreAnnotatorRequest|UserStoreManagerRequest $storeRequest */
         $storeRequest = resolve($requestClass);
-        $storeRequest->validateResolved();
 
         try {
             $this->userService->create(

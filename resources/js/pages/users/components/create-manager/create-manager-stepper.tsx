@@ -9,12 +9,14 @@ export interface CreateManagerStep {
 interface CreateManagerStepperProps {
     currentStep: number;
     steps: CreateManagerStep[];
+    stepsWithErrors?: number[];
     ariaLabel?: string;
 }
 
 export function CreateManagerStepper({
     currentStep,
     steps,
+    stepsWithErrors = [],
     ariaLabel = 'Create manager progress',
 }: CreateManagerStepperProps) {
     return (
@@ -22,6 +24,7 @@ export function CreateManagerStepper({
             {steps.map((step, index) => {
                 const isActive = index === currentStep;
                 const isCompleted = index < currentStep;
+                const hasError = stepsWithErrors.includes(index);
 
                 return (
                     <Fragment key={step.label}>
@@ -30,7 +33,7 @@ export function CreateManagerStepper({
                                 aria-hidden="true"
                                 className={cn(
                                     'h-px flex-1',
-                                    isCompleted ? 'bg-brand-blue-700' : 'bg-slate-300'
+                                    isCompleted && !hasError ? 'bg-brand-blue-700' : 'bg-slate-300'
                                 )}
                             />
                         )}
@@ -38,13 +41,25 @@ export function CreateManagerStepper({
                             <div
                                 aria-current={isActive ? 'step' : undefined}
                                 className={cn(
-                                    'border-brand-blue-700 flex size-10 shrink-0 items-center justify-center rounded-full border',
-                                    isCompleted && 'bg-brand-blue-800',
-                                    isActive && 'bg-brand-blue-100',
-                                    !isActive && !isCompleted && 'bg-white'
+                                    'flex size-10 shrink-0 items-center justify-center rounded-full border',
+                                    hasError
+                                        ? 'border-red-600 bg-red-600'
+                                        : cn(
+                                              'border-brand-blue-700',
+                                              isCompleted && 'bg-brand-blue-800',
+                                              isActive && 'bg-brand-blue-100',
+                                              !isActive && !isCompleted && 'bg-white'
+                                          )
                                 )}
                             >
-                                {isCompleted ? (
+                                {hasError ? (
+                                    <span
+                                        className="text-sm font-bold text-white"
+                                        aria-label="has errors"
+                                    >
+                                        !
+                                    </span>
+                                ) : isCompleted ? (
                                     <Check className="size-5 text-white" aria-hidden="true" />
                                 ) : (
                                     <span className="text-brand-blue-800 text-sm font-semibold">
@@ -54,8 +69,15 @@ export function CreateManagerStepper({
                             </div>
                             <span
                                 className={cn(
-                                    'text-sm whitespace-nowrap text-slate-800',
-                                    isActive || isCompleted ? 'font-semibold' : 'font-normal'
+                                    'text-sm whitespace-nowrap',
+                                    hasError
+                                        ? 'font-semibold text-red-600'
+                                        : cn(
+                                              'text-slate-800',
+                                              isActive || isCompleted
+                                                  ? 'font-semibold'
+                                                  : 'font-normal'
+                                          )
                                 )}
                             >
                                 {step.label}

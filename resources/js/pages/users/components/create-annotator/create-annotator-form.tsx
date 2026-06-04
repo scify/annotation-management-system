@@ -108,6 +108,7 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
         form.data.username.trim() !== '' &&
         form.data.password !== '' &&
         form.data.password_confirmation !== '' &&
+        form.data.password === form.data.password_confirmation &&
         form.data.manager_ids.length >= 1;
 
     function handleSubmit() {
@@ -136,6 +137,11 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                                 spellCheck={false}
                                 required
                             />
+                            {form.errors.name && (
+                                <p role="alert" className="text-sm font-medium text-red-500">
+                                    {form.errors.name}
+                                </p>
+                            )}
                         </Field>
                         <Field label={t('users.labels.username')} required>
                             <Input
@@ -146,6 +152,11 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                                 spellCheck={false}
                                 required
                             />
+                            {form.errors.username && (
+                                <p role="alert" className="text-sm font-medium text-red-500">
+                                    {form.errors.username}
+                                </p>
+                            )}
                         </Field>
                         <Field label={t('users.labels.password')} required>
                             <Input
@@ -155,6 +166,11 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                                 autoComplete="new-password"
                                 required
                             />
+                            {form.errors.password && (
+                                <p role="alert" className="text-sm font-medium text-red-500">
+                                    {form.errors.password}
+                                </p>
+                            )}
                         </Field>
                         <Field label={t('users.labels.password_confirmation')} required>
                             <Input
@@ -166,6 +182,11 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                                 autoComplete="new-password"
                                 required
                             />
+                            {form.errors.password_confirmation && (
+                                <p role="alert" className="text-sm font-medium text-red-500">
+                                    {form.errors.password_confirmation}
+                                </p>
+                            )}
                         </Field>
                         <Field label={t('users.labels.status')}>
                             <div className="flex h-10 w-full items-center rounded-md border border-slate-200 bg-white px-2.5 text-base text-slate-500">
@@ -210,16 +231,25 @@ export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps)
                             ))}
                         </div>
                     </div>
+                    {form.errors.manager_ids && (
+                        <p role="alert" className="text-sm font-medium text-red-500">
+                            {form.errors.manager_ids}
+                        </p>
+                    )}
                     <div className="flex items-center justify-end gap-4">
                         {!isValid && (
                             <p role="alert" className="mr-auto text-sm text-slate-500">
-                                {form.data.manager_ids.length === 0 &&
-                                form.data.name.trim() !== '' &&
-                                form.data.username.trim() !== '' &&
-                                form.data.password !== '' &&
-                                form.data.password_confirmation !== ''
-                                    ? t('users.create_annotator.min_one_required')
-                                    : t('users.steps.personal_info_hint')}
+                                {form.data.password !== '' &&
+                                form.data.password_confirmation !== '' &&
+                                form.data.password !== form.data.password_confirmation
+                                    ? t('users.validation.password_mismatch')
+                                    : form.data.manager_ids.length === 0 &&
+                                        form.data.name.trim() !== '' &&
+                                        form.data.username.trim() !== '' &&
+                                        form.data.password !== '' &&
+                                        form.data.password_confirmation !== ''
+                                      ? t('users.create_annotator.min_one_required')
+                                      : t('users.steps.personal_info_hint')}
                             </p>
                         )}
                         <Link

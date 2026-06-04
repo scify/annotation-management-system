@@ -2,7 +2,7 @@ import { useTranslations } from '@/hooks/use-translations';
 import { type ManagerCreateData, RolesEnum } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, LoaderCircle, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CreateManagerStepper } from './create-manager-stepper';
 import { ConnectAnnotatorsStep } from './steps/connect-annotators-step';
 import { ConnectProjectsStep } from './steps/connect-projects-step';
@@ -29,6 +29,18 @@ interface CreateManagerFormProps {
 
 const LAST_STEP = 4;
 
+const FIELD_TO_STEP: Record<string, number> = {
+    name: 0,
+    username: 0,
+    email: 0,
+    password: 0,
+    password_confirmation: 0,
+    annotation_task_ids: 1,
+    dataset_ids: 2,
+    project_ids: 3,
+    annotator_ids: 4,
+};
+
 export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
     const { t } = useTranslations();
     const [currentStep, setCurrentStep] = useState(0);
@@ -54,6 +66,20 @@ export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
         { label: t('users.steps.connect_annotators') },
     ];
 
+    useEffect(() => {
+        const errorKeys = Object.keys(form.errors);
+        if (errorKeys.length === 0) return;
+        const firstStep = errorKeys.reduce(
+            (min, field) => Math.min(min, FIELD_TO_STEP[field] ?? 0),
+            Infinity
+        );
+        if (Number.isFinite(firstStep)) setCurrentStep(firstStep);
+    }, [form.errors]);
+
+    const stepsWithErrors = [
+        ...new Set(Object.keys(form.errors).map((field) => FIELD_TO_STEP[field] ?? 0)),
+    ];
+
     function handleChange(updates: Partial<CreateManagerFormData>) {
         form.setData({ ...form.data, ...updates });
     }
@@ -66,7 +92,8 @@ export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
                     form.data.username.trim() !== '' &&
                     form.data.email.trim() !== '' &&
                     form.data.password !== '' &&
-                    form.data.password_confirmation !== ''
+                    form.data.password_confirmation !== '' &&
+                    form.data.password === form.data.password_confirmation
                 );
             case 1:
                 return form.data.annotation_task_ids.length >= 1;
@@ -105,13 +132,18 @@ export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
                 {t('users.actions.create_manager')}
             </h1>
 
-            <CreateManagerStepper currentStep={currentStep} steps={steps} />
+            <CreateManagerStepper
+                currentStep={currentStep}
+                steps={steps}
+                stepsWithErrors={stepsWithErrors}
+            />
 
             <div>
                 {currentStep === 0 && (
                     <PersonalInfoStep
                         data={form.data}
                         onChange={(updates) => handleChange(updates)}
+                        errors={form.errors}
                     />
                 )}
                 {currentStep === 1 && (
@@ -154,7 +186,12 @@ export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
             <div className="flex items-center justify-end gap-3">
                 {!isStepValid(currentStep) && (
                     <p role="alert" className="mr-auto text-sm text-slate-500">
-                        {currentStep === 0 && t('users.steps.personal_info_hint')}
+                        {currentStep === 0 &&
+                            (form.data.password !== '' &&
+                            form.data.password_confirmation !== '' &&
+                            form.data.password !== form.data.password_confirmation
+                                ? t('users.validation.password_mismatch')
+                                : t('users.steps.personal_info_hint'))}
                         {currentStep === 1 && t('users.tasks_access.min_one_required')}
                         {currentStep === 2 && t('users.datasets.min_one_required')}
                         {currentStep === 3 && t('users.connect_projects.min_one_required')}

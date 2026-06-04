@@ -14,6 +14,7 @@ export interface PersonalInfoData {
 interface PersonalInfoStepProps {
     data: PersonalInfoData;
     onChange: (updates: Partial<PersonalInfoData>) => void;
+    errors?: Partial<Record<string, string>>;
 }
 
 interface FieldProps {
@@ -38,7 +39,7 @@ function Field({ label, required, children }: FieldProps) {
     );
 }
 
-export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
+export function PersonalInfoStep({ data, onChange, errors }: PersonalInfoStepProps) {
     const { t } = useTranslations();
 
     return (
@@ -55,6 +56,11 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
                             spellCheck={false}
                             required
                         />
+                        {errors?.name && (
+                            <p role="alert" className="text-sm font-medium text-red-500">
+                                {errors.name}
+                            </p>
+                        )}
                     </Field>
                     <Field label={t('users.labels.username')} required>
                         <Input
@@ -65,6 +71,11 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
                             spellCheck={false}
                             required
                         />
+                        {errors?.username && (
+                            <p role="alert" className="text-sm font-medium text-red-500">
+                                {errors.username}
+                            </p>
+                        )}
                     </Field>
                     <Field label={t('users.labels.email')} required>
                         <Input
@@ -75,6 +86,11 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
                             spellCheck={false}
                             required
                         />
+                        {errors?.email && (
+                            <p role="alert" className="text-sm font-medium text-red-500">
+                                {errors.email}
+                            </p>
+                        )}
                     </Field>
                     <Field label={t('users.labels.password')} required>
                         <Input
@@ -84,6 +100,11 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
                             autoComplete="new-password"
                             required
                         />
+                        {errors?.password && (
+                            <p role="alert" className="text-sm font-medium text-red-500">
+                                {errors.password}
+                            </p>
+                        )}
                     </Field>
                     <Field label={t('users.labels.password_confirmation')} required>
                         <Input
@@ -93,6 +114,11 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
                             autoComplete="new-password"
                             required
                         />
+                        {errors?.password_confirmation && (
+                            <p role="alert" className="text-sm font-medium text-red-500">
+                                {errors.password_confirmation}
+                            </p>
+                        )}
                     </Field>
                 </div>
 
