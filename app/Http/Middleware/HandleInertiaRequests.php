@@ -25,7 +25,7 @@ class HandleInertiaRequests extends Middleware {
         $user = $request->user();
         $userId = $user !== null ? (string) $user->id : '0';
 
-        return md5(($base ?? '') . '|' . $userId);
+        return hash('xxh128', ($base ?? '') . '|' . $userId);
     }
 
     /**

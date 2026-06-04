@@ -1,7 +1,7 @@
 import { useTranslations } from '@/hooks/use-translations';
-import { type AdminCreateData } from '@/types';
-import { Link } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { type AdminCreateData, RolesEnum } from '@/types';
+import { Link, useForm } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight, LoaderCircle, X } from 'lucide-react';
 import { useState } from 'react';
 import { CreateManagerStepper } from '../create-manager/create-manager-stepper';
 import { ConnectAnnotatorsStep } from '../create-manager/steps/connect-annotators-step';
@@ -28,7 +28,8 @@ const LAST_STEP = 2;
 export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
     const { t } = useTranslations();
     const [currentStep, setCurrentStep] = useState(0);
-    const [formData, setFormData] = useState<CreateAdminFormData>({
+
+    const form = useForm<CreateAdminFormData>({
         name: '',
         username: '',
         email: '',
@@ -46,13 +47,38 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
     ];
 
     function handleChange(updates: Partial<CreateAdminFormData>) {
-        setFormData((prev) => ({ ...prev, ...updates }));
+        form.setData({ ...form.data, ...updates });
+    }
+
+    function isStepValid(step: number): boolean {
+        switch (step) {
+            case 0:
+                return (
+                    form.data.name.trim() !== '' &&
+                    form.data.username.trim() !== '' &&
+                    form.data.email.trim() !== '' &&
+                    form.data.password !== '' &&
+                    form.data.password_confirmation !== ''
+                );
+            case 1:
+                return form.data.project_ids.length >= 1;
+            case 2:
+                return form.data.annotator_ids.length >= 1;
+            default:
+                return true;
+        }
     }
 
     function handleNext() {
-        if (currentStep < LAST_STEP) {
-            setCurrentStep((s) => s + 1);
+        if (!isStepValid(currentStep)) return;
+
+        if (currentStep === LAST_STEP) {
+            form.transform((data) => ({ ...data, type: RolesEnum.ADMIN }));
+            form.post(route('users.store'));
+            return;
         }
+
+        setCurrentStep((s) => s + 1);
     }
 
     function handleBack() {
@@ -72,7 +98,7 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
             <div>
                 {currentStep === 0 && (
                     <PersonalInfoStep
-                        data={formData}
+                        data={form.data}
                         onChange={(updates) => handleChange(updates)}
                     />
                 )}
@@ -80,7 +106,7 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
                     <ConnectProjectsStep
                         projects={adminData.all_projects}
                         myProjects={adminData.my_projects}
-                        selectedProjectIds={formData.project_ids}
+                        selectedProjectIds={form.data.project_ids}
                         onSelectionChange={(ids) => handleChange({ project_ids: ids })}
                     />
                 )}
@@ -88,13 +114,21 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
                     <ConnectAnnotatorsStep
                         annotators={adminData.all_annotators}
                         myAnnotators={adminData.my_annotators}
-                        selectedAnnotatorIds={formData.annotator_ids}
+                        selectedAnnotatorIds={form.data.annotator_ids}
                         onSelectionChange={(ids) => handleChange({ annotator_ids: ids })}
+                        lockedAnnotatorIds={[]}
                     />
                 )}
             </div>
 
             <div className="flex items-center justify-end gap-3">
+                {!isStepValid(currentStep) && (
+                    <p role="alert" className="mr-auto text-sm text-slate-500">
+                        {currentStep === 0 && t('users.steps.personal_info_hint')}
+                        {currentStep === 1 && t('users.connect_projects.min_one_required')}
+                        {currentStep === 2 && t('users.select_annotators.min_one_required')}
+                    </p>
+                )}
                 <Link
                     href={route('users.index')}
                     className="focus-visible:ring-brand-blue-500 border-brand-blue-500 text-brand-blue-800 hover:bg-brand-blue-50 inline-flex h-10 items-center gap-1.5 rounded-lg border bg-white px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
@@ -116,13 +150,16 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
                 <button
                     type="button"
                     onClick={handleNext}
-                    disabled={currentStep === LAST_STEP}
+                    disabled={!isStepValid(currentStep) || form.processing}
                     className="focus-visible:ring-brand-blue-700 bg-brand-blue-700 hover:bg-brand-blue-800 inline-flex h-10 items-center gap-1.5 rounded-lg px-4 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
                 >
+                    {form.processing && (
+                        <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    )}
                     {currentStep === LAST_STEP
                         ? t('users.actions.create_admin')
                         : t('users.actions.next')}
-                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                    {!form.processing && <ChevronRight className="h-4 w-4" aria-hidden="true" />}
                 </button>
             </div>
         </section>

@@ -27,6 +27,7 @@ interface ConnectAnnotatorsStepProps {
     selectedAnnotatorIds: number[];
     onSelectionChange: (ids: number[]) => void;
     lockedAnnotatorIds?: number[];
+    showMineToggle?: boolean;
 }
 
 export function ConnectAnnotatorsStep({
@@ -35,9 +36,11 @@ export function ConnectAnnotatorsStep({
     selectedAnnotatorIds,
     onSelectionChange,
     lockedAnnotatorIds,
+    showMineToggle = true,
 }: ConnectAnnotatorsStepProps) {
     const { t, trans } = useTranslations();
     const [sortByName, setSortByName] = useState('');
+    const [sortByWorkload, setSortByWorkload] = useState('');
     const [search, setSearch] = useState('');
     const [showMyOnly, setShowMyOnly] = useState(false);
 
@@ -60,8 +63,13 @@ export function ConnectAnnotatorsStep({
         if (sortByName === 'asc') result.sort((a, b) => a.username.localeCompare(b.username));
         if (sortByName === 'desc') result.sort((a, b) => b.username.localeCompare(a.username));
 
+        if (sortByWorkload === 'asc')
+            result.sort((a, b) => (a.total_annotations ?? 0) - (b.total_annotations ?? 0));
+        if (sortByWorkload === 'desc')
+            result.sort((a, b) => (b.total_annotations ?? 0) - (a.total_annotations ?? 0));
+
         return result;
-    }, [source, search, sortByName]);
+    }, [source, search, sortByName, sortByWorkload]);
 
     const selectableAnnotators = filteredAnnotators.filter((a) => !lockedSet.has(a.id));
     const allSelected =
@@ -113,31 +121,47 @@ export function ConnectAnnotatorsStep({
                     </SelectContent>
                 </Select>
 
-                <label className="flex cursor-pointer items-center gap-2">
-                    <span className="relative inline-flex shrink-0">
-                        <input
-                            type="checkbox"
-                            role="switch"
-                            aria-checked={showMyOnly}
-                            checked={showMyOnly}
-                            onChange={(e) => setShowMyOnly(e.target.checked)}
-                            className="peer sr-only"
-                        />
-                        <span
-                            aria-hidden="true"
-                            className={`peer-focus-visible:ring-brand-blue-700/30 flex h-6 w-11 items-center rounded-full border-2 border-transparent transition-colors peer-focus-visible:ring-4 ${showMyOnly ? 'bg-brand-blue-700' : 'bg-slate-200'}`}
-                        >
-                            <span
-                                className={`size-4 rounded-full bg-white shadow-sm transition-transform ${showMyOnly ? 'translate-x-5' : 'translate-x-1'}`}
+                <Select
+                    aria-label={t(`${ns}.sort_by_workload`)}
+                    value={sortByWorkload}
+                    onValueChange={setSortByWorkload}
+                >
+                    <SelectTrigger className="h-10 bg-white px-4">
+                        <SelectValue placeholder={t(`${ns}.sort_by_workload`)} />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="asc">{t(`${ns}.sort_asc_workload`)}</SelectItem>
+                        <SelectItem value="desc">{t(`${ns}.sort_desc_workload`)}</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                {showMineToggle && (
+                    <label className="flex cursor-pointer items-center gap-2">
+                        <span className="relative inline-flex shrink-0">
+                            <input
+                                type="checkbox"
+                                role="switch"
+                                aria-checked={showMyOnly}
+                                checked={showMyOnly}
+                                onChange={(e) => setShowMyOnly(e.target.checked)}
+                                className="peer sr-only"
                             />
+                            <span
+                                aria-hidden="true"
+                                className={`peer-focus-visible:ring-brand-blue-700/30 flex h-6 w-11 items-center rounded-full border-2 border-transparent transition-colors peer-focus-visible:ring-4 ${showMyOnly ? 'bg-brand-blue-700' : 'bg-slate-200'}`}
+                            >
+                                <span
+                                    className={`size-4 rounded-full bg-white shadow-sm transition-transform ${showMyOnly ? 'translate-x-5' : 'translate-x-1'}`}
+                                />
+                            </span>
                         </span>
-                    </span>
-                    <span className="text-sm font-medium text-slate-800">
-                        {showMyOnly
-                            ? t(`${ns}.show_my_annotators`)
-                            : t(`${ns}.show_all_annotators`)}
-                    </span>
-                </label>
+                        <span className="text-sm font-medium text-slate-800">
+                            {showMyOnly
+                                ? t(`${ns}.show_my_annotators`)
+                                : t(`${ns}.show_all_annotators`)}
+                        </span>
+                    </label>
+                )}
 
                 <div className="relative ml-auto">
                     <Search
@@ -177,8 +201,20 @@ export function ConnectAnnotatorsStep({
                             <TableHead className="pl-2 text-sm font-semibold text-slate-800">
                                 {t(`${ns}.table_username`)}
                             </TableHead>
-                            <TableHead className="text-sm font-semibold text-slate-800">
-                                {t('users.labels.name')}
+                            <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                {t(`${ns}.table_total_projects`)}
+                            </TableHead>
+                            <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                {t(`${ns}.table_total_subprojects`)}
+                            </TableHead>
+                            <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                {t(`${ns}.table_total_annotations`)}
+                            </TableHead>
+                            <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                {t(`${ns}.table_total_flags`)}
+                            </TableHead>
+                            <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                {t(`${ns}.table_velocity`)}
                             </TableHead>
                             <TableHead className="text-center text-sm font-semibold text-slate-800">
                                 {t('users.labels.status')}
@@ -189,7 +225,7 @@ export function ConnectAnnotatorsStep({
                         {filteredAnnotators.length === 0 ? (
                             <TableRow className="bg-white hover:bg-white">
                                 <TableCell
-                                    colSpan={4}
+                                    colSpan={8}
                                     className="py-10 text-center text-sm text-slate-400"
                                 >
                                     {t('users.empty.annotators')}
@@ -237,8 +273,20 @@ export function ConnectAnnotatorsStep({
                                                 </span>
                                             </div>
                                         </TableCell>
-                                        <TableCell className="text-sm text-slate-800">
-                                            {annotator.name}
+                                        <TableCell className="text-center text-sm text-slate-800 tabular-nums">
+                                            {annotator.total_projects ?? '—'}
+                                        </TableCell>
+                                        <TableCell className="text-center text-sm text-slate-800 tabular-nums">
+                                            {annotator.total_subprojects ?? '—'}
+                                        </TableCell>
+                                        <TableCell className="text-center text-sm text-slate-800 tabular-nums">
+                                            {annotator.total_annotations ?? '—'}
+                                        </TableCell>
+                                        <TableCell className="text-center text-sm text-slate-800 tabular-nums">
+                                            {annotator.total_flags ?? '—'}
+                                        </TableCell>
+                                        <TableCell className="text-center text-sm text-slate-500 tabular-nums">
+                                            —
                                         </TableCell>
                                         <TableCell className="text-center">
                                             <StatusBadge status={annotator.status} />

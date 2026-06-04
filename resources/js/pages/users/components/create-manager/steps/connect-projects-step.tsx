@@ -266,6 +266,7 @@ interface ConnectProjectsStepProps {
     myProjects: Project[];
     selectedProjectIds: number[];
     onSelectionChange: (ids: number[]) => void;
+    showMineToggle?: boolean;
 }
 
 export function ConnectProjectsStep({
@@ -273,6 +274,7 @@ export function ConnectProjectsStep({
     myProjects,
     selectedProjectIds,
     onSelectionChange,
+    showMineToggle = true,
 }: ConnectProjectsStepProps) {
     const { t, trans } = useTranslations();
     const [searchQuery, setSearchQuery] = useState('');
@@ -320,26 +322,28 @@ export function ConnectProjectsStep({
                     </p>
                 </div>
 
-                <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
-                    <button
-                        type="button"
-                        role="switch"
-                        aria-checked={showOnlyMine}
-                        onClick={() => setShowOnlyMine((v) => !v)}
-                        className={cn(
-                            'focus-visible:ring-brand-blue-700 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:ring-2 focus-visible:outline-none',
-                            showOnlyMine ? 'bg-brand-blue-700' : 'bg-slate-200'
-                        )}
-                    >
-                        <span
+                {showMineToggle && (
+                    <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+                        <button
+                            type="button"
+                            role="switch"
+                            aria-checked={showOnlyMine}
+                            onClick={() => setShowOnlyMine((v) => !v)}
                             className={cn(
-                                'pointer-events-none inline-block size-5 rounded-full bg-white shadow-lg transition-transform',
-                                showOnlyMine ? 'translate-x-5' : 'translate-x-0'
+                                'focus-visible:ring-brand-blue-700 relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:ring-2 focus-visible:outline-none',
+                                showOnlyMine ? 'bg-brand-blue-700' : 'bg-slate-200'
                             )}
-                        />
-                    </button>
-                    {t('users.connect_projects.show_only_mine')}
-                </label>
+                        >
+                            <span
+                                className={cn(
+                                    'pointer-events-none inline-block size-5 rounded-full bg-white shadow-lg transition-transform',
+                                    showOnlyMine ? 'translate-x-5' : 'translate-x-0'
+                                )}
+                            />
+                        </button>
+                        {t('users.connect_projects.show_only_mine')}
+                    </label>
+                )}
             </div>
 
             {/* Filter/search bar */}

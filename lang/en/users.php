@@ -34,6 +34,7 @@ return [
         'heading' => 'Datasets',
         'instances' => ':count Instances',
         'no_task_types' => 'No task types selected. Go back to step 2 and select at least one task type.',
+        'min_one_required' => 'Select at least 1 dataset to continue.',
     ],
     'select_annotators' => [
         'heading' => 'Connect to Annotators',
@@ -68,14 +69,17 @@ return [
         'sorting' => 'Sorting',
         'search_placeholder' => 'Search Projects...',
         'no_projects' => 'No projects found.',
+        'min_one_required' => 'Select at least 1 project to continue.',
     ],
     'create_annotator' => [
         'user_details' => 'User Details',
         'connect_managers' => 'Connect to Managers',
         'selected_count' => ':count selected',
+        'min_one_required' => 'Select at least 1 manager to continue.',
     ],
     'tasks_access' => [
         'heading' => 'Tasks & Datasets',
+        'min_one_required' => 'Select at least 1 task type to continue.',
     ],
     'steps' => [
         'personal_info' => 'Personal Info',
@@ -84,6 +88,7 @@ return [
         'connect_projects' => 'Connect to Projects',
         'connect_annotators' => 'Connect to Annotators',
         'coming_soon' => 'This step will be implemented soon.',
+        'personal_info_hint' => 'Fill in all required fields (*) to continue.',
     ],
     'labels' => [
         'name' => 'Name',

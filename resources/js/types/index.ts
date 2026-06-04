@@ -182,12 +182,17 @@ export interface ManagerCreateData {
     all_annotators?: AnnotatorSelectOption[];
 }
 
-/** Annotator entry as returned in admin_data for user creation */
+/** Annotator entry as returned in admin_data / manager_data for user creation.
+ *  Stats fields are present on my_annotators but absent on all_annotators. */
 export interface AnnotatorSelectOption {
     id: number;
     name: string;
     username: string;
     status: 'active' | 'inactive' | 'pending';
+    total_projects?: number;
+    total_subprojects?: number;
+    total_annotations?: number;
+    total_flags?: number;
 }
 
 /** Shape of the admin_data Inertia prop on /users/create?type=admin */
@@ -196,6 +201,11 @@ export interface AdminCreateData {
     my_projects: Project[];
     all_annotators: AnnotatorSelectOption[];
     my_annotators: AnnotatorSelectOption[];
+}
+
+/** Shape of the annotator_data Inertia prop on /users/create?type=annotator */
+export interface AnnotatorCreateData {
+    all_managers: ManagedUser[];
 }
 
 /** A user entry as returned by UserManagementService — lighter than the full User model */

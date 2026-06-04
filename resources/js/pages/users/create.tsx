@@ -1,6 +1,11 @@
 import AppLayout from '@/layouts/app-layout';
 import { useTranslations } from '@/hooks/use-translations';
-import { type AdminCreateData, type ManagerCreateData, RolesEnum } from '@/types';
+import {
+    type AdminCreateData,
+    type AnnotatorCreateData,
+    type ManagerCreateData,
+    RolesEnum,
+} from '@/types';
 import { Head } from '@inertiajs/react';
 import { CreateAdminForm } from './components/create-admin/create-admin-form';
 import { CreateAnnotatorForm } from './components/create-annotator/create-annotator-form';
@@ -10,6 +15,7 @@ interface CreateUserProps {
     type: RolesEnum;
     admin_data?: AdminCreateData;
     manager_data?: ManagerCreateData;
+    annotator_data?: AnnotatorCreateData;
 }
 
 const EMPTY_ADMIN_DATA: AdminCreateData = {
@@ -27,7 +33,16 @@ const EMPTY_MANAGER_DATA: ManagerCreateData = {
     all_annotators: [],
 };
 
-export default function Create({ type, admin_data, manager_data }: Readonly<CreateUserProps>) {
+const EMPTY_ANNOTATOR_DATA: AnnotatorCreateData = {
+    all_managers: [],
+};
+
+export default function Create({
+    type,
+    admin_data,
+    manager_data,
+    annotator_data,
+}: Readonly<CreateUserProps>) {
     const { t } = useTranslations();
 
     const breadcrumbTitle = {
@@ -51,7 +66,9 @@ export default function Create({ type, admin_data, manager_data }: Readonly<Crea
                 {type === RolesEnum.ANNOTATION_MANAGER && (
                     <CreateManagerForm managerData={manager_data ?? EMPTY_MANAGER_DATA} />
                 )}
-                {type === RolesEnum.ANNOTATOR && <CreateAnnotatorForm />}
+                {type === RolesEnum.ANNOTATOR && (
+                    <CreateAnnotatorForm annotatorData={annotator_data ?? EMPTY_ANNOTATOR_DATA} />
+                )}
             </div>
         </AppLayout>
     );

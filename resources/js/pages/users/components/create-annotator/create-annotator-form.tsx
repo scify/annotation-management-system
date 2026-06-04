@@ -9,33 +9,25 @@ import {
 } from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { Link } from '@inertiajs/react';
-import { Check } from 'lucide-react';
-import { useState } from 'react';
-
-interface MockManager {
-    id: number;
-    username: string;
-}
-
-const MOCK_MANAGERS: MockManager[] = [
-    { id: 1, username: 'ggiannakopoulos' },
-    { id: 2, username: 'akosmo' },
-    { id: 3, username: 'alextzoumas' },
-    { id: 4, username: 'paulis' },
-    { id: 5, username: 'vassilis_giannakopoulos' },
-];
+import { type AnnotatorCreateData, RolesEnum } from '@/types';
+import { Link, useForm } from '@inertiajs/react';
+import { Check, LoaderCircle } from 'lucide-react';
 
 export interface CreateAnnotatorFormData {
     name: string;
     username: string;
     password: string;
+    password_confirmation: string;
     status: 'active' | 'inactive';
     manager_ids: number[];
 }
 
+interface CreateAnnotatorFormProps {
+    annotatorData: AnnotatorCreateData;
+}
+
 interface ManagerRowProps {
-    manager: MockManager;
+    manager: AnnotatorCreateData['all_managers'][number];
     isSelected: boolean;
     onToggle: () => void;
 }
@@ -76,39 +68,60 @@ function ManagerRow({ manager, isSelected, onToggle }: ManagerRowProps) {
 
 interface FieldProps {
     label: string;
+    required?: boolean;
     children: React.ReactNode;
 }
 
-function Field({ label, children }: FieldProps) {
+function Field({ label, required, children }: FieldProps) {
     return (
         <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-semibold text-slate-800">{label}</span>
+            <span className="text-sm font-semibold text-slate-800">
+                {label}
+                {required && (
+                    <span aria-hidden="true" className="ml-0.5 text-red-500">
+                        *
+                    </span>
+                )}
+            </span>
             {children}
         </div>
     );
 }
 
-export function CreateAnnotatorForm() {
+export function CreateAnnotatorForm({ annotatorData }: CreateAnnotatorFormProps) {
     const { t, trans } = useTranslations();
-    const [formData, setFormData] = useState<CreateAnnotatorFormData>({
+
+    const form = useForm<CreateAnnotatorFormData>({
         name: '',
         username: '',
         password: '',
+        password_confirmation: '',
         status: 'active',
         manager_ids: [],
     });
 
     function handleChange(updates: Partial<CreateAnnotatorFormData>) {
-        setFormData((prev) => ({ ...prev, ...updates }));
+        form.setData({ ...form.data, ...updates });
     }
 
     function toggleManager(id: number) {
-        setFormData((prev) => ({
-            ...prev,
-            manager_ids: prev.manager_ids.includes(id)
-                ? prev.manager_ids.filter((m) => m !== id)
-                : [...prev.manager_ids, id],
-        }));
+        const current = form.data.manager_ids;
+        form.setData(
+            'manager_ids',
+            current.includes(id) ? current.filter((m) => m !== id) : [...current, id]
+        );
+    }
+
+    const isValid =
+        form.data.name.trim() !== '' &&
+        form.data.username.trim() !== '' &&
+        form.data.password !== '' &&
+        form.data.password_confirmation !== '' &&
+        form.data.manager_ids.length >= 1;
+
+    function handleSubmit() {
+        form.transform((data) => ({ ...data, type: RolesEnum.ANNOTATOR }));
+        form.post(route('users.store'));
     }
 
     return (
@@ -123,35 +136,49 @@ export function CreateAnnotatorForm() {
                         {t('users.create_annotator.user_details')}
                     </h2>
                     <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-7">
-                        <Field label={t('users.labels.name')}>
+                        <Field label={t('users.labels.name')} required>
                             <Input
                                 type="text"
-                                value={formData.name}
+                                value={form.data.name}
                                 onChange={(e) => handleChange({ name: e.target.value })}
                                 autoComplete="name"
                                 spellCheck={false}
+                                required
                             />
                         </Field>
-                        <Field label={t('users.labels.username')}>
+                        <Field label={t('users.labels.username')} required>
                             <Input
                                 type="text"
-                                value={formData.username}
+                                value={form.data.username}
                                 onChange={(e) => handleChange({ username: e.target.value })}
                                 autoComplete="username"
                                 spellCheck={false}
+                                required
                             />
                         </Field>
-                        <Field label={t('users.labels.password')}>
+                        <Field label={t('users.labels.password')} required>
                             <Input
                                 type="password"
-                                value={formData.password}
+                                value={form.data.password}
                                 onChange={(e) => handleChange({ password: e.target.value })}
                                 autoComplete="new-password"
+                                required
+                            />
+                        </Field>
+                        <Field label={t('users.labels.password_confirmation')} required>
+                            <Input
+                                type="password"
+                                value={form.data.password_confirmation}
+                                onChange={(e) =>
+                                    handleChange({ password_confirmation: e.target.value })
+                                }
+                                autoComplete="new-password"
+                                required
                             />
                         </Field>
                         <Field label={t('users.labels.status')}>
                             <Select
-                                value={formData.status}
+                                value={form.data.status}
                                 onValueChange={(v) =>
                                     handleChange({
                                         status: v as CreateAnnotatorFormData['status'],
@@ -181,23 +208,34 @@ export function CreateAnnotatorForm() {
                         </h2>
                         <p className="text-sm font-bold text-slate-800">
                             {trans('users.create_annotator.selected_count', {
-                                count: formData.manager_ids.length,
+                                count: form.data.manager_ids.length,
                             })}
                         </p>
                     </div>
                     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-4">
                         <div className="max-h-[380px] overflow-y-auto">
-                            {MOCK_MANAGERS.map((manager) => (
+                            {annotatorData.all_managers.map((manager) => (
                                 <ManagerRow
                                     key={manager.id}
                                     manager={manager}
-                                    isSelected={formData.manager_ids.includes(manager.id)}
+                                    isSelected={form.data.manager_ids.includes(manager.id)}
                                     onToggle={() => toggleManager(manager.id)}
                                 />
                             ))}
                         </div>
                     </div>
                     <div className="flex items-center justify-end gap-4">
+                        {!isValid && (
+                            <p role="alert" className="mr-auto text-sm text-slate-500">
+                                {form.data.manager_ids.length === 0 &&
+                                form.data.name.trim() !== '' &&
+                                form.data.username.trim() !== '' &&
+                                form.data.password !== '' &&
+                                form.data.password_confirmation !== ''
+                                    ? t('users.create_annotator.min_one_required')
+                                    : t('users.steps.personal_info_hint')}
+                            </p>
+                        )}
                         <Link
                             href={route('users.index')}
                             className="bg-brand-yellow-300 text-brand-blue-900 hover:bg-brand-yellow-400 focus-visible:ring-brand-yellow-300 inline-flex h-10 min-w-[100px] items-center justify-center rounded-lg px-3.5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
@@ -206,8 +244,13 @@ export function CreateAnnotatorForm() {
                         </Link>
                         <button
                             type="button"
-                            className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex h-10 min-w-[100px] items-center justify-center rounded-lg px-3.5 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:outline-none"
+                            onClick={handleSubmit}
+                            disabled={!isValid || form.processing}
+                            className="bg-brand-blue-700 hover:bg-brand-blue-800 focus-visible:ring-brand-blue-700 inline-flex h-10 min-w-[100px] items-center justify-center gap-1.5 rounded-lg px-3.5 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
                         >
+                            {form.processing && (
+                                <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            )}
                             {t('users.actions.create_annotator')}
                         </button>
                     </div>

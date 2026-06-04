@@ -18,13 +18,21 @@ interface PersonalInfoStepProps {
 
 interface FieldProps {
     label: string;
+    required?: boolean;
     children: React.ReactNode;
 }
 
-function Field({ label, children }: FieldProps) {
+function Field({ label, required, children }: FieldProps) {
     return (
         <div className="flex flex-col gap-1.5">
-            <span className="text-sm font-semibold text-slate-800">{label}</span>
+            <span className="text-sm font-semibold text-slate-800">
+                {label}
+                {required && (
+                    <span aria-hidden="true" className="ml-0.5 text-red-500">
+                        *
+                    </span>
+                )}
+            </span>
             {children}
         </div>
     );
@@ -38,47 +46,52 @@ export function PersonalInfoStep({ data, onChange }: PersonalInfoStepProps) {
             <h2 className="text-xl font-medium text-slate-800">{t('users.steps.personal_info')}</h2>
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 <div className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-7">
-                    <Field label={t('users.labels.name')}>
+                    <Field label={t('users.labels.name')} required>
                         <Input
                             type="text"
                             value={data.name}
                             onChange={(e) => onChange({ name: e.target.value })}
                             autoComplete="name"
                             spellCheck={false}
+                            required
                         />
                     </Field>
-                    <Field label={t('users.labels.username')}>
+                    <Field label={t('users.labels.username')} required>
                         <Input
                             type="text"
                             value={data.username}
                             onChange={(e) => onChange({ username: e.target.value })}
                             autoComplete="username"
                             spellCheck={false}
+                            required
                         />
                     </Field>
-                    <Field label={t('users.labels.email')}>
+                    <Field label={t('users.labels.email')} required>
                         <Input
                             type="email"
                             value={data.email}
                             onChange={(e) => onChange({ email: e.target.value })}
                             autoComplete="email"
                             spellCheck={false}
+                            required
                         />
                     </Field>
-                    <Field label={t('users.labels.password')}>
+                    <Field label={t('users.labels.password')} required>
                         <Input
                             type="password"
                             value={data.password}
                             onChange={(e) => onChange({ password: e.target.value })}
                             autoComplete="new-password"
+                            required
                         />
                     </Field>
-                    <Field label={t('users.labels.password_confirmation')}>
+                    <Field label={t('users.labels.password_confirmation')} required>
                         <Input
                             type="password"
                             value={data.password_confirmation}
                             onChange={(e) => onChange({ password_confirmation: e.target.value })}
                             autoComplete="new-password"
+                            required
                         />
                     </Field>
                 </div>

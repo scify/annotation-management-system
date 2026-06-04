@@ -1,7 +1,7 @@
 import { useTranslations } from '@/hooks/use-translations';
-import { type ManagerCreateData } from '@/types';
-import { Link } from '@inertiajs/react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { type ManagerCreateData, RolesEnum } from '@/types';
+import { Link, useForm } from '@inertiajs/react';
+import { ChevronLeft, ChevronRight, LoaderCircle, X } from 'lucide-react';
 import { useState } from 'react';
 import { CreateManagerStepper } from './create-manager-stepper';
 import { ConnectAnnotatorsStep } from './steps/connect-annotators-step';
@@ -17,7 +17,7 @@ export interface CreateManagerFormData {
     password: string;
     password_confirmation: string;
     status: 'active' | 'inactive' | 'pending';
-    task_type_ids: number[];
+    annotation_task_ids: number[];
     dataset_ids: number[];
     project_ids: number[];
     annotator_ids: number[];
@@ -32,14 +32,15 @@ const LAST_STEP = 4;
 export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
     const { t } = useTranslations();
     const [currentStep, setCurrentStep] = useState(0);
-    const [formData, setFormData] = useState<CreateManagerFormData>({
+
+    const form = useForm<CreateManagerFormData>({
         name: '',
         username: '',
         email: '',
         password: '',
         password_confirmation: '',
         status: 'pending',
-        task_type_ids: [],
+        annotation_task_ids: [],
         dataset_ids: [],
         project_ids: [],
         annotator_ids: [],
@@ -54,13 +55,42 @@ export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
     ];
 
     function handleChange(updates: Partial<CreateManagerFormData>) {
-        setFormData((prev) => ({ ...prev, ...updates }));
+        form.setData({ ...form.data, ...updates });
+    }
+
+    function isStepValid(step: number): boolean {
+        switch (step) {
+            case 0:
+                return (
+                    form.data.name.trim() !== '' &&
+                    form.data.username.trim() !== '' &&
+                    form.data.email.trim() !== '' &&
+                    form.data.password !== '' &&
+                    form.data.password_confirmation !== ''
+                );
+            case 1:
+                return form.data.annotation_task_ids.length >= 1;
+            case 2:
+                return form.data.dataset_ids.length >= 1;
+            case 3:
+                return form.data.project_ids.length >= 1;
+            case 4:
+                return form.data.annotator_ids.length >= 1;
+            default:
+                return true;
+        }
     }
 
     function handleNext() {
-        if (currentStep < LAST_STEP) {
-            setCurrentStep((s) => s + 1);
+        if (!isStepValid(currentStep)) return;
+
+        if (currentStep === LAST_STEP) {
+            form.transform((data) => ({ ...data, type: RolesEnum.ANNOTATION_MANAGER }));
+            form.post(route('users.store'));
+            return;
         }
+
+        setCurrentStep((s) => s + 1);
     }
 
     function handleBack() {
@@ -80,46 +110,57 @@ export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
             <div>
                 {currentStep === 0 && (
                     <PersonalInfoStep
-                        data={formData}
+                        data={form.data}
                         onChange={(updates) => handleChange(updates)}
                     />
                 )}
                 {currentStep === 1 && (
                     <TasksAccessStep
                         annotationTasks={managerData.annotation_tasks}
-                        selectedIds={formData.task_type_ids}
-                        onSelectionChange={(ids) => handleChange({ task_type_ids: ids })}
+                        selectedIds={form.data.annotation_task_ids}
+                        onSelectionChange={(ids) => handleChange({ annotation_task_ids: ids })}
                     />
                 )}
                 {currentStep === 2 && (
                     <DatasetsStep
                         taskTypes={managerData.annotation_tasks.filter((tt) =>
-                            formData.task_type_ids.includes(tt.id)
+                            form.data.annotation_task_ids.includes(tt.id)
                         )}
-                        selectedDatasetIds={formData.dataset_ids}
+                        selectedDatasetIds={form.data.dataset_ids}
                         onSelectionChange={(ids) => handleChange({ dataset_ids: ids })}
                     />
                 )}
                 {currentStep === 3 && (
                     <ConnectProjectsStep
-                        projects={managerData.all_projects ?? []}
+                        projects={managerData.all_projects ?? managerData.my_projects}
                         myProjects={managerData.my_projects}
-                        selectedProjectIds={formData.project_ids}
+                        selectedProjectIds={form.data.project_ids}
                         onSelectionChange={(ids) => handleChange({ project_ids: ids })}
+                        showMineToggle={!!managerData.all_projects?.length}
                     />
                 )}
                 {currentStep === 4 && (
                     <ConnectAnnotatorsStep
-                        annotators={managerData.all_annotators ?? []}
+                        annotators={managerData.all_annotators ?? managerData.my_annotators}
                         myAnnotators={managerData.my_annotators}
-                        selectedAnnotatorIds={formData.annotator_ids}
+                        selectedAnnotatorIds={form.data.annotator_ids}
                         onSelectionChange={(ids) => handleChange({ annotator_ids: ids })}
                         lockedAnnotatorIds={[]}
+                        showMineToggle={!!managerData.all_annotators?.length}
                     />
                 )}
             </div>
 
             <div className="flex items-center justify-end gap-3">
+                {!isStepValid(currentStep) && (
+                    <p role="alert" className="mr-auto text-sm text-slate-500">
+                        {currentStep === 0 && t('users.steps.personal_info_hint')}
+                        {currentStep === 1 && t('users.tasks_access.min_one_required')}
+                        {currentStep === 2 && t('users.datasets.min_one_required')}
+                        {currentStep === 3 && t('users.connect_projects.min_one_required')}
+                        {currentStep === 4 && t('users.select_annotators.min_one_required')}
+                    </p>
+                )}
                 <Link
                     href={route('users.index')}
                     className="focus-visible:ring-brand-blue-500 border-brand-blue-500 text-brand-blue-800 hover:bg-brand-blue-50 inline-flex h-10 items-center gap-1.5 rounded-lg border bg-white px-4 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
@@ -141,13 +182,16 @@ export function CreateManagerForm({ managerData }: CreateManagerFormProps) {
                 <button
                     type="button"
                     onClick={handleNext}
-                    disabled={currentStep === LAST_STEP}
+                    disabled={!isStepValid(currentStep) || form.processing}
                     className="focus-visible:ring-brand-blue-700 bg-brand-blue-700 hover:bg-brand-blue-800 inline-flex h-10 items-center gap-1.5 rounded-lg px-4 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
                 >
+                    {form.processing && (
+                        <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                    )}
                     {currentStep === LAST_STEP
                         ? t('users.actions.create_manager')
                         : t('users.actions.next')}
-                    <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                    {!form.processing && <ChevronRight className="h-4 w-4" aria-hidden="true" />}
                 </button>
             </div>
         </section>
