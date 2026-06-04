@@ -2,7 +2,7 @@ import { useTranslations } from '@/hooks/use-translations';
 import { type AdminCreateData, RolesEnum } from '@/types';
 import { Link, useForm } from '@inertiajs/react';
 import { ChevronLeft, ChevronRight, LoaderCircle, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CreateManagerStepper } from '../create-manager/create-manager-stepper';
 import { ConnectAnnotatorsStep } from '../create-manager/steps/connect-annotators-step';
 import { ConnectProjectsStep } from '../create-manager/steps/connect-projects-step';
@@ -74,6 +74,17 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
         ...new Set(Object.keys(form.errors).map((field) => FIELD_TO_STEP[field] ?? 0)),
     ];
 
+    const lockedAnnotatorIds = useMemo(
+        () => [
+            ...new Set(
+                adminData.all_projects
+                    .filter((p) => form.data.project_ids.includes(p.id))
+                    .flatMap((p) => p.annotators ?? [])
+            ),
+        ],
+        [form.data.project_ids, adminData.all_projects]
+    );
+
     function handleChange(updates: Partial<CreateAdminFormData>) {
         form.setData({ ...form.data, ...updates });
     }
@@ -92,7 +103,7 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
             case 1:
                 return form.data.project_ids.length >= 1;
             case 2:
-                return form.data.annotator_ids.length >= 1;
+                return form.data.annotator_ids.length + lockedAnnotatorIds.length >= 1;
             default:
                 return true;
         }
@@ -102,7 +113,11 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
         if (!isStepValid(currentStep)) return;
 
         if (currentStep === LAST_STEP) {
-            form.transform((data) => ({ ...data, type: RolesEnum.ADMIN }));
+            form.transform((data) => ({
+                ...data,
+                type: RolesEnum.ADMIN,
+                annotator_ids: [...new Set([...data.annotator_ids, ...lockedAnnotatorIds])],
+            }));
             form.post(route('users.store'));
             return;
         }
@@ -150,7 +165,7 @@ export function CreateAdminForm({ adminData }: CreateAdminFormProps) {
                         myAnnotators={adminData.my_annotators}
                         selectedAnnotatorIds={form.data.annotator_ids}
                         onSelectionChange={(ids) => handleChange({ annotator_ids: ids })}
-                        lockedAnnotatorIds={[]}
+                        lockedAnnotatorIds={lockedAnnotatorIds}
                     />
                 )}
             </div>

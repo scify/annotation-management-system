@@ -139,6 +139,7 @@ export interface Project {
     deadline_at: string | null;
     is_delayed_to_start: boolean;
     is_delayed_to_end: boolean;
+    annotators?: number[];
 }
 
 export interface PlatformStats {
