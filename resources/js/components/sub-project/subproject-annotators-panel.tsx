@@ -9,11 +9,13 @@ import { useState } from 'react';
 interface SubprojectAnnotatorsPanelProps {
     annotators: ProjectAnnotatorRowData[];
     onAnnotatorRemoved: (id: number) => void;
+    canManageAnnotators?: boolean;
 }
 
 export function SubprojectAnnotatorsPanel({
     annotators,
     onAnnotatorRemoved,
+    canManageAnnotators = true,
 }: SubprojectAnnotatorsPanelProps) {
     const { t, trans } = useTranslations();
     const [annotatorToRemove, setAnnotatorToRemove] = useState<ProjectAnnotatorRowData | null>(
@@ -48,15 +50,18 @@ export function SubprojectAnnotatorsPanel({
         <div className="flex flex-col gap-6">
             <div className="flex items-center justify-between">
                 <h2 className="page-subtitle">{t('projects.annotators_tab.title')}</h2>
-                <Button className="bg-brand-blue-700 hover:bg-brand-blue-800 h-10 font-semibold text-white">
-                    <Plus className="size-4" aria-hidden="true" />
-                    {t('projects.annotators_tab.add_annotator')}
-                </Button>
+                {canManageAnnotators && (
+                    <Button className="bg-brand-blue-700 hover:bg-brand-blue-800 h-10 font-semibold text-white">
+                        <Plus className="size-4" aria-hidden="true" />
+                        {t('projects.annotators_tab.add_annotator')}
+                    </Button>
+                )}
             </div>
 
             <AnnotatorsTable
                 mode="remove"
                 annotators={annotatorsWithFlagging}
+                canRemoveAnnotator={canManageAnnotators}
                 onAnnotatorRemoved={handleRemoveRequest}
                 onAllowFlaggingChange={handleAllowFlaggingChange}
             />

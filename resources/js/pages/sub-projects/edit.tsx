@@ -199,6 +199,7 @@ export default function EditSubproject({
     const initialAnnotatorIds = new Set(displayAnnotators.map((a) => a.id));
     const [selectedAnnotatorIds, setSelectedAnnotatorIds] =
         useState<Set<number>>(initialAnnotatorIds);
+    const canManageAnnotators = displaySubproject.status === 'slate';
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<TabKey>('annotations');
@@ -613,6 +614,7 @@ export default function EditSubproject({
                                 selectedAnnotatorIds.has(a.id)
                             )}
                             onAnnotatorRemoved={(id) => handleSelectionChange(id, false)}
+                            canManageAnnotators={canManageAnnotators}
                         />
                     </section>
                 )}
