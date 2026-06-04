@@ -36,6 +36,7 @@ const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
 interface AnnotatorsTabProps {
     annotators?: ProjectAnnotatorRowData[];
     projectId: number;
+    projectStatus: 'pending' | 'in_progress' | 'completed';
     /** Called after an annotator is successfully removed */
     onAnnotatorRemoved?: (id: number) => void;
 }
@@ -43,9 +44,11 @@ interface AnnotatorsTabProps {
 export function AnnotatorsTab({
     annotators = MOCK_ANNOTATORS,
     projectId,
+    projectStatus,
     onAnnotatorRemoved,
 }: AnnotatorsTabProps) {
     const { t } = useTranslations();
+    const canEdit = projectStatus === 'pending';
 
     const [flaggingState, setFlaggingState] = useState<Record<number, boolean>>(() =>
         Object.fromEntries(annotators.map((a) => [a.id, a.allow_flagging ?? false]))
@@ -83,7 +86,10 @@ export function AnnotatorsTab({
         >
             <div className="flex items-center justify-between">
                 <h2 className="page-subtitle">{t('projects.annotators_tab.title')}</h2>
-                <Button className="hover:bg-brand-blue-800 h-10 font-semibold text-white">
+                <Button
+                    className="hover:bg-brand-blue-800 h-10 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={!canEdit}
+                >
                     <Plus className="size-4" aria-hidden="true" />
                     {t('projects.annotators_tab.add_annotator')}
                 </Button>
@@ -91,6 +97,7 @@ export function AnnotatorsTab({
             <AnnotatorsTable
                 mode="remove"
                 annotators={annotatorsWithFlagging}
+                canRemoveAnnotator={canEdit}
                 onAnnotatorRemoved={onAnnotatorRemoved}
                 onAllowFlaggingChange={handleAllowFlaggingChange}
             />
