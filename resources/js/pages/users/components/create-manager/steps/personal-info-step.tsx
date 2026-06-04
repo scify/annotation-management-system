@@ -100,6 +100,9 @@ export function PersonalInfoStep({ data, onChange, errors }: PersonalInfoStepPro
                             autoComplete="new-password"
                             required
                         />
+                        <p className="text-xs text-slate-500">
+                            {t('users.validation.password_hint')}
+                        </p>
                         {errors?.password && (
                             <p role="alert" className="text-sm font-medium text-red-500">
                                 {errors.password}
