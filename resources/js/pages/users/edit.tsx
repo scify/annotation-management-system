@@ -1,12 +1,16 @@
-import AppLayout from '@/layouts/app-layout';
+import { ProjectDialog } from '@/components/project/project-dialog';
+import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
+import AppLayout from '@/layouts/app-layout';
 import {
     type AdminEditData,
     type AnnotatorEditData,
     type ManagerEditData,
     RolesEnum,
 } from '@/types';
-import { Head } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { Trash2, UserMinus } from 'lucide-react';
+import { useState } from 'react';
 import { CreateAdminForm } from './components/create-admin/create-admin-form';
 import { CreateAnnotatorForm } from './components/create-annotator/create-annotator-form';
 import { CreateManagerForm } from './components/create-manager/create-manager-form';
@@ -16,6 +20,7 @@ interface EditUserProps {
     admin_data?: AdminEditData;
     manager_data?: ManagerEditData;
     annotator_data?: AnnotatorEditData;
+    can_delete: boolean;
 }
 
 export default function Edit({
@@ -23,8 +28,11 @@ export default function Edit({
     admin_data,
     manager_data,
     annotator_data,
+    can_delete,
 }: Readonly<EditUserProps>) {
     const { t } = useTranslations();
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     const breadcrumbTitle = {
         [RolesEnum.ADMIN]: t('users.actions.edit_admin'),
@@ -33,6 +41,16 @@ export default function Edit({
     }[type];
 
     const userId = admin_data?.user.id ?? manager_data?.user.id ?? annotator_data?.user.id ?? 0;
+
+    function handleDelete() {
+        setDeleting(true);
+        router.delete(route('users.destroy', userId), {
+            onFinish: () => {
+                setDeleting(false);
+                setDeleteDialogOpen(false);
+            },
+        });
+    }
 
     return (
         <AppLayout
@@ -43,6 +61,14 @@ export default function Edit({
         >
             <Head title={breadcrumbTitle} />
             <div className="p-6">
+                {can_delete && (
+                    <div className="mb-6 flex justify-end">
+                        <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+                            <Trash2 className="size-4" aria-hidden="true" />
+                            {t('users.actions.delete')}
+                        </Button>
+                    </div>
+                )}
                 {type === RolesEnum.ADMIN && admin_data && (
                     <CreateAdminForm adminData={admin_data} user={admin_data.user} />
                 )}
@@ -56,6 +82,18 @@ export default function Edit({
                     />
                 )}
             </div>
+
+            <ProjectDialog
+                open={deleteDialogOpen}
+                onClose={() => setDeleteDialogOpen(false)}
+                icon={<UserMinus />}
+                title={t('users.delete.title')}
+                description={t('users.delete.description')}
+                cancelLabel={t('users.actions.cancel')}
+                actionLabel={t('users.actions.delete')}
+                onAction={handleDelete}
+                loading={deleting}
+            />
         </AppLayout>
     );
 }

@@ -162,6 +162,8 @@ class UserController extends Controller {
             ],
         };
 
+        $props['can_delete'] = $currentUser->can('delete', $user);
+
         $json = json_encode($props, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         if (is_string($json)) {
             Storage::disk('local')->put('user-management-edit-user-data-' . $role->value . '.json', $json);
