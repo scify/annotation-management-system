@@ -1,9 +1,10 @@
 import { AnnotatorsTable } from '@/components/annotator/annotators-table';
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
+import { ProjectDialog } from '@/components/project/project-dialog';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import { router } from '@inertiajs/react';
-import { Plus } from 'lucide-react';
+import { Plus, UserMinus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
@@ -47,12 +48,16 @@ export function AnnotatorsTab({
     projectStatus,
     onAnnotatorRemoved,
 }: AnnotatorsTabProps) {
-    const { t } = useTranslations();
+    const { t, trans } = useTranslations();
     const canEdit = projectStatus === 'pending';
 
     const [flaggingState, setFlaggingState] = useState<Record<number, boolean>>(() =>
         Object.fromEntries(annotators.map((a) => [a.id, a.allow_flagging ?? false]))
     );
+    const [annotatorToRemove, setAnnotatorToRemove] = useState<ProjectAnnotatorRowData | null>(
+        null
+    );
+    const [removedIds, setRemovedIds] = useState<Set<number>>(new Set());
 
     useEffect(() => {
         setFlaggingState(
@@ -72,10 +77,25 @@ export function AnnotatorsTab({
         );
     }
 
+    function handleRemoveRequest(id: number) {
+        const annotator = annotatorsWithFlagging.find((a) => a.id === id);
+        if (annotator) setAnnotatorToRemove(annotator);
+    }
+
+    function handleConfirmRemove() {
+        if (annotatorToRemove) {
+            setRemovedIds((prev) => new Set([...prev, annotatorToRemove.id]));
+            onAnnotatorRemoved?.(annotatorToRemove.id);
+            setAnnotatorToRemove(null);
+        }
+    }
+
     const annotatorsWithFlagging = annotators.map((a) => ({
         ...a,
         allow_flagging: flaggingState[a.id] ?? a.allow_flagging ?? false,
     }));
+
+    const visibleAnnotators = annotatorsWithFlagging.filter((a) => !removedIds.has(a.id));
 
     return (
         <div
@@ -97,10 +117,23 @@ export function AnnotatorsTab({
             </div>
             <AnnotatorsTable
                 mode="remove"
-                annotators={annotatorsWithFlagging}
+                annotators={visibleAnnotators}
                 canRemoveAnnotator={canEdit}
-                onAnnotatorRemoved={onAnnotatorRemoved}
+                onAnnotatorRemoved={handleRemoveRequest}
                 onAllowFlaggingChange={handleAllowFlaggingChange}
+            />
+
+            <ProjectDialog
+                open={annotatorToRemove !== null}
+                onClose={() => setAnnotatorToRemove(null)}
+                icon={<UserMinus />}
+                title={t('projects.annotators_tab.remove_dialog_title')}
+                description={trans('projects.annotators_tab.remove_dialog_description', {
+                    username: annotatorToRemove?.name ?? '',
+                })}
+                cancelLabel={t('projects.create.cancel')}
+                actionLabel={t('projects.annotators_tab.remove_confirm')}
+                onAction={handleConfirmRemove}
             />
         </div>
     );

@@ -67,6 +67,9 @@ return [
         'status_active' => 'Active',
         'status_inactive' => 'Inactive',
         'status_pending' => 'Pending',
+        'remove_dialog_title' => 'Remove Annotator',
+        'remove_dialog_description' => 'Are you sure you want to remove :username from this project?',
+        'remove_confirm' => 'Remove',
     ],
 
     'managers_tab' => [
