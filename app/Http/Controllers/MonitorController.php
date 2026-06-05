@@ -9,7 +9,6 @@ use App\Services\Monitor\MonitorAnnotatorHistoryTabService;
 use App\Services\Monitor\MonitorAnnotatorProgressTabService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,10 +28,7 @@ class MonitorController extends Controller {
 
         $data = $this->annotatorProgressTabService->getData($user);
 
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('monitor-active-work-data.json', $json);
-        }
+        $this->dumpDebugJson($data, 'monitor-active-work-data.json');
 
         return Inertia::render('monitor/index', ['annotator_progress_tab_data' => $data]);
     }
@@ -43,10 +39,7 @@ class MonitorController extends Controller {
 
         $data = $this->annotatorHistoryTabService->getData($user);
 
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('monitor-history-data.json', $json);
-        }
+        $this->dumpDebugJson($data, 'monitor-history-data.json');
 
         return Inertia::render('monitor/index', ['annotator_history_tab_data' => $data]);
     }

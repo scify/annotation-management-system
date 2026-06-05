@@ -13,7 +13,6 @@ use App\Services\SubProject\SubProjectService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -28,10 +27,7 @@ class SubProjectController extends Controller {
 
         $data_for_create_sub_project = $this->subProjectService->getDataForCreateSubProject($id);
 
-        $json = json_encode($data_for_create_sub_project, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('subproject-create-data.json', $json);
-        }
+        $this->dumpDebugJson($data_for_create_sub_project, 'subproject-create-data.json');
 
         return Inertia::render('sub-projects/create', [
             ...$data_for_create_sub_project,
@@ -45,10 +41,7 @@ class SubProjectController extends Controller {
     public function store(SubProjectStoreRequest $request, int $id): RedirectResponse {
         $validated = $request->validated();
 
-        $json = json_encode($validated, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('subproject-store-data.json', $json);
-        }
+        $this->dumpDebugJson($validated, 'subproject-store-data.json');
 
         $this->subProjectService->storeSubProject($id, $validated);
 
@@ -72,12 +65,17 @@ class SubProjectController extends Controller {
         $project = Project::query()->findOrFail($projectId);
         $subproject = SubProject::query()->findOrFail($subprojectId);
 
-        return Inertia::render('sub-projects/add-annotators', [
+        $data = [
             'project_id' => $project->id,
             'project_name' => $project->name,
             'subproject_id' => $subproject->id,
             'subproject_name' => $subproject->name,
-        ]);
+            ...$this->subProjectService->getDataForAddAnnotators($projectId, $subprojectId),
+        ];
+
+        $this->dumpDebugJson($data, 'subproject-add-annotators-data.json');
+
+        return Inertia::render('sub-projects/add-annotators', $data);
     }
 
     public function attachAnnotators(Request $request, int $projectId, int $subprojectId): RedirectResponse {
@@ -91,10 +89,7 @@ class SubProjectController extends Controller {
 
         $data_for_edit_subproject = $this->subProjectService->getDataForEditSubProject($projectId, $subprojectId);
 
-        $json = json_encode($data_for_edit_subproject, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('subproject-edit-data.json', $json);
-        }
+        $this->dumpDebugJson($data_for_edit_subproject, 'subproject-edit-data.json');
 
         return Inertia::render('sub-projects/edit', [
             ...$data_for_edit_subproject,

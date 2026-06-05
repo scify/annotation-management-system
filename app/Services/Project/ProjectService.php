@@ -239,6 +239,52 @@ readonly class ProjectService {
     }
 
     /**
+     * @return array<string, mixed>
+     */
+    public function getDataForAddAnnotators(int $projectId, User $user): array {
+        /** @var array<int, int> $existingAnnotatorIds */
+        $existingAnnotatorIds = AnnotatorOfProject::query()
+            ->where('project_id', $projectId)
+            ->pluck('user_id')
+            ->all();
+
+        $allSubProjectIds = $this->subProjectIdsQuery->getAll()->all();
+        $progressBySubProject = $this->subProjectService->getProgress($allSubProjectIds);
+
+        /** @var \Illuminate\Support\Collection<int, int> $activeSubProjectIds */
+        $activeSubProjectIds = collect($allSubProjectIds);
+
+        $roleName = $user->getRoleNames()->first();
+        $myProjectIds = $this->userProjectsQuery->get($user->id, ProjectStatusEnum::IN_PROGRESS)->pluck('id')->all();
+
+        if ($roleName === RolesEnum::ADMIN->value) {
+            $availableIds = $this->annotatorService->getAnnotatorIdsExcluding($existingAnnotatorIds);
+
+            $allAnnotators = $this->annotatorService->getProjectAnnotatorsData($availableIds, $activeSubProjectIds, $progressBySubProject);
+
+            $myAnnotatorIds = array_flip($this->annotatorIdsByProjectsQuery->get($myProjectIds));
+            $myAnnotators = array_values(array_filter(
+                $allAnnotators,
+                fn (array $annotator): bool => is_int($annotator['id']) && isset($myAnnotatorIds[$annotator['id']]),
+            ));
+
+            return [
+                'all_annotators' => $allAnnotators,
+                'my_annotators' => $myAnnotators,
+            ];
+        }
+
+        $myIds = array_values(array_filter(
+            $this->annotatorIdsByProjectsQuery->get($myProjectIds),
+            fn (int $id): bool => ! in_array($id, $existingAnnotatorIds, true),
+        ));
+
+        return [
+            'my_annotators' => $this->annotatorService->getProjectAnnotatorsData($myIds, $activeSubProjectIds, $progressBySubProject),
+        ];
+    }
+
+    /**
      * @return array<int, array<string, mixed>>
      */
     public function getAllInProgressProjects(): array {
@@ -423,6 +469,11 @@ readonly class ProjectService {
         ];
     }
 
+    /**
+     * @param  array<int, array<string, mixed>>  $annotators
+     *
+     * @return array<int, array<string, mixed>>
+     */
     /**
      * @return array<string, mixed>
      */
