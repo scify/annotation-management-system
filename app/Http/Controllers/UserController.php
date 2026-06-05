@@ -205,7 +205,7 @@ class UserController extends Controller {
     public function destroy(User $user): RedirectResponse {
         $this->authorize('delete', $user);
 
-        $this->userService->delete($user);
+        $this->userService->handleDelete($user);
 
         return to_route('users.index')
             ->with('success', __('users.messages.deleted'));

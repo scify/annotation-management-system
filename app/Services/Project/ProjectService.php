@@ -6,14 +6,18 @@ namespace App\Services\Project;
 
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
+use App\Exceptions\AnnotatorDetachException;
+use App\Models\AnnotationAssignment;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfProject;
 use App\Models\Dataset;
 use App\Models\InstanceShuffleMapper;
 use App\Models\Project;
 use App\Models\ProjectManager;
+use App\Models\SubProject;
 use App\Models\TaskTag;
 use App\Models\User;
+use App\Queries\DetachAnnotatorFromProjectQuery;
 use App\Queries\GetAnnotationTasksQuery;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
 use App\Queries\GetCoManagersQuery;
@@ -43,6 +47,7 @@ readonly class ProjectService {
         private GetProjectsQuery $projectsQuery,
         private GetSubProjectIdsQuery $subProjectIdsQuery,
         private GetProjectsManagedByUserQuery $userProjectsQuery,
+        private DetachAnnotatorFromProjectQuery $detachAnnotatorFromProjectQuery,
     ) {}
 
     /**
@@ -191,10 +196,18 @@ readonly class ProjectService {
 
         $annotatorsData = $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $subProjectIds, $progressBySubProject);
 
+        /** @var array<int, true> $blockedAnnotatorIds */
+        $blockedAnnotatorIds = AnnotationAssignment::query()
+            ->whereIn('sub_project_id', $subProjectIds->all())
+            ->pluck('user_id')
+            ->flip()
+            ->all();
+
         $annotatorsData = array_map(
             fn (array $annotator): array => [
                 ...$annotator,
                 'can_flag' => ! is_int($annotator['id']) || (($canFlagByAnnotatorId[$annotator['id']] ?? true)),
+                'can_be_removed' => is_int($annotator['id']) && ! isset($blockedAnnotatorIds[$annotator['id']]),
             ],
             $annotatorsData,
         );
@@ -205,6 +218,24 @@ readonly class ProjectService {
             'annotators_data' => $annotatorsData,
             'comanagers_data' => $this->buildCoManagersData($project),
         ];
+    }
+
+    public function detachAnnotator(int $projectId, int $annotatorId): void {
+        $subProjectIds = SubProject::query()
+            ->where('project_id', $projectId)
+            ->pluck('id')
+            ->all();
+
+        $hasAssignments = AnnotationAssignment::query()
+            ->whereIn('sub_project_id', $subProjectIds)
+            ->where('user_id', $annotatorId)
+            ->exists();
+
+        if ($hasAssignments) {
+            throw AnnotatorDetachException::annotatorHasSubProjectAssignments();
+        }
+
+        $this->detachAnnotatorFromProjectQuery->detach($projectId, $annotatorId);
     }
 
     /**

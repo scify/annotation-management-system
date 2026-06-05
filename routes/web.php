@@ -30,10 +30,12 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::post('projects/toggle-can-flag', [ProjectController::class, 'toggleCanFlagOfAnnotator'])->name('projects.toggle-can-flag');
     Route::get('projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
+    Route::delete('projects/{id}/annotators/{annotatorId}', [ProjectController::class, 'detachAnnotator'])->name('projects.annotators.detach');
     Route::get('projects/{id}/export', [ProjectController::class, 'export'])->name('projects.export');
     Route::get('projects/{id}/subprojects/create', [SubProjectController::class, 'create'])->name('projects.subprojects.create');
     Route::post('projects/{id}/subprojects', [SubProjectController::class, 'store'])->name('projects.subprojects.store');
     Route::get('projects/{projectId}/subprojects/{subprojectId}/edit', [SubProjectController::class, 'edit'])->name('projects.subprojects.edit');
+    Route::delete('projects/{projectId}/subprojects/{subprojectId}/annotators/{annotatorId}', [SubProjectController::class, 'detachAnnotator'])->name('projects.subprojects.annotators.detach');
 
     Route::resource('users', UserController::class)->except('show');
 

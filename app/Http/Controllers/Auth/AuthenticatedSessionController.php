@@ -49,7 +49,7 @@ class AuthenticatedSessionController extends Controller {
 
         /** @var User $user */
         $user = Auth::user();
-        $this->userService->activateIfPending($user);
+        $this->userService->handleFirstLogin($user);
 
         return to_route('dashboard');
     }

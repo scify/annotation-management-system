@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Services\SubProject;
 
 use App\Enums\AgreementEnum;
+use App\Enums\ProjectStatusEnum;
+use App\Exceptions\AnnotatorDetachException;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotatorOfProject;
 use App\Models\SubProject;
+use App\Queries\DetachAnnotatorFromSubProjectQuery;
 use App\Queries\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\GetCountsOfFlagsQuery;
 use App\Queries\GetProgressQuery;
@@ -32,6 +35,7 @@ readonly class SubProjectService {
         private StoreSubProjectQuery $storeSubProjectQuery,
         private GetSubProjectIdsQuery $subProjectIdsQuery,
         private GetSubsetInfoByProjectQuery $subsetInfoQuery,
+        private DetachAnnotatorFromSubProjectQuery $detachAnnotatorFromSubProjectQuery,
     ) {}
 
     /**
@@ -41,6 +45,16 @@ readonly class SubProjectService {
      */
     public function storeSubProject(int $projectId, array $data): void {
         $this->storeSubProjectQuery->execute($projectId, $data);
+    }
+
+    public function detachAnnotator(int $subProjectId, int $annotatorId): void {
+        $subProject = SubProject::query()->findOrFail($subProjectId);
+
+        if ($subProject->status !== ProjectStatusEnum::PENDING) {
+            throw AnnotatorDetachException::subProjectNotPending();
+        }
+
+        $this->detachAnnotatorFromSubProjectQuery->detach($subProjectId, $annotatorId);
     }
 
     /**
@@ -204,12 +218,14 @@ readonly class SubProjectService {
             ->all();
 
         $flagCounts = $this->flagsQuery->get($annotatorIds);
+        $canBeRemoved = $subProject->status === ProjectStatusEnum::PENDING;
 
         return array_map(
             fn (array $annotator): array => [
                 ...$annotator,
                 'can_flag' => ! is_int($annotator['id']) || (($canFlagByAnnotatorId[$annotator['id']] ?? true)),
                 'flag_count' => is_int($annotator['id']) ? ($flagCounts[$annotator['id']][$subProject->id] ?? 0) : 0,
+                'can_be_removed' => $canBeRemoved,
             ],
             $annotatorsData,
         );
