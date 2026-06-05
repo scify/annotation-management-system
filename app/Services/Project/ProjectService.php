@@ -377,6 +377,9 @@ readonly class ProjectService {
      * @return array<int, array{id: int, username: string, email: string, status: string, owner: bool, accepted: bool}>
      */
     private function buildCoManagersData(Project $project): array {
+        $activeUserId = auth()->id();
+        $activeUserIsOwner = $activeUserId === $project->owner_user_id;
+
         return $project->projectManagers
             ->map(fn (ProjectManager $pm): array => [
                 'id' => $pm->user->id,
@@ -384,7 +387,14 @@ readonly class ProjectService {
                 'email' => $pm->user->email,
                 'status' => $pm->user->status->value,
                 'owner' => $pm->user_id === $project->owner_user_id,
-                'accepted' => (bool) $pm->accepted,
+                'accepted' => $pm->accepted,
+                'request_to_leave' => $pm->request_to_leave,
+                'proposed_to_become_owner' => $pm->proposed_to_become_owner,
+                'can_request_to_leave' => $pm->user_id === $activeUserId && $pm->user_id !== $project->owner_user_id,
+                'can_remove' => $activeUserIsOwner && $pm->user_id !== $activeUserId,
+                'can_transfer_ownership' => $pm->user_id !== $activeUserId && $pm->user_id !== $project->owner_user_id,
+                'can_accept_to_become_owner' => $pm->proposed_to_become_owner && $pm->user_id === $activeUserId,
+                'can_accept_request_to_leave' => $pm->request_to_leave && $activeUserIsOwner,
             ])
             ->values()
             ->all();

@@ -17,6 +17,8 @@ class ProjectManagerFactory extends Factory {
     public function definition(): array {
         return [
             'accepted' => true,
+            'request_to_leave' => false,
+            'proposed_to_become_owner' => false,
         ];
     }
 }
