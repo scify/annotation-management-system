@@ -17,7 +17,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -39,10 +38,7 @@ class ProjectController extends Controller {
 
         $data_for_projects = $this->projectService->getDataForProjectsPage($user);
 
-        $json = json_encode($data_for_projects, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('project-index-data.json', $json);
-        }
+        $this->dumpDebugJson($data_for_projects, 'project-index-data.json');
 
         return Inertia::render('projects/index', $data_for_projects);
     }
@@ -55,10 +51,7 @@ class ProjectController extends Controller {
 
         $data_for_create_project = $this->projectService->getDataForCreateProject($user);
 
-        $json = json_encode($data_for_create_project, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('project-create-data.json', $json);
-        }
+        $this->dumpDebugJson($data_for_create_project, 'project-create-data.json');
 
         return Inertia::render('projects/create', $data_for_create_project);
     }
@@ -107,12 +100,20 @@ class ProjectController extends Controller {
     public function showAddAnnotators(int $id): Response {
         $this->authorize('viewAny', Project::class);
 
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+
         $project = Project::query()->findOrFail($id);
 
-        return Inertia::render('projects/add-annotators', [
+        $data_for_add_annotators = [
             'project_id' => $project->id,
             'project_name' => $project->name,
-        ]);
+            ...$this->projectService->getDataForAddAnnotators($id, $user),
+        ];
+
+        $this->dumpDebugJson($data_for_add_annotators, 'project-add-annotators-data.json');
+
+        return Inertia::render('projects/add-annotators', $data_for_add_annotators);
     }
 
     public function attachAnnotators(Request $request, int $id): RedirectResponse {
@@ -126,10 +127,7 @@ class ProjectController extends Controller {
 
         $data_for_show_project = $this->projectService->getDataForShowProject($id);
 
-        $json = json_encode($data_for_show_project, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('project-show-data.json', $json);
-        }
+        $this->dumpDebugJson($data_for_show_project, 'project-show-data.json');
 
         return Inertia::render('projects/show', $data_for_show_project);
     }

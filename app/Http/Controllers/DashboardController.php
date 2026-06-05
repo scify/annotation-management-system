@@ -9,7 +9,6 @@ use App\Models\User;
 use App\Services\Dashboard\DashboardService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -27,10 +26,7 @@ class DashboardController extends Controller {
 
         $data_for_dashboard = $this->dashboardService->getDataForDashboard($user);
 
-        $json = json_encode($data_for_dashboard, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('dashboard-data.json', $json);
-        }
+        $this->dumpDebugJson($data_for_dashboard, 'dashboard-data.json');
 
         return Inertia::render('dashboard', $data_for_dashboard);
 

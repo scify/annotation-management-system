@@ -30,6 +30,17 @@ final readonly class GetAnnotatorsQuery {
     }
 
     /**
+     * @param  array<int, int>  $excludeIds
+     *
+     * @return Collection<int, User>
+     */
+    public function getAllExcluding(array $excludeIds): Collection {
+        return $this->query()
+            ->when($excludeIds !== [], fn (Builder $q) => $q->whereNotIn('id', $excludeIds))
+            ->get();
+    }
+
+    /**
      * @param  array<int, mixed>|null  $ids
      *
      * @return Builder<User>

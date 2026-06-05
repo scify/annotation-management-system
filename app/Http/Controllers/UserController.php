@@ -20,7 +20,6 @@ use App\Services\User\UserService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,10 +44,7 @@ class UserController extends Controller {
 
         $management = $this->userManagementService->getUsersByRole($currentUser);
 
-        $json = json_encode($management, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('user-management-data.json', $json);
-        }
+        $this->dumpDebugJson($management, 'user-management-data.json');
 
         $canRestore = $currentUser->can('restore', User::class);
 
@@ -96,10 +92,7 @@ class UserController extends Controller {
             ],
         };
 
-        $json = json_encode($props, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('user-management-create-user-data-' . $type->value . '.json', $json);
-        }
+        $this->dumpDebugJson($props, 'user-management-create-user-data-' . $type->value . '.json');
 
         return Inertia::render('users/create', $props);
     }
@@ -162,10 +155,7 @@ class UserController extends Controller {
             ],
         };
 
-        $json = json_encode($props, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (is_string($json)) {
-            Storage::disk('local')->put('user-management-edit-user-data-' . $role->value . '.json', $json);
-        }
+        $this->dumpDebugJson($props, 'user-management-edit-user-data-' . $role->value . '.json');
 
         return Inertia::render('users/edit', $props);
     }

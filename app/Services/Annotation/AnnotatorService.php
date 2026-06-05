@@ -20,6 +20,18 @@ readonly class AnnotatorService {
     ) {}
 
     /**
+     * @param  array<int, int>  $excludeIds
+     *
+     * @return array<int, int>
+     */
+    public function getAnnotatorIdsExcluding(array $excludeIds): array {
+        return $this->activeAnnotatorsQuery->getAllExcluding($excludeIds)
+            ->map(fn (User $user): int => $user->id)
+            ->values()
+            ->all();
+    }
+
+    /**
      * @param  array<int, array{progress: float, assignments: array<int, array{user_id: int, annotations_all: int, annotations_done: int, progress: float}>}>  $progressBySubProject
      * @param  Collection<int, int>|null  $activeSubProjectIds
      *

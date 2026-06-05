@@ -47,6 +47,41 @@ readonly class SubProjectService {
         $this->storeSubProjectQuery->execute($projectId, $data);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDataForAddAnnotators(int $projectId, int $subprojectId): array {
+        /** @var array<int, int> $projectAnnotatorIds */
+        $projectAnnotatorIds = $this->annotatorProjectLinksQuery->getAll($projectId)
+            ->pluck('user_id')
+            ->all();
+
+        /** @var array<int, true> $subProjectAnnotatorIds */
+        $subProjectAnnotatorIds = AnnotationAssignment::query()
+            ->where('sub_project_id', $subprojectId)
+            ->pluck('user_id')
+            ->flip()
+            ->all();
+
+        $availableIds = array_values(array_filter(
+            $projectAnnotatorIds,
+            fn (int $id): bool => ! isset($subProjectAnnotatorIds[$id]),
+        ));
+
+        /** @var array<int, int> $allSubProjectIds */
+        $allSubProjectIds = $this->subProjectIdsQuery->getAll()->all();
+        $progressBySubProject = $this->getProgress($allSubProjectIds);
+
+        /** @var \Illuminate\Support\Collection<int, int> $activeSubProjectIds */
+        $activeSubProjectIds = collect($allSubProjectIds);
+
+        return [
+            'annotators_data' => $this->annotatorService->getProjectAnnotatorsData(
+                $availableIds, $activeSubProjectIds, $progressBySubProject
+            ),
+        ];
+    }
+
     public function detachAnnotator(int $subProjectId, int $annotatorId): void {
         $subProject = SubProject::query()->findOrFail($subProjectId);
 
