@@ -3,6 +3,7 @@ import { AnnotatorsTable } from '@/components/annotator/annotators-table';
 import { ProjectDialog } from '@/components/project/project-dialog';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
+import { router } from '@inertiajs/react';
 import { Plus, UserMinus } from 'lucide-react';
 import { useState } from 'react';
 
@@ -10,12 +11,16 @@ interface SubprojectAnnotatorsPanelProps {
     annotators: ProjectAnnotatorRowData[];
     onAnnotatorRemoved: (id: number) => void;
     canManageAnnotators?: boolean;
+    projectId: number;
+    subprojectId: number;
 }
 
 export function SubprojectAnnotatorsPanel({
     annotators,
     onAnnotatorRemoved,
     canManageAnnotators = true,
+    projectId,
+    subprojectId,
 }: SubprojectAnnotatorsPanelProps) {
     const { t, trans } = useTranslations();
     const [annotatorToRemove, setAnnotatorToRemove] = useState<ProjectAnnotatorRowData | null>(
@@ -51,9 +56,19 @@ export function SubprojectAnnotatorsPanel({
             <div className="flex items-center justify-between">
                 <h2 className="page-subtitle">{t('projects.annotators_tab.title')}</h2>
                 {canManageAnnotators && (
-                    <Button className="bg-brand-blue-700 hover:bg-brand-blue-800 h-10 font-semibold text-white">
+                    <Button
+                        className="hover:bg-brand-blue-800 h-10 font-semibold text-white"
+                        onPress={() =>
+                            router.visit(
+                                route('projects.subprojects.annotators.add', [
+                                    projectId,
+                                    subprojectId,
+                                ])
+                            )
+                        }
+                    >
                         <Plus className="size-4" aria-hidden="true" />
-                        {t('projects.annotators_tab.add_annotator')}
+                        {t('projects.annotators_tab.add_annotators')}
                     </Button>
                 )}
             </div>

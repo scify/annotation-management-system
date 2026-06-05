@@ -128,6 +128,10 @@ return [
         'status_not_annotated' => 'Not Annotated',
     ],
 
+    'add_annotators' => [
+        'back' => 'Back to Subproject',
+    ],
+
     'messages' => [
         'created' => 'Subproject created successfully.',
         'annotator_detached' => 'Annotator removed from subproject.',
