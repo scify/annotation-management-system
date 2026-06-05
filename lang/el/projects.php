@@ -67,6 +67,9 @@ return [
         'status_active' => 'Ενεργός',
         'status_inactive' => 'Ανενεργός',
         'status_pending' => 'Εκκρεμής',
+        'remove_dialog_title' => 'Αφαίρεση Επισημειωτή',
+        'remove_dialog_description' => 'Είστε βέβαιοι ότι θέλετε να αφαιρέσετε τον :username από αυτό το έργο;',
+        'remove_confirm' => 'Αφαίρεση',
     ],
 
     'managers_tab' => [

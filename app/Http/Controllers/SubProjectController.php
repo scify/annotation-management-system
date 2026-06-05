@@ -91,6 +91,10 @@ class SubProjectController extends Controller {
 
         $this->dumpDebugJson($data_for_edit_subproject, 'subproject-edit-data.json');
 
-        return Inertia::render('sub-projects/edit');
+        return Inertia::render('sub-projects/edit', [
+            ...$data_for_edit_subproject,
+            // TODO move project_name to getDataForEditSubProject call
+            'project_name' => Project::query()->select('id', 'name')->findOrFail($projectId)->name,
+        ]);
     }
 }
