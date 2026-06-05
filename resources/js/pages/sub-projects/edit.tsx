@@ -32,6 +32,7 @@ import {
 import { Tag } from '@/components/ui/tag';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
+import { formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { CalendarDate } from '@internationalized/date';
@@ -255,7 +256,13 @@ export default function EditSubproject({
                                 {t('sub-projects.edit.date_started')}
                             </strong>
                             <span className="ml-1">
-                                {subproject_data.started_at ?? t('sub-projects.edit.not_started')}
+                                {subproject_data.started_at
+                                    ? formatDate(subproject_data.started_at, {
+                                          day: 'numeric',
+                                          month: 'short',
+                                          year: 'numeric',
+                                      })
+                                    : t('sub-projects.edit.not_started')}
                             </span>
                         </Tag>
                         <Tag>
@@ -263,8 +270,13 @@ export default function EditSubproject({
                                 {t('sub-projects.edit.date_completed')}
                             </strong>
                             <span className="ml-1">
-                                {subproject_data.completed_at ??
-                                    t('sub-projects.edit.not_completed')}
+                                {subproject_data.completed_at
+                                    ? formatDate(subproject_data.completed_at, {
+                                          day: 'numeric',
+                                          month: 'short',
+                                          year: 'numeric',
+                                      })
+                                    : t('sub-projects.edit.not_completed')}
                             </span>
                         </Tag>
                     </div>
