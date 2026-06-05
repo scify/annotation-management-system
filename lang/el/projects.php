@@ -25,6 +25,7 @@ return [
     'sort_not_selected' => 'Κανένα',
     'projects_count' => ':count Έργα',
     'search_placeholder' => 'Αναζήτηση Έργων…',
+    'no_projects' => 'Δεν βρέθηκαν έργα.',
 
     'status' => [
         'pending' => 'Σε αναμονή',
@@ -52,7 +53,7 @@ return [
 
     'annotators_tab' => [
         'title' => 'Επισημειωτές',
-        'add_annotator' => 'Προσθήκη Επισημειωτή',
+        'add_annotators' => 'Προσθήκη σχολιαστών',
         'table_username' => 'Όνομα χρήστη',
         'table_projects' => 'Έργα',
         'table_subprojects' => 'Υποέργα',
@@ -145,10 +146,19 @@ return [
         'deadline_at' => 'Ημερομηνία λήξης',
     ],
 
+    'add_annotators' => [
+        'heading' => 'Προσθήκη Σχολιαστών',
+        'subtitle' => 'Προσθήκη Σχολιαστών στο :name',
+        'back' => 'Επιστροφή στους Σχολιαστές',
+        'add_selected' => 'Προσθήκη Επιλεγμένων +',
+        'selected_count' => ':count επιλεγμένοι',
+    ],
+
     'messages' => [
         'created' => 'Το έργο δημιουργήθηκε επιτυχώς.',
         'can_flag_toggled' => 'Η άδεια επισήμανσης του επισημειωτή ενημερώθηκε.',
         'annotator_detached' => 'Ο επισημειωτής αφαιρέθηκε από το έργο.',
+        'annotators_attached' => 'Οι σχολιαστές προστέθηκαν επιτυχώς.',
     ],
 
     'validation' => [

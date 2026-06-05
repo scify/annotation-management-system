@@ -42,7 +42,7 @@ export default function ProjectsIndex({ all_projects, my_projects }: Props) {
                 </div>
 
                 <FilterableProjectList
-                    projects={all_projects ?? []}
+                    projects={all_projects ?? my_projects}
                     myProjects={my_projects}
                     showMineToggle={!isAnnotationManager}
                     mineToggleLabel={(showOnlyMine) =>

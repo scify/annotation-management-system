@@ -89,9 +89,10 @@ export function AnnotatorsTab({
                 <Button
                     className="hover:bg-brand-blue-800 h-10 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={!canEdit}
+                    onPress={() => router.visit(route('projects.annotators.add', projectId))}
                 >
                     <Plus className="size-4" aria-hidden="true" />
-                    {t('projects.annotators_tab.add_annotator')}
+                    {t('projects.annotators_tab.add_annotators')}
                 </Button>
             </div>
             <AnnotatorsTable

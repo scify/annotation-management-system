@@ -15,5 +15,6 @@ return [
         'projects.subprojects.edit', 'monitor.index', 'projects.store', 'monitor.annotator-progress',
         'monitor.annotator-history', 'projects.export', 'projects.subprojects.store',
         'projects.toggle-can-flag', 'settings.annotator-password-policy.update',
+        'projects.annotators.add', 'projects.annotators.attach',
     ],
 ];
