@@ -14,6 +14,6 @@ return [
         'projects.show', 'projects.subprojects.create', 'locale.update', 'projects.create',
         'projects.subprojects.edit', 'monitor.index', 'projects.store', 'monitor.annotator-progress',
         'monitor.annotator-history', 'projects.export', 'projects.subprojects.store',
-        'projects.toggle-can-flag',
+        'projects.toggle-can-flag', 'settings.annotator-password-policy.update',
     ],
 ];

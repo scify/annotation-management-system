@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Requests\User;
 
 use App\Models\User;
+use App\Services\Settings\AnnotatorPasswordPolicyService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class UserUpdateAnnotatorRequest extends UserAnnotatorBaseRequest {
+    public function __construct(
+        private readonly AnnotatorPasswordPolicyService $policyService,
+    ) {}
+
     public function authorize(): bool {
         return Gate::allows('update', $this->route('user'));
     }
@@ -23,7 +27,7 @@ class UserUpdateAnnotatorRequest extends UserAnnotatorBaseRequest {
 
         return array_merge($this->sharedRules(), [
             'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($userId)],
-            'password' => ['sometimes', 'confirmed', Password::defaults()],
+            'password' => ['sometimes', 'confirmed', $this->policyService->buildRule()],
             'password_confirmation' => ['sometimes', 'string'],
         ]);
     }

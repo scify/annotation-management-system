@@ -9,9 +9,14 @@ import {
 } from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { type AnnotatorCreateData, type AnnotatorEditUser, RolesEnum } from '@/types';
+import {
+    type AnnotatorCreateData,
+    type AnnotatorEditUser,
+    type AnnotatorPasswordPolicyData,
+    RolesEnum,
+} from '@/types';
 import { Link, useForm } from '@inertiajs/react';
-import { Check, Info, LoaderCircle } from 'lucide-react';
+import { Check, Circle, CircleCheck, CircleX, Info, LoaderCircle } from 'lucide-react';
 
 export interface CreateAnnotatorFormData {
     name: string;
@@ -89,8 +94,146 @@ function Field({ label, required, children }: FieldProps) {
     );
 }
 
-function isPasswordStrong(password: string): boolean {
-    return password.length >= 8 && /[a-zA-Z]/.test(password) && /[0-9]/.test(password);
+function meetsPasswordPolicy(password: string, policy: AnnotatorPasswordPolicyData): boolean {
+    if (password.length < policy.min_length) return false;
+
+    switch (policy.composition_mode) {
+        case 'letters_only':
+            if (!/[a-zA-Z]/.test(password)) return false;
+            break;
+        case 'letters_and_numbers':
+            if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) return false;
+            break;
+        case 'letters_numbers_and_symbols':
+            if (
+                !/[a-zA-Z]/.test(password) ||
+                !/[0-9]/.test(password) ||
+                !/[^a-zA-Z0-9]/.test(password)
+            )
+                return false;
+            break;
+        case 'no_restriction':
+        default:
+            break;
+    }
+
+    if (policy.mixed_case_required) {
+        if (!/[a-z]/.test(password) || !/[A-Z]/.test(password)) return false;
+    }
+
+    return true;
+}
+
+interface PasswordChecklistProps {
+    password: string;
+    passwordConfirmation: string;
+    policy: AnnotatorPasswordPolicyData;
+    isEditing: boolean;
+}
+
+function PasswordRequirementsChecklist({
+    password,
+    passwordConfirmation,
+    policy,
+    isEditing,
+}: PasswordChecklistProps) {
+    const { t, trans } = useTranslations();
+
+    if (isEditing && password === '') return null;
+
+    const hasTyped = password.length > 0;
+
+    const requirements: { label: string; met: boolean }[] = [
+        {
+            label: trans('users.validation.password_requirements.min_length', {
+                n: policy.min_length,
+            }),
+            met: password.length >= policy.min_length,
+        },
+    ];
+
+    if (policy.composition_mode !== 'no_restriction') {
+        requirements.push({
+            label: t('users.validation.password_requirements.contains_letter'),
+            met: /[a-zA-Z]/.test(password),
+        });
+    }
+
+    if (
+        policy.composition_mode === 'letters_and_numbers' ||
+        policy.composition_mode === 'letters_numbers_and_symbols'
+    ) {
+        requirements.push({
+            label: t('users.validation.password_requirements.contains_number'),
+            met: /[0-9]/.test(password),
+        });
+    }
+
+    if (policy.composition_mode === 'letters_numbers_and_symbols') {
+        requirements.push({
+            label: t('users.validation.password_requirements.contains_symbol'),
+            met: /[^a-zA-Z0-9]/.test(password),
+        });
+    }
+
+    if (policy.mixed_case_required) {
+        requirements.push({
+            label: t('users.validation.password_requirements.mixed_case'),
+            met: /[a-z]/.test(password) && /[A-Z]/.test(password),
+        });
+    }
+
+    if (passwordConfirmation !== '') {
+        requirements.push({
+            label: t('users.validation.password_requirements.passwords_match'),
+            met: password === passwordConfirmation,
+        });
+    }
+
+    return (
+        <div
+            role="note"
+            className="border-brand-blue-300 bg-brand-blue-50 flex flex-col gap-2 rounded-md border p-4"
+        >
+            <p className="text-brand-blue-800 text-xs font-semibold tracking-wide uppercase">
+                {t('users.validation.password_requirements.title')}
+            </p>
+            <ul className="flex flex-col gap-1">
+                {requirements.map(({ label, met }, i) => (
+                    <li key={i} className="flex items-center gap-1.5">
+                        {!hasTyped ? (
+                            <Circle
+                                className="h-3.5 w-3.5 shrink-0 text-slate-400"
+                                aria-hidden="true"
+                            />
+                        ) : met ? (
+                            <CircleCheck
+                                className="h-3.5 w-3.5 shrink-0 text-green-600"
+                                aria-hidden="true"
+                            />
+                        ) : (
+                            <CircleX
+                                className="h-3.5 w-3.5 shrink-0 text-red-500"
+                                aria-hidden="true"
+                            />
+                        )}
+                        <span
+                            className={cn(
+                                'text-xs',
+                                !hasTyped
+                                    ? 'text-slate-500'
+                                    : met
+                                      ? 'font-medium text-slate-700'
+                                      : 'text-red-500'
+                            )}
+                        >
+                            {label}
+                        </span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    );
 }
 
 export function CreateAnnotatorForm({ annotatorData, user }: CreateAnnotatorFormProps) {
@@ -118,12 +261,15 @@ export function CreateAnnotatorForm({ annotatorData, user }: CreateAnnotatorForm
         );
     }
 
+    const policy = annotatorData.password_policy;
+
     const passwordValid = isEditing
         ? form.data.password === '' ||
-          (isPasswordStrong(form.data.password) &&
+          (meetsPasswordPolicy(form.data.password, policy) &&
               form.data.password === form.data.password_confirmation)
         : form.data.password !== '' &&
           form.data.password_confirmation !== '' &&
+          meetsPasswordPolicy(form.data.password, policy) &&
           form.data.password === form.data.password_confirmation;
 
     const isValid =
@@ -232,6 +378,12 @@ export function CreateAnnotatorForm({ annotatorData, user }: CreateAnnotatorForm
                                 </p>
                             )}
                         </Field>
+                        <PasswordRequirementsChecklist
+                            password={form.data.password}
+                            passwordConfirmation={form.data.password_confirmation}
+                            policy={policy}
+                            isEditing={isEditing}
+                        />
                         <Field label={t('users.labels.status')}>
                             {isEditing ? (
                                 <Select

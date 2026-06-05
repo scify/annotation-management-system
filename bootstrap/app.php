@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Env;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+use Spatie\Permission\Middleware\RoleMiddleware;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 // Only load .env if APP_ENV isn't already set
@@ -62,7 +63,9 @@ $app = Application::configure(basePath: dirname(__DIR__))
             PreventRequestForgery::class,
         ]);
 
-        $aliases = [];
+        $aliases = [
+            'role' => RoleMiddleware::class,
+        ];
 
         // Production-only middleware
         if (Env::get('APP_ENV') === 'production') {

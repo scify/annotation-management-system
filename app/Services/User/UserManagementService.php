@@ -17,6 +17,7 @@ use App\Queries\GetManagerIdsByAnnotatorQuery;
 use App\Queries\GetUsersByRoleQuery;
 use App\Services\Annotation\AnnotatorStatsService;
 use App\Services\Project\ProjectService;
+use App\Services\Settings\AnnotatorPasswordPolicyService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
 
@@ -32,6 +33,7 @@ readonly class UserManagementService {
         private GetConnectedProjectIdsByUserQuery $getConnectedProjectIdsByUserQuery,
         private GetAnnotationTaskIdsByManagerQuery $getAnnotationTaskIdsByManagerQuery,
         private GetDatasetIdsByManagerQuery $getDatasetIdsByManagerQuery,
+        private AnnotatorPasswordPolicyService $policyService,
     ) {}
 
     /**
@@ -83,14 +85,22 @@ readonly class UserManagementService {
 
     /**
      * @return array{
-     *     all_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>
+     *     all_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>,
+     *     password_policy: array{min_length: int, composition_mode: string, mixed_case_required: bool}
      * }
      */
     public function getDataForCreateNewAnnotator(): array {
+        $policy = $this->policyService->getPolicy();
+
         return [
             'all_managers' => $this->mapWithEmail(
                 $this->getUsersByRoleQuery->getAllManagers()
             ),
+            'password_policy' => [
+                'min_length' => $policy->min_length,
+                'composition_mode' => $policy->composition_mode->value,
+                'mixed_case_required' => $policy->mixed_case_required,
+            ],
         ];
     }
 

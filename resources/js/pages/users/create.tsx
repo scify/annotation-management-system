@@ -35,6 +35,11 @@ const EMPTY_MANAGER_DATA: ManagerCreateData = {
 
 const EMPTY_ANNOTATOR_DATA: AnnotatorCreateData = {
     all_managers: [],
+    password_policy: {
+        min_length: 8,
+        composition_mode: 'letters_and_numbers',
+        mixed_case_required: false,
+    },
 };
 
 export default function Create({

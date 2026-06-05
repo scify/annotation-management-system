@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder {
             RolesAndPermissionsSeeder::class,
             UsersSeeder::class,
             TaskTagSeeder::class,
+            AnnotatorPasswordPolicySeeder::class,
         ]);
     }
 }

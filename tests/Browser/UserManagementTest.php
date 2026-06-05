@@ -8,6 +8,7 @@ use App\Models\AnnotatorOfProject;
 use App\Models\Project;
 use App\Models\ProjectManager;
 use App\Models\User;
+use Database\Seeders\AnnotatorPasswordPolicySeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -59,7 +60,10 @@ describe('Users index', function (): void {
 // ─────────────────────────────────────────────────────────────
 
 describe('Annotator creation', function (): void {
-    beforeEach(fn () => $this->seed(RolesAndPermissionsSeeder::class));
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
+        $this->seed(AnnotatorPasswordPolicySeeder::class);
+    });
 
     it('allows an admin to create a new annotator', function (): void {
         $manager = User::factory()->create()->assignRole(RolesEnum::ANNOTATION_MANAGER);
@@ -95,7 +99,10 @@ describe('Annotator creation', function (): void {
 // ─────────────────────────────────────────────────────────────
 
 describe('Annotator editing', function (): void {
-    beforeEach(fn () => $this->seed(RolesAndPermissionsSeeder::class));
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
+        $this->seed(AnnotatorPasswordPolicySeeder::class);
+    });
 
     it('shows the edit form pre-filled with the annotator data', function (): void {
         $manager = User::factory()->create()->assignRole(RolesEnum::ANNOTATION_MANAGER);
