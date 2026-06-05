@@ -155,7 +155,7 @@ class UserController extends Controller {
             ],
         };
 
-        $props['can_delete'] = $currentUser->can('delete', $user);
+        $props['can_delete'] = $user->id !== $currentUser->id && $currentUser->can('delete', $user);
 
         $this->dumpDebugJson($props, 'user-management-edit-user-data-' . $role->value . '.json');
 
