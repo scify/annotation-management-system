@@ -130,6 +130,11 @@ return [
 
     'messages' => [
         'created' => 'Subproject created successfully.',
+        'annotator_detached' => 'Annotator removed from subproject.',
+    ],
+
+    'validation' => [
+        'subproject_not_pending' => 'Annotators can only be removed from subprojects with Pending status.',
     ],
 
     'labels' => [

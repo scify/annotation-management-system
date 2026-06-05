@@ -148,6 +148,11 @@ return [
     'messages' => [
         'created' => 'Project created successfully.',
         'can_flag_toggled' => 'Annotator flag permission updated.',
+        'annotator_detached' => 'Annotator removed from project.',
+    ],
+
+    'validation' => [
+        'annotator_has_subproject_assignments' => 'This annotator is assigned to one or more subprojects and cannot be removed from the project.',
     ],
 
     'create' => [

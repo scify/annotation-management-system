@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\PresentableError;
+use App\Http\Requests\SubProject\DetachAnnotatorFromSubProjectRequest;
 use App\Http\Requests\SubProject\SubProjectStoreRequest;
 use App\Models\Project;
 use App\Services\SubProject\SubProjectService;
@@ -50,6 +52,16 @@ class SubProjectController extends Controller {
 
         return to_route('projects.subprojects.create', $id)
             ->with('created_subproject_name', $request->validated()['name']);
+    }
+
+    public function detachAnnotator(DetachAnnotatorFromSubProjectRequest $request, int $projectId, int $subprojectId): RedirectResponse {
+        try {
+            $this->subProjectService->detachAnnotator($subprojectId, $request->integer('annotator_id'));
+        } catch (PresentableError $presentableError) {
+            return to_route('projects.subprojects.edit', [$projectId, $subprojectId])->with('error', $presentableError->getUserMessage());
+        }
+
+        return to_route('projects.subprojects.edit', [$projectId, $subprojectId])->with('success', __('sub-projects.messages.annotator_detached'));
     }
 
     public function edit(int $projectId, int $subprojectId): Response {

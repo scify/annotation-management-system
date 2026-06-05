@@ -103,8 +103,12 @@ readonly class UserService {
         throw new InvalidArgumentException('Unknown role');
     }
 
-    public function delete(User $user): ?bool {
-        return $user->delete();
+    public function handleDelete(User $user): void {
+        if ($user->status === StatusEnum::PENDING) {
+            $this->hardDelete($user);
+        } else {
+            $this->softDelete($user);
+        }
     }
 
     public function restore(User $user): User {
@@ -122,10 +126,12 @@ readonly class UserService {
         return $this->getUserWorkloadsQuery->get($userIds);
     }
 
-    public function activateIfPending(User $user): void {
-        if ($user->status === StatusEnum::PENDING) {
-            $user->update(['status' => StatusEnum::ACTIVE]);
+    public function handleFirstLogin(User $user): void {
+        if ($user->status !== StatusEnum::PENDING) {
+            return;
         }
+
+        $this->activate($user);
     }
 
     public function findByEmail(string $email): ?User {
@@ -157,6 +163,20 @@ readonly class UserService {
             'name' => $rolesEnum->value,
             'label' => 'roles.' . $rolesEnum->value,
         ])->values();
+    }
+
+    private function activate(User $user): void {
+        $user->update(['status' => StatusEnum::ACTIVE]);
+    }
+
+    private function hardDelete(User $user): void {
+        // TODO: add actions to run before hard-deleting a pending user
+        $user->forceDelete();
+    }
+
+    private function softDelete(User $user): void {
+        // TODO: add actions to run before soft-deleting an active/inactive user
+        $user->delete();
     }
 
     /**

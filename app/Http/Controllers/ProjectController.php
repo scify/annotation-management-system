@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\PresentableError;
+use App\Http\Requests\Project\DetachAnnotatorFromProjectRequest;
 use App\Http\Requests\Project\ProjectExportRequest;
 use App\Http\Requests\Project\ProjectStoreRequest;
 use App\Http\Requests\Project\ToggleCanFlagRequest;
@@ -89,6 +91,16 @@ class ProjectController extends Controller {
 
         return to_route('projects.show', $request->integer('project_id'))
             ->with('success', __('projects.messages.can_flag_toggled'));
+    }
+
+    public function detachAnnotator(DetachAnnotatorFromProjectRequest $request, int $id): RedirectResponse {
+        try {
+            $this->projectService->detachAnnotator($id, $request->integer('annotator_id'));
+        } catch (PresentableError $presentableError) {
+            return to_route('projects.show', $id)->with('error', $presentableError->getUserMessage());
+        }
+
+        return to_route('projects.show', $id)->with('success', __('projects.messages.annotator_detached'));
     }
 
     public function show(int $id): Response {

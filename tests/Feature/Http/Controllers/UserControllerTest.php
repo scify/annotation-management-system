@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Enums\RolesEnum;
+use App\Enums\StatusEnum;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Faker\Factory;
@@ -149,9 +150,9 @@ describe('UserController', function (): void {
             ->name->not->toBe('Updated Name');
     });
 
-    it('soft deletes a user', function (): void {
+    it('soft deletes an active or inactive user', function (): void {
         // Arrange
-        $user = User::factory()->create();
+        $user = User::factory()->create(['status' => StatusEnum::ACTIVE]);
 
         $this->actingAs($this->admin)->get(route('users.index'));
 
@@ -167,5 +168,22 @@ describe('UserController', function (): void {
 
         expect(User::withTrashed()->find($user->id))->not->toBeNull()
             ->and(User::query()->find($user->id))->toBeNull();
+    });
+
+    it('hard deletes a pending user', function (): void {
+        // Arrange
+        $user = User::factory()->create(['status' => StatusEnum::PENDING]);
+
+        $this->actingAs($this->admin)->get(route('users.index'));
+
+        // Act
+        $response = $this->delete(route('users.destroy', $user), [
+            '_token' => session('_token'),
+        ]);
+
+        // Assert
+        $response->assertRedirect();
+
+        expect(User::withTrashed()->find($user->id))->toBeNull();
     });
 });
