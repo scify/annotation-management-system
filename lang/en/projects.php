@@ -25,6 +25,7 @@ return [
     'sort_not_selected' => 'None',
     'projects_count' => ':count Projects',
     'search_placeholder' => 'Search Projects…',
+    'no_projects' => 'No projects found.',
 
     'status' => [
         'pending' => 'Pending',

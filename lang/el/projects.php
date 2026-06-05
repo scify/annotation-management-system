@@ -25,6 +25,7 @@ return [
     'sort_not_selected' => 'Κανένα',
     'projects_count' => ':count Έργα',
     'search_placeholder' => 'Αναζήτηση Έργων…',
+    'no_projects' => 'Δεν βρέθηκαν έργα.',
 
     'status' => [
         'pending' => 'Σε αναμονή',
