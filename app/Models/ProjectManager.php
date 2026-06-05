@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $project_id
  * @property int $user_id
  * @property bool $accepted
+ * @property bool $request_to_leave
+ * @property bool $proposed_to_become_owner
  * @property-read Project $project
  * @property-read User $user
  */
@@ -22,6 +24,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'project_id',
     'user_id',
     'accepted',
+    'request_to_leave',
+    'proposed_to_become_owner',
 ])]
 #[Table(name: 'project_managers')]
 class ProjectManager extends Model {
@@ -40,5 +44,16 @@ class ProjectManager extends Model {
      */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array {
+        return [
+            'accepted' => 'boolean',
+            'request_to_leave' => 'boolean',
+            'proposed_to_become_owner' => 'boolean',
+        ];
     }
 }
