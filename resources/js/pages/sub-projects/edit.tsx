@@ -615,6 +615,8 @@ export default function EditSubproject({
                             )}
                             onAnnotatorRemoved={(id) => handleSelectionChange(id, false)}
                             canManageAnnotators={canManageAnnotators}
+                            projectId={displayProject.id}
+                            subprojectId={displaySubproject.id}
                         />
                     </section>
                 )}

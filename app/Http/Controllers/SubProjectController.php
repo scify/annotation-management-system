@@ -8,9 +8,11 @@ use App\Exceptions\PresentableError;
 use App\Http\Requests\SubProject\DetachAnnotatorFromSubProjectRequest;
 use App\Http\Requests\SubProject\SubProjectStoreRequest;
 use App\Models\Project;
+use App\Models\SubProject;
 use App\Services\SubProject\SubProjectService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -62,6 +64,26 @@ class SubProjectController extends Controller {
         }
 
         return to_route('projects.subprojects.edit', [$projectId, $subprojectId])->with('success', __('sub-projects.messages.annotator_detached'));
+    }
+
+    public function showAddAnnotators(int $projectId, int $subprojectId): Response {
+        $this->authorize('viewAny', Project::class);
+
+        $project = Project::query()->findOrFail($projectId);
+        $subproject = SubProject::query()->findOrFail($subprojectId);
+
+        return Inertia::render('sub-projects/add-annotators', [
+            'project_id' => $project->id,
+            'project_name' => $project->name,
+            'subproject_id' => $subproject->id,
+            'subproject_name' => $subproject->name,
+        ]);
+    }
+
+    public function attachAnnotators(Request $request, int $projectId, int $subprojectId): RedirectResponse {
+        // TODO: wire to SubProjectService
+        return to_route('projects.subprojects.edit', [$projectId, $subprojectId])
+            ->with('success', __('projects.messages.annotators_attached'));
     }
 
     public function edit(int $projectId, int $subprojectId): Response {
