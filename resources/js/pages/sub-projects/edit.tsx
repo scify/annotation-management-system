@@ -1,6 +1,6 @@
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
 import { SubprojectAnnotatorsPanel } from '@/components/sub-project/subproject-annotators-panel';
-import { type StatusVariant } from '@/components/project/project-card';
+import { STATUS_VARIANT } from '@/components/project/project-card';
 import {
     PriorityBadge,
     type SubprojectPriority,
@@ -11,6 +11,7 @@ import { type DatasetInfo } from '@/components/sub-project/select-dataset-subset
 import {
     AnnotationsTab,
     type InstanceAnnotationRow,
+    type UserRole,
 } from '@/components/sub-project/annotations-tab';
 import {
     DateRangePickerButton,
@@ -38,168 +39,157 @@ import { Head } from '@inertiajs/react';
 import { CircleAlert, Megaphone } from 'lucide-react';
 import { useState } from 'react';
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
+// ── Backend data shapes ───────────────────────────────────────────────────────
 
-const MOCK_PROJECT = { id: 1, name: 'Project New Nov_26' };
+type BackendStatus = 'pending' | 'in_progress' | 'completed';
 
-const MOCK_SUBPROJECT = {
-    id: 1,
-    name: 'Subproject New Nov_26',
-    status: 'slate' as StatusVariant,
-    statusLabel: 'Pending',
-    progress: 25,
-    fromInstance: 57,
-    toInstance: 2350,
-    shuffle: true,
-    priority: 'medium' as SubprojectPriority,
-    dateRange: {
-        start: new CalendarDate(2026, 11, 23),
-        end: new CalendarDate(2026, 12, 15),
-    } satisfies DateRangeValue,
-    minAnnotationsEnabled: false,
-    minAnnotations: 1,
-    flexibleBrowsing: false,
-    submissionMode: 'auto' as SubmissionMode,
-};
+interface BackendSubprojectData {
+    id: number;
+    project_id: number;
+    name: string;
+    status: BackendStatus;
+    priority: SubprojectPriority;
+    flexible: boolean;
+    auto_submission: boolean;
+    minimum_annotators: number;
+    first_instance_index: number;
+    last_instance_index: number;
+    scheduled_at: string | null;
+    deadline_at: string | null;
+    started_at: string | null;
+    completed_at: string | null;
+    dataset_id: number;
+    dataset_name: string;
+    progress: number; // 0.0–1.0 fraction
+}
 
-const MOCK_DATASET: DatasetInfo = { name: 'Image Dataset B', totalInstances: 10_000 };
+interface BackendAnnotatorData {
+    id: number;
+    username: string;
+    status: 'active' | 'inactive' | 'pending';
+    active_projects_count: number;
+    active_subprojects_count: number;
+    annotator_progress: number;
+    workload: number;
+    can_flag: boolean;
+    flag_count: number;
+    can_be_removed: boolean;
+}
 
-const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
-    {
-        id: 1,
-        name: 'George Giannakopoulos',
-        active_projects_count: 23,
-        active_subprojects_count: 23,
-        workload: 0.85,
-        annotator_progress: 0.75,
-        annotator_flags: 23,
-        allow_flagging: true,
-    },
-    {
-        id: 2,
-        name: 'Nelly Savrani',
-        active_projects_count: 12,
-        active_subprojects_count: 4,
-        workload: 0.3,
-        annotator_progress: 0.75,
-        annotator_flags: 23,
-        allow_flagging: true,
-    },
-    {
-        id: 3,
-        name: 'Aris Kosmopoulos',
-        active_projects_count: 8,
-        active_subprojects_count: 6,
-        workload: 0.5,
-        annotator_progress: 0.6,
-        annotator_flags: 23,
-        allow_flagging: false,
-    },
-];
+interface BackendAnnotationEntry {
+    id: number;
+    annotator_data: { user_id: number; username: string; role: string | null };
+    last_edited_by_data: { user_id: number; username: string | null; role: string | null } | null;
+    updated_at: string | null;
+    confidence: 'high' | 'medium' | 'low' | null;
+    status: 'submitted' | 'pending' | 'not_annotated';
+}
 
-const MOCK_ANNOTATION_ROWS: InstanceAnnotationRow[] = [
-    {
-        instanceId: 57,
-        annotationProgress: { completed: 2, total: 3 },
-        agreement: 'high',
-        annotations: [
-            {
-                id: 1,
-                annotation: 'one word',
-                assignedTo: { username: '@nellisav', role: 'annotator' },
-                annotatedBy: { username: '@ggiannakopoulos', role: 'manager' },
-                timestamp: 'Jan 22, 2026 10:30am',
-                confidence: 'high',
-                status: 'submitted',
-            },
-            {
-                id: 2,
-                annotation: 'Yes',
-                assignedTo: { username: '@nazelipapad', role: 'annotator' },
-                annotatedBy: { username: '@akosmo', role: 'manager' },
-                timestamp: 'Jan 22, 2026 10:30am',
-                confidence: 'low',
-                status: 'pending',
-            },
-        ],
-    },
-    {
-        instanceId: 58,
-        annotationProgress: { completed: 2, total: 3 },
-        agreement: 'high',
-        annotations: [],
-    },
-    {
-        instanceId: 59,
-        annotationProgress: { completed: 2, total: 3 },
-        agreement: 'medium',
-        annotations: [],
-    },
-];
+interface BackendAnnotationRow {
+    dataset_instance_id: number;
+    annotated: number;
+    planned_annotations: number;
+    agreement: 'high' | 'medium' | 'low' | 'undefined';
+    annotations: BackendAnnotationEntry[];
+}
+
+interface Props {
+    project_name: string;
+    subproject_data: BackendSubprojectData;
+    annotators_data: BackendAnnotatorData[];
+    annotations_data: BackendAnnotationRow[];
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function parseCalendarDate(s: string | null): CalendarDate | null {
+    if (!s) return null;
+    // Slice to "YYYY-MM-DD" before parsing — Laravel serializes dates as ISO 8601
+    // ("YYYY-MM-DDTHH:mm:ss+00:00") so naive split('-') produces NaN for the day.
+    const [y, m, d] = s.slice(0, 10).split('-').map(Number);
+    return new CalendarDate(y, m, d);
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type TabKey = 'overview' | 'annotators' | 'annotations';
 
-interface SubprojectData {
-    id: number;
-    name: string;
-    status: StatusVariant;
-    statusLabel: string;
-    progress: number;
-    fromInstance: number;
-    toInstance: number;
-    shuffle: boolean;
-    priority: SubprojectPriority | null;
-    dateRange: DateRangeValue | null;
-    minAnnotationsEnabled: boolean;
-    minAnnotations: number;
-    flexibleBrowsing: boolean;
-    submissionMode: SubmissionMode;
-}
-
-interface Props {
-    project?: { id: number; name: string };
-    subproject?: SubprojectData;
-    dataset?: DatasetInfo;
-    annotators?: ProjectAnnotatorRowData[];
-    annotationRows?: InstanceAnnotationRow[];
-}
-
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function EditSubproject({
-    project,
-    subproject,
-    dataset,
-    annotators,
-    annotationRows,
+    project_name,
+    subproject_data,
+    annotators_data,
+    annotations_data,
 }: Props) {
     const { t } = useTranslations();
 
-    const displayProject = project ?? MOCK_PROJECT;
-    const displaySubproject = subproject ?? MOCK_SUBPROJECT;
-    const displayDataset = dataset ?? MOCK_DATASET;
-    const displayAnnotators = annotators ?? MOCK_ANNOTATORS;
-    const displayAnnotationRows = annotationRows ?? MOCK_ANNOTATION_ROWS;
+    // ── Derived display values ────────────────────────────────────────────────
+    const statusVariant = STATUS_VARIANT[subproject_data.status];
+    const statusLabel = t(`projects.status.${subproject_data.status}`);
+    const progressPercent = Math.round(subproject_data.progress * 100);
+
+    const displayDataset: DatasetInfo = {
+        name: subproject_data.dataset_name,
+        totalInstances: subproject_data.last_instance_index,
+    };
+
+    const displayAnnotators: ProjectAnnotatorRowData[] = annotators_data.map((a) => ({
+        id: a.id,
+        name: a.username,
+        status: a.status,
+        active_projects_count: a.active_projects_count,
+        active_subprojects_count: a.active_subprojects_count,
+        workload: a.workload,
+        annotator_progress: a.annotator_progress,
+        annotator_flags: a.flag_count,
+        allow_flagging: a.can_flag,
+    }));
+
+    const displayAnnotationRows: InstanceAnnotationRow[] = annotations_data.map((row) => ({
+        instanceId: row.dataset_instance_id,
+        annotationProgress: { completed: row.annotated, total: row.planned_annotations },
+        agreement: row.agreement === 'undefined' ? 'low' : row.agreement,
+        annotations: row.annotations.map((ann) => ({
+            id: ann.id,
+            annotation: '', // ⚠️ not returned by backend yet
+            assignedTo: {
+                username: ann.annotator_data.username,
+                role: (ann.annotator_data.role ?? 'annotator') as UserRole,
+            },
+            annotatedBy: {
+                username: ann.last_edited_by_data?.username ?? ann.annotator_data.username,
+                role: (ann.last_edited_by_data?.role ??
+                    ann.annotator_data.role ??
+                    'annotator') as UserRole,
+            },
+            timestamp: ann.updated_at ?? '',
+            confidence: ann.confidence ?? 'low',
+            status: ann.status,
+        })),
+    }));
 
     // ── Form state (pre-populated from subproject) ────────────────────────────
-    const [name, setName] = useState(displaySubproject.name);
-    const [fromInstance, setFromInstance] = useState(displaySubproject.fromInstance);
-    const [toInstance, setToInstance] = useState(displaySubproject.toInstance);
-    const [shuffle, setShuffle] = useState(displaySubproject.shuffle);
-    const [priority, setPriority] = useState<SubprojectPriority | null>(displaySubproject.priority);
-    const [dateRange, setDateRange] = useState<DateRangeValue | null>(displaySubproject.dateRange);
-    const [flexibleBrowsing, setFlexibleBrowsing] = useState(displaySubproject.flexibleBrowsing);
+    const [name, setName] = useState(subproject_data.name);
+    const [fromInstance, setFromInstance] = useState(subproject_data.first_instance_index);
+    const [toInstance, setToInstance] = useState(subproject_data.last_instance_index);
+    const [priority, setPriority] = useState<SubprojectPriority | null>(subproject_data.priority);
+    const [dateRange, setDateRange] = useState<DateRangeValue | null>(() => {
+        const start = parseCalendarDate(subproject_data.scheduled_at);
+        const end = parseCalendarDate(subproject_data.deadline_at);
+        return start && end ? { start, end } : null;
+    });
+    const [flexibleBrowsing, setFlexibleBrowsing] = useState(subproject_data.flexible);
     const [submissionMode, setSubmissionMode] = useState<SubmissionMode>(
-        displaySubproject.submissionMode
+        subproject_data.auto_submission ? 'auto' : 'manual'
     );
 
     // ── Annotators tab state ──────────────────────────────────────────────────
     const initialAnnotatorIds = new Set(displayAnnotators.map((a) => a.id));
     const [selectedAnnotatorIds, setSelectedAnnotatorIds] =
         useState<Set<number>>(initialAnnotatorIds);
-    const canManageAnnotators = displaySubproject.status === 'slate';
+    const canManageAnnotators = subproject_data.status === 'pending';
+    const canEditSettings = subproject_data.status === 'pending';
 
     // ── Tabs ──────────────────────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<TabKey>('annotations');
@@ -212,8 +202,8 @@ export default function EditSubproject({
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: t('projects.title'), href: route('projects.index') },
-        { title: displayProject.name, href: route('projects.show', displayProject.id) },
-        { title: displaySubproject.name, href: '#' },
+        { title: project_name, href: route('projects.show', subproject_data.project_id) },
+        { title: subproject_data.name, href: '#' },
     ];
 
     const scheduledFor = formatDateRange(dateRange);
@@ -244,9 +234,7 @@ export default function EditSubproject({
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-3">
                             <h1 className="text-3xl font-light text-slate-800">{name}</h1>
-                            <Badge variant={displaySubproject.status}>
-                                {displaySubproject.statusLabel}
-                            </Badge>
+                            <Badge variant={statusVariant}>{statusLabel}</Badge>
                         </div>
                         <Button className="bg-brand-blue-700 hover:bg-brand-blue-800 font-semibold text-white">
                             <Megaphone className="size-4" aria-hidden="true" />
@@ -266,30 +254,35 @@ export default function EditSubproject({
                             <strong className="font-bold">
                                 {t('sub-projects.edit.date_started')}
                             </strong>
-                            <span className="ml-1">{t('sub-projects.edit.not_started')}</span>
+                            <span className="ml-1">
+                                {subproject_data.started_at ?? t('sub-projects.edit.not_started')}
+                            </span>
                         </Tag>
                         <Tag>
                             <strong className="font-bold">
                                 {t('sub-projects.edit.date_completed')}
                             </strong>
-                            <span className="ml-1">{t('sub-projects.edit.not_completed')}</span>
+                            <span className="ml-1">
+                                {subproject_data.completed_at ??
+                                    t('sub-projects.edit.not_completed')}
+                            </span>
                         </Tag>
                     </div>
 
                     {/* Overall progress bar */}
                     <div className="flex flex-col gap-2">
                         <span className="text-sm font-semibold text-slate-800">
-                            {t('sub-projects.edit.overall_progress')} {displaySubproject.progress}%
+                            {t('sub-projects.edit.overall_progress')} {progressPercent}%
                         </span>
                         <div className="bg-brand-blue-100 h-3 w-full overflow-hidden rounded-full">
                             <div
                                 className="bg-brand-blue-800 h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500 motion-safe:ease-out"
-                                style={{ width: `${displaySubproject.progress}%` }}
+                                style={{ width: `${progressPercent}%` }}
                                 role="progressbar"
-                                aria-valuenow={displaySubproject.progress}
+                                aria-valuenow={progressPercent}
                                 aria-valuemin={0}
                                 aria-valuemax={100}
-                                aria-label={`${t('sub-projects.edit.overall_progress')} ${displaySubproject.progress}%`}
+                                aria-label={`${t('sub-projects.edit.overall_progress')} ${progressPercent}%`}
                             />
                         </div>
                     </div>
@@ -338,6 +331,7 @@ export default function EditSubproject({
                             <Button
                                 className="bg-brand-blue-700 hover:bg-brand-blue-800 text-white"
                                 onClick={handleSave}
+                                disabled={!canEditSettings}
                             >
                                 {t('sub-projects.edit.save_changes')}
                             </Button>
@@ -368,10 +362,10 @@ export default function EditSubproject({
                                     </h3>
                                     <div className="flex flex-wrap items-center gap-2">
                                         <Tag>{displayDataset.name}</Tag>
-                                        <label className="flex cursor-pointer items-center gap-2">
+                                        <label className="flex cursor-not-allowed items-center gap-2 opacity-60">
                                             <Checkbox
-                                                checked={shuffle}
-                                                onCheckedChange={(v) => setShuffle(Boolean(v))}
+                                                checked
+                                                disabled
                                                 aria-label={t(
                                                     'sub-projects.select_dataset.shuffle_on'
                                                 )}
@@ -540,62 +534,71 @@ export default function EditSubproject({
                                     <h3 className="text-lg font-semibold text-slate-800">
                                         {t('sub-projects.configuration.browsing_label')}
                                     </h3>
-                                    <ToggleSwitch
-                                        id="edit-flexible-browsing"
-                                        checked={flexibleBrowsing}
-                                        onChange={setFlexibleBrowsing}
-                                        label={t(
-                                            'sub-projects.configuration.flexible_browsing_label'
-                                        )}
-                                        description={t(
-                                            'sub-projects.configuration.flexible_browsing_description'
-                                        )}
-                                    />
-                                    <fieldset
+                                    <div
                                         className={cn(
-                                            'flex flex-col gap-3 transition-opacity',
-                                            !flexibleBrowsing && 'pointer-events-none opacity-50'
+                                            !canEditSettings && 'pointer-events-none opacity-50'
                                         )}
-                                        aria-disabled={!flexibleBrowsing}
-                                        disabled={!flexibleBrowsing}
                                     >
-                                        <legend className="sr-only">
-                                            {t('sub-projects.configuration.browsing_label')}
-                                        </legend>
-                                        {(['auto', 'manual'] as SubmissionMode[]).map((mode) => (
-                                            <label
-                                                key={mode}
-                                                className={cn(
-                                                    'flex cursor-pointer items-start gap-3 rounded-xl border p-5 transition-colors',
-                                                    submissionMode === mode
-                                                        ? 'border-brand-blue-700 bg-brand-blue-50'
-                                                        : 'border-brand-blue-200 hover:bg-brand-blue-50/50 bg-white'
-                                                )}
-                                            >
-                                                <input
-                                                    type="radio"
-                                                    name="edit-submission-mode"
-                                                    value={mode}
-                                                    checked={submissionMode === mode}
-                                                    onChange={() => setSubmissionMode(mode)}
-                                                    disabled={!flexibleBrowsing}
-                                                    className="accent-brand-blue-700 mt-0.5 size-4 shrink-0"
-                                                />
-                                                <span className="flex flex-col gap-1">
-                                                    <span className="text-sm font-medium text-slate-800">
-                                                        {t(
-                                                            `sub-projects.configuration.submission_${mode}`
+                                        <ToggleSwitch
+                                            id="edit-flexible-browsing"
+                                            checked={flexibleBrowsing}
+                                            onChange={setFlexibleBrowsing}
+                                            label={t(
+                                                'sub-projects.configuration.flexible_browsing_label'
+                                            )}
+                                            description={t(
+                                                'sub-projects.configuration.flexible_browsing_description'
+                                            )}
+                                        />
+                                        <fieldset
+                                            className={cn(
+                                                'flex flex-col gap-3 transition-opacity',
+                                                !flexibleBrowsing &&
+                                                    'pointer-events-none opacity-50'
+                                            )}
+                                            aria-disabled={!flexibleBrowsing}
+                                            disabled={!flexibleBrowsing}
+                                        >
+                                            <legend className="sr-only">
+                                                {t('sub-projects.configuration.browsing_label')}
+                                            </legend>
+                                            {(['auto', 'manual'] as SubmissionMode[]).map(
+                                                (mode) => (
+                                                    <label
+                                                        key={mode}
+                                                        className={cn(
+                                                            'flex cursor-pointer items-start gap-3 rounded-xl border p-5 transition-colors',
+                                                            submissionMode === mode
+                                                                ? 'border-brand-blue-700 bg-brand-blue-50'
+                                                                : 'border-brand-blue-200 hover:bg-brand-blue-50/50 bg-white'
                                                         )}
-                                                    </span>
-                                                    <span className="text-sm text-slate-500">
-                                                        {t(
-                                                            `sub-projects.configuration.submission_${mode}_description`
-                                                        )}
-                                                    </span>
-                                                </span>
-                                            </label>
-                                        ))}
-                                    </fieldset>
+                                                    >
+                                                        <input
+                                                            type="radio"
+                                                            name="edit-submission-mode"
+                                                            value={mode}
+                                                            checked={submissionMode === mode}
+                                                            onChange={() => setSubmissionMode(mode)}
+                                                            disabled={!flexibleBrowsing}
+                                                            className="accent-brand-blue-700 mt-0.5 size-4 shrink-0"
+                                                        />
+                                                        <span className="flex flex-col gap-1">
+                                                            <span className="text-sm font-medium text-slate-800">
+                                                                {t(
+                                                                    `sub-projects.configuration.submission_${mode}`
+                                                                )}
+                                                            </span>
+                                                            <span className="text-sm text-slate-500">
+                                                                {t(
+                                                                    `sub-projects.configuration.submission_${mode}_description`
+                                                                )}
+                                                            </span>
+                                                        </span>
+                                                    </label>
+                                                )
+                                            )}
+                                        </fieldset>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -615,8 +618,8 @@ export default function EditSubproject({
                             )}
                             onAnnotatorRemoved={(id) => handleSelectionChange(id, false)}
                             canManageAnnotators={canManageAnnotators}
-                            projectId={displayProject.id}
-                            subprojectId={displaySubproject.id}
+                            projectId={subproject_data.project_id}
+                            subprojectId={subproject_data.id}
                         />
                     </section>
                 )}
