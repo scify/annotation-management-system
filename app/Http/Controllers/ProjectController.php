@@ -15,6 +15,7 @@ use App\Services\Annotation\AnnotatorService;
 use App\Services\Project\ProjectService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -101,6 +102,23 @@ class ProjectController extends Controller {
         }
 
         return to_route('projects.show', $id)->with('success', __('projects.messages.annotator_detached'));
+    }
+
+    public function showAddAnnotators(int $id): Response {
+        $this->authorize('viewAny', Project::class);
+
+        $project = Project::query()->findOrFail($id);
+
+        return Inertia::render('projects/add-annotators', [
+            'project_id' => $project->id,
+            'project_name' => $project->name,
+        ]);
+    }
+
+    public function attachAnnotators(Request $request, int $id): RedirectResponse {
+        // TODO: wire to ProjectService
+        return to_route('projects.show', $id)
+            ->with('success', __('projects.messages.annotators_attached'));
     }
 
     public function show(int $id): Response {

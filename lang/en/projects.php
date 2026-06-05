@@ -53,7 +53,7 @@ return [
 
     'annotators_tab' => [
         'title' => 'Annotators',
-        'add_annotator' => 'Add Annotator',
+        'add_annotators' => 'Add Annotators',
         'table_username' => 'Username',
         'table_projects' => 'Projects',
         'table_subprojects' => 'Subprojects',
@@ -146,10 +146,19 @@ return [
         'deadline_at' => 'Deadline date',
     ],
 
+    'add_annotators' => [
+        'heading' => 'Add Annotators',
+        'subtitle' => 'Add Annotators to :name',
+        'back' => 'Back to Project',
+        'add_selected' => 'Add Selected +',
+        'selected_count' => ':count selected',
+    ],
+
     'messages' => [
         'created' => 'Project created successfully.',
         'can_flag_toggled' => 'Annotator flag permission updated.',
         'annotator_detached' => 'Annotator removed from project.',
+        'annotators_attached' => 'Annotators added successfully.',
     ],
 
     'validation' => [
