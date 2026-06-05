@@ -95,7 +95,7 @@ export default function Profile({
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <Button disabled={processing}>
+                            <Button type="submit" disabled={processing}>
                                 {t('settings.profile.save_button')}
                             </Button>
 

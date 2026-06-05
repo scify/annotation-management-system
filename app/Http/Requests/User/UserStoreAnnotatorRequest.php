@@ -6,11 +6,15 @@ namespace App\Http\Requests\User;
 
 use App\Enums\RolesEnum;
 use App\Models\User;
+use App\Services\Settings\AnnotatorPasswordPolicyService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules\Password;
 
 class UserStoreAnnotatorRequest extends UserAnnotatorBaseRequest {
+    public function __construct(
+        private readonly AnnotatorPasswordPolicyService $policyService,
+    ) {}
+
     public function authorize(): bool {
         return Gate::allows('create', [User::class, RolesEnum::ANNOTATOR->value]);
     }
@@ -21,7 +25,7 @@ class UserStoreAnnotatorRequest extends UserAnnotatorBaseRequest {
     public function rules(): array {
         return array_merge($this->sharedRules(), [
             'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')],
-            'password' => ['required', 'confirmed', Password::defaults()],
+            'password' => ['required', 'confirmed', $this->policyService->buildRule()],
             'password_confirmation' => ['required', 'string'],
         ]);
     }

@@ -142,6 +142,15 @@ return [
         'password_hint' => 'At least 8 characters, one letter and one number.',
         'password_weak' => 'Password must be at least 8 characters and contain at least one letter and one number.',
         'password_keep_hint' => 'Leave blank to keep the current password.',
+        'password_requirements' => [
+            'title' => 'Password requirements',
+            'min_length' => 'At least :n characters',
+            'contains_letter' => 'Contains at least one letter',
+            'contains_number' => 'Contains at least one number',
+            'contains_symbol' => 'Contains at least one symbol',
+            'mixed_case' => 'Contains uppercase and lowercase letters',
+            'passwords_match' => 'Passwords match',
+        ],
     ],
     'delete' => [
         'title' => 'Delete User',

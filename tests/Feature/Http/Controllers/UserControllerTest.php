@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Enums\RolesEnum;
 use App\Enums\StatusEnum;
 use App\Models\User;
+use Database\Seeders\AnnotatorPasswordPolicySeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Faker\Factory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,6 +15,7 @@ uses(RefreshDatabase::class);
 describe('UserController', function (): void {
     beforeEach(function (): void {
         $this->seed(RolesAndPermissionsSeeder::class);
+        $this->seed(AnnotatorPasswordPolicySeeder::class);
         $this->faker = Factory::create();
 
         $this->admin = User::factory()->create([

@@ -121,7 +121,7 @@ export default function Password() {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <Button disabled={processing}>
+                            <Button type="submit" disabled={processing}>
                                 {t('settings.password.save_button')}
                             </Button>
 

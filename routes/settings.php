@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Settings\AnnotatorPasswordPolicyController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Settings\ProfileController;
 use Illuminate\Support\Facades\Route;
@@ -21,4 +22,11 @@ Route::middleware('auth')->group(function () use ($SETTINGS_PROFILE_ROUTE, $SETT
     Route::put($SETTINGS_PASSWORD_ROUTE, [PasswordController::class, 'update'])->name('password.update');
 
     Route::get('settings/appearance', fn () => Inertia::render('settings/appearance'))->name('appearance');
+
+    Route::middleware('role:admin')->group(function (): void {
+        Route::get('settings/annotator-password-policy', [AnnotatorPasswordPolicyController::class, 'edit'])
+            ->name('settings.annotator-password-policy.edit');
+        Route::put('settings/annotator-password-policy', [AnnotatorPasswordPolicyController::class, 'update'])
+            ->name('settings.annotator-password-policy.update');
+    });
 });

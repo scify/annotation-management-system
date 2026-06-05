@@ -204,9 +204,22 @@ export interface AdminCreateData {
     my_annotators: AnnotatorSelectOption[];
 }
 
+export type PasswordCompositionMode =
+    | 'no_restriction'
+    | 'letters_only'
+    | 'letters_and_numbers'
+    | 'letters_numbers_and_symbols';
+
+export interface AnnotatorPasswordPolicyData {
+    min_length: number;
+    composition_mode: PasswordCompositionMode;
+    mixed_case_required: boolean;
+}
+
 /** Shape of the annotator_data Inertia prop on /users/create?type=annotator */
 export interface AnnotatorCreateData {
     all_managers: ManagedUser[];
+    password_policy: AnnotatorPasswordPolicyData;
 }
 
 /** User sub-object embedded in admin_data when returned by the edit() controller method */
