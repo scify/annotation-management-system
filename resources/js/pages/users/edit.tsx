@@ -1,5 +1,6 @@
 import { ProjectDialog } from '@/components/project/project-dialog';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/use-auth';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import {
@@ -31,6 +32,7 @@ export default function Edit({
     can_delete,
 }: Readonly<EditUserProps>) {
     const { t } = useTranslations();
+    const { isAdmin } = useAuth();
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
@@ -61,7 +63,7 @@ export default function Edit({
         >
             <Head title={breadcrumbTitle} />
             <div className="p-6">
-                {can_delete && (
+                {isAdmin() && can_delete && (
                     <div className="mb-6 flex justify-end">
                         <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
                             <Trash2 className="size-4" aria-hidden="true" />
