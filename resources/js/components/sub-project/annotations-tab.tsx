@@ -31,7 +31,7 @@ export interface AnnotationEntry {
     assignedTo: { username: string; role: UserRole };
     annotatedBy: { username: string; role: UserRole };
     timestamp: string;
-    confidence: AgreementLevel;
+    confidence: AgreementLevel | null;
     status: AnnotationStatus;
 }
 
@@ -48,8 +48,9 @@ const AGREEMENT_ORDER: Record<AgreementLevel, number> = { low: 0, medium: 1, hig
 
 // ── Badge helpers ─────────────────────────────────────────────────────────────
 
-function AgreementBadge({ level }: { level: AgreementLevel }) {
+function AgreementBadge({ level }: { level: AgreementLevel | null }) {
     const { t } = useTranslations();
+    if (!level) return null;
     const styles: Record<AgreementLevel, string> = {
         high: 'bg-green-50 border-green-500 text-green-600',
         medium: 'bg-yellow-50 border-yellow-400 text-yellow-600',
@@ -359,15 +360,23 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                                             />
                                                         </div>
                                                         <div className="flex w-1/6 shrink-0 flex-col gap-2 px-2">
-                                                            <span className="text-base font-medium whitespace-nowrap text-slate-800">
-                                                                {entry.annotatedBy.username}
-                                                            </span>
-                                                            <RoleBadge
-                                                                role={entry.annotatedBy.role}
-                                                            />
+                                                            {entry.status !== 'not_annotated' && (
+                                                                <>
+                                                                    <span className="text-base font-medium whitespace-nowrap text-slate-800">
+                                                                        {entry.annotatedBy.username}
+                                                                    </span>
+                                                                    <RoleBadge
+                                                                        role={
+                                                                            entry.annotatedBy.role
+                                                                        }
+                                                                    />
+                                                                </>
+                                                            )}
                                                         </div>
                                                         <span className="w-1/6 shrink-0 px-2 text-base font-medium text-slate-800">
-                                                            {entry.timestamp}
+                                                            {entry.status !== 'not_annotated'
+                                                                ? entry.timestamp
+                                                                : ''}
                                                         </span>
                                                         <span className="flex w-1/6 shrink-0 justify-center px-2">
                                                             <AgreementBadge
