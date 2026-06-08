@@ -162,6 +162,7 @@ return [
         'can_flag_toggled' => 'Annotator flag permission updated.',
         'annotator_detached' => 'Annotator removed from project.',
         'annotators_attached' => 'Annotators added successfully.',
+        'deleted' => 'Project deleted successfully.',
         'status_changed' => 'Project status updated successfully.',
         'invalid_status_transition' => 'This status transition is not allowed.',
     ],

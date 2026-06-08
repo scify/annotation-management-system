@@ -11,6 +11,7 @@ use App\Exceptions\SubProjectStatusException;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotatorOfProject;
 use App\Models\SubProject;
+use App\Queries\DeleteAnnotationsBySubProjectQuery;
 use App\Queries\DetachAnnotatorFromSubProjectQuery;
 use App\Queries\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\GetCountsOfFlagsQuery;
@@ -19,6 +20,7 @@ use App\Queries\GetProjectBasicDataQuery;
 use App\Queries\GetSubProjectIdsQuery;
 use App\Queries\GetSubsetInfoByProjectQuery;
 use App\Queries\StoreSubProjectQuery;
+use App\Queries\UpdateProjectStatusQuery;
 use App\Queries\UpdateSubProjectStatusQuery;
 use App\Services\Annotation\AnnotationService;
 use App\Services\Annotation\AnnotatorService;
@@ -39,10 +41,21 @@ readonly class SubProjectService {
         private GetSubsetInfoByProjectQuery $subsetInfoQuery,
         private DetachAnnotatorFromSubProjectQuery $detachAnnotatorFromSubProjectQuery,
         private UpdateSubProjectStatusQuery $updateSubProjectStatusQuery,
+        private UpdateProjectStatusQuery $updateProjectStatusQuery,
+        private DeleteAnnotationsBySubProjectQuery $deleteAnnotationsBySubProjectQuery,
     ) {}
 
     public function changeStatus(SubProject $subProject, ProjectStatusEnum $newStatus): SubProject {
-        if ($subProject->project->status !== ProjectStatusEnum::IN_PROGRESS) {
+        $parentStatus = $subProject->project->status;
+
+        // Completing a subproject requires the parent to be in_progress
+        if ($newStatus === ProjectStatusEnum::COMPLETED && $parentStatus !== ProjectStatusEnum::IN_PROGRESS) {
+            throw SubProjectStatusException::projectNotInProgress();
+        }
+
+        // Moving to in_progress is allowed when parent is pending or in_progress;
+        // any other parent state (completed) blocks the transition
+        if ($newStatus === ProjectStatusEnum::IN_PROGRESS && $parentStatus === ProjectStatusEnum::COMPLETED) {
             throw SubProjectStatusException::projectNotInProgress();
         }
 
@@ -58,7 +71,17 @@ readonly class SubProjectService {
 
         $this->updateSubProjectStatusQuery->execute($subProject, $newStatus);
 
+        // Auto-promote parent project from pending to in_progress
+        if ($newStatus === ProjectStatusEnum::IN_PROGRESS && $parentStatus === ProjectStatusEnum::PENDING) {
+            $this->updateProjectStatusQuery->execute($subProject->project, ProjectStatusEnum::IN_PROGRESS);
+        }
+
         return $subProject;
+    }
+
+    public function deleteSubProject(SubProject $subProject): void {
+        $this->deleteAnnotationsBySubProjectQuery->execute($subProject->id);
+        $subProject->delete();
     }
 
     /**

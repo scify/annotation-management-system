@@ -140,6 +140,16 @@ class ProjectController extends Controller {
             ->with('success', __('projects.messages.status_changed'));
     }
 
+    public function destroy(int $id): RedirectResponse {
+        $project = Project::query()->findOrFail($id);
+        $this->authorize('delete', $project);
+
+        $this->projectService->deleteProject($project);
+
+        return to_route('projects.index')
+            ->with('success', __('projects.messages.deleted'));
+    }
+
     public function show(int $id): Response {
         $this->authorize('viewAny', Project::class);
 

@@ -103,6 +103,16 @@ class SubProjectController extends Controller {
             ->with('success', __('projects.messages.annotators_attached'));
     }
 
+    public function destroy(int $projectId, int $subprojectId): RedirectResponse {
+        $subProject = SubProject::query()->findOrFail($subprojectId);
+        $this->authorize('deleteSubProject', $subProject);
+
+        $this->subProjectService->deleteSubProject($subProject);
+
+        return to_route('projects.show', $projectId)
+            ->with('success', __('sub-projects.messages.deleted'));
+    }
+
     public function edit(int $projectId, int $subprojectId): Response {
         $this->authorize('viewAny', Project::class);
 

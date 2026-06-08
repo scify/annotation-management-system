@@ -19,6 +19,7 @@ use App\Models\SubProject;
 use App\Models\TaskTag;
 use App\Models\User;
 use App\Queries\CompleteSubProjectsByProjectQuery;
+use App\Queries\DeleteAnnotationsByProjectQuery;
 use App\Queries\DetachAnnotatorFromProjectQuery;
 use App\Queries\GetAnnotationTasksQuery;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
@@ -53,6 +54,7 @@ readonly class ProjectService {
         private DetachAnnotatorFromProjectQuery $detachAnnotatorFromProjectQuery,
         private UpdateProjectStatusQuery $updateProjectStatusQuery,
         private CompleteSubProjectsByProjectQuery $completeSubProjectsByProjectQuery,
+        private DeleteAnnotationsByProjectQuery $deleteAnnotationsByProjectQuery,
     ) {}
 
     /**
@@ -136,6 +138,11 @@ readonly class ProjectService {
         }
 
         return $project;
+    }
+
+    public function deleteProject(Project $project): void {
+        $this->deleteAnnotationsByProjectQuery->execute($project->id);
+        $project->delete();
     }
 
     /**

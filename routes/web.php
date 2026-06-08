@@ -32,6 +32,8 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('projects/change-status', [ProjectController::class, 'changeStatus'])->name('projects.change-status');
     Route::post('sub-projects/change-status', [SubProjectController::class, 'changeStatus'])->name('sub-projects.change-status');
     Route::get('projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
+    Route::delete('projects/{id}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+    Route::delete('projects/{projectId}/subprojects/{subprojectId}', [SubProjectController::class, 'destroy'])->name('projects.subprojects.destroy');
     Route::delete('projects/{id}/annotators/{annotatorId}', [ProjectController::class, 'detachAnnotator'])->name('projects.annotators.detach');
     Route::get('projects/{id}/add-annotators', [ProjectController::class, 'showAddAnnotators'])->name('projects.annotators.add');
     Route::post('projects/{id}/annotators', [ProjectController::class, 'attachAnnotators'])->name('projects.annotators.attach');
