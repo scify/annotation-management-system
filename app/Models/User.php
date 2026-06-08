@@ -23,12 +23,12 @@ use Spatie\Permission\Traits\HasRoles;
 
 /**
  * @property-read int $id
- * @property-read string $name
- * @property-read string $username
- * @property-read string $email
- * @property-read string $password
+ * @property string $name
+ * @property string $username
+ * @property string|null $email
+ * @property string|null $password
  * @property StatusEnum $status
- * @property-read string|null $remember_token
+ * @property string|null $remember_token
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
  * @property-read Carbon|null $deleted_at

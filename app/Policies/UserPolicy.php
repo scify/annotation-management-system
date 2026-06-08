@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Enums\RolesEnum;
+use App\Enums\StatusEnum;
 use App\Models\AnnotatorOfManager;
 use App\Models\ProjectManager;
 use App\Models\User;
@@ -87,6 +88,12 @@ class UserPolicy {
             return false;
         }
 
+        // Hard delete path (PENDING users): all roles allowed
+        if ($model->status === StatusEnum::PENDING) {
+            return true;
+        }
+
+        // Soft delete path (ACTIVE/INACTIVE users): admins only
         return $user->hasRole(RolesEnum::ADMIN);
     }
 
