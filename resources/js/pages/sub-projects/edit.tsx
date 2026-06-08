@@ -165,7 +165,7 @@ export default function EditSubproject({
                     'annotator') as UserRole,
             },
             timestamp: ann.updated_at ?? '',
-            confidence: ann.confidence ?? 'low',
+            confidence: ann.confidence,
             status: ann.status,
         })),
     }));
