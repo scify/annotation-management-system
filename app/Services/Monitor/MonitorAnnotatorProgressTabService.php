@@ -12,21 +12,21 @@ use App\Models\Project;
 use App\Models\ProjectManager;
 use App\Models\SubProject;
 use App\Models\User;
-use App\Queries\GetAnnotatorProjectLinksByAnnotatorsQuery;
-use App\Queries\GetAnnotatorsByManagerQuery;
-use App\Queries\GetAnnotatorsQuery;
-use App\Queries\GetAssignmentsBySubProjectsAndAnnotatorsQuery;
-use App\Queries\GetProjectIdsManagedByUserQuery;
-use App\Queries\GetProjectsByIdsQuery;
-use App\Queries\GetSubProjectsOfProjectsQuery;
+use App\Queries\Annotator\GetAnnotatorProjectLinksByAnnotatorsQuery;
+use App\Queries\Annotator\GetAnnotatorsByManagerQuery;
+use App\Queries\Annotator\GetAnnotatorsQuery;
+use App\Queries\Project\GetProjectIdsManagedByUserQuery;
+use App\Queries\Project\GetProjectsByIdsQuery;
+use App\Queries\Project\GetSubProjectsOfProjectsQuery;
+use App\Queries\SubProject\GetAssignmentsBySubProjectsAndAnnotatorsQuery;
 use App\Services\Annotation\WorkloadService;
-use App\Services\SubProject\SubProjectService;
+use App\Services\SubProject\SubProjectWriteService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 
 readonly class MonitorAnnotatorProgressTabService {
     public function __construct(
-        private SubProjectService $subProjectService,
+        private SubProjectWriteService $subProjectService,
         private WorkloadService $workloadService,
         private GetAnnotatorsQuery $allAnnotatorsQuery,
         private GetAnnotatorsByManagerQuery $annotatorsByManagerQuery,

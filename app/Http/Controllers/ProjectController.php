@@ -15,7 +15,8 @@ use App\Http\Requests\Project\ToggleCanFlagRequest;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\Annotation\AnnotatorService;
-use App\Services\Project\ProjectService;
+use App\Services\Project\ProjectReadService;
+use App\Services\Project\ProjectWriteService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,8 @@ class ProjectController extends Controller {
     use AuthorizesRequests;
 
     public function __construct(
-        private readonly ProjectService $projectService,
+        private readonly ProjectWriteService $projectService,
+        private readonly ProjectReadService $projectReadService,
         private readonly AnnotatorService $annotatorService,
     ) {}
 
@@ -38,11 +40,11 @@ class ProjectController extends Controller {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data_for_projects = $this->projectService->getDataForProjectsPage($user);
+        $data = $this->projectReadService->getDataForProjectsPage($user);
 
-        $this->dumpDebugJson($data_for_projects, 'project-index-data.json');
+        $this->dumpDebugJson($data, 'project-index-data.json');
 
-        return Inertia::render('projects/index', $data_for_projects);
+        return Inertia::render('projects/index', $data);
     }
 
     public function create(): Response {
@@ -51,11 +53,11 @@ class ProjectController extends Controller {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data_for_create_project = $this->projectService->getDataForCreateProject($user);
+        $data = $this->projectReadService->getDataForCreateProject($user);
 
-        $this->dumpDebugJson($data_for_create_project, 'project-create-data.json');
+        $this->dumpDebugJson($data, 'project-create-data.json');
 
-        return Inertia::render('projects/create', $data_for_create_project);
+        return Inertia::render('projects/create', $data);
     }
 
     /**
@@ -107,15 +109,15 @@ class ProjectController extends Controller {
 
         $project = Project::query()->findOrFail($id);
 
-        $data_for_add_annotators = [
+        $data = [
             'project_id' => $project->id,
             'project_name' => $project->name,
-            ...$this->projectService->getDataForAddAnnotators($id, $user),
+            ...$this->projectReadService->getDataForAddAnnotators($id, $user),
         ];
 
-        $this->dumpDebugJson($data_for_add_annotators, 'project-add-annotators-data.json');
+        $this->dumpDebugJson($data, 'project-add-annotators-data.json');
 
-        return Inertia::render('projects/add-annotators', $data_for_add_annotators);
+        return Inertia::render('projects/add-annotators', $data);
     }
 
     public function attachAnnotators(AttachAnnotatorsToProjectRequest $request, int $id): RedirectResponse {
@@ -157,10 +159,10 @@ class ProjectController extends Controller {
     public function show(int $id): Response {
         $this->authorize('viewAny', Project::class);
 
-        $data_for_show_project = $this->projectService->getDataForShowProject($id);
+        $data = $this->projectReadService->getDataForShowProject($id);
 
-        $this->dumpDebugJson($data_for_show_project, 'project-show-data.json');
+        $this->dumpDebugJson($data, 'project-show-data.json');
 
-        return Inertia::render('projects/show', $data_for_show_project);
+        return Inertia::render('projects/show', $data);
     }
 }

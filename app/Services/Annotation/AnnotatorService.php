@@ -6,9 +6,9 @@ namespace App\Services\Annotation;
 
 use App\Models\AnnotatorOfProject;
 use App\Models\User;
-use App\Queries\GetAnnotatorsQuery;
-use App\Queries\GetCountsOfActiveProjectsPerAnnotatorQuery;
-use App\Queries\GetCountsOfSubprojectsPerAnnotatorQuery;
+use App\Queries\Annotator\GetAnnotatorsQuery;
+use App\Queries\Annotator\GetCountsOfActiveProjectsPerAnnotatorQuery;
+use App\Queries\Annotator\GetCountsOfSubprojectsPerAnnotatorQuery;
 use Illuminate\Support\Collection;
 
 readonly class AnnotatorService {

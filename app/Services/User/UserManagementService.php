@@ -7,16 +7,16 @@ namespace App\Services\User;
 use App\Enums\RolesEnum;
 use App\Models\AnnotatorOfProject;
 use App\Models\User;
-use App\Queries\GetAnnotationTaskIdsByManagerQuery;
-use App\Queries\GetAnnotatorIdsByManagerQuery;
-use App\Queries\GetAnnotatorsByManagerQuery;
-use App\Queries\GetAnnotatorsQuery;
-use App\Queries\GetConnectedProjectIdsByUserQuery;
-use App\Queries\GetDatasetIdsByManagerQuery;
-use App\Queries\GetManagerIdsByAnnotatorQuery;
-use App\Queries\GetUsersByRoleQuery;
+use App\Queries\Annotator\GetAnnotatorIdsByManagerQuery;
+use App\Queries\Annotator\GetAnnotatorsByManagerQuery;
+use App\Queries\Annotator\GetAnnotatorsQuery;
+use App\Queries\Annotator\GetManagerIdsByAnnotatorQuery;
+use App\Queries\Manager\GetAnnotationTaskIdsByManagerQuery;
+use App\Queries\Manager\GetConnectedProjectIdsByUserQuery;
+use App\Queries\Manager\GetDatasetIdsByManagerQuery;
+use App\Queries\User\GetUsersByRoleQuery;
 use App\Services\Annotation\AnnotatorStatsService;
-use App\Services\Project\ProjectService;
+use App\Services\Project\ProjectReadService;
 use App\Services\Settings\AnnotatorPasswordPolicyService;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Collection;
@@ -26,7 +26,7 @@ readonly class UserManagementService {
         private GetUsersByRoleQuery $getUsersByRoleQuery,
         private GetAnnotatorsByManagerQuery $getAnnotatorsByManagerQuery,
         private GetAnnotatorsQuery $getAnnotatorsQuery,
-        private ProjectService $projectService,
+        private ProjectReadService $projectReadService,
         private AnnotatorStatsService $annotatorStatsService,
         private GetManagerIdsByAnnotatorQuery $getManagerIdsByAnnotatorQuery,
         private GetAnnotatorIdsByManagerQuery $getAnnotatorIdsByManagerQuery,
@@ -64,17 +64,17 @@ readonly class UserManagementService {
      * }
      */
     public function getDataForCreateNewManager(User $currentUser): array {
-        $myProjects = $this->projectService->getMyProjects($currentUser->id);
+        $myProjects = $this->projectReadService->getMyProjects($currentUser->id);
         $this->augmentProjectsWithAnnotatorIds($myProjects);
 
         $data = [
             'my_projects' => $myProjects,
             'my_annotators' => $this->getMyAnnotatorsForCreate($currentUser->id),
-            'annotation_tasks' => $this->projectService->getAnnotationTasks($currentUser, includeCustomizationOptions: false),
+            'annotation_tasks' => $this->projectReadService->getAnnotationTasks($currentUser, includeCustomizationOptions: false),
         ];
 
         if ($currentUser->hasRole(RolesEnum::ADMIN)) {
-            $allProjects = $this->projectService->getAllProjects();
+            $allProjects = $this->projectReadService->getAllProjects();
             $this->augmentProjectsWithAnnotatorIds($allProjects);
             $data['all_projects'] = $allProjects;
             $data['all_annotators'] = $this->getAllAnnotators();
@@ -167,12 +167,12 @@ readonly class UserManagementService {
      * }
      */
     public function getDataForCreateNewAdmin(User $currentUser): array {
-        $allProjects = $this->projectService->getAllProjects();
+        $allProjects = $this->projectReadService->getAllProjects();
         $this->augmentProjectsWithAnnotatorIds($allProjects);
 
         return [
             'all_projects' => $allProjects,
-            'my_projects' => $this->projectService->getMyProjects($currentUser->id, $allProjects),
+            'my_projects' => $this->projectReadService->getMyProjects($currentUser->id, $allProjects),
             'all_annotators' => $this->getAllAnnotators(),
             'my_annotators' => $this->getMyAnnotatorsForCreate($currentUser->id),
         ];

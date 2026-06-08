@@ -7,9 +7,9 @@ namespace App\Services\Monitor;
 use App\Enums\RolesEnum;
 use App\Models\AnnotatorOfProject;
 use App\Models\User;
-use App\Queries\GetAnnotatorsByManagerQuery;
-use App\Queries\GetAnnotatorsQuery;
-use App\Queries\GetProjectIdsManagedByUserQuery;
+use App\Queries\Annotator\GetAnnotatorsByManagerQuery;
+use App\Queries\Annotator\GetAnnotatorsQuery;
+use App\Queries\Project\GetProjectIdsManagedByUserQuery;
 use App\Services\Annotation\AnnotatorStatsService;
 use Illuminate\Database\Eloquent\Collection;
 

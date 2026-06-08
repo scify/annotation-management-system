@@ -12,7 +12,8 @@ use App\Http\Requests\SubProject\SubProjectChangeStatusRequest;
 use App\Http\Requests\SubProject\SubProjectStoreRequest;
 use App\Models\Project;
 use App\Models\SubProject;
-use App\Services\SubProject\SubProjectService;
+use App\Services\SubProject\SubProjectReadService;
+use App\Services\SubProject\SubProjectWriteService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -22,17 +23,20 @@ use Throwable;
 class SubProjectController extends Controller {
     use AuthorizesRequests;
 
-    public function __construct(private readonly SubProjectService $subProjectService) {}
+    public function __construct(
+        private readonly SubProjectWriteService $subProjectService,
+        private readonly SubProjectReadService $subProjectReadService,
+    ) {}
 
     public function create(int $id): Response {
         $this->authorize('viewAny', Project::class);
 
-        $data_for_create_sub_project = $this->subProjectService->getDataForCreateSubProject($id);
+        $data = $this->subProjectReadService->getDataForCreateSubProject($id);
 
-        $this->dumpDebugJson($data_for_create_sub_project, 'subproject-create-data.json');
+        $this->dumpDebugJson($data, 'subproject-create-data.json');
 
         return Inertia::render('sub-projects/create', [
-            ...$data_for_create_sub_project,
+            ...$data,
             'created_subproject_name' => session()->pull('created_subproject_name'),
         ]);
     }
@@ -89,7 +93,7 @@ class SubProjectController extends Controller {
             'project_name' => $project->name,
             'subproject_id' => $subproject->id,
             'subproject_name' => $subproject->name,
-            ...$this->subProjectService->getDataForAddAnnotators($projectId, $subprojectId),
+            ...$this->subProjectReadService->getDataForAddAnnotators($projectId, $subprojectId),
         ];
 
         $this->dumpDebugJson($data, 'subproject-add-annotators-data.json');
@@ -120,12 +124,12 @@ class SubProjectController extends Controller {
     public function edit(int $projectId, int $subprojectId): Response {
         $this->authorize('viewAny', Project::class);
 
-        $data_for_edit_subproject = $this->subProjectService->getDataForEditSubProject($projectId, $subprojectId);
+        $data = $this->subProjectReadService->getDataForEditSubProject($projectId, $subprojectId);
 
-        $this->dumpDebugJson($data_for_edit_subproject, 'subproject-edit-data.json');
+        $this->dumpDebugJson($data, 'subproject-edit-data.json');
 
         return Inertia::render('sub-projects/edit', [
-            ...$data_for_edit_subproject,
+            ...$data,
             // TODO move project_name to getDataForEditSubProject call
             'project_name' => Project::query()->select('id', 'name')->findOrFail($projectId)->name,
         ]);

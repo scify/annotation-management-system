@@ -7,7 +7,7 @@ namespace App\Services\Annotation;
 use App\Enums\AgreementEnum;
 use App\Enums\AnnotationTaskTypeEnum;
 use App\Enums\ConfidenceEnum;
-use App\Queries\GetAnnotationsBySubProjectQuery;
+use App\Queries\SubProject\GetAnnotationsBySubProjectQuery;
 use App\Services\AnnotationTask\AnnotationTaskServiceFactory;
 
 readonly class AnnotationService {

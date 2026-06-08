@@ -10,19 +10,19 @@ use App\Models\AnnotatorOfProject;
 use App\Models\Project;
 use App\Models\SubProject;
 use App\Models\User;
-use App\Queries\GetAnnotatorProjectLinksByAnnotatorsQuery;
-use App\Queries\GetAssignmentsBySubProjectsAndAnnotatorsQuery;
-use App\Queries\GetAverageConfidencePerSubProjectQuery;
-use App\Queries\GetCountsOfFlagsQuery;
-use App\Queries\GetProjectsByIdsQuery;
-use App\Queries\GetSubProjectsOfProjectsQuery;
-use App\Services\SubProject\SubProjectService;
+use App\Queries\Annotator\GetAnnotatorProjectLinksByAnnotatorsQuery;
+use App\Queries\Annotator\GetCountsOfFlagsQuery;
+use App\Queries\Project\GetProjectsByIdsQuery;
+use App\Queries\Project\GetSubProjectsOfProjectsQuery;
+use App\Queries\SubProject\GetAssignmentsBySubProjectsAndAnnotatorsQuery;
+use App\Queries\SubProject\GetAverageConfidencePerSubProjectQuery;
+use App\Services\SubProject\SubProjectWriteService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 
 readonly class AnnotatorStatsService {
     public function __construct(
-        private SubProjectService $subProjectService,
+        private SubProjectWriteService $subProjectWriteService,
         private GetAnnotatorProjectLinksByAnnotatorsQuery $annotatorProjectLinksQuery,
         private GetProjectsByIdsQuery $projectsByIdsQuery,
         private GetSubProjectsOfProjectsQuery $subProjectsByProjectsQuery,
@@ -72,7 +72,7 @@ readonly class AnnotatorStatsService {
 
         $assignments = $this->assignmentsBySubProjectsAndAnnotatorsQuery->get($subProjectIds, $annotatorIds);
 
-        $progressBySubProject = $this->subProjectService->getProgress($subProjectIds);
+        $progressBySubProject = $this->subProjectWriteService->getProgress($subProjectIds);
         $flagsByUserAndSp = $this->flagsQuery->get($annotatorIds);
         $avgConfidenceByUserAndSp = $this->avgConfidenceQuery->get($annotatorIds);
 

@@ -10,7 +10,7 @@ use App\Models\AnnotatorOfProject;
 use App\Models\Project;
 use App\Models\SubProject;
 use App\Models\User;
-use App\Services\SubProject\SubProjectService;
+use App\Services\SubProject\SubProjectReadService;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -201,7 +201,7 @@ describe('SubProjectController - detach annotator', function (): void {
 
     it('includes can_be_removed=true in annotators data when subproject is pending', function (): void {
         // Arrange — subProject is already PENDING from beforeEach
-        $service = resolve(SubProjectService::class);
+        $service = resolve(SubProjectReadService::class);
 
         // Act
         $data = $service->getDataForEditSubProject($this->project->id, $this->subProject->id);
@@ -214,7 +214,7 @@ describe('SubProjectController - detach annotator', function (): void {
     it('includes can_be_removed=false in annotators data when subproject is not pending', function (): void {
         // Arrange
         $this->subProject->update(['status' => ProjectStatusEnum::IN_PROGRESS]);
-        $service = resolve(SubProjectService::class);
+        $service = resolve(SubProjectReadService::class);
 
         // Act
         $data = $service->getDataForEditSubProject($this->project->id, $this->subProject->id);

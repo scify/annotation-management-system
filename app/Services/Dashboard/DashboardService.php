@@ -7,14 +7,14 @@ namespace App\Services\Dashboard;
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
 use App\Models\User;
-use App\Queries\GetAnnotatorIdsByProjectsQuery;
-use App\Queries\GetPlatformStatsQuery;
-use App\Queries\GetProjectIdsManagedByUserQuery;
-use App\Queries\GetProjectsQuery;
-use App\Queries\GetSubProjectIdsQuery;
+use App\Queries\Annotator\GetAnnotatorIdsByProjectsQuery;
+use App\Queries\Dashboard\GetPlatformStatsQuery;
+use App\Queries\Project\GetProjectIdsManagedByUserQuery;
+use App\Queries\Project\GetProjectsQuery;
+use App\Queries\Project\GetSubProjectIdsQuery;
 use App\Services\Annotation\AnnotatorService;
-use App\Services\Project\ProjectService;
-use App\Services\SubProject\SubProjectService;
+use App\Services\Project\ProjectReadService;
+use App\Services\SubProject\SubProjectWriteService;
 use Illuminate\Support\Collection;
 
 readonly class DashboardService {
@@ -25,8 +25,8 @@ readonly class DashboardService {
         private GetProjectIdsManagedByUserQuery $projectIdsManagedByUserQuery,
         private GetProjectsQuery $projectsQuery,
         private GetSubProjectIdsQuery $subProjectIdsQuery,
-        private ProjectService $projectService,
-        private SubProjectService $subProjectService,
+        private ProjectReadService $projectReadService,
+        private SubProjectWriteService $subProjectService,
     ) {}
 
     /**
@@ -38,9 +38,9 @@ readonly class DashboardService {
             $activeSubProjectIds = $this->subProjectIdsQuery->get($projectIds, ProjectStatusEnum::IN_PROGRESS);
             $progressBySubProject = $this->subProjectService->getProgress($activeSubProjectIds->all());
 
-            $all_projects = $this->projectService->getAllInProgressProjects();
+            $all_projects = $this->projectReadService->getAllInProgressProjects();
             $all_annotators = $this->getAllAnnotators($progressBySubProject, $activeSubProjectIds);
-            $my_projects = $this->projectService->getMyInProgressProjects($user->id, $all_projects);
+            $my_projects = $this->projectReadService->getMyInProgressProjects($user->id, $all_projects);
 
             return [
                 'platform_stats' => $this->getPlatformStats(),
@@ -55,7 +55,7 @@ readonly class DashboardService {
         $activeSubProjectIds = $this->subProjectIdsQuery->get($projectIds, ProjectStatusEnum::IN_PROGRESS);
         $progressBySubProject = $this->subProjectService->getProgress($activeSubProjectIds->all());
 
-        $my_projects = $this->projectService->getMyInProgressProjects($user->id);
+        $my_projects = $this->projectReadService->getMyInProgressProjects($user->id);
 
         return [
             'my_projects' => $my_projects,
