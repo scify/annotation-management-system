@@ -16,6 +16,7 @@ use App\Queries\ConnectManagerToProjectsQuery;
 use App\Queries\CreateAdminQuery;
 use App\Queries\CreateAnnotatorQuery;
 use App\Queries\CreateManagerQuery;
+use App\Queries\FindNextDeletionIndexQuery;
 use App\Queries\FindUserByEmailQuery;
 use App\Queries\FindUserByNameQuery;
 use App\Queries\FindUserByUsernameQuery;
@@ -31,6 +32,7 @@ use InvalidArgumentException;
 
 readonly class UserService {
     public function __construct(
+        private FindNextDeletionIndexQuery $findNextDeletionIndexQuery,
         private FindUserByEmailQuery $findUserByEmailQuery,
         private FindUserByNameQuery $findUserByNameQuery,
         private FindUserByUsernameQuery $findUserByUsernameQuery,
@@ -176,7 +178,17 @@ readonly class UserService {
     }
 
     private function softDelete(User $user): void {
-        $user->update(['status' => StatusEnum::INACTIVE]);
+        $suffix = '_del_' . $this->findNextDeletionIndexQuery->find($user->username);
+
+        $user->name .= $suffix;
+        $user->email = $user->email !== null ? $user->email . $suffix : null;
+        $user->username .= $suffix;
+        $user->password = null;
+        $user->remember_token = null;
+        $user->status = StatusEnum::INACTIVE;
+        $user->save();
+
+        $user->delete();
     }
 
     /**
