@@ -170,13 +170,13 @@ readonly class UserService {
     }
 
     private function hardDelete(User $user): void {
-        // TODO: add actions to run before hard-deleting a pending user
+        // All FK relationships (pivot tables, assignments) are covered by DB-level
+        // cascadeOnDelete() constraints. Spatie roles are cleaned via model events.
         $user->forceDelete();
     }
 
     private function softDelete(User $user): void {
-        // TODO: add actions to run before soft-deleting an active/inactive user
-        $user->delete();
+        $user->update(['status' => StatusEnum::INACTIVE]);
     }
 
     /**
