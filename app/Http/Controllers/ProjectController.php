@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ProjectStatusEnum;
 use App\Exceptions\PresentableError;
+use App\Http\Requests\Project\AttachAnnotatorsToProjectRequest;
 use App\Http\Requests\Project\DetachAnnotatorFromProjectRequest;
 use App\Http\Requests\Project\ProjectChangeStatusRequest;
 use App\Http\Requests\Project\ProjectExportRequest;
@@ -17,7 +18,6 @@ use App\Services\Annotation\AnnotatorService;
 use App\Services\Project\ProjectService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -118,8 +118,12 @@ class ProjectController extends Controller {
         return Inertia::render('projects/add-annotators', $data_for_add_annotators);
     }
 
-    public function attachAnnotators(Request $request, int $id): RedirectResponse {
-        // TODO: wire to ProjectService
+    public function attachAnnotators(AttachAnnotatorsToProjectRequest $request, int $id): RedirectResponse {
+        /** @var array<int, int> $annotatorIds */
+        $annotatorIds = $request->validated('annotator_ids');
+
+        $this->projectService->attachAnnotators($id, $annotatorIds);
+
         return to_route('projects.show', $id)
             ->with('success', __('projects.messages.annotators_attached'));
     }

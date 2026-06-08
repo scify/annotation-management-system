@@ -18,6 +18,7 @@ use App\Models\ProjectManager;
 use App\Models\SubProject;
 use App\Models\TaskTag;
 use App\Models\User;
+use App\Queries\AttachAnnotatorsToProjectQuery;
 use App\Queries\CompleteSubProjectsByProjectQuery;
 use App\Queries\DeleteAnnotationsByProjectQuery;
 use App\Queries\DetachAnnotatorFromProjectQuery;
@@ -51,6 +52,7 @@ readonly class ProjectService {
         private GetProjectsQuery $projectsQuery,
         private GetSubProjectIdsQuery $subProjectIdsQuery,
         private GetProjectsManagedByUserQuery $userProjectsQuery,
+        private AttachAnnotatorsToProjectQuery $attachAnnotatorsToProjectQuery,
         private DetachAnnotatorFromProjectQuery $detachAnnotatorFromProjectQuery,
         private UpdateProjectStatusQuery $updateProjectStatusQuery,
         private CompleteSubProjectsByProjectQuery $completeSubProjectsByProjectQuery,
@@ -118,6 +120,13 @@ readonly class ProjectService {
 
             return $project;
         });
+    }
+
+    /**
+     * @param  array<int, int>  $annotatorIds
+     */
+    public function attachAnnotators(int $projectId, array $annotatorIds): void {
+        $this->attachAnnotatorsToProjectQuery->attach($projectId, $annotatorIds);
     }
 
     public function changeStatus(Project $project, ProjectStatusEnum $newStatus): Project {

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ProjectStatusEnum;
 use App\Exceptions\PresentableError;
+use App\Http\Requests\SubProject\AttachAnnotatorsToSubProjectRequest;
 use App\Http\Requests\SubProject\DetachAnnotatorFromSubProjectRequest;
 use App\Http\Requests\SubProject\SubProjectChangeStatusRequest;
 use App\Http\Requests\SubProject\SubProjectStoreRequest;
@@ -14,7 +15,6 @@ use App\Models\SubProject;
 use App\Services\SubProject\SubProjectService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -97,8 +97,12 @@ class SubProjectController extends Controller {
         return Inertia::render('sub-projects/add-annotators', $data);
     }
 
-    public function attachAnnotators(Request $request, int $projectId, int $subprojectId): RedirectResponse {
-        // TODO: wire to SubProjectService
+    public function attachAnnotators(AttachAnnotatorsToSubProjectRequest $request, int $projectId, int $subprojectId): RedirectResponse {
+        /** @var array<int, int> $annotatorIds */
+        $annotatorIds = $request->validated('annotator_ids');
+
+        $this->subProjectService->attachAnnotators($subprojectId, $annotatorIds);
+
         return to_route('projects.subprojects.edit', [$projectId, $subprojectId])
             ->with('success', __('projects.messages.annotators_attached'));
     }
