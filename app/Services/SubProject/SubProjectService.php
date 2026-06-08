@@ -7,6 +7,7 @@ namespace App\Services\SubProject;
 use App\Enums\AgreementEnum;
 use App\Enums\ProjectStatusEnum;
 use App\Exceptions\AnnotatorDetachException;
+use App\Exceptions\SubProjectStatusException;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotatorOfProject;
 use App\Models\SubProject;
@@ -18,6 +19,7 @@ use App\Queries\GetProjectBasicDataQuery;
 use App\Queries\GetSubProjectIdsQuery;
 use App\Queries\GetSubsetInfoByProjectQuery;
 use App\Queries\StoreSubProjectQuery;
+use App\Queries\UpdateSubProjectStatusQuery;
 use App\Services\Annotation\AnnotationService;
 use App\Services\Annotation\AnnotatorService;
 use Carbon\Carbon;
@@ -36,7 +38,28 @@ readonly class SubProjectService {
         private GetSubProjectIdsQuery $subProjectIdsQuery,
         private GetSubsetInfoByProjectQuery $subsetInfoQuery,
         private DetachAnnotatorFromSubProjectQuery $detachAnnotatorFromSubProjectQuery,
+        private UpdateSubProjectStatusQuery $updateSubProjectStatusQuery,
     ) {}
+
+    public function changeStatus(SubProject $subProject, ProjectStatusEnum $newStatus): SubProject {
+        if ($subProject->project->status !== ProjectStatusEnum::IN_PROGRESS) {
+            throw SubProjectStatusException::projectNotInProgress();
+        }
+
+        $allowed = match ($subProject->status) {
+            ProjectStatusEnum::PENDING => ProjectStatusEnum::IN_PROGRESS,
+            ProjectStatusEnum::IN_PROGRESS => ProjectStatusEnum::COMPLETED,
+            ProjectStatusEnum::COMPLETED => null,
+        };
+
+        if ($allowed !== $newStatus) {
+            throw SubProjectStatusException::invalidTransition($subProject->status, $newStatus);
+        }
+
+        $this->updateSubProjectStatusQuery->execute($subProject, $newStatus);
+
+        return $subProject;
+    }
 
     /**
      * @param  array<string, mixed>  $data

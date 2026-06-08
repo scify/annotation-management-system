@@ -29,6 +29,8 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('projects/create', [ProjectController::class, 'create'])->name('projects.create');
     Route::post('projects', [ProjectController::class, 'store'])->name('projects.store');
     Route::post('projects/toggle-can-flag', [ProjectController::class, 'toggleCanFlagOfAnnotator'])->name('projects.toggle-can-flag');
+    Route::post('projects/change-status', [ProjectController::class, 'changeStatus'])->name('projects.change-status');
+    Route::post('sub-projects/change-status', [SubProjectController::class, 'changeStatus'])->name('sub-projects.change-status');
     Route::get('projects/{id}', [ProjectController::class, 'show'])->name('projects.show');
     Route::delete('projects/{id}/annotators/{annotatorId}', [ProjectController::class, 'detachAnnotator'])->name('projects.annotators.detach');
     Route::get('projects/{id}/add-annotators', [ProjectController::class, 'showAddAnnotators'])->name('projects.annotators.add');

@@ -7,6 +7,7 @@ namespace App\Services\Project;
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
 use App\Exceptions\AnnotatorDetachException;
+use App\Exceptions\InvalidProjectStatusTransitionException;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfProject;
@@ -17,6 +18,7 @@ use App\Models\ProjectManager;
 use App\Models\SubProject;
 use App\Models\TaskTag;
 use App\Models\User;
+use App\Queries\CompleteSubProjectsByProjectQuery;
 use App\Queries\DetachAnnotatorFromProjectQuery;
 use App\Queries\GetAnnotationTasksQuery;
 use App\Queries\GetAnnotatorIdsByProjectsQuery;
@@ -26,6 +28,7 @@ use App\Queries\GetProjectsByIdsQuery;
 use App\Queries\GetProjectsManagedByUserQuery;
 use App\Queries\GetProjectsQuery;
 use App\Queries\GetSubProjectIdsQuery;
+use App\Queries\UpdateProjectStatusQuery;
 use App\Services\Annotation\AnnotatorService;
 use App\Services\Dataset\DatasetService;
 use App\Services\SubProject\SubProjectService;
@@ -48,6 +51,8 @@ readonly class ProjectService {
         private GetSubProjectIdsQuery $subProjectIdsQuery,
         private GetProjectsManagedByUserQuery $userProjectsQuery,
         private DetachAnnotatorFromProjectQuery $detachAnnotatorFromProjectQuery,
+        private UpdateProjectStatusQuery $updateProjectStatusQuery,
+        private CompleteSubProjectsByProjectQuery $completeSubProjectsByProjectQuery,
     ) {}
 
     /**
@@ -111,6 +116,26 @@ readonly class ProjectService {
 
             return $project;
         });
+    }
+
+    public function changeStatus(Project $project, ProjectStatusEnum $newStatus): Project {
+        $allowed = match ($project->status) {
+            ProjectStatusEnum::PENDING => ProjectStatusEnum::IN_PROGRESS,
+            ProjectStatusEnum::IN_PROGRESS => ProjectStatusEnum::COMPLETED,
+            ProjectStatusEnum::COMPLETED => null,
+        };
+
+        if ($allowed !== $newStatus) {
+            throw new InvalidProjectStatusTransitionException($project->status, $newStatus);
+        }
+
+        $this->updateProjectStatusQuery->execute($project, $newStatus);
+
+        if ($newStatus === ProjectStatusEnum::COMPLETED) {
+            $this->completeSubProjectsByProjectQuery->execute($project->id);
+        }
+
+        return $project;
     }
 
     /**

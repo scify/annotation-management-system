@@ -135,6 +135,9 @@ return [
     'messages' => [
         'created' => 'Subproject created successfully.',
         'annotator_detached' => 'Annotator removed from subproject.',
+        'status_changed' => 'Subproject status updated successfully.',
+        'invalid_status_transition' => 'This status transition is not allowed.',
+        'project_not_in_progress' => 'Subproject status can only be changed while the project is in progress.',
     ],
 
     'validation' => [

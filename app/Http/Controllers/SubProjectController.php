@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProjectStatusEnum;
 use App\Exceptions\PresentableError;
 use App\Http\Requests\SubProject\DetachAnnotatorFromSubProjectRequest;
+use App\Http\Requests\SubProject\SubProjectChangeStatusRequest;
 use App\Http\Requests\SubProject\SubProjectStoreRequest;
 use App\Models\Project;
 use App\Models\SubProject;
@@ -33,6 +35,23 @@ class SubProjectController extends Controller {
             ...$data_for_create_sub_project,
             'created_subproject_name' => session()->pull('created_subproject_name'),
         ]);
+    }
+
+    public function changeStatus(SubProjectChangeStatusRequest $request): RedirectResponse {
+        $subProject = SubProject::query()->with('project')->findOrFail($request->integer('sub_project_id'));
+
+        try {
+            $this->subProjectService->changeStatus(
+                $subProject,
+                ProjectStatusEnum::from($request->string('status')->value()),
+            );
+        } catch (PresentableError $presentableError) {
+            return to_route('projects.subprojects.edit', [$subProject->project_id, $subProject->id])
+                ->with('error', $presentableError->getUserMessage());
+        }
+
+        return to_route('projects.subprojects.edit', [$subProject->project_id, $subProject->id])
+            ->with('success', __('sub-projects.messages.status_changed'));
     }
 
     /**

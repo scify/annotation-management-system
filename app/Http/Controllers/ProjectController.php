@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProjectStatusEnum;
 use App\Exceptions\PresentableError;
 use App\Http\Requests\Project\DetachAnnotatorFromProjectRequest;
+use App\Http\Requests\Project\ProjectChangeStatusRequest;
 use App\Http\Requests\Project\ProjectExportRequest;
 use App\Http\Requests\Project\ProjectStoreRequest;
 use App\Http\Requests\Project\ToggleCanFlagRequest;
@@ -120,6 +122,22 @@ class ProjectController extends Controller {
         // TODO: wire to ProjectService
         return to_route('projects.show', $id)
             ->with('success', __('projects.messages.annotators_attached'));
+    }
+
+    public function changeStatus(ProjectChangeStatusRequest $request): RedirectResponse {
+        $project = Project::query()->findOrFail($request->integer('project_id'));
+
+        try {
+            $this->projectService->changeStatus(
+                $project,
+                ProjectStatusEnum::from($request->string('status')->value()),
+            );
+        } catch (PresentableError $presentableError) {
+            return to_route('projects.show', $project->id)->with('error', $presentableError->getUserMessage());
+        }
+
+        return to_route('projects.show', $project->id)
+            ->with('success', __('projects.messages.status_changed'));
     }
 
     public function show(int $id): Response {

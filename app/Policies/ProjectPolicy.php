@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Enums\RolesEnum;
 use App\Models\Project;
+use App\Models\ProjectManager;
 use App\Models\User;
 
 class ProjectPolicy {
@@ -55,5 +56,16 @@ class ProjectPolicy {
         }
 
         return $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
+    }
+
+    public function updateStatus(User $user, Project $project): bool {
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+
+        return ProjectManager::query()
+            ->where('project_id', $project->id)
+            ->where('user_id', $user->id)
+            ->exists();
     }
 }
