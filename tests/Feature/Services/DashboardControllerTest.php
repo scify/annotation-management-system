@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 use App\Enums\RolesEnum;
 use App\Models\User;
-use Database\Seeders\DummyDataSeeder;
+use Database\Seeders\RolesAndPermissionsSeeder;
 
 describe('DashboardController::index', function (): void {
     beforeEach(function (): void {
-        $this->seed(DummyDataSeeder::class);
+        $this->seed(RolesAndPermissionsSeeder::class);
     });
 
     it('redirects unauthenticated users to the login page', function (): void {
@@ -28,8 +28,7 @@ describe('DashboardController::index', function (): void {
 
     it('passes all in-progress projects for admins via getAllInProgressProjects', function (): void {
         // Arrange
-        // $user = User::factory()->create()->assignRole(RolesEnum::ADMIN->value);
-        $user = User::query()->where('username', 'admin_alice')->first();
+        $user = User::factory()->create()->assignRole(RolesEnum::ADMIN->value);
 
         // Act & Assert
         $this->actingAs($user)
@@ -43,8 +42,7 @@ describe('DashboardController::index', function (): void {
 
     it('passes user-scoped in-progress projects for annotation managers via getMyInProgressProjects', function (): void {
         // Arrange
-        // $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATION_MANAGER->value);
-        $user = User::query()->where('username', 'manager_carol')->first();
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATION_MANAGER->value);
 
         // Act & Assert
         $this->actingAs($user)

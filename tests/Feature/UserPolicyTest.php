@@ -91,10 +91,10 @@ describe('userpolicy', function (): void {
         expect($this->policy->update($this->manager, $this->manager_non_collaborator))->toBeFalse();
         expect($this->policy->update($this->manager, $this->admin))->toBeFalse();
         // annotator can update only self
-        expect($this->policy->view($this->annotator, $this->annotator))->toBeTrue();
-        expect($this->policy->view($this->annotator, $this->other_annotator))->toBeFalse();
-        expect($this->policy->view($this->annotator, $this->manager))->toBeFalse();
-        expect($this->policy->view($this->annotator, $this->admin))->toBeFalse();
+        expect($this->policy->update($this->annotator, $this->annotator))->toBeTrue();
+        expect($this->policy->update($this->annotator, $this->other_annotator))->toBeFalse();
+        expect($this->policy->update($this->annotator, $this->manager))->toBeFalse();
+        expect($this->policy->update($this->annotator, $this->admin))->toBeFalse();
     });
 
     it('delete', function (): void {
