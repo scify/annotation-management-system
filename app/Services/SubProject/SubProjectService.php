@@ -11,6 +11,7 @@ use App\Exceptions\SubProjectStatusException;
 use App\Models\AnnotationAssignment;
 use App\Models\AnnotatorOfProject;
 use App\Models\SubProject;
+use App\Queries\AttachAnnotatorsToSubProjectQuery;
 use App\Queries\DeleteAnnotationsBySubProjectQuery;
 use App\Queries\DetachAnnotatorFromSubProjectQuery;
 use App\Queries\GetAnnotatorProjectLinksByProjectQuery;
@@ -30,6 +31,7 @@ use Throwable;
 
 readonly class SubProjectService {
     public function __construct(
+        private AttachAnnotatorsToSubProjectQuery $attachAnnotatorsToSubProjectQuery,
         private AnnotationService $annotationService,
         private AnnotatorService $annotatorService,
         private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
@@ -77,6 +79,14 @@ readonly class SubProjectService {
         }
 
         return $subProject;
+    }
+
+    /**
+     * @param  array<int, int>  $annotatorIds
+     */
+    public function attachAnnotators(int $subProjectId, array $annotatorIds): void {
+        $subProject = SubProject::query()->with('project')->findOrFail($subProjectId);
+        $this->attachAnnotatorsToSubProjectQuery->attach($subProject, $annotatorIds);
     }
 
     public function deleteSubProject(SubProject $subProject): void {

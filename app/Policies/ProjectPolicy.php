@@ -60,6 +60,28 @@ class ProjectPolicy {
         return $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
     }
 
+    public function attachSubProjectAnnotators(User $user, SubProject $subProject): bool {
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+
+        return ProjectManager::query()
+            ->where('project_id', $subProject->project_id)
+            ->where('user_id', $user->id)
+            ->exists();
+    }
+
+    public function attachAnnotators(User $user, Project $project): bool {
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+
+        return ProjectManager::query()
+            ->where('project_id', $project->id)
+            ->where('user_id', $user->id)
+            ->exists();
+    }
+
     public function updateStatus(User $user, Project $project): bool {
         if ($user->hasRole(RolesEnum::ADMIN)) {
             return true;
