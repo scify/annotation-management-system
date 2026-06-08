@@ -420,7 +420,7 @@ readonly class ProjectService {
     }
 
     /**
-     * @return array<int, array{id: int, username: string, email: string, status: string, owner: bool, accepted: bool}>
+     * @return array<int, array{id: int, username: string, email: string|null, status: string, owner: bool, accepted: bool}>
      */
     private function buildCoManagersData(Project $project): array {
         $activeUserId = auth()->id();

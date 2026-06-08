@@ -37,8 +37,8 @@ readonly class UserManagementService {
     ) {}
 
     /**
-     * @return array{admins: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>, all_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>, my_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>, all_annotators: array<int, array{id: int, name: string, username: string, status: string, role: string}>, my_annotators: array<int, array{id: int, name: string, username: string, status: string, role: string}>}
-     *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | array{all_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>, my_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>, my_annotators: array<int, array{id: int, name: string, username: string, status: string, role: string}>}
+     * @return array{admins: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>, all_managers: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>, my_managers: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>, all_annotators: array<int, array{id: int, name: string, username: string, status: string, role: string}>, my_annotators: array<int, array{id: int, name: string, username: string, status: string, role: string}>}
+     *                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | array{all_managers: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>, my_managers: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>, my_annotators: array<int, array{id: int, name: string, username: string, status: string, role: string}>}
      *
      * @throws AuthorizationException
      */
@@ -85,7 +85,7 @@ readonly class UserManagementService {
 
     /**
      * @return array{
-     *     all_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>,
+     *     all_managers: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>,
      *     password_policy: array{min_length: int, composition_mode: string, mixed_case_required: bool}
      * }
      */
@@ -180,9 +180,9 @@ readonly class UserManagementService {
 
     /**
      * @return array{
-     *     admins: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>,
-     *     all_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>,
-     *     my_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>,
+     *     admins: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>,
+     *     all_managers: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>,
+     *     my_managers: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>,
      *     all_annotators: array<int, array{id: int, name: string, username: string, status: string, role: string}>,
      *     my_annotators: array<int, array{id: int, name: string, username: string, status: string, role: string}>
      * }
@@ -210,7 +210,7 @@ readonly class UserManagementService {
     }
 
     /**
-     * @return array{all_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>, my_managers: array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>, my_annotators: array<int, array{id: int, name: string, username: string, status: string, role: string}>}
+     * @return array{all_managers: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>, my_managers: array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>, my_annotators: array<int, array{id: int, name: string, username: string, status: string, role: string}>}
      */
     private function getForManager(int $currentUserId): array {
         return [
@@ -229,7 +229,7 @@ readonly class UserManagementService {
     /**
      * @param  Collection<int, User>  $users
      *
-     * @return array<int, array{id: int, name: string, username: string, email: string, status: string, role: string}>
+     * @return array<int, array{id: int, name: string, username: string, email: string|null, status: string, role: string}>
      */
     private function mapWithEmail(Collection $users): array {
         return $users->map(fn (User $user): array => [
