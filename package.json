@@ -55,19 +55,19 @@
         "@fontsource-variable/quicksand": "^5.2.10",
         "@fontsource-variable/source-sans-3": "^5.2.9",
         "@fontsource/ubuntu": "^5.2.8",
-        "@inertiajs/react": "^3.2.0",
-        "@inertiajs/vite": "^3.2.0",
-        "altcha": "^3.0.10",
+        "@inertiajs/react": "^3.3.0",
+        "@inertiajs/vite": "^3.3.0",
+        "altcha": "^3.0.11",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "dotenv": "^17.4.2",
         "globals": "^17.6.0",
         "laravel-vite-plugin": "^3.1",
-        "lucide-react": "^1.16.0",
+        "lucide-react": "^1.17.0",
         "next-themes": "^0.4.6",
         "playwright": "^1.60.0",
         "react": "^19.2.6",
-        "react-aria-components": "^1.17.0",
+        "react-aria-components": "^1.18.0",
         "react-dom": "^19.2.6",
         "sonner": "^2.0.7",
         "tailwind-merge": "^3.6.0",
@@ -76,11 +76,11 @@
         "use-debounce": "^10.1.1"
     },
     "optionalDependencies": {
-        "@rollup/rollup-linux-x64-gnu": "4.60.4",
+        "@rollup/rollup-linux-x64-gnu": "4.61.0",
         "@tailwindcss/oxide-linux-x64-gnu": "^4.3.0",
         "lightningcss-linux-x64-gnu": "^1.32.0"
     },
-    "packageManager": "npm@11.15.0",
+    "packageManager": "npm@11.16.0",
     "engines": {
         "node": ">=24.14.0",
         "npm": ">=11.11.0"
