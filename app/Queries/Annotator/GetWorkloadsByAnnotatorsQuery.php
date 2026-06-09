@@ -13,16 +13,18 @@ use Illuminate\Support\Collection;
 final readonly class GetWorkloadsByAnnotatorsQuery {
     /**
      * @param  array<int, int>  $userIds
+     * @param  array<int, int>|null  $subProjectIds  When provided, restrict to these subprojects only
      *
      * @return array<int, array{total_workload: int, workload_per_subproject: array<int, int>}>
      */
-    public function get(array $userIds): array {
+    public function get(array $userIds, ?array $subProjectIds = null): array {
         if ($userIds === []) {
             return [];
         }
 
         $subProjects = SubProject::query()
             ->where('status', ProjectStatusEnum::IN_PROGRESS)
+            ->when($subProjectIds !== null, fn ($q) => $q->whereIn('id', $subProjectIds))
             ->whereIn('id', function ($query) use ($userIds): void {
                 $query->select('sub_project_id')
                     ->from('annotation_assignments')
@@ -37,10 +39,20 @@ final readonly class GetWorkloadsByAnnotatorsQuery {
             ->whereIn('sub_project_id', $subProjects->keys())
             ->get();
 
-        /** @var Collection<int|string, string|int> $annotationCountsByAssignment */
-        $annotationCountsByAssignment = Annotation::query()
+        /** @var Collection<int|string, string|int> $submittedCounts */
+        $submittedCounts = Annotation::query()
             ->whereIn('annotation_assignment_id', $annotationAssignments->pluck('id'))
+            ->whereNotNull('annotations')
             ->where('pending', false)
+            ->selectRaw('annotation_assignment_id, COUNT(*) as count')
+            ->groupBy('annotation_assignment_id')
+            ->pluck('count', 'annotation_assignment_id');
+
+        /** @var Collection<int|string, string|int> $pendingCounts */
+        $pendingCounts = Annotation::query()
+            ->whereIn('annotation_assignment_id', $annotationAssignments->pluck('id'))
+            ->whereNotNull('annotations')
+            ->where('pending', true)
             ->selectRaw('annotation_assignment_id, COUNT(*) as count')
             ->groupBy('annotation_assignment_id')
             ->pluck('count', 'annotation_assignment_id');
@@ -63,14 +75,16 @@ final readonly class GetWorkloadsByAnnotatorsQuery {
 
                 $weight = $subProject->project->annotationTask->weight;
                 $effort = ($subProject->last_instance_index - $subProject->first_instance_index + 1) * $weight;
-                $workDone = (int) $annotationCountsByAssignment->get($assignment->id, 0) * $weight;
+                $submitted = (int) $submittedCounts->get($assignment->id, 0);
+                $pending = (int) $pendingCounts->get($assignment->id, 0);
+                $workDone = (int) floor(($submitted + $pending * 0.5) * $weight);
 
                 $sumEffort += $effort;
                 $sumWorkDone += $workDone;
                 $workloadPerSubproject[$assignment->sub_project_id] = $effort - $workDone;
             }
 
-            $workloads[(int) $userId] = [
+            $workloads[$userId] = [
                 'total_workload' => $sumEffort - $sumWorkDone,
                 'workload_per_subproject' => $workloadPerSubproject,
             ];

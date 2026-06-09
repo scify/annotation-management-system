@@ -71,7 +71,7 @@ class DummyProjectSeeder extends Seeder {
                         'auto_submission' => true,
                         'minimum_annotators' => 1,
                         'first_instance_index' => 1,
-                        'last_instance_index' => 3,
+                        'last_instance_index' => 200,
                         'scheduled_at' => '2026-03-01',
                         'started_at' => '2026-04-01 09:00:00',
                         'deadline_at' => '2026-05-31',
@@ -85,8 +85,8 @@ class DummyProjectSeeder extends Seeder {
                         'flexible' => false,
                         'auto_submission' => true,
                         'minimum_annotators' => 1,
-                        'first_instance_index' => 4,
-                        'last_instance_index' => 5,
+                        'first_instance_index' => 201,
+                        'last_instance_index' => 500,
                         'scheduled_at' => '2026-05-01',
                         'deadline_at' => '2026-06-30',
                         'annotators' => ['annotator.frank@example.com', 'annotator.henry@example.com'],
@@ -200,7 +200,7 @@ class DummyProjectSeeder extends Seeder {
                         'auto_submission' => false,
                         'minimum_annotators' => 2,
                         'first_instance_index' => 1,
-                        'last_instance_index' => 3,
+                        'last_instance_index' => 300,
                         'scheduled_at' => '2026-04-01',
                         'started_at' => '2026-04-15 09:00:00',
                         'deadline_at' => '2026-05-31',
@@ -213,8 +213,8 @@ class DummyProjectSeeder extends Seeder {
                         'flexible' => false,
                         'auto_submission' => false,
                         'minimum_annotators' => 2,
-                        'first_instance_index' => 4,
-                        'last_instance_index' => 5,
+                        'first_instance_index' => 301,
+                        'last_instance_index' => 500,
                         'scheduled_at' => '2026-05-10',
                         'deadline_at' => '2026-06-20',
                         'annotators' => ['annotator.jack@example.com', 'annotator.karen@example.com'],
@@ -318,7 +318,9 @@ class DummyProjectSeeder extends Seeder {
 
                     $rows = [];
                     $isFirst = true;
-                    $cutoff = random_int(0, $instanceCount);
+                    $cutoff = $subProject->status === ProjectStatusEnum::IN_PROGRESS
+                        ? random_int(0, $instanceCount)
+                        : 0;
 
                     foreach ($orderedProjectPositions as $annotatorPos => $projectPos) {
                         $annotatorIndex = $annotatorPos + 1;

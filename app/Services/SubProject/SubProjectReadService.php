@@ -133,7 +133,8 @@ readonly class SubProjectReadService {
         /** @var Collection<int, int> $activeSubProjectIds */
         $activeSubProjectIds = collect([$subProject->id]);
 
-        $annotatorsData = $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $activeSubProjectIds);
+        $progressBySubProject = $this->subProjectService->getProgress([$subProject->id]);
+        $annotatorsData = $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $activeSubProjectIds, $progressBySubProject);
 
         /** @var array<int, bool> $canFlagByAnnotatorId */
         $canFlagByAnnotatorId = $this->annotatorProjectLinksQuery->get($subProject->project_id, $annotatorIds)
@@ -144,12 +145,14 @@ readonly class SubProjectReadService {
         $canBeRemoved = $subProject->status === ProjectStatusEnum::PENDING;
 
         return array_map(
-            fn (array $annotator): array => [
-                ...$annotator,
-                'can_flag' => ! is_int($annotator['id']) || (($canFlagByAnnotatorId[$annotator['id']] ?? true)),
-                'flag_count' => is_int($annotator['id']) ? ($flagCounts[$annotator['id']][$subProject->id] ?? 0) : 0,
-                'can_be_removed' => $canBeRemoved,
-            ],
+            function (array $annotator) use ($canFlagByAnnotatorId, $flagCounts, $subProject, $canBeRemoved): array {
+                $annotator['can_flag'] = ! is_int($annotator['id']) || (($canFlagByAnnotatorId[$annotator['id']] ?? true));
+                $annotator['flag_count'] = is_int($annotator['id']) ? ($flagCounts[$annotator['id']][$subProject->id] ?? 0) : 0;
+                $annotator['can_be_removed'] = $canBeRemoved;
+                unset($annotator['active_subprojects_count'], $annotator['active_projects_count']);
+
+                return $annotator;
+            },
             $annotatorsData,
         );
     }

@@ -21,42 +21,51 @@ class DummyDatasetsSeeder extends Seeder {
                 'name' => 'News Articles EN',
                 'description' => 'English-language news articles collected from major outlets, suitable for sentiment and NER tasks.',
                 'is_available' => true,
+                'instance_count' => 500,
             ],
             [
                 'name' => 'News Articles EL',
                 'description' => 'Greek-language news articles collected from major outlets, suitable for sentiment and NER tasks.',
                 'is_available' => true,
+                'instance_count' => 5,
             ],
             [
                 'name' => 'Social Media Posts',
                 'description' => 'Short-form user posts from social platforms, used for toxic content and sentiment annotation.',
                 'is_available' => true,
+                'instance_count' => 500,
             ],
             [
                 'name' => 'Medical Records Corpus',
                 'description' => 'Anonymised clinical notes for named entity and classification annotation tasks.',
                 'is_available' => true,
+                'instance_count' => 5,
             ],
             [
                 'name' => 'Product Reviews',
                 'description' => 'E-commerce product reviews across multiple categories for quality rating and sentiment tasks.',
                 'is_available' => true,
+                'instance_count' => 5,
             ],
             [
                 'name' => 'Image Batch 2024-Q4',
                 'description' => 'Curated image collection from Q4 2024, intended for image classification annotation.',
                 'is_available' => true,
+                'instance_count' => 5,
             ],
         ];
 
         foreach ($datasets as $dataset) {
+            $instanceCount = $dataset['instance_count'];
+            unset($dataset['instance_count']);
+
             $addedDataset = Dataset::query()->updateOrCreate(
                 ['name' => $dataset['name']],
                 $dataset,
             );
             $added_dataset_id = $addedDataset->getKey();
-            // add dummy instances
-            for ($i = 1; $i <= 5; $i++) {
+
+            for ($i = 1; $i <= $instanceCount; $i++) {
                 DatasetInstance::query()->updateOrCreate(
                     ['index' => $i, 'dataset_id' => $added_dataset_id],
                     [
@@ -74,7 +83,7 @@ class DummyDatasetsSeeder extends Seeder {
                 );
             }
 
-            $addedDataset->update(['size' => 5]);
+            $addedDataset->update(['size' => $instanceCount]);
         }
 
         $datasetsByName = Dataset::query()

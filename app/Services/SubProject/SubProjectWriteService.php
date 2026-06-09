@@ -129,11 +129,46 @@ readonly class SubProjectWriteService {
 
         $allIds = array_keys($assignmentToSubProject);
 
-        if ($allIds !== []) {
-            foreach ($this->progressQuery->get($allIds) as $assignmentId => $data) {
+        /** @var array<int, array{annotations_all: int, annotations_done: int, progress: float}> $progressData */
+        $progressData = $allIds !== [] ? $this->progressQuery->get($allIds) : [];
+
+        // For assignments with no Annotation records, check whether the subproject is PENDING.
+        // If so, synthesise planned progress using the subproject's instance range so that
+        // pending work is included in the annotator's progress denominator.
+        $assignmentIdsWithNoData = array_diff($allIds, array_keys($progressData));
+
+        if ($assignmentIdsWithNoData !== []) {
+            /** @var array<int, int> $spIdsForMissing */
+            $spIdsForMissing = array_values(array_unique(
+                array_intersect_key($assignmentToSubProject, array_flip($assignmentIdsWithNoData))
+            ));
+
+            /** @var \Illuminate\Support\Collection<int, SubProject> $pendingMeta */
+            $pendingMeta = SubProject::query()
+                ->whereIn('id', $spIdsForMissing)
+                ->where('status', ProjectStatusEnum::PENDING)
+                ->select('id', 'first_instance_index', 'last_instance_index')
+                ->get()
+                ->keyBy('id');
+
+            foreach ($assignmentIdsWithNoData as $assignmentId) {
                 $spId = $assignmentToSubProject[$assignmentId];
-                $assignmentsBySubProject[$spId][$assignmentId] = [...$data, 'user_id' => $assignmentUsers[$assignmentId]];
+                $sp = $pendingMeta->get($spId);
+                if ($sp === null) {
+                    continue;
+                }
+
+                $progressData[$assignmentId] = [
+                    'annotations_all' => $sp->last_instance_index - $sp->first_instance_index + 1,
+                    'annotations_done' => 0,
+                    'progress' => 0.0,
+                ];
             }
+        }
+
+        foreach ($progressData as $assignmentId => $data) {
+            $spId = $assignmentToSubProject[$assignmentId];
+            $assignmentsBySubProject[$spId][$assignmentId] = [...$data, 'user_id' => $assignmentUsers[$assignmentId]];
         }
 
         $result = [];
