@@ -41,6 +41,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('projects/{id}/subprojects/create', [SubProjectController::class, 'create'])->name('projects.subprojects.create');
     Route::post('projects/{id}/subprojects', [SubProjectController::class, 'store'])->name('projects.subprojects.store');
     Route::get('projects/{projectId}/subprojects/{subprojectId}/edit', [SubProjectController::class, 'edit'])->name('projects.subprojects.edit');
+    Route::put('projects/{projectId}/subprojects/{subprojectId}', [SubProjectController::class, 'update'])->name('projects.subprojects.update');
     Route::delete('projects/{projectId}/subprojects/{subprojectId}/annotators/{annotatorId}', [SubProjectController::class, 'detachAnnotator'])->name('projects.subprojects.annotators.detach');
     Route::get('projects/{projectId}/subprojects/{subprojectId}/add-annotators', [SubProjectController::class, 'showAddAnnotators'])->name('projects.subprojects.annotators.add');
     Route::post('projects/{projectId}/subprojects/{subprojectId}/annotators', [SubProjectController::class, 'attachAnnotators'])->name('projects.subprojects.annotators.attach');

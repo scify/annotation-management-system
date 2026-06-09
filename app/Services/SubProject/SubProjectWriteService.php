@@ -98,6 +98,26 @@ readonly class SubProjectWriteService {
     }
 
     /**
+     * @param  array<string, mixed>  $data  Validated data from SubProjectUpdateRequest:
+     *                                      name, priority, is_flexible, requires_confirmation,
+     *                                      minimum_annotations, scheduled_at, deadline_at,
+     *                                      from_instance, to_instance
+     */
+    public function updateSubProject(SubProject $subProject, array $data): SubProject {
+        // TODO: implement — map validated fields to model columns and persist:
+        //   name                  → name
+        //   priority              → priority
+        //   is_flexible           → flexible
+        //   is_flexible + requires_confirmation → auto_submission (see StoreSubProjectQuery for the derivation logic)
+        //   minimum_annotations   → minimum_annotators
+        //   from_instance         → first_instance_index
+        //   to_instance           → last_instance_index
+        //   scheduled_at          → scheduled_at
+        //   deadline_at           → deadline_at
+        return $subProject;
+    }
+
+    /**
      * @param  array<int, int>  $subProjectIds
      *
      * @return array<int, array{

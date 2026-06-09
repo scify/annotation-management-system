@@ -134,6 +134,7 @@ return [
 
     'messages' => [
         'created' => 'Subproject created successfully.',
+        'updated' => 'Subproject updated successfully.',
         'annotator_detached' => 'Annotator removed from subproject.',
         'deleted' => 'Subproject deleted successfully.',
         'status_changed' => 'Subproject status updated successfully.',

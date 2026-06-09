@@ -10,6 +10,7 @@ use App\Http\Requests\SubProject\AttachAnnotatorsToSubProjectRequest;
 use App\Http\Requests\SubProject\DetachAnnotatorFromSubProjectRequest;
 use App\Http\Requests\SubProject\SubProjectChangeStatusRequest;
 use App\Http\Requests\SubProject\SubProjectStoreRequest;
+use App\Http\Requests\SubProject\SubProjectUpdateRequest;
 use App\Models\Project;
 use App\Models\SubProject;
 use App\Services\SubProject\SubProjectReadService;
@@ -111,6 +112,17 @@ class SubProjectController extends Controller {
 
         return to_route('projects.show', $projectId)
             ->with('success', __('sub-projects.messages.deleted'));
+    }
+
+    public function update(SubProjectUpdateRequest $request, int $projectId, int $subprojectId): RedirectResponse {
+        $this->authorize('viewAny', Project::class);
+
+        $subProject = SubProject::query()->findOrFail($subprojectId);
+
+        $this->subProjectService->updateSubProject($subProject, $request->validated());
+
+        return to_route('projects.subprojects.edit', [$projectId, $subprojectId])
+            ->with('success', __('sub-projects.messages.updated'));
     }
 
     public function edit(int $projectId, int $subprojectId): Response {
