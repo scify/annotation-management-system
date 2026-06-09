@@ -57,6 +57,7 @@ return [
         'table_username' => 'Όνομα χρήστη',
         'table_projects' => 'Έργα',
         'table_subprojects' => 'Υποέργα',
+        'table_subprojects_in_project' => 'Ενεργά Υποέργα στο Έργο',
         'table_workload' => 'Υπόλ. Φόρτος',
         'table_progress' => 'Πρόοδος',
         'table_subproject_progress' => 'Πρόοδος Υποέργου',

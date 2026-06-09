@@ -70,8 +70,6 @@ interface BackendAnnotatorData {
     id: number;
     username: string;
     status: 'active' | 'inactive' | 'pending';
-    active_projects_count: number;
-    active_subprojects_count: number;
     annotator_progress: number;
     workload: number;
     can_flag: boolean;
@@ -158,12 +156,11 @@ export default function EditSubproject({
         id: a.id,
         name: a.username,
         status: a.status,
-        active_projects_count: a.active_projects_count,
-        active_subprojects_count: a.active_subprojects_count,
         workload: a.workload,
         annotator_progress: a.annotator_progress,
         annotator_flags: a.flag_count,
         allow_flagging: a.can_flag,
+        can_be_removed: subproject_data.status === 'pending' && (a.can_be_removed ?? false),
     }));
 
     const displayAnnotationRows: InstanceAnnotationRow[] = annotations_data.map((row) => ({

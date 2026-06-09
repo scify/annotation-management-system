@@ -57,6 +57,7 @@ return [
         'table_username' => 'Username',
         'table_projects' => 'Projects',
         'table_subprojects' => 'Subprojects',
+        'table_subprojects_in_project' => 'Active Subprojects in Project',
         'table_workload' => 'Remain. Workload',
         'table_progress' => 'Progress',
         'table_subproject_progress' => "Subproject's Progress",

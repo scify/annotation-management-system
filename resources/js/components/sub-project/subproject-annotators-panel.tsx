@@ -86,7 +86,7 @@ export function SubprojectAnnotatorsPanel({
             <AnnotatorsTable
                 mode="remove"
                 annotators={annotatorsWithFlagging}
-                canRemoveAnnotator={canManageAnnotators}
+                canRemoveAnnotator={true}
                 onAnnotatorRemoved={handleRemoveRequest}
                 onAllowFlaggingChange={handleAllowFlaggingChange}
             />

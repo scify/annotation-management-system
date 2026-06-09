@@ -15,8 +15,6 @@ interface AnnotatorsTabProps {
 
 export function AnnotatorsTab({ annotators = [], projectId, projectStatus }: AnnotatorsTabProps) {
     const { t, trans } = useTranslations();
-    const canEdit = projectStatus === 'pending';
-
     const [flaggingState, setFlaggingState] = useState<Record<number, boolean>>(() =>
         Object.fromEntries(annotators.map((a) => [a.id, a.allow_flagging ?? false]))
     );
@@ -62,6 +60,7 @@ export function AnnotatorsTab({ annotators = [], projectId, projectStatus }: Ann
     const annotatorsWithFlagging = annotators.map((a) => ({
         ...a,
         allow_flagging: flaggingState[a.id] ?? a.allow_flagging ?? false,
+        can_be_removed: projectStatus === 'pending' && (a.can_be_removed ?? false),
     }));
 
     const visibleAnnotators = annotatorsWithFlagging;
@@ -86,7 +85,7 @@ export function AnnotatorsTab({ annotators = [], projectId, projectStatus }: Ann
             <AnnotatorsTable
                 mode="remove"
                 annotators={visibleAnnotators}
-                canRemoveAnnotator={canEdit}
+                canRemoveAnnotator={true}
                 onAnnotatorRemoved={handleRemoveRequest}
                 onAllowFlaggingChange={handleAllowFlaggingChange}
             />

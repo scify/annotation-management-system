@@ -20,11 +20,12 @@ export interface ProjectAnnotatorRowData {
     name: string;
     status?: 'active' | 'inactive' | 'pending';
     annotator_progress: number;
-    active_projects_count: number;
-    active_subprojects_count: number;
+    active_projects_count?: number;
+    active_subprojects_count?: number;
     workload: number;
     annotator_flags?: number;
     allow_flagging?: boolean;
+    can_be_removed?: boolean;
 }
 
 const STATUS_VARIANT = {
@@ -63,6 +64,7 @@ type AnnotatorsTableProps =
 export function AnnotatorsTable(props: AnnotatorsTableProps) {
     const { mode, annotators } = props;
     const canRemoveAnnotator = mode === 'remove' ? (props.canRemoveAnnotator ?? true) : false;
+    const showSubprojectsColumn = annotators.some((a) => a.active_subprojects_count !== undefined);
     const { t } = useTranslations();
 
     return (
@@ -78,12 +80,18 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                         <TableHead className="pl-4 text-sm font-semibold text-slate-800">
                             {t('projects.annotators_tab.table_username')}
                         </TableHead>
-                        <TableHead className="text-right text-sm font-semibold text-slate-800">
-                            {t('projects.annotators_tab.table_projects')}
-                        </TableHead>
-                        <TableHead className="text-right text-sm font-semibold text-slate-800">
-                            {t('projects.annotators_tab.table_subprojects')}
-                        </TableHead>
+                        {mode === 'selectable' && (
+                            <TableHead className="text-right text-sm font-semibold text-slate-800">
+                                {t('projects.annotators_tab.table_projects')}
+                            </TableHead>
+                        )}
+                        {showSubprojectsColumn && (
+                            <TableHead className="text-right text-sm font-semibold text-slate-800">
+                                {mode === 'remove'
+                                    ? t('projects.annotators_tab.table_subprojects_in_project')
+                                    : t('projects.annotators_tab.table_subprojects')}
+                            </TableHead>
+                        )}
                         <TableHead className="text-center text-sm font-semibold text-slate-800">
                             {t('projects.annotators_tab.table_workload')}
                         </TableHead>
@@ -155,16 +163,20 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                                         showMessageButton={false}
                                     />
                                 </TableCell>
-                                <TableCell className="text-right">
-                                    <span className="text-base font-medium text-slate-800">
-                                        {annotator.active_projects_count}
-                                    </span>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <span className="text-base font-medium text-slate-800">
-                                        {annotator.active_subprojects_count}
-                                    </span>
-                                </TableCell>
+                                {mode === 'selectable' && (
+                                    <TableCell className="text-right">
+                                        <span className="text-base font-medium text-slate-800">
+                                            {annotator.active_projects_count}
+                                        </span>
+                                    </TableCell>
+                                )}
+                                {showSubprojectsColumn && (
+                                    <TableCell className="text-right">
+                                        <span className="text-base font-medium text-slate-800">
+                                            {annotator.active_subprojects_count}
+                                        </span>
+                                    </TableCell>
+                                )}
                                 <TableCell className="text-center">
                                     <div className="flex justify-center">
                                         <WorkloadGauge value={workloadPct} />
@@ -223,7 +235,12 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                                                     variant="ghost"
                                                     size="icon"
                                                     className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 hover:text-brand-blue-700 size-11 rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
-                                                    disabled={!canRemoveAnnotator}
+                                                    disabled={
+                                                        !(
+                                                            annotator.can_be_removed ??
+                                                            canRemoveAnnotator
+                                                        )
+                                                    }
                                                     aria-label={`Remove ${annotator.name} from subproject`}
                                                     onClick={() =>
                                                         props.onAnnotatorRemoved?.(annotator.id)

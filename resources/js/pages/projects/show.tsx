@@ -43,11 +43,11 @@ interface BackendAnnotatorData {
     id: number;
     username: string;
     status: string;
-    active_projects_count: number;
-    active_subprojects_count: number;
+    active_subprojects_of_project_count: number;
     annotator_progress: number;
     workload: number;
     can_flag: boolean;
+    can_be_removed: boolean;
 }
 
 interface BackendManagerData {
@@ -101,10 +101,10 @@ export default function ProjectShow({
         id: a.id,
         name: a.username,
         annotator_progress: a.annotator_progress,
-        active_projects_count: a.active_projects_count,
-        active_subprojects_count: a.active_subprojects_count,
+        active_subprojects_count: a.active_subprojects_of_project_count,
         workload: a.workload,
         allow_flagging: a.can_flag,
+        can_be_removed: a.can_be_removed,
     }));
 
     const managers: ProjectManagerRowData[] = comanagers_data.map((m) => ({
