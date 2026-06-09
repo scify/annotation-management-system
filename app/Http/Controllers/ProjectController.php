@@ -160,7 +160,9 @@ class ProjectController extends Controller {
 
         $data = $this->projectReadService->getDataForShowProject($id);
 
-        $this->dumpDebugJson($data, 'project-show-data-' . Auth::user()->role . '.json');
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+        $this->dumpDebugJson($data, 'project-show-data-' . $user->role . '.json');
 
         return Inertia::render('projects/show', $data);
     }

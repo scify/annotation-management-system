@@ -13,6 +13,7 @@ use App\Http\Requests\SubProject\SubProjectStoreRequest;
 use App\Http\Requests\SubProject\SubProjectUpdateRequest;
 use App\Models\Project;
 use App\Models\SubProject;
+use App\Models\User;
 use App\Services\SubProject\SubProjectReadService;
 use App\Services\SubProject\SubProjectWriteService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -52,12 +53,10 @@ class SubProjectController extends Controller {
                 ProjectStatusEnum::from($request->string('status')->value()),
             );
         } catch (PresentableError $presentableError) {
-            return to_route('projects.subprojects.edit', [$subProject->project_id, $subProject->id])
-                ->with('error', $presentableError->getUserMessage());
+            return back()->with('error', $presentableError->getUserMessage());
         }
 
-        return to_route('projects.subprojects.edit', [$subProject->project_id, $subProject->id])
-            ->with('success', __('sub-projects.messages.status_changed'));
+        return back()->with('success', __('sub-projects.messages.status_changed'));
     }
 
     /**
@@ -89,7 +88,9 @@ class SubProjectController extends Controller {
 
         $data = $this->subProjectReadService->getDataForAddAnnotators($projectId, $subprojectId);
 
-        $this->dumpDebugJson($data, 'subproject-add-annotators-data-' . Auth::user()->role . '.json');
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+        $this->dumpDebugJson($data, 'subproject-add-annotators-data-' . $user->role . '.json');
 
         return Inertia::render('sub-projects/add-annotators', $data);
     }

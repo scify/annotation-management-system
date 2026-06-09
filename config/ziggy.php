@@ -18,6 +18,6 @@ return [
         'projects.annotators.add', 'projects.annotators.attach',
         'projects.subprojects.annotators.add', 'projects.subprojects.annotators.attach',
         'projects.annotators.detach', 'projects.subprojects.annotators.detach',
-        'projects.subprojects.update',
+        'projects.subprojects.update', 'projects.change-status', 'sub-projects.change-status',
     ],
 ];

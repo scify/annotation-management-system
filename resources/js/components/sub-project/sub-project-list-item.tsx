@@ -100,13 +100,35 @@ export function SubProjectListItem({
                                     {t('sub-projects.list_item.action_view_edit')}
                                 </DropdownMenuItem>
                                 {subProject.subprojectStatus === 'in_progress' && (
-                                    <DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onSelect={() =>
+                                            router.post(
+                                                route('sub-projects.change-status'),
+                                                {
+                                                    sub_project_id: subProject.id,
+                                                    status: 'completed',
+                                                },
+                                                { preserveScroll: true }
+                                            )
+                                        }
+                                    >
                                         {t('sub-projects.list_item.action_set_completed')}
                                     </DropdownMenuItem>
                                 )}
                                 {subProject.subprojectStatus === 'pending' && (
                                     <>
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onSelect={() =>
+                                                router.post(
+                                                    route('sub-projects.change-status'),
+                                                    {
+                                                        sub_project_id: subProject.id,
+                                                        status: 'in_progress',
+                                                    },
+                                                    { preserveScroll: true }
+                                                )
+                                            }
+                                        >
                                             {t('sub-projects.list_item.action_set_in_progress')}
                                         </DropdownMenuItem>
                                         <DropdownMenuItem>
