@@ -29,6 +29,7 @@ class SubProjectUpdateRequest extends FormRequest {
             'deadline_at' => ['nullable', 'date', 'after_or_equal:scheduled_at'],
             'from_instance' => ['required', 'integer', 'min:1'],
             'to_instance' => ['required', 'integer', 'min:1', 'gte:from_instance'],
+            'is_instance_shuffled_per_annotator' => ['required', 'boolean'],
         ];
     }
 
@@ -46,6 +47,7 @@ class SubProjectUpdateRequest extends FormRequest {
             'deadline_at' => __('sub-projects.labels.deadline_at'),
             'from_instance' => __('sub-projects.labels.from_instance'),
             'to_instance' => __('sub-projects.labels.to_instance'),
+            'is_instance_shuffled_per_annotator' => __('sub-projects.labels.is_instance_shuffled_per_annotator'),
         ];
     }
 }

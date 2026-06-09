@@ -36,8 +36,9 @@ import { formatDate } from '@/utils/format';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem } from '@/types';
 import { CalendarDate } from '@internationalized/date';
-import { Head } from '@inertiajs/react';
-import { CircleAlert, Megaphone } from 'lucide-react';
+import InputError from '@/components/input-error';
+import { Head, useForm } from '@inertiajs/react';
+import { CircleAlert, LoaderCircle, Megaphone } from 'lucide-react';
 import { useState } from 'react';
 
 // ── Backend data shapes ───────────────────────────────────────────────────────
@@ -62,6 +63,7 @@ interface BackendSubprojectData {
     dataset_id: number;
     dataset_name: string;
     progress: number; // 0.0–1.0 fraction
+    is_instance_shuffled_per_annotator: boolean;
 }
 
 interface BackendAnnotatorData {
@@ -111,9 +113,26 @@ function parseCalendarDate(s: string | null): CalendarDate | null {
     return new CalendarDate(y, m, d);
 }
 
+function formatCalendarDate(d: CalendarDate): string {
+    return `${d.year}-${String(d.month).padStart(2, '0')}-${String(d.day).padStart(2, '0')}`;
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type TabKey = 'overview' | 'annotators' | 'annotations';
+
+interface SubprojectFormData {
+    name: string;
+    priority: SubprojectPriority;
+    is_flexible: boolean;
+    requires_confirmation: boolean | null;
+    minimum_annotations: number | null;
+    scheduled_at: string | null;
+    deadline_at: string | null;
+    from_instance: number;
+    to_instance: number;
+    is_instance_shuffled_per_annotator: boolean;
+}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -170,22 +189,48 @@ export default function EditSubproject({
         })),
     }));
 
-    // ── Form state (pre-populated from subproject) ────────────────────────────
-    const [name, setName] = useState(subproject_data.name);
-    const [fromInstance, setFromInstance] = useState(subproject_data.first_instance_index);
-    const [toInstance, setToInstance] = useState(subproject_data.last_instance_index);
-    const [priority, setPriority] = useState<SubprojectPriority | null>(subproject_data.priority);
+    // ── Form state ───────────────────────────────────────────────────────────
+    const { data, setData, put, processing, errors } = useForm<SubprojectFormData>({
+        name: subproject_data.name,
+        priority: subproject_data.priority,
+        is_flexible: subproject_data.flexible,
+        requires_confirmation: subproject_data.flexible ? !subproject_data.auto_submission : null,
+        minimum_annotations: null,
+        scheduled_at: subproject_data.scheduled_at?.slice(0, 10) ?? null,
+        deadline_at: subproject_data.deadline_at?.slice(0, 10) ?? null,
+        from_instance: subproject_data.first_instance_index,
+        to_instance: subproject_data.last_instance_index,
+        is_instance_shuffled_per_annotator: subproject_data.is_instance_shuffled_per_annotator,
+    });
+
+    // UI-only: DateRangePicker needs CalendarDate objects, not strings
     const [dateRange, setDateRange] = useState<DateRangeValue | null>(() => {
         const start = parseCalendarDate(subproject_data.scheduled_at);
         const end = parseCalendarDate(subproject_data.deadline_at);
         return start && end ? { start, end } : null;
     });
-    const [flexibleBrowsing, setFlexibleBrowsing] = useState(subproject_data.flexible);
-    const [submissionMode, setSubmissionMode] = useState<SubmissionMode>(
-        subproject_data.auto_submission ? 'auto' : 'manual'
-    );
 
-    // ── Annotators tab state ──────────────────────────────────────────────────
+    // Derived from requires_confirmation — drives radio button selection
+    const submissionMode: SubmissionMode = data.requires_confirmation === true ? 'manual' : 'auto';
+
+    function handleDateRangeChange(value: DateRangeValue | null) {
+        setDateRange(value);
+        setData((prev) => ({
+            ...prev,
+            scheduled_at: value?.start ? formatCalendarDate(value.start) : null,
+            deadline_at: value?.end ? formatCalendarDate(value.end) : null,
+        }));
+    }
+
+    function handleFlexibleChange(checked: boolean) {
+        setData((prev) => ({
+            ...prev,
+            is_flexible: checked,
+            requires_confirmation: checked ? prev.requires_confirmation : null,
+        }));
+    }
+
+    // ── Permissions ───────────────────────────────────────────────────────────
     const canManageAnnotators = subproject_data.status === 'pending';
     const canEditSettings = subproject_data.status === 'pending';
 
@@ -207,7 +252,13 @@ export default function EditSubproject({
     const scheduledFor = formatDateRange(dateRange);
 
     function handleSave() {
-        // TODO: submit form via Inertia
+        put(
+            route('projects.subprojects.update', {
+                projectId: subproject_data.project_id,
+                subprojectId: subproject_data.id,
+            }),
+            { preserveScroll: true }
+        );
     }
 
     return (
@@ -219,7 +270,7 @@ export default function EditSubproject({
                 <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap items-center justify-between gap-3">
                         <div className="flex flex-wrap items-center gap-3">
-                            <h1 className="text-3xl font-light text-slate-800">{name}</h1>
+                            <h1 className="text-3xl font-light text-slate-800">{data.name}</h1>
                             <Badge variant={statusVariant}>{statusLabel}</Badge>
                         </div>
                         <Button className="bg-brand-blue-700 hover:bg-brand-blue-800 font-semibold text-white">
@@ -328,273 +379,333 @@ export default function EditSubproject({
                             <Button
                                 className="bg-brand-blue-700 hover:bg-brand-blue-800 text-white"
                                 onClick={handleSave}
-                                disabled={!canEditSettings}
+                                disabled={!canEditSettings || processing}
                             >
+                                {processing && (
+                                    <LoaderCircle
+                                        className="size-4 animate-spin"
+                                        aria-hidden="true"
+                                    />
+                                )}
                                 {t('sub-projects.edit.save_changes')}
                             </Button>
                         </div>
 
                         {/* Two-column card layout */}
-                        <div className="grid grid-cols-2 gap-7">
-                            {/* ── Left card ──────────────────────────────── */}
-                            <div className="flex flex-col gap-8 rounded-2xl border border-slate-200 bg-white px-11 py-5">
-                                {/* Subproject name */}
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="text-lg font-semibold text-slate-800">
-                                        {t('sub-projects.edit.name_label')}
-                                    </h3>
-                                    <Input
-                                        type="text"
-                                        value={name}
-                                        onChange={(e) => setName(e.target.value)}
-                                        aria-label={t('sub-projects.edit.name_label')}
-                                        className="h-10 bg-white px-3"
-                                    />
-                                </div>
+                        <div className={cn(!canEditSettings && 'pointer-events-none opacity-50')}>
+                            <div className="grid grid-cols-2 gap-7">
+                                {/* ── Left card ──────────────────────────────── */}
+                                <div className="flex flex-col gap-8 rounded-2xl border border-slate-200 bg-white px-11 py-5">
+                                    {/* Subproject name */}
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="text-lg font-semibold text-slate-800">
+                                            {t('sub-projects.edit.name_label')}
+                                        </h3>
+                                        <Input
+                                            type="text"
+                                            value={data.name}
+                                            onChange={(e) => setData('name', e.target.value)}
+                                            aria-label={t('sub-projects.edit.name_label')}
+                                            className="h-10 bg-white px-3"
+                                        />
+                                        {errors.name && <InputError message={errors.name} />}
+                                    </div>
 
-                                {/* Dataset */}
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="text-lg font-semibold text-slate-800">
-                                        {t('sub-projects.edit.dataset_label')}
-                                    </h3>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <Tag>{displayDataset.name}</Tag>
-                                        <label className="flex cursor-not-allowed items-center gap-2 opacity-60">
-                                            <Checkbox
-                                                checked
-                                                disabled
-                                                aria-label={t(
-                                                    'sub-projects.select_dataset.shuffle_on'
+                                    {/* Dataset */}
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="text-lg font-semibold text-slate-800">
+                                            {t('sub-projects.edit.dataset_label')}
+                                        </h3>
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <Tag>{displayDataset.name}</Tag>
+                                            <label
+                                                className={cn(
+                                                    'flex items-center gap-2',
+                                                    canEditSettings
+                                                        ? 'cursor-pointer'
+                                                        : 'cursor-not-allowed'
                                                 )}
-                                            />
-                                            <span className="text-sm font-medium text-slate-900">
-                                                {t('sub-projects.select_dataset.shuffle_on')}
-                                            </span>
-                                        </label>
-                                    </div>
-                                    <div className="flex gap-5">
-                                        <div className="flex flex-1 flex-col gap-1.5">
-                                            <label
-                                                htmlFor="edit-from-instance"
-                                                className="px-2.5 text-sm font-semibold text-slate-800"
                                             >
-                                                {t('sub-projects.select_dataset.from_instance')}
+                                                <Checkbox
+                                                    checked={
+                                                        data.is_instance_shuffled_per_annotator
+                                                    }
+                                                    disabled={!canEditSettings}
+                                                    onCheckedChange={(v) =>
+                                                        setData(
+                                                            'is_instance_shuffled_per_annotator',
+                                                            v
+                                                        )
+                                                    }
+                                                    aria-label={t(
+                                                        'sub-projects.select_dataset.shuffle_on'
+                                                    )}
+                                                />
+                                                <span className="text-sm font-medium text-slate-900">
+                                                    {t('sub-projects.select_dataset.shuffle_on')}
+                                                </span>
                                             </label>
-                                            <Input
-                                                id="edit-from-instance"
-                                                type="number"
-                                                inputMode="numeric"
-                                                min={1}
-                                                value={fromInstance}
-                                                onChange={(e) =>
-                                                    setFromInstance(Number(e.target.value))
-                                                }
-                                                className="h-10 bg-white px-2.5"
-                                            />
                                         </div>
-                                        <div className="flex flex-1 flex-col gap-1.5">
-                                            <label
-                                                htmlFor="edit-to-instance"
-                                                className="px-2.5 text-sm font-semibold text-slate-800"
-                                            >
-                                                {t('sub-projects.select_dataset.to_instance')}
-                                            </label>
-                                            <Input
-                                                id="edit-to-instance"
-                                                type="number"
-                                                inputMode="numeric"
-                                                min={fromInstance + 1}
-                                                max={displayDataset.totalInstances}
-                                                value={toInstance}
-                                                onChange={(e) =>
-                                                    setToInstance(Number(e.target.value))
-                                                }
-                                                className="h-10 bg-white px-2.5"
-                                            />
+                                        <div className="flex gap-5">
+                                            <div className="flex flex-1 flex-col gap-1.5">
+                                                <label
+                                                    htmlFor="edit-from-instance"
+                                                    className="px-2.5 text-sm font-semibold text-slate-800"
+                                                >
+                                                    {t('sub-projects.select_dataset.from_instance')}
+                                                </label>
+                                                <Input
+                                                    id="edit-from-instance"
+                                                    type="number"
+                                                    inputMode="numeric"
+                                                    min={1}
+                                                    value={data.from_instance}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'from_instance',
+                                                            Number(e.target.value)
+                                                        )
+                                                    }
+                                                    className="h-10 bg-white px-2.5"
+                                                />
+                                                {errors.from_instance && (
+                                                    <InputError message={errors.from_instance} />
+                                                )}
+                                            </div>
+                                            <div className="flex flex-1 flex-col gap-1.5">
+                                                <label
+                                                    htmlFor="edit-to-instance"
+                                                    className="px-2.5 text-sm font-semibold text-slate-800"
+                                                >
+                                                    {t('sub-projects.select_dataset.to_instance')}
+                                                </label>
+                                                <Input
+                                                    id="edit-to-instance"
+                                                    type="number"
+                                                    inputMode="numeric"
+                                                    min={data.from_instance + 1}
+                                                    max={displayDataset.totalInstances}
+                                                    value={data.to_instance}
+                                                    onChange={(e) =>
+                                                        setData(
+                                                            'to_instance',
+                                                            Number(e.target.value)
+                                                        )
+                                                    }
+                                                    className="h-10 bg-white px-2.5"
+                                                />
+                                                {errors.to_instance && (
+                                                    <InputError message={errors.to_instance} />
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* Date range */}
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="text-lg font-semibold text-slate-800">
-                                        {t('sub-projects.configuration.timeframe_label')}
-                                    </h3>
-                                    <DateRangePickerButton
-                                        value={dateRange}
-                                        onChange={setDateRange}
-                                        placeholder={t(
-                                            'sub-projects.configuration.timeframe_placeholder'
+                                    {/* Date range */}
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="text-lg font-semibold text-slate-800">
+                                            {t('sub-projects.configuration.timeframe_label')}
+                                        </h3>
+                                        <DateRangePickerButton
+                                            value={dateRange}
+                                            onChange={handleDateRangeChange}
+                                            placeholder={t(
+                                                'sub-projects.configuration.timeframe_placeholder'
+                                            )}
+                                            aria-label={t(
+                                                'sub-projects.configuration.timeframe_label'
+                                            )}
+                                        />
+                                        {(errors.scheduled_at || errors.deadline_at) && (
+                                            <InputError
+                                                message={errors.scheduled_at ?? errors.deadline_at}
+                                            />
                                         )}
-                                        aria-label={t('sub-projects.configuration.timeframe_label')}
-                                    />
-                                </div>
+                                    </div>
 
-                                {/* Priority */}
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="text-lg font-semibold text-slate-800">
-                                        {t('sub-projects.configuration.priority_label')}
-                                    </h3>
-                                    <Select
-                                        aria-label={t('sub-projects.configuration.priority_label')}
-                                        value={priority ?? undefined}
-                                        onValueChange={(v) => setPriority(v as SubprojectPriority)}
-                                    >
-                                        <SelectTrigger
+                                    {/* Priority */}
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="text-lg font-semibold text-slate-800">
+                                            {t('sub-projects.configuration.priority_label')}
+                                        </h3>
+                                        <Select
                                             aria-label={t(
                                                 'sub-projects.configuration.priority_label'
                                             )}
-                                            className="h-10 w-full gap-2 border-slate-200 px-3 hover:cursor-pointer [&>span]:!flex [&>span]:!overflow-visible"
+                                            value={data.priority}
+                                            onValueChange={(v) =>
+                                                setData('priority', v as SubprojectPriority)
+                                            }
                                         >
-                                            {priority ? (
-                                                <span className="flex flex-1 items-center gap-2">
-                                                    <PriorityBadge priority={priority} size="sm" />
-                                                    <span className="text-sm font-medium text-slate-800">
-                                                        {t(
-                                                            `sub-projects.configuration.priority_${priority}`
-                                                        )}
-                                                    </span>
-                                                </span>
-                                            ) : (
-                                                <span className="flex flex-1 items-center gap-2">
-                                                    <CircleAlert
-                                                        className="size-4 text-slate-800"
-                                                        aria-hidden="true"
-                                                    />
-                                                    <SelectValue
-                                                        placeholder={t(
-                                                            'sub-projects.configuration.priority_placeholder'
-                                                        )}
-                                                        className="text-sm"
-                                                    />
-                                                </span>
-                                            )}
-                                        </SelectTrigger>
-                                        <SelectContent className="w-72">
-                                            {(
-                                                ['low', 'medium', 'high'] as SubprojectPriority[]
-                                            ).map((p) => (
-                                                <SelectItem
-                                                    key={p}
-                                                    value={p}
-                                                    textValue={t(
-                                                        `sub-projects.configuration.priority_${p}`
-                                                    )}
-                                                    className="py-2.5 pr-8 pl-3 hover:cursor-pointer"
-                                                >
-                                                    <span className="flex items-center gap-3">
-                                                        <PriorityBadge priority={p} />
+                                            <SelectTrigger
+                                                aria-label={t(
+                                                    'sub-projects.configuration.priority_label'
+                                                )}
+                                                className="h-10 w-full gap-2 border-slate-200 px-3 hover:cursor-pointer [&>span]:!flex [&>span]:!overflow-visible"
+                                            >
+                                                {data.priority ? (
+                                                    <span className="flex flex-1 items-center gap-2">
+                                                        <PriorityBadge
+                                                            priority={data.priority}
+                                                            size="sm"
+                                                        />
                                                         <span className="text-sm font-medium text-slate-800">
                                                             {t(
-                                                                `sub-projects.configuration.priority_${p}`
+                                                                `sub-projects.configuration.priority_${data.priority}`
                                                             )}
                                                         </span>
                                                     </span>
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            </div>
-
-                            {/* ── Right card ─────────────────────────────── */}
-                            <div className="flex flex-col gap-8 rounded-2xl border border-slate-200 bg-white px-11 py-5">
-                                {/* Requirements */}
-                                <div className="flex flex-col gap-2">
-                                    <h3 className="text-lg font-semibold text-slate-800">
-                                        {t('sub-projects.configuration.requirements_label')}
-                                    </h3>
-
-                                    <div className="pointer-events-none opacity-50">
-                                        <ToggleSwitch
-                                            id="edit-min-annotations"
-                                            checked={false}
-                                            onChange={() => {}}
-                                            label={t(
-                                                'sub-projects.configuration.min_annotations_label'
-                                            )}
-                                            description={t(
-                                                'sub-projects.configuration.min_annotations_description'
-                                            )}
-                                        />
-                                    </div>
-
-                                    <p className="text-xs text-slate-400 italic">
-                                        {t(
-                                            'sub-projects.configuration.min_annotations_coming_soon'
-                                        )}
-                                    </p>
-                                </div>
-
-                                {/* Browsing and Submission */}
-                                <div className="flex flex-col gap-5">
-                                    <h3 className="text-lg font-semibold text-slate-800">
-                                        {t('sub-projects.configuration.browsing_label')}
-                                    </h3>
-                                    <div
-                                        className={cn(
-                                            !canEditSettings && 'pointer-events-none opacity-50'
-                                        )}
-                                    >
-                                        <ToggleSwitch
-                                            id="edit-flexible-browsing"
-                                            checked={flexibleBrowsing}
-                                            onChange={setFlexibleBrowsing}
-                                            label={t(
-                                                'sub-projects.configuration.flexible_browsing_label'
-                                            )}
-                                            description={t(
-                                                'sub-projects.configuration.flexible_browsing_description'
-                                            )}
-                                        />
-                                        <fieldset
-                                            className={cn(
-                                                'flex flex-col gap-3 transition-opacity',
-                                                !flexibleBrowsing &&
-                                                    'pointer-events-none opacity-50'
-                                            )}
-                                            aria-disabled={!flexibleBrowsing}
-                                            disabled={!flexibleBrowsing}
-                                        >
-                                            <legend className="sr-only">
-                                                {t('sub-projects.configuration.browsing_label')}
-                                            </legend>
-                                            {(['auto', 'manual'] as SubmissionMode[]).map(
-                                                (mode) => (
-                                                    <label
-                                                        key={mode}
-                                                        className={cn(
-                                                            'flex cursor-pointer items-start gap-3 rounded-xl border p-5 transition-colors',
-                                                            submissionMode === mode
-                                                                ? 'border-brand-blue-700 bg-brand-blue-50'
-                                                                : 'border-brand-blue-200 hover:bg-brand-blue-50/50 bg-white'
-                                                        )}
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            name="edit-submission-mode"
-                                                            value={mode}
-                                                            checked={submissionMode === mode}
-                                                            onChange={() => setSubmissionMode(mode)}
-                                                            disabled={!flexibleBrowsing}
-                                                            className="accent-brand-blue-700 mt-0.5 size-4 shrink-0"
+                                                ) : (
+                                                    <span className="flex flex-1 items-center gap-2">
+                                                        <CircleAlert
+                                                            className="size-4 text-slate-800"
+                                                            aria-hidden="true"
                                                         />
-                                                        <span className="flex flex-col gap-1">
+                                                        <SelectValue
+                                                            placeholder={t(
+                                                                'sub-projects.configuration.priority_placeholder'
+                                                            )}
+                                                            className="text-sm"
+                                                        />
+                                                    </span>
+                                                )}
+                                            </SelectTrigger>
+                                            <SelectContent className="w-72">
+                                                {(
+                                                    [
+                                                        'low',
+                                                        'medium',
+                                                        'high',
+                                                    ] as SubprojectPriority[]
+                                                ).map((p) => (
+                                                    <SelectItem
+                                                        key={p}
+                                                        value={p}
+                                                        textValue={t(
+                                                            `sub-projects.configuration.priority_${p}`
+                                                        )}
+                                                        className="py-2.5 pr-8 pl-3 hover:cursor-pointer"
+                                                    >
+                                                        <span className="flex items-center gap-3">
+                                                            <PriorityBadge priority={p} />
                                                             <span className="text-sm font-medium text-slate-800">
                                                                 {t(
-                                                                    `sub-projects.configuration.submission_${mode}`
-                                                                )}
-                                                            </span>
-                                                            <span className="text-sm text-slate-500">
-                                                                {t(
-                                                                    `sub-projects.configuration.submission_${mode}_description`
+                                                                    `sub-projects.configuration.priority_${p}`
                                                                 )}
                                                             </span>
                                                         </span>
-                                                    </label>
-                                                )
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                {/* ── Right card ─────────────────────────────── */}
+                                <div className="flex flex-col gap-8 rounded-2xl border border-slate-200 bg-white px-11 py-5">
+                                    {/* Requirements */}
+                                    <div className="flex flex-col gap-2">
+                                        <h3 className="text-lg font-semibold text-slate-800">
+                                            {t('sub-projects.configuration.requirements_label')}
+                                        </h3>
+
+                                        <div
+                                            className={cn(
+                                                'pointer-events-none',
+                                                canEditSettings && 'opacity-50'
                                             )}
-                                        </fieldset>
+                                        >
+                                            <ToggleSwitch
+                                                id="edit-min-annotations"
+                                                checked={false}
+                                                onChange={() => {}}
+                                                label={t(
+                                                    'sub-projects.configuration.min_annotations_label'
+                                                )}
+                                                description={t(
+                                                    'sub-projects.configuration.min_annotations_description'
+                                                )}
+                                            />
+                                        </div>
+
+                                        <p className="text-xs text-slate-400 italic">
+                                            {t(
+                                                'sub-projects.configuration.min_annotations_coming_soon'
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    {/* Browsing and Submission */}
+                                    <div className="flex flex-col gap-5">
+                                        <h3 className="text-lg font-semibold text-slate-800">
+                                            {t('sub-projects.configuration.browsing_label')}
+                                        </h3>
+                                        <div>
+                                            <ToggleSwitch
+                                                id="edit-flexible-browsing"
+                                                checked={data.is_flexible}
+                                                onChange={handleFlexibleChange}
+                                                label={t(
+                                                    'sub-projects.configuration.flexible_browsing_label'
+                                                )}
+                                                description={t(
+                                                    'sub-projects.configuration.flexible_browsing_description'
+                                                )}
+                                            />
+                                            <fieldset
+                                                className={cn(
+                                                    'flex flex-col gap-3 transition-opacity',
+                                                    !data.is_flexible &&
+                                                        'pointer-events-none opacity-50'
+                                                )}
+                                                aria-disabled={!data.is_flexible}
+                                                disabled={!data.is_flexible}
+                                            >
+                                                <legend className="sr-only">
+                                                    {t('sub-projects.configuration.browsing_label')}
+                                                </legend>
+                                                {(['auto', 'manual'] as SubmissionMode[]).map(
+                                                    (mode) => (
+                                                        <label
+                                                            key={mode}
+                                                            className={cn(
+                                                                'flex cursor-pointer items-start gap-3 rounded-xl border p-5 transition-colors',
+                                                                submissionMode === mode
+                                                                    ? 'border-brand-blue-700 bg-brand-blue-50'
+                                                                    : 'border-brand-blue-200 hover:bg-brand-blue-50/50 bg-white'
+                                                            )}
+                                                        >
+                                                            <input
+                                                                type="radio"
+                                                                name="edit-submission-mode"
+                                                                value={mode}
+                                                                checked={submissionMode === mode}
+                                                                onChange={() =>
+                                                                    setData(
+                                                                        'requires_confirmation',
+                                                                        mode === 'manual'
+                                                                    )
+                                                                }
+                                                                disabled={!data.is_flexible}
+                                                                className="accent-brand-blue-700 mt-0.5 size-4 shrink-0"
+                                                            />
+                                                            <span className="flex flex-col gap-1">
+                                                                <span className="text-sm font-medium text-slate-800">
+                                                                    {t(
+                                                                        `sub-projects.configuration.submission_${mode}`
+                                                                    )}
+                                                                </span>
+                                                                <span className="text-sm text-slate-500">
+                                                                    {t(
+                                                                        `sub-projects.configuration.submission_${mode}_description`
+                                                                    )}
+                                                                </span>
+                                                            </span>
+                                                        </label>
+                                                    )
+                                                )}
+                                            </fieldset>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
