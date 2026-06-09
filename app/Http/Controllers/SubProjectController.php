@@ -85,16 +85,7 @@ class SubProjectController extends Controller {
     public function showAddAnnotators(int $projectId, int $subprojectId): Response {
         $this->authorize('viewAny', Project::class);
 
-        $project = Project::query()->findOrFail($projectId);
-        $subproject = SubProject::query()->findOrFail($subprojectId);
-
-        $data = [
-            'project_id' => $project->id,
-            'project_name' => $project->name,
-            'subproject_id' => $subproject->id,
-            'subproject_name' => $subproject->name,
-            ...$this->subProjectReadService->getDataForAddAnnotators($projectId, $subprojectId),
-        ];
+        $data = $this->subProjectReadService->getDataForAddAnnotators($projectId, $subprojectId);
 
         $this->dumpDebugJson($data, 'subproject-add-annotators-data.json');
 
@@ -128,10 +119,6 @@ class SubProjectController extends Controller {
 
         $this->dumpDebugJson($data, 'subproject-edit-data.json');
 
-        return Inertia::render('sub-projects/edit', [
-            ...$data,
-            // TODO move project_name to getDataForEditSubProject call
-            'project_name' => Project::query()->select('id', 'name')->findOrFail($projectId)->name,
-        ]);
+        return Inertia::render('sub-projects/edit', $data);
     }
 }

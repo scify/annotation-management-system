@@ -107,13 +107,7 @@ class ProjectController extends Controller {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $project = Project::query()->findOrFail($id);
-
-        $data = [
-            'project_id' => $project->id,
-            'project_name' => $project->name,
-            ...$this->projectReadService->getDataForAddAnnotators($id, $user),
-        ];
+        $data = $this->projectReadService->getDataForAddAnnotators($id, $user);
 
         $this->dumpDebugJson($data, 'project-add-annotators-data.json');
 
