@@ -318,7 +318,9 @@ class DummyProjectSeeder extends Seeder {
 
                     $rows = [];
                     $isFirst = true;
-                    $cutoff = random_int(0, $instanceCount);
+                    $cutoff = $subProject->status === ProjectStatusEnum::IN_PROGRESS
+                        ? random_int(0, $instanceCount)
+                        : 0;
 
                     foreach ($orderedProjectPositions as $annotatorPos => $projectPos) {
                         $annotatorIndex = $annotatorPos + 1;
