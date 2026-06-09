@@ -15,8 +15,10 @@ use App\Models\ProjectManager;
 use App\Models\TaskTag;
 use App\Models\User;
 use App\Queries\Annotator\GetAnnotatorIdsByProjectsQuery;
+use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\Manager\GetCoManagersQuery;
 use App\Queries\Project\GetAnnotationTasksQuery;
+use App\Queries\Project\GetProjectBasicDataQuery;
 use App\Queries\Project\GetProjectIdsManagedByUserQuery;
 use App\Queries\Project\GetProjectsByIdsQuery;
 use App\Queries\Project\GetProjectsManagedByUserQuery;
@@ -34,6 +36,8 @@ readonly class ProjectReadService {
         private GetCoManagersQuery $coManagersQuery,
         private GetAnnotationTasksQuery $getAnnotationTasksQuery,
         private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
+        private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
+        private GetProjectBasicDataQuery $projectBasicDataQuery,
         private GetProjectIdsManagedByUserQuery $projectIdsByManagerQuery,
         private GetProjectsByIdsQuery $projectsByIdsQuery,
         private GetProjectsQuery $projectsQuery,
@@ -125,9 +129,10 @@ readonly class ProjectReadService {
      * @return array<string, mixed>
      */
     public function getDataForAddAnnotators(int $projectId, User $user): array {
+        $projectData = $this->projectBasicDataQuery->get($projectId);
+
         /** @var array<int, int> $existingAnnotatorIds */
-        $existingAnnotatorIds = AnnotatorOfProject::query()
-            ->where('project_id', $projectId)
+        $existingAnnotatorIds = $this->annotatorProjectLinksQuery->getAll($projectId)
             ->pluck('user_id')
             ->all();
 
@@ -151,6 +156,8 @@ readonly class ProjectReadService {
             ));
 
             return [
+                'project_id' => $projectData['project_id'],
+                'project_name' => $projectData['name'],
                 'all_annotators' => $allAnnotators,
                 'my_annotators' => $myAnnotators,
             ];
@@ -162,6 +169,8 @@ readonly class ProjectReadService {
         ));
 
         return [
+            'project_id' => $projectData['project_id'],
+            'project_name' => $projectData['name'],
             'my_annotators' => $this->annotatorService->getProjectAnnotatorsData($myIds, $activeSubProjectIds, $progressBySubProject),
         ];
     }

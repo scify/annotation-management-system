@@ -14,6 +14,7 @@ use App\Queries\Annotator\GetCountsOfFlagsQuery;
 use App\Queries\Project\GetProjectBasicDataQuery;
 use App\Queries\Project\GetSubProjectIdsQuery;
 use App\Queries\Project\GetSubsetInfoByProjectQuery;
+use App\Queries\SubProject\GetAnnotatorIdsBySubProjectQuery;
 use App\Services\Annotation\AnnotationService;
 use App\Services\Annotation\AnnotatorService;
 use Illuminate\Support\Collection;
@@ -28,6 +29,7 @@ readonly class SubProjectReadService {
         private GetProjectBasicDataQuery $projectBasicDataQuery,
         private GetSubProjectIdsQuery $subProjectIdsQuery,
         private GetSubsetInfoByProjectQuery $subsetInfoQuery,
+        private GetAnnotatorIdsBySubProjectQuery $annotatorIdsBySubProjectQuery,
     ) {}
 
     /**
@@ -51,6 +53,7 @@ readonly class SubProjectReadService {
             ->findOrFail($subprojectId);
 
         return [
+            'project_name' => $subProject->project->name,
             'subproject_data' => $this->buildSubProjectData($subProject),
             'annotators_data' => $this->buildAnnotatorsData($subProject),
             'annotations_data' => $this->buildAnnotationsData($subProject),
@@ -61,17 +64,19 @@ readonly class SubProjectReadService {
      * @return array<string, mixed>
      */
     public function getDataForAddAnnotators(int $projectId, int $subprojectId): array {
+        $subProject = SubProject::query()
+            ->select(['id', 'project_id', 'name'])
+            ->with('project:id,name')
+            ->where('project_id', $projectId)
+            ->findOrFail($subprojectId);
+
         /** @var array<int, int> $projectAnnotatorIds */
         $projectAnnotatorIds = $this->annotatorProjectLinksQuery->getAll($projectId)
             ->pluck('user_id')
             ->all();
 
         /** @var array<int, true> $subProjectAnnotatorIds */
-        $subProjectAnnotatorIds = AnnotationAssignment::query()
-            ->where('sub_project_id', $subprojectId)
-            ->pluck('user_id')
-            ->flip()
-            ->all();
+        $subProjectAnnotatorIds = array_flip($this->annotatorIdsBySubProjectQuery->get($subprojectId));
 
         $availableIds = array_values(array_filter(
             $projectAnnotatorIds,
@@ -86,6 +91,10 @@ readonly class SubProjectReadService {
         $activeSubProjectIds = collect($allSubProjectIds);
 
         return [
+            'project_id' => $subProject->project_id,
+            'project_name' => $subProject->project->name,
+            'subproject_id' => $subProject->id,
+            'subproject_name' => $subProject->name,
             'annotators_data' => $this->annotatorService->getProjectAnnotatorsData(
                 $availableIds, $activeSubProjectIds, $progressBySubProject
             ),
@@ -117,6 +126,7 @@ readonly class SubProjectReadService {
             'dataset_id' => $subProject->project->dataset->id,
             'dataset_name' => $subProject->project->dataset->name,
             'progress' => $spProgress,
+            'is_instance_shuffled_per_annotator' => $this->annotatorIdsBySubProjectQuery->isInstanceShuffled($subProject->id),
         ];
     }
 
