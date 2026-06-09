@@ -1,4 +1,5 @@
 import { type SubProjectListItemData } from '@/components/sub-project/sub-project-list-item';
+import { type SubprojectPriority } from '@/components/sub-project/configuration-step';
 import { Tag } from '@/components/ui/tag';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
@@ -28,6 +29,7 @@ interface BackendSubprojectData {
     id: number;
     name: string;
     status: 'in_progress' | 'pending' | 'completed';
+    priority?: SubprojectPriority;
     scheduled_at: string | null;
     deadline_at: string | null;
     started_at: string | null;
@@ -92,6 +94,7 @@ export default function ProjectShow({
         status: STATUS_VARIANT[sp.status],
         statusLabel: t(`projects.status.${sp.status}`),
         subprojectStatus: sp.status,
+        priority: sp.priority,
         progress: Math.round(sp.progress * 100),
         annotators: sp.annotators_count,
         notifications: sp.notification_count,

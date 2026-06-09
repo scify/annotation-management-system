@@ -1,4 +1,8 @@
 import { type StatusVariant } from '@/components/project/project-card';
+import {
+    PriorityBadge,
+    type SubprojectPriority,
+} from '@/components/sub-project/configuration-step';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +25,7 @@ export interface SubProjectListItemData {
     status: StatusVariant;
     statusLabel: string;
     subprojectStatus: 'in_progress' | 'pending' | 'completed';
+    priority?: SubprojectPriority;
     progress: number;
     annotators: number;
     notifications: number;
@@ -70,6 +75,9 @@ export function SubProjectListItem({
                 </div>
 
                 <div className="flex shrink-0 items-center gap-3 pl-14">
+                    {subProject.priority && (
+                        <PriorityBadge priority={subProject.priority} size="sm" />
+                    )}
                     <Badge variant={subProject.status}>{subProject.statusLabel}</Badge>
 
                     {showActions && (
