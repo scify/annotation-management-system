@@ -17,5 +17,6 @@ return [
         'projects.toggle-can-flag', 'settings.annotator-password-policy.update',
         'projects.annotators.add', 'projects.annotators.attach',
         'projects.subprojects.annotators.add', 'projects.subprojects.annotators.attach',
+        'projects.annotators.detach', 'projects.subprojects.annotators.detach',
     ],
 ];

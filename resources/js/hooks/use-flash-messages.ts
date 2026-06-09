@@ -1,5 +1,5 @@
 import { type SharedData } from '@/types';
-import { usePage } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
@@ -13,17 +13,35 @@ function showFlashToasts(flash: SharedData['flash'], errors?: Record<string, str
         .forEach((msg) => toast.error(msg));
 }
 
+// Set by the success listener before the incoming component mounts on
+// cross-page navigation, preventing the mount effect from showing a duplicate.
+let successToastShown = false;
+
 export function useFlashMessages() {
     const { flash, errors } = usePage<SharedData>().props;
 
-    // Capture values in refs so the mount-only effect below has no reactive deps.
-    // AppLayout uses a per-page layout pattern (each page renders its own AppLayout
-    // instance), so this component remounts on every Inertia navigation — the
-    // mount effect fires once per page and covers both initial load and navigations.
+    // Capture values in refs so the mount-only effect has no reactive deps.
     const mountFlashRef = useRef(flash);
     const mountErrorsRef = useRef(errors);
 
+    // Handles the initial page load — no success event precedes the first mount.
     useEffect(() => {
-        showFlashToasts(mountFlashRef.current, mountErrorsRef.current);
+        if (!successToastShown) {
+            showFlashToasts(mountFlashRef.current, mountErrorsRef.current);
+        }
+        successToastShown = false;
+    }, []);
+
+    // Handles every navigation — same-page and cross-page alike.
+    // 'success' fires on every completed Inertia request, including same-component
+    // revisits where 'navigate' would not fire. The module-level flag above
+    // prevents a duplicate toast on cross-page navigation where both this handler
+    // (old component) and the mount effect (new component) would otherwise run.
+    useEffect(() => {
+        return router.on('success', (event) => {
+            successToastShown = true;
+            const { flash: f, errors: e } = event.detail.page.props as unknown as SharedData;
+            showFlashToasts(f, e ?? {});
+        });
     }, []);
 }

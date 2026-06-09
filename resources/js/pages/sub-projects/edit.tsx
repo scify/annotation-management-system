@@ -186,9 +186,6 @@ export default function EditSubproject({
     );
 
     // ── Annotators tab state ──────────────────────────────────────────────────
-    const initialAnnotatorIds = new Set(displayAnnotators.map((a) => a.id));
-    const [selectedAnnotatorIds, setSelectedAnnotatorIds] =
-        useState<Set<number>>(initialAnnotatorIds);
     const canManageAnnotators = subproject_data.status === 'pending';
     const canEditSettings = subproject_data.status === 'pending';
 
@@ -211,18 +208,6 @@ export default function EditSubproject({
 
     function handleSave() {
         // TODO: submit form via Inertia
-    }
-
-    function handleSelectionChange(id: number, checked: boolean) {
-        setSelectedAnnotatorIds((prev) => {
-            const next = new Set(prev);
-            if (checked) {
-                next.add(id);
-            } else {
-                next.delete(id);
-            }
-            return next;
-        });
     }
 
     return (
@@ -625,10 +610,7 @@ export default function EditSubproject({
                         aria-labelledby="tab-annotators"
                     >
                         <SubprojectAnnotatorsPanel
-                            annotators={displayAnnotators.filter((a) =>
-                                selectedAnnotatorIds.has(a.id)
-                            )}
-                            onAnnotatorRemoved={(id) => handleSelectionChange(id, false)}
+                            annotators={displayAnnotators}
                             canManageAnnotators={canManageAnnotators}
                             projectId={subproject_data.project_id}
                             subprojectId={subproject_data.id}

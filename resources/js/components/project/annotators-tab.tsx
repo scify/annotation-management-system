@@ -7,47 +7,13 @@ import { router } from '@inertiajs/react';
 import { Plus, UserMinus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
-    {
-        id: 1,
-        name: 'George Giannakopoulos',
-        active_projects_count: 23,
-        active_subprojects_count: 23,
-        workload: 0.85,
-        annotator_progress: 0.75,
-    },
-    {
-        id: 2,
-        name: 'Fotini Papastergiou',
-        active_projects_count: 23,
-        active_subprojects_count: 2,
-        workload: 0.2,
-        annotator_progress: 0.75,
-    },
-    {
-        id: 3,
-        name: 'Nelly Savrani',
-        active_projects_count: 23,
-        active_subprojects_count: 7,
-        workload: 0.92,
-        annotator_progress: 0.75,
-    },
-];
-
 interface AnnotatorsTabProps {
     annotators?: ProjectAnnotatorRowData[];
     projectId: number;
     projectStatus: 'pending' | 'in_progress' | 'completed';
-    /** Called after an annotator is successfully removed */
-    onAnnotatorRemoved?: (id: number) => void;
 }
 
-export function AnnotatorsTab({
-    annotators = MOCK_ANNOTATORS,
-    projectId,
-    projectStatus,
-    onAnnotatorRemoved,
-}: AnnotatorsTabProps) {
+export function AnnotatorsTab({ annotators = [], projectId, projectStatus }: AnnotatorsTabProps) {
     const { t, trans } = useTranslations();
     const canEdit = projectStatus === 'pending';
 
@@ -57,7 +23,7 @@ export function AnnotatorsTab({
     const [annotatorToRemove, setAnnotatorToRemove] = useState<ProjectAnnotatorRowData | null>(
         null
     );
-    const [removedIds, setRemovedIds] = useState<Set<number>>(new Set());
+    const [removing, setRemoving] = useState(false);
 
     useEffect(() => {
         setFlaggingState(
@@ -83,11 +49,14 @@ export function AnnotatorsTab({
     }
 
     function handleConfirmRemove() {
-        if (annotatorToRemove) {
-            setRemovedIds((prev) => new Set([...prev, annotatorToRemove.id]));
-            onAnnotatorRemoved?.(annotatorToRemove.id);
-            setAnnotatorToRemove(null);
-        }
+        if (!annotatorToRemove) return;
+        setRemoving(true);
+        router.delete(route('projects.annotators.detach', [projectId, annotatorToRemove.id]), {
+            onFinish: () => {
+                setRemoving(false);
+                setAnnotatorToRemove(null);
+            },
+        });
     }
 
     const annotatorsWithFlagging = annotators.map((a) => ({
@@ -95,7 +64,7 @@ export function AnnotatorsTab({
         allow_flagging: flaggingState[a.id] ?? a.allow_flagging ?? false,
     }));
 
-    const visibleAnnotators = annotatorsWithFlagging.filter((a) => !removedIds.has(a.id));
+    const visibleAnnotators = annotatorsWithFlagging;
 
     return (
         <div
@@ -132,6 +101,7 @@ export function AnnotatorsTab({
                 })}
                 cancelLabel={t('projects.create.cancel')}
                 actionLabel={t('projects.annotators_tab.remove_confirm')}
+                loading={removing}
                 onAction={handleConfirmRemove}
             />
         </div>

@@ -20,6 +20,7 @@ use App\Services\Project\ProjectWriteService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -93,6 +94,10 @@ class ProjectController extends Controller {
 
     public function detachAnnotator(DetachAnnotatorFromProjectRequest $request, int $id): RedirectResponse {
         try {
+            Log::info('Detaching annotator from project', [
+                'project_id' => $id,
+                'annotator_id' => $request->integer('annotator_id'),
+            ]);
             $this->projectService->detachAnnotator($id, $request->integer('annotator_id'));
         } catch (PresentableError $presentableError) {
             return to_route('projects.show', $id)->with('error', $presentableError->getUserMessage());
@@ -115,7 +120,7 @@ class ProjectController extends Controller {
             ...$this->projectReadService->getDataForAddAnnotators($id, $user),
         ];
 
-        $this->dumpDebugJson($data, 'project-add-annotators-data.json');
+        $this->dumpDebugJson($data, 'project-add-annotators-data-' . $user->role . '.json');
 
         return Inertia::render('projects/add-annotators', $data);
     }
@@ -161,7 +166,7 @@ class ProjectController extends Controller {
 
         $data = $this->projectReadService->getDataForShowProject($id);
 
-        $this->dumpDebugJson($data, 'project-show-data.json');
+        $this->dumpDebugJson($data, 'project-show-data-' . Auth::user()->role . '.json');
 
         return Inertia::render('projects/show', $data);
     }

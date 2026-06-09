@@ -1,65 +1,41 @@
-import { SelectAnnotatorsStep } from '@/components/annotator/select-annotators-step';
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
+import { SelectAnnotatorsStep } from '@/components/annotator/select-annotators-step';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
+import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 
-const MOCK_ANNOTATORS: ProjectAnnotatorRowData[] = [
-    {
-        id: 10,
-        name: 'Alexis Papadopoulos',
-        active_projects_count: 3,
-        active_subprojects_count: 5,
-        workload: 0.3,
-        annotator_progress: 0.6,
-        status: 'active',
-    },
-    {
-        id: 11,
-        name: 'Maria Stavridou',
-        active_projects_count: 8,
-        active_subprojects_count: 12,
-        workload: 0.85,
-        annotator_progress: 0.5,
-        status: 'active',
-    },
-    {
-        id: 12,
-        name: 'Kostis Nikolaou',
-        active_projects_count: 1,
-        active_subprojects_count: 2,
-        workload: 0.1,
-        annotator_progress: 0.2,
-        status: 'pending',
-    },
-    {
-        id: 13,
-        name: 'Elena Tzimopoulou',
-        active_projects_count: 5,
-        active_subprojects_count: 9,
-        workload: 0.65,
-        annotator_progress: 0.8,
-        status: 'active',
-    },
-    {
-        id: 14,
-        name: 'Panagiotis Dimos',
-        active_projects_count: 12,
-        active_subprojects_count: 20,
-        workload: 0.92,
-        annotator_progress: 0.45,
-        status: 'active',
-    },
-];
+interface BackendAnnotatorData {
+    id: number;
+    username: string;
+    status: string;
+    active_projects_count: number;
+    active_subprojects_count: number;
+    annotator_progress: number;
+    workload: number;
+}
 
 interface Props {
     project_id: number;
     project_name: string;
     subproject_id: number;
     subproject_name: string;
+    annotators_data: BackendAnnotatorData[];
+}
+
+function toRowData(a: BackendAnnotatorData): ProjectAnnotatorRowData {
+    return {
+        id: a.id,
+        name: a.username,
+        status: a.status as ProjectAnnotatorRowData['status'],
+        annotator_progress: a.annotator_progress,
+        active_projects_count: a.active_projects_count,
+        active_subprojects_count: a.active_subprojects_count,
+        workload: a.workload,
+    };
 }
 
 export default function AddAnnotatorsToSubproject({
@@ -67,10 +43,13 @@ export default function AddAnnotatorsToSubproject({
     project_name,
     subproject_id,
     subproject_name,
+    annotators_data,
 }: Props) {
     const { t, trans } = useTranslations();
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [processing, setProcessing] = useState(false);
+
+    const annotators = annotators_data.map(toRowData);
 
     function handleSelectionChange(id: number, checked: boolean) {
         setSelectedIds((prev) => {
@@ -146,13 +125,14 @@ export default function AddAnnotatorsToSubproject({
                             isDisabled={selectedIds.size === 0 || processing}
                             onPress={handleAdd}
                         >
+                            {processing && <Loader2 className="animate-spin" />}
                             {t('projects.add_annotators.add_selected')}
                         </Button>
                     </div>
                 </div>
 
                 <SelectAnnotatorsStep
-                    annotators={MOCK_ANNOTATORS}
+                    annotators={annotators}
                     selectedIds={selectedIds}
                     onSelectionChange={handleSelectionChange}
                     onSelectAllChange={handleSelectAllChange}

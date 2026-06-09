@@ -9,7 +9,6 @@ import { useState } from 'react';
 
 interface SubprojectAnnotatorsPanelProps {
     annotators: ProjectAnnotatorRowData[];
-    onAnnotatorRemoved: (id: number) => void;
     canManageAnnotators?: boolean;
     projectId: number;
     subprojectId: number;
@@ -17,7 +16,6 @@ interface SubprojectAnnotatorsPanelProps {
 
 export function SubprojectAnnotatorsPanel({
     annotators,
-    onAnnotatorRemoved,
     canManageAnnotators = true,
     projectId,
     subprojectId,
@@ -26,6 +24,7 @@ export function SubprojectAnnotatorsPanel({
     const [annotatorToRemove, setAnnotatorToRemove] = useState<ProjectAnnotatorRowData | null>(
         null
     );
+    const [removing, setRemoving] = useState(false);
     const [flaggingState, setFlaggingState] = useState<Record<number, boolean>>(() =>
         Object.fromEntries(annotators.map((a) => [a.id, a.allow_flagging ?? false]))
     );
@@ -36,10 +35,21 @@ export function SubprojectAnnotatorsPanel({
     }
 
     function handleConfirmRemove() {
-        if (annotatorToRemove) {
-            onAnnotatorRemoved(annotatorToRemove.id);
-            setAnnotatorToRemove(null);
-        }
+        if (!annotatorToRemove) return;
+        setRemoving(true);
+        router.delete(
+            route('projects.subprojects.annotators.detach', [
+                projectId,
+                subprojectId,
+                annotatorToRemove.id,
+            ]),
+            {
+                onFinish: () => {
+                    setRemoving(false);
+                    setAnnotatorToRemove(null);
+                },
+            }
+        );
     }
 
     function handleAllowFlaggingChange(id: number, enabled: boolean) {
@@ -91,6 +101,7 @@ export function SubprojectAnnotatorsPanel({
                 })}
                 cancelLabel={t('sub-projects.create.cancel')}
                 actionLabel={t('sub-projects.annotators_panel.remove_confirm')}
+                loading={removing}
                 onAction={handleConfirmRemove}
             />
         </div>
