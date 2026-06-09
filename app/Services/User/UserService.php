@@ -121,11 +121,12 @@ readonly class UserService {
 
     /**
      * @param  array<int, int>  $userIds
+     * @param  array<int, int>|null  $subProjectIds  When provided, restrict to these subprojects only
      *
      * @return array<int, array{total_workload: int, workload_per_subproject: array<int, int>}>
      */
-    public function getWorkloads(array $userIds): array {
-        return $this->getUserWorkloadsQuery->get($userIds);
+    public function getWorkloads(array $userIds, ?array $subProjectIds = null): array {
+        return $this->getUserWorkloadsQuery->get($userIds, $subProjectIds);
     }
 
     public function handleFirstLogin(User $user): void {

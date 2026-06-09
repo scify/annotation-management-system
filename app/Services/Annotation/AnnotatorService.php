@@ -74,7 +74,7 @@ readonly class AnnotatorService {
 
         $this->augmentAnnotatorsWithActiveProjects($annotators, $activeSubProjectIds);
         $this->augmentAnnotatorsWithProgress($annotators, $progressBySubProject);
-        $this->augmentAnnotatorsWithWorkload($annotators);
+        $this->augmentAnnotatorsWithWorkload($annotators, $activeSubProjectIds);
 
         return $annotators;
     }
@@ -114,7 +114,7 @@ readonly class AnnotatorService {
     private function augmentAnnotatorData(array &$annotators, array $progressBySubProject, ?Collection $activeSubProjectIds = null): void {
         $this->augmentAnnotatorsWithProgress($annotators, $progressBySubProject);
         $this->augmentAnnotatorsWithActiveProjects($annotators, $activeSubProjectIds ?? collect());
-        $this->augmentAnnotatorsWithWorkload($annotators);
+        $this->augmentAnnotatorsWithWorkload($annotators, $activeSubProjectIds);
     }
 
     /**
@@ -161,15 +161,19 @@ readonly class AnnotatorService {
 
     /**
      * @param  array<int, array<string, mixed>>  $annotators
+     * @param  Collection<int, int>|null  $scopedSubProjectIds  When provided, restrict workload to these subprojects
      */
-    private function augmentAnnotatorsWithWorkload(array &$annotators): void {
+    private function augmentAnnotatorsWithWorkload(array &$annotators, ?Collection $scopedSubProjectIds = null): void {
         if ($annotators === []) {
             return;
         }
 
         /** @var array<int, int> $annotatorIds */
         $annotatorIds = array_column($annotators, 'id');
-        $workloads = $this->workloadService->computeNormalizedWorkloads($annotatorIds);
+        $workloads = $this->workloadService->computeNormalizedWorkloads(
+            $annotatorIds,
+            $scopedSubProjectIds instanceof Collection ? $scopedSubProjectIds->all() : null,
+        );
 
         foreach ($annotators as &$annotator) {
             /** @var int $annotatorId */

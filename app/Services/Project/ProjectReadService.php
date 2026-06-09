@@ -102,11 +102,14 @@ readonly class ProjectReadService {
             ->all();
 
         $annotatorsData = array_map(
-            fn (array $annotator): array => [
-                ...$annotator,
-                'can_flag' => ! is_int($annotator['id']) || (($canFlagByAnnotatorId[$annotator['id']] ?? true)),
-                'can_be_removed' => is_int($annotator['id']) && ! isset($blockedAnnotatorIds[$annotator['id']]),
-            ],
+            function (array $annotator) use ($canFlagByAnnotatorId, $blockedAnnotatorIds): array {
+                $annotator['can_flag'] = ! is_int($annotator['id']) || (($canFlagByAnnotatorId[$annotator['id']] ?? true));
+                $annotator['can_be_removed'] = is_int($annotator['id']) && ! isset($blockedAnnotatorIds[$annotator['id']]);
+                $annotator['active_subprojects_of_project_count'] = $annotator['active_subprojects_count'];
+                unset($annotator['active_subprojects_count'], $annotator['active_projects_count']);
+
+                return $annotator;
+            },
             $annotatorsData,
         );
 

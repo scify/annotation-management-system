@@ -165,14 +165,16 @@ describe('WorkloadService::computeNormalizedWorkloads', function (): void {
 
     // --- workload ordering ---
 
-    it('all totals are 0.5 when every annotator has identical remaining work', function (): void {
-        // No annotations created → all annotators have the same raw effort → range = 0 → 0.5.
+    it('all totals are 0.9 when every annotator has identical positive remaining work', function (): void {
+        // No annotations created → all annotators have the same positive raw effort.
+        // With hybrid normalization the floor sentinel (0) forces range > 0, so all
+        // identically-loaded annotators end up at the maximum and normalize to 0.9.
         $ids = $this->annotators->pluck('id')->all();
 
         $result = $this->service->computeNormalizedWorkloads($ids);
 
         foreach ($result as $entry) {
-            expect($entry['total'])->toBe(0.5);
+            expect($entry['total'])->toBe(0.9);
         }
     });
 
@@ -214,6 +216,107 @@ describe('WorkloadService::computeNormalizedWorkloads', function (): void {
         $result = $this->service->computeNormalizedWorkloads([$fullyDone->id, $noWorkDone->id]);
 
         expect($result[$fullyDone->id]['total'])
+            ->toBeLessThan($result[$noWorkDone->id]['total']);
+    });
+
+    it('does not count unannotated rows (annotations=null) as completed work', function (): void {
+        // Arrange: insert rows where annotations=null and pending=false — the buggy
+        // filter (where pending=false) matched these and inflated workDone.
+        $annotator = $this->annotators->first();
+        $noRows = $this->annotators->last();
+        $sp = $this->allSubProjects->first();
+        $assignment = AnnotationAssignment::query()
+            ->where('user_id', $annotator->id)
+            ->where('sub_project_id', $sp->id)
+            ->first();
+
+        $instanceIds = DB::table('dataset_instances')->limit(20)->pluck('id')->all();
+        $now = now()->toDateTimeString();
+
+        $rows = [];
+        for ($i = 0; $i < 20; $i++) {
+            $rows[] = [
+                'annotation_assignment_id' => $assignment->id,
+                'dataset_instance_id' => $instanceIds[$i],
+                'project_instance_index' => $i + 1,
+                'annotator_instance_index' => $i + 1,
+                'annotations' => null,
+                'pending' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        DB::table('annotations')->insert($rows);
+
+        // Act
+        $result = $this->service->computeNormalizedWorkloads([$annotator->id, $noRows->id]);
+
+        // Assert: all-null rows == no rows; neither has done any real work
+        expect($result[$annotator->id]['total'])->toBe($result[$noRows->id]['total']);
+    });
+
+    it('counts a pending annotation as half a unit of work done', function (): void {
+        $fullyPending = $this->annotators->first();
+        $fullyDone = $this->annotators->get(1);
+        $noWorkDone = $this->annotators->last();
+
+        // Isolate to one subproject so the math is clean and SP effort differences
+        // from the other 29 subprojects do not dwarf the pending-weight signal.
+        $sp = $this->allSubProjects->first(); // 20 instances
+        $pendingAssignment = AnnotationAssignment::query()
+            ->where('user_id', $fullyPending->id)->where('sub_project_id', $sp->id)->first();
+        $doneAssignment = AnnotationAssignment::query()
+            ->where('user_id', $fullyDone->id)->where('sub_project_id', $sp->id)->first();
+
+        $instanceIds = DB::table('dataset_instances')->limit(20)->pluck('id')->all();
+        $now = now()->toDateTimeString();
+
+        $doneRows = [];
+        for ($i = 0; $i < 20; $i++) {
+            $doneRows[] = [
+                'annotation_assignment_id' => $doneAssignment->id,
+                'dataset_instance_id' => $instanceIds[$i],
+                'project_instance_index' => $i + 1,
+                'annotator_instance_index' => $i + 1,
+                'annotations' => '[]',
+                'pending' => false,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        DB::table('annotations')->insert($doneRows);
+
+        $pendingRows = [];
+        for ($i = 0; $i < 20; $i++) {
+            $pendingRows[] = [
+                'annotation_assignment_id' => $pendingAssignment->id,
+                'dataset_instance_id' => $instanceIds[$i],
+                'project_instance_index' => $i + 1,
+                'annotator_instance_index' => $i + 1,
+                'annotations' => '[]',
+                'pending' => true,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        DB::table('annotations')->insert($pendingRows);
+
+        // Act — restrict to this one subproject so effort is 20 instances for all three.
+        // fullyDone:    workDone=all, raw=0  → 0.1
+        // fullyPending: workDone=half, raw=half → 0.5
+        // noWorkDone:   workDone=0,   raw=max → 0.9
+        $result = $this->service->computeNormalizedWorkloads(
+            [$fullyDone->id, $fullyPending->id, $noWorkDone->id],
+            [$sp->id],
+        );
+
+        // Assert: fullyDone < fullyPending < noWorkDone
+        expect($result[$fullyDone->id]['total'])
+            ->toBeLessThan($result[$fullyPending->id]['total'])
+            ->and($result[$fullyPending->id]['total'])
             ->toBeLessThan($result[$noWorkDone->id]['total']);
     });
 
