@@ -47,3 +47,6 @@ user_stories.md
 # Screenshots from failed browser tests
 tests/Browser/Screenshots
 .secrets
+
+# Graphify
+graphify-out/cache

@@ -2,9 +2,8 @@ import { FilterableAnnotatorList } from '@/components/annotator/filterable-annot
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { type AnnotatorSelectOption } from '@/types';
-import { Head, router } from '@inertiajs/react';
-import { X } from 'lucide-react';
-import { useState } from 'react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { LoaderCircle, X } from 'lucide-react';
 
 interface Props {
     manager: { id: number; username: string };
@@ -20,11 +19,10 @@ export default function ConnectAnnotators({
     annotator_ids,
 }: Props) {
     const { t, trans } = useTranslations();
-    const [selected, setSelected] = useState<number[]>(annotator_ids);
+    const form = useForm({ annotator_ids });
 
     function handleConnect() {
-        // TODO: wire to backend (PUT users.connect-annotators.update) once the API exists.
-        router.visit(route('users.index'));
+        form.post(route('users.annotators.connect', manager.id));
     }
 
     return (
@@ -50,26 +48,28 @@ export default function ConnectAnnotators({
                         </h2>
                         <p className="text-sm font-semibold text-slate-800">
                             {trans('users.select_annotators.selected_count', {
-                                count: selected.length,
+                                count: form.data.annotator_ids.length,
                             })}
                         </p>
                     </hgroup>
 
                     <div className="flex shrink-0 items-center gap-3">
-                        <button
-                            type="button"
-                            onClick={() => router.visit(route('users.index'))}
+                        <Link
+                            href={route('users.index')}
                             className="focus-visible:ring-brand-yellow-300 bg-brand-yellow-300 text-brand-blue-900 hover:bg-brand-yellow-400 inline-flex h-10 items-center gap-1.5 rounded-lg px-4 text-sm font-semibold hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                         >
                             <X className="h-4 w-4" aria-hidden="true" />
                             {t('users.actions.cancel')}
-                        </button>
+                        </Link>
                         <button
                             type="button"
                             onClick={handleConnect}
-                            disabled={selected.length < 1}
+                            disabled={form.data.annotator_ids.length < 1 || form.processing}
                             className="focus-visible:ring-brand-blue-700 bg-brand-blue-700 hover:bg-brand-blue-800 inline-flex h-10 items-center gap-1.5 rounded-lg px-4 text-sm font-semibold text-white hover:cursor-pointer focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
                         >
+                            {form.processing && (
+                                <LoaderCircle className="h-4 w-4 animate-spin" aria-hidden="true" />
+                            )}
                             {t('users.actions.connect')}
                         </button>
                     </div>
@@ -78,8 +78,8 @@ export default function ConnectAnnotators({
                 <FilterableAnnotatorList
                     annotators={all_annotators ?? my_annotators}
                     myAnnotators={my_annotators}
-                    selectedAnnotatorIds={selected}
-                    onSelectionChange={setSelected}
+                    selectedAnnotatorIds={form.data.annotator_ids}
+                    onSelectionChange={(ids) => form.setData('annotator_ids', ids)}
                     showMineToggle={!!all_annotators?.length}
                 />
             </div>
