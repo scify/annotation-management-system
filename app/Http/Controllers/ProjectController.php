@@ -7,15 +7,19 @@ namespace App\Http\Controllers;
 use App\Enums\ProjectStatusEnum;
 use App\Exceptions\PresentableError;
 use App\Http\Requests\Project\AcceptOwnershipTransferRequest;
+use App\Http\Requests\Project\AcceptRequestToLeaveRequest;
 use App\Http\Requests\Project\AttachAnnotatorsToProjectRequest;
 use App\Http\Requests\Project\CancelOwnershipTransferRequest;
+use App\Http\Requests\Project\CancelRequestToLeaveRequest;
 use App\Http\Requests\Project\DetachAnnotatorFromProjectRequest;
 use App\Http\Requests\Project\ProjectChangeStatusRequest;
 use App\Http\Requests\Project\ProjectExportRequest;
 use App\Http\Requests\Project\ProjectStoreRequest;
 use App\Http\Requests\Project\ProposeOwnershipTransferRequest;
 use App\Http\Requests\Project\RejectOwnershipTransferRequest;
+use App\Http\Requests\Project\RejectRequestToLeaveRequest;
 use App\Http\Requests\Project\RemoveManagerFromProjectRequest;
+use App\Http\Requests\Project\RequestToLeaveRequest;
 use App\Http\Requests\Project\ToggleCanFlagRequest;
 use App\Models\Project;
 use App\Models\User;
@@ -199,6 +203,44 @@ class ProjectController extends Controller {
 
     public function removeManager(RemoveManagerFromProjectRequest $request, int $id): JsonResponse {
         $this->projectManagerService->removeManager($id, $request->integer('manager_id'));
+
+        return response()->json([
+            'comanagers_data' => $this->projectReadService->getCoManagersData($id),
+        ]);
+    }
+
+    public function requestToLeave(RequestToLeaveRequest $request, int $id): JsonResponse {
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        $this->projectManagerService->requestToLeave($id, $user->id);
+
+        return response()->json([
+            'comanagers_data' => $this->projectReadService->getCoManagersData($id),
+        ]);
+    }
+
+    public function cancelRequestToLeave(CancelRequestToLeaveRequest $request, int $id): JsonResponse {
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        $this->projectManagerService->cancelRequestToLeave($id, $user->id);
+
+        return response()->json([
+            'comanagers_data' => $this->projectReadService->getCoManagersData($id),
+        ]);
+    }
+
+    public function rejectRequestToLeave(RejectRequestToLeaveRequest $request, int $id): JsonResponse {
+        $this->projectManagerService->rejectRequestToLeave($id, $request->integer('user_id'));
+
+        return response()->json([
+            'comanagers_data' => $this->projectReadService->getCoManagersData($id),
+        ]);
+    }
+
+    public function acceptRequestToLeave(AcceptRequestToLeaveRequest $request, int $id): JsonResponse {
+        $this->projectManagerService->acceptRequestToLeave($id, $request->integer('user_id'));
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),

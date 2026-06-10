@@ -148,6 +148,37 @@ class ProjectPolicy {
         return $project->owner_user_id === $user->id;
     }
 
+    public function requestToLeave(User $user, Project $project): bool {
+        return $project->owner_user_id !== $user->id && ProjectManager::query()
+            ->where('project_id', $project->id)
+            ->where('user_id', $user->id)
+            ->exists();
+    }
+
+    public function cancelRequestToLeave(User $user, Project $project): bool {
+        return ProjectManager::query()
+            ->where('project_id', $project->id)
+            ->where('user_id', $user->id)
+            ->where('request_to_leave', true)
+            ->exists();
+    }
+
+    public function rejectRequestToLeave(User $user, Project $project): bool {
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+
+        return $project->owner_user_id === $user->id;
+    }
+
+    public function acceptRequestToLeave(User $user, Project $project): bool {
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+
+        return $project->owner_user_id === $user->id;
+    }
+
     public function deleteSubProject(User $user, SubProject $subProject): bool {
         if ($subProject->status !== ProjectStatusEnum::PENDING) {
             return false;

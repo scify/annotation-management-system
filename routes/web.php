@@ -42,6 +42,10 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('projects/{id}/accept-ownership', [ProjectController::class, 'acceptOwnership'])->name('projects.accept-ownership');
     Route::post('projects/{id}/reject-ownership', [ProjectController::class, 'rejectOwnership'])->name('projects.reject-ownership');
     Route::post('projects/{id}/cancel-ownership', [ProjectController::class, 'cancelOwnership'])->name('projects.cancel-ownership');
+    Route::post('projects/{id}/request-to-leave', [ProjectController::class, 'requestToLeave'])->name('projects.request-to-leave');
+    Route::post('projects/{id}/cancel-leave-request', [ProjectController::class, 'cancelRequestToLeave'])->name('projects.cancel-leave-request');
+    Route::post('projects/{id}/reject-leave-request', [ProjectController::class, 'rejectRequestToLeave'])->name('projects.reject-leave-request');
+    Route::delete('projects/{id}/leave-requests/{managerId}', [ProjectController::class, 'acceptRequestToLeave'])->name('projects.accept-leave-request');
     Route::get('projects/{id}/export', [ProjectController::class, 'export'])->name('projects.export');
     Route::get('projects/{id}/subprojects/create', [SubProjectController::class, 'create'])->name('projects.subprojects.create');
     Route::post('projects/{id}/subprojects', [SubProjectController::class, 'store'])->name('projects.subprojects.store');
