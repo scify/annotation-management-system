@@ -114,6 +114,16 @@ export default function ProjectShow({
         setComanagers(updated);
     };
 
+    const handleCancelOwnership = async (managerId: number) => {
+        const { comanagers_data: updated } = await apiFetch<{
+            comanagers_data: BackendManagerData[];
+        }>(route('projects.cancel-ownership', project_data.id), {
+            method: 'POST',
+            body: JSON.stringify({ user_id: managerId }),
+        });
+        setComanagers(updated);
+    };
+
     const subProjects: SubProjectListItemData[] = subprojects_data.map((sp) => ({
         id: sp.id,
         name: sp.name,
@@ -270,6 +280,7 @@ export default function ProjectShow({
                         onTransferOwnership={handleTransferOwnership}
                         onAcceptOwnership={handleAcceptOwnership}
                         onRejectOwnership={handleRejectOwnership}
+                        onCancelOwnership={handleCancelOwnership}
                     />
                 )}
                 {activeTab === 'export' && (
