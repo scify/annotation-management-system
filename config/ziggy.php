@@ -21,6 +21,6 @@ return [
         'projects.subprojects.update', 'projects.change-status', 'sub-projects.change-status',
         'projects.subprojects.destroy', 'projects.destroy', 'projects.propose-ownership',
         'projects.accept-ownership', 'projects.reject-ownership',
-        'users.annotators.add',
+        'users.annotators.add', 'users.annotators.connect',
     ],
 ];
