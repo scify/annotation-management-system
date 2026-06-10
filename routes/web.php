@@ -35,6 +35,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::delete('projects/{id}', [ProjectController::class, 'destroy'])->name('projects.destroy');
     Route::delete('projects/{projectId}/subprojects/{subprojectId}', [SubProjectController::class, 'destroy'])->name('projects.subprojects.destroy');
     Route::delete('projects/{id}/annotators/{annotatorId}', [ProjectController::class, 'detachAnnotator'])->name('projects.annotators.detach');
+    Route::delete('projects/{id}/managers/{managerId}', [ProjectController::class, 'removeManager'])->name('projects.managers.remove');
     Route::get('projects/{id}/add-annotators', [ProjectController::class, 'showAddAnnotators'])->name('projects.annotators.add');
     Route::post('projects/{id}/annotators', [ProjectController::class, 'attachAnnotators'])->name('projects.annotators.attach');
     Route::post('projects/{id}/propose-ownership', [ProjectController::class, 'proposeOwnership'])->name('projects.propose-ownership');

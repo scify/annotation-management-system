@@ -15,6 +15,7 @@ use App\Http\Requests\Project\ProjectExportRequest;
 use App\Http\Requests\Project\ProjectStoreRequest;
 use App\Http\Requests\Project\ProposeOwnershipTransferRequest;
 use App\Http\Requests\Project\RejectOwnershipTransferRequest;
+use App\Http\Requests\Project\RemoveManagerFromProjectRequest;
 use App\Http\Requests\Project\ToggleCanFlagRequest;
 use App\Models\Project;
 use App\Models\User;
@@ -190,6 +191,14 @@ class ProjectController extends Controller {
         abort_unless($user instanceof User, 401);
 
         $this->projectManagerService->rejectOwnershipTransfer($id, $user->id);
+
+        return response()->json([
+            'comanagers_data' => $this->projectReadService->getCoManagersData($id),
+        ]);
+    }
+
+    public function removeManager(RemoveManagerFromProjectRequest $request, int $id): JsonResponse {
+        $this->projectManagerService->removeManager($id, $request->integer('manager_id'));
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
