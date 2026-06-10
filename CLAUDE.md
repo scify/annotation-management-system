@@ -121,6 +121,8 @@ Commands are split by *what they do to your repo*:
 
 ## Testing
 
+**MANDATORY: After every change to backend code, run `composer test` (DDEV: `ddev composer test`) to verify nothing is broken before considering the task complete.**
+
 **Recommended (via Composer):**
 
 - `composer test:all` — Full CI suite (check + check:types + Pest backend + browser)
@@ -298,6 +300,7 @@ export default function UsersIndex({ users, abilities }: Props) {
 - Controllers should be thin — delegate to services
 - Service methods should be well-typed with return types
 - `UserService` — user CRUD, role assignment, soft-delete/restore
+- **NEVER make direct DB calls inside service methods** — no `Model::query()` or `DB::` calls directly in a service. All DB access must go through injected query classes (`app/Queries/{Domain}/`). Direct model calls are acceptable in Policies (consistent with existing policy methods).
 
 ### Exception Handling
 

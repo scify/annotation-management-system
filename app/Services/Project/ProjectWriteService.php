@@ -12,6 +12,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\Manager\ConnectManagerToAnnotatorsQuery;
+use App\Queries\Project\AcceptOwnershipTransferQuery;
 use App\Queries\Project\AttachAnnotatorsToProjectQuery;
 use App\Queries\Project\CompleteSubProjectsByProjectQuery;
 use App\Queries\Project\DeleteAnnotationsByProjectQuery;
@@ -29,6 +30,7 @@ use Throwable;
 
 readonly class ProjectWriteService {
     public function __construct(
+        private AcceptOwnershipTransferQuery $acceptOwnershipTransferQuery,
         private DatasetService $datasetService,
         private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
         private GetAssignmentsBySubProjectsAndAnnotatorsQuery $assignmentsBySubProjectsAndAnnotatorsQuery,
@@ -133,6 +135,17 @@ readonly class ProjectWriteService {
     public function deleteProject(Project $project): void {
         $this->deleteAnnotationsByProjectQuery->execute($project->id);
         $project->delete();
+    }
+
+    public function acceptOwnershipTransfer(int $projectId, int $userId): void {
+        DB::transaction(function () use ($projectId, $userId): void {
+            $this->acceptOwnershipTransferQuery->clearProposal($projectId, $userId);
+            $this->acceptOwnershipTransferQuery->transferOwner($projectId, $userId);
+        });
+    }
+
+    public function rejectOwnershipTransfer(int $projectId, int $userId): void {
+        $this->acceptOwnershipTransferQuery->clearProposal($projectId, $userId);
     }
 
     public function proposeOwnershipTransfer(int $projectId, int $userId): void {

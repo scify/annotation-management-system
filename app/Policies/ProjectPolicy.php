@@ -116,6 +116,22 @@ class ProjectPolicy {
         return $project->owner_user_id === $user->id;
     }
 
+    public function acceptOwnership(User $user, Project $project): bool {
+        return ProjectManager::query()
+            ->where('project_id', $project->id)
+            ->where('user_id', $user->id)
+            ->where('proposed_to_become_owner', true)
+            ->exists();
+    }
+
+    public function rejectOwnership(User $user, Project $project): bool {
+        return ProjectManager::query()
+            ->where('project_id', $project->id)
+            ->where('user_id', $user->id)
+            ->where('proposed_to_become_owner', true)
+            ->exists();
+    }
+
     public function deleteSubProject(User $user, SubProject $subProject): bool {
         if ($subProject->status !== ProjectStatusEnum::PENDING) {
             return false;

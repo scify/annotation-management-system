@@ -6,12 +6,14 @@ namespace App\Http\Controllers;
 
 use App\Enums\ProjectStatusEnum;
 use App\Exceptions\PresentableError;
+use App\Http\Requests\Project\AcceptOwnershipTransferRequest;
 use App\Http\Requests\Project\AttachAnnotatorsToProjectRequest;
 use App\Http\Requests\Project\DetachAnnotatorFromProjectRequest;
 use App\Http\Requests\Project\ProjectChangeStatusRequest;
 use App\Http\Requests\Project\ProjectExportRequest;
 use App\Http\Requests\Project\ProjectStoreRequest;
 use App\Http\Requests\Project\ProposeOwnershipTransferRequest;
+use App\Http\Requests\Project\RejectOwnershipTransferRequest;
 use App\Http\Requests\Project\ToggleCanFlagRequest;
 use App\Models\Project;
 use App\Models\User;
@@ -167,6 +169,28 @@ class ProjectController extends Controller {
         $this->dumpDebugJson($data, 'project-show-data-' . $user->role . '.json');
 
         return Inertia::render('projects/show', $data);
+    }
+
+    public function acceptOwnership(AcceptOwnershipTransferRequest $request, int $id): JsonResponse {
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        $this->projectService->acceptOwnershipTransfer($id, $user->id);
+
+        return response()->json([
+            'comanagers_data' => $this->projectReadService->getCoManagersData($id),
+        ]);
+    }
+
+    public function rejectOwnership(RejectOwnershipTransferRequest $request, int $id): JsonResponse {
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        $this->projectService->rejectOwnershipTransfer($id, $user->id);
+
+        return response()->json([
+            'comanagers_data' => $this->projectReadService->getCoManagersData($id),
+        ]);
     }
 
     public function proposeOwnership(ProposeOwnershipTransferRequest $request, int $id): JsonResponse {
