@@ -1,9 +1,8 @@
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { ProjectActionsMenu } from '@/components/project/project-actions-menu';
 import { useTranslations } from '@/hooks/use-translations';
 import type { Project } from '@/types';
 import { formatDateDMY, formatDateDMYShort } from '@/utils/format';
-import { Link } from '@inertiajs/react';
 import {
     BellRing,
     CircleAlert,
@@ -93,6 +92,8 @@ export function ProjectListItem({ project }: { project: Project }) {
                         />
                     </div>
                 </div>
+
+                <ProjectActionsMenu project={project} />
             </div>
 
             {/* Row 2: tags | indicators — indented to align with text */}
@@ -163,7 +164,7 @@ export function ProjectListItem({ project }: { project: Project }) {
                 </div>
             </div>
 
-            {/* Row 3: owner + co-managers | view button — indented */}
+            {/* Row 3: owner + co-managers — indented */}
             <div className="flex items-start justify-between gap-4 pl-[54px]">
                 <div className="flex gap-7">
                     <div className="flex shrink-0 flex-col gap-2">
@@ -195,12 +196,6 @@ export function ProjectListItem({ project }: { project: Project }) {
                         </div>
                     </div>
                 </div>
-
-                <Link href={route('projects.show', project.id)}>
-                    <Button className="hover:bg-brand-blue-800 h-10 w-[200px] shrink-0 font-semibold text-white">
-                        {t('projects.card.view_project')}
-                    </Button>
-                </Link>
             </div>
         </article>
     );

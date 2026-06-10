@@ -1,10 +1,9 @@
 import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Badge, badgeVariants } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { ProjectActionsMenu } from '@/components/project/project-actions-menu';
 import { useTranslations } from '@/hooks/use-translations';
 import type { Project, ProjectStatus } from '@/types';
 import { formatDateDMY, formatDateDMYShort } from '@/utils/format';
-import { Link } from '@inertiajs/react';
 import { type VariantProps } from 'class-variance-authority';
 import {
     BellRing,
@@ -72,7 +71,10 @@ export function ProjectCard({ project }: { project: Project }) {
                                 aria-hidden="true"
                             />
                         </div>
-                        <Badge variant={statusVariant}>{statusLabel}</Badge>
+                        <div className="flex shrink-0 items-start gap-2">
+                            <Badge variant={statusVariant}>{statusLabel}</Badge>
+                            <ProjectActionsMenu project={project} />
+                        </div>
                     </div>
                     <div>
                         <p className="text-xl leading-9 font-medium text-slate-800">
@@ -230,13 +232,6 @@ export function ProjectCard({ project }: { project: Project }) {
                         </div>
                     </div>
                 </div>
-
-                {/* View Project */}
-                <Link href={route('projects.show', project.id)} className="w-full">
-                    <Button className="hover:bg-brand-blue-800 h-10 w-full font-semibold text-white">
-                        {t('projects.card.view_project')}
-                    </Button>
-                </Link>
             </div>
         </article>
     );
