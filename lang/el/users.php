@@ -33,6 +33,11 @@ return [
         'next' => 'Επόμενο',
         'back' => 'Πίσω',
         'cancel' => 'Ακύρωση',
+        'connect' => 'Σύνδεση',
+    ],
+    'connect_annotators' => [
+        'title' => 'Σύνδεση με σχολιαστές',
+        'manager' => 'Διαχειριστής: @:username',
     ],
     'datasets' => [
         'heading' => 'Σύνολα Δεδομένων',

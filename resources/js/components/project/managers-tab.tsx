@@ -13,6 +13,7 @@ import { ProjectDialog } from '@/components/project/project-dialog';
 import { UserTableCell } from '@/components/project/user-table-cell';
 import { SendMessageDialog } from '@/components/send-message-dialog';
 import { useTranslations } from '@/hooks/use-translations';
+import { ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { Check, CircleStar, LogOut, Send, TriangleAlert, UserMinus, X } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
@@ -49,6 +50,12 @@ type ManagerDialogType =
 
 interface ManagersTabProps {
     managers: ProjectManagerRowData[];
+    /** Proposes the given user as the project's new owner; resolves once the table has been updated */
+    onTransferOwnership: (managerId: number) => Promise<void>;
+    /** Accepts a pending ownership proposal addressed to the current user; resolves once the table has been updated */
+    onAcceptOwnership: () => Promise<void>;
+    /** Declines a pending ownership proposal addressed to the current user; resolves once the table has been updated */
+    onRejectOwnership: () => Promise<void>;
 }
 
 const BLUE_BUTTON_CLASSES =
@@ -192,10 +199,17 @@ function ActionsCell({
     );
 }
 
-export function ManagersTab({ managers }: ManagersTabProps) {
+export function ManagersTab({
+    managers,
+    onTransferOwnership,
+    onAcceptOwnership,
+    onRejectOwnership,
+}: ManagersTabProps) {
     const { t, trans } = useTranslations();
     const [dialogType, setDialogType] = useState<ManagerDialogType>(null);
     const [dialogManager, setDialogManager] = useState<ProjectManagerRowData | null>(null);
+    const [transferring, setTransferring] = useState(false);
+    const [ownershipAction, setOwnershipAction] = useState<'accept' | 'reject' | null>(null);
 
     const openDialog = (type: Exclude<ManagerDialogType, null>, manager: ProjectManagerRowData) => {
         setDialogType(type);
@@ -207,10 +221,30 @@ export function ManagersTab({ managers }: ManagersTabProps) {
         setDialogManager(null);
     };
 
-    const handleApproveOwnership = () => {
-        if (!dialogManager) return;
-        // TODO(backend): router.post(route('projects.managers.accept-ownership', ...))
-        closeDialog();
+    const handleApproveOwnership = async () => {
+        setOwnershipAction('accept');
+        try {
+            await onAcceptOwnership();
+            toast.success(t('projects.managers_tab.ownership_accepted'));
+            closeDialog();
+        } catch {
+            toast.error(t('projects.messages.generic_error'));
+        } finally {
+            setOwnershipAction(null);
+        }
+    };
+
+    const handleRejectOwnership = async () => {
+        setOwnershipAction('reject');
+        try {
+            await onRejectOwnership();
+            toast.success(t('projects.managers_tab.ownership_rejected'));
+            closeDialog();
+        } catch {
+            toast.error(t('projects.messages.generic_error'));
+        } finally {
+            setOwnershipAction(null);
+        }
     };
 
     const handleSendLeaveRequest = () => {
@@ -230,10 +264,18 @@ export function ManagersTab({ managers }: ManagersTabProps) {
         closeDialog();
     };
 
-    const handleConfirmTransfer = () => {
+    const handleConfirmTransfer = async () => {
         if (!dialogManager) return;
-        // TODO(backend): router.post(route('projects.managers.transfer-ownership', ...))
-        closeDialog();
+        setTransferring(true);
+        try {
+            await onTransferOwnership(dialogManager.id);
+            toast.success(t('projects.managers_tab.transfer_proposed'));
+            closeDialog();
+        } catch (e) {
+            toast.error(e instanceof ApiError ? e.message : t('projects.messages.generic_error'));
+        } finally {
+            setTransferring(false);
+        }
     };
 
     const handleUndoTransfer = () => {
@@ -365,9 +407,7 @@ export function ManagersTab({ managers }: ManagersTabProps) {
                 </div>
             </div>
 
-            {/* ── Ownership Request dialog (accept proposed ownership) ─────── */}
-            {/* TODO(backend): Reject must become its own action — ProjectDialog's
-                cancel button only calls onClose today. */}
+            {/* ── Ownership Request dialog (accept / reject proposed ownership) ── */}
             <ProjectDialog
                 open={dialogType === 'ownership-request'}
                 onClose={closeDialog}
@@ -387,9 +427,12 @@ export function ManagersTab({ managers }: ManagersTabProps) {
                 }
                 cancelLabel={t('projects.managers_tab.dialog_ownership_reject')}
                 cancelIcon={<X className="size-4" aria-hidden="true" />}
+                onCancel={() => void handleRejectOwnership()}
+                cancelLoading={ownershipAction === 'reject'}
                 actionLabel={t('projects.managers_tab.dialog_ownership_approve')}
                 actionIcon={<Check className="size-4" aria-hidden="true" />}
-                onAction={handleApproveOwnership}
+                onAction={() => void handleApproveOwnership()}
+                loading={ownershipAction === 'accept'}
                 actionStyle="highlighted"
             />
 
@@ -459,7 +502,8 @@ export function ManagersTab({ managers }: ManagersTabProps) {
                 })}
                 actionLabel={t('projects.managers_tab.dialog_transfer_send')}
                 actionIcon={<Send className="size-4" aria-hidden="true" />}
-                onAction={handleConfirmTransfer}
+                onAction={() => void handleConfirmTransfer()}
+                loading={transferring}
                 actionStyle="highlighted"
             >
                 <WarningAlert>{t('projects.managers_tab.dialog_transfer_warning')}</WarningAlert>

@@ -25,6 +25,12 @@ export interface ProjectDialogProps {
     cancelIcon?: React.ReactNode;
     /** When true, hides the cancel button and makes the action button full-width */
     hideCancelButton?: boolean;
+    /**
+     * Called when the cancel button is clicked. When provided, the cancel button
+     * becomes its own action (e.g. Reject) instead of dismissing. Dismissal via
+     * the X, backdrop, or Esc still calls onClose.
+     */
+    onCancel?: () => void;
     actionLabel: string;
     /** Optional icon rendered to the right of the action label */
     actionIcon?: React.ReactNode;
@@ -33,6 +39,8 @@ export interface ProjectDialogProps {
     actionDisabled?: boolean;
     /** Shows a spinner on the action button and disables both buttons */
     loading?: boolean;
+    /** Shows a spinner on the cancel button and disables both buttons */
+    cancelLoading?: boolean;
     /**
      * - `standard`    → solid brand-blue-700 (e.g. Send message)
      * - `highlighted` → brand-blue-800 + 4px cyan-400 ring (e.g. Approve, Send Request)
@@ -50,11 +58,13 @@ export function ProjectDialog({
     cancelLabel = 'Cancel',
     cancelIcon,
     hideCancelButton = false,
+    onCancel,
     actionLabel,
     actionIcon,
     onAction,
     actionDisabled = false,
     loading = false,
+    cancelLoading = false,
     actionStyle = 'standard',
 }: ProjectDialogProps) {
     return (
@@ -87,18 +97,22 @@ export function ProjectDialog({
                     {!hideCancelButton && (
                         <button
                             type="button"
-                            onClick={onClose}
-                            disabled={loading}
+                            onClick={onCancel ?? onClose}
+                            disabled={loading || cancelLoading}
                             className="text-brand-blue-900 flex h-10 flex-1 cursor-pointer items-center justify-center gap-2 rounded-lg bg-yellow-300 text-base font-semibold transition-colors hover:bg-yellow-400 disabled:cursor-not-allowed disabled:opacity-50"
                         >
-                            {cancelIcon}
+                            {cancelLoading ? (
+                                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                            ) : (
+                                cancelIcon
+                            )}
                             {cancelLabel}
                         </button>
                     )}
                     <button
                         type="button"
                         onClick={onAction}
-                        disabled={actionDisabled || loading}
+                        disabled={actionDisabled || loading || cancelLoading}
                         className={cn(
                             'flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
                             hideCancelButton ? 'w-full' : 'flex-1',

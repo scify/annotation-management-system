@@ -33,6 +33,11 @@ return [
         'next' => 'Next',
         'back' => 'Back',
         'cancel' => 'Cancel',
+        'connect' => 'Connect',
+    ],
+    'connect_annotators' => [
+        'title' => 'Connect to annotators',
+        'manager' => 'Manager: @:username',
     ],
     'datasets' => [
         'heading' => 'Datasets',
