@@ -191,6 +191,7 @@ return [
 
     'validation' => [
         'annotator_has_subproject_assignments' => 'This annotator is assigned to one or more subprojects and cannot be removed from the project.',
+        'ownership_already_proposed' => 'An ownership transfer is already pending for this project.',
     ],
 
     'create' => [
