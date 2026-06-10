@@ -18,6 +18,7 @@ use App\Http\Requests\Project\ToggleCanFlagRequest;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\Annotation\AnnotatorService;
+use App\Services\Project\ProjectManagerService;
 use App\Services\Project\ProjectReadService;
 use App\Services\Project\ProjectWriteService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -34,6 +35,7 @@ class ProjectController extends Controller {
     use AuthorizesRequests;
 
     public function __construct(
+        private readonly ProjectManagerService $projectManagerService,
         private readonly ProjectWriteService $projectService,
         private readonly ProjectReadService $projectReadService,
         private readonly AnnotatorService $annotatorService,
@@ -175,7 +177,7 @@ class ProjectController extends Controller {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
 
-        $this->projectService->acceptOwnershipTransfer($id, $user->id);
+        $this->projectManagerService->acceptOwnershipTransfer($id, $user->id);
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
@@ -186,7 +188,7 @@ class ProjectController extends Controller {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
 
-        $this->projectService->rejectOwnershipTransfer($id, $user->id);
+        $this->projectManagerService->rejectOwnershipTransfer($id, $user->id);
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
@@ -195,7 +197,7 @@ class ProjectController extends Controller {
 
     public function proposeOwnership(ProposeOwnershipTransferRequest $request, int $id): JsonResponse {
         try {
-            $this->projectService->proposeOwnershipTransfer($id, $request->integer('user_id'));
+            $this->projectManagerService->proposeOwnershipTransfer($id, $request->integer('user_id'));
         } catch (PresentableError $presentableError) {
             return response()->json(['error' => $presentableError->getUserMessage()], 422);
         }
