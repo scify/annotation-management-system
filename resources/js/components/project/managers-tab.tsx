@@ -56,6 +56,8 @@ interface ManagersTabProps {
     onAcceptOwnership: () => Promise<void>;
     /** Declines a pending ownership proposal addressed to the current user; resolves once the table has been updated */
     onRejectOwnership: () => Promise<void>;
+    /** Withdraws a pending ownership proposal for the given user; resolves once the table has been updated */
+    onCancelOwnership: (managerId: number) => Promise<void>;
 }
 
 const BLUE_BUTTON_CLASSES =
@@ -204,6 +206,7 @@ export function ManagersTab({
     onTransferOwnership,
     onAcceptOwnership,
     onRejectOwnership,
+    onCancelOwnership,
 }: ManagersTabProps) {
     const { t, trans } = useTranslations();
     const [dialogType, setDialogType] = useState<ManagerDialogType>(null);
@@ -278,9 +281,13 @@ export function ManagersTab({
         }
     };
 
-    const handleUndoTransfer = () => {
-        // TODO(backend): router.delete(route('projects.managers.transfer-ownership', ...))
-        // — will need the row's manager passed back in.
+    const handleUndoTransfer = async (managerId: number) => {
+        try {
+            await onCancelOwnership(managerId);
+            toast.success(t('projects.managers_tab.transfer_cancelled'));
+        } catch (e) {
+            toast.error(e instanceof ApiError ? e.message : t('projects.messages.generic_error'));
+        }
     };
 
     const handleConfirmRemove = () => {
@@ -384,7 +391,9 @@ export function ManagersTab({
                                             onTransfer={() =>
                                                 openDialog('transfer-ownership', manager)
                                             }
-                                            onUndoTransfer={handleUndoTransfer}
+                                            onUndoTransfer={() =>
+                                                void handleUndoTransfer(manager.id)
+                                            }
                                         />
                                     </TableCell>
                                     <TableCell className="text-center">

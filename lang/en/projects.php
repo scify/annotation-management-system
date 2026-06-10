@@ -121,6 +121,7 @@ return [
         'dialog_transfer_warning' => 'By transferring the Ownership, you will become a Co-Manager of this Project',
         'dialog_transfer_send' => 'Request Transfer',
         'transfer_proposed' => 'Ownership transfer requested.',
+        'transfer_cancelled' => 'Ownership transfer cancelled.',
         'ownership_accepted' => 'You are now the owner of this project.',
         'ownership_rejected' => 'Ownership proposal declined.',
         'remove_dialog_title' => 'Remove Co-Manager',
