@@ -140,6 +140,14 @@ class ProjectPolicy {
         return $project->owner_user_id === $user->id;
     }
 
+    public function removeManager(User $user, Project $project): bool {
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+
+        return $project->owner_user_id === $user->id;
+    }
+
     public function deleteSubProject(User $user, SubProject $subProject): bool {
         if ($subProject->status !== ProjectStatusEnum::PENDING) {
             return false;

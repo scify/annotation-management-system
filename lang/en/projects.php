@@ -195,6 +195,7 @@ return [
         'created' => 'Project created successfully.',
         'can_flag_toggled' => 'Annotator flag permission updated.',
         'annotator_detached' => 'Annotator removed from project.',
+        'manager_removed' => 'Manager removed from project.',
         'annotators_attached' => 'Annotators added successfully.',
         'deleted' => 'Project deleted successfully.',
         'status_changed' => 'Project status updated successfully.',

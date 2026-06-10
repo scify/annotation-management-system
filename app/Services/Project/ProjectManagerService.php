@@ -7,6 +7,7 @@ namespace App\Services\Project;
 use App\Exceptions\ProjectOwnershipException;
 use App\Queries\Project\AcceptOwnershipTransferQuery;
 use App\Queries\Project\ProposeOwnershipTransferQuery;
+use App\Queries\Project\RemoveProjectManagerQuery;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -14,6 +15,7 @@ readonly class ProjectManagerService {
     public function __construct(
         private AcceptOwnershipTransferQuery $acceptOwnershipTransferQuery,
         private ProposeOwnershipTransferQuery $proposeOwnershipTransferQuery,
+        private RemoveProjectManagerQuery $removeProjectManagerQuery,
     ) {}
 
     public function proposeOwnershipTransfer(int $projectId, int $userId): void {
@@ -40,5 +42,9 @@ readonly class ProjectManagerService {
 
     public function cancelOwnershipTransfer(int $projectId, int $userId): void {
         $this->acceptOwnershipTransferQuery->clearProposal($projectId, $userId);
+    }
+
+    public function removeManager(int $projectId, int $userId): void {
+        $this->removeProjectManagerQuery->execute($projectId, $userId);
     }
 }
