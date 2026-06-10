@@ -39,6 +39,14 @@ return [
         'owner' => 'Ιδιοκτήτης:',
         'co_managers' => 'Συνυπεύθυνοι:',
         'view_project' => 'Προβολή Έργου',
+        'actions_label' => 'Ενέργειες έργου',
+        'action_view_edit' => 'Προβολή / Επεξεργασία',
+        'action_set_completed' => 'Ορισμός ως Ολοκληρωμένο',
+        'action_set_in_progress' => 'Ορισμός ως Σε εξέλιξη',
+        'action_delete' => 'Διαγραφή',
+        'delete_dialog_title' => 'Διαγραφή Έργου',
+        'delete_dialog_description' => 'Είστε σίγουροι ότι θέλετε να διαγράψετε το ":name"; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
+        'delete_confirm' => 'Διαγραφή',
     ],
 
     'show' => [
