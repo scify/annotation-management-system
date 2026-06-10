@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,8 +13,9 @@ import { ProjectDialog } from '@/components/project/project-dialog';
 import { UserTableCell } from '@/components/project/user-table-cell';
 import { SendMessageDialog } from '@/components/send-message-dialog';
 import { useTranslations } from '@/hooks/use-translations';
-import { Check, CircleStar, LogOut, Send, TriangleAlert, X } from 'lucide-react';
-import { useState } from 'react';
+import { cn } from '@/lib/utils';
+import { Check, CircleStar, LogOut, Send, TriangleAlert, UserMinus, X } from 'lucide-react';
+import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
 
 export interface ProjectManagerRowData {
@@ -22,53 +24,176 @@ export interface ProjectManagerRowData {
     username: string;
     email: string;
     role: 'owner' | 'co-manager';
-    hasOwnershipRequest: boolean;
+    isActive: boolean;
+    /** False while the co-manager is invited but has not accepted yet */
+    accepted: boolean;
+    /** This co-manager has an open request to leave the project */
+    requestToLeave: boolean;
+    /** This co-manager has been proposed to become the new owner */
+    proposedToBecomeOwner: boolean;
+    canRequestToLeave: boolean;
+    canRemove: boolean;
+    canTransferOwnership: boolean;
+    canAcceptToBecomeOwner: boolean;
+    canAcceptRequestToLeave: boolean;
 }
 
-type ManagerDialogType = 'ownership-request' | 'leave-request' | 'send-message' | null;
-
-const MOCK_MANAGERS: ProjectManagerRowData[] = [
-    {
-        id: 1,
-        initials: 'A',
-        username: '@akosmo',
-        email: 'akosmo@scify.org',
-        role: 'co-manager',
-        hasOwnershipRequest: true,
-    },
-    {
-        id: 2,
-        initials: 'G',
-        username: '@ggiannakopulos',
-        email: 'ggiana@scify.org',
-        role: 'owner',
-        hasOwnershipRequest: false,
-    },
-    {
-        id: 3,
-        initials: 'G',
-        username: '@fpapastegiou',
-        email: 'fpapast@scify.org',
-        role: 'co-manager',
-        hasOwnershipRequest: false,
-    },
-];
+type ManagerDialogType =
+    | 'ownership-request'
+    | 'leave-request'
+    | 'leave-approval'
+    | 'transfer-ownership'
+    | 'remove'
+    | 'send-message'
+    | null;
 
 interface ManagersTabProps {
-    initialManagers?: ProjectManagerRowData[];
-    /** Called after ownership is successfully transferred to a new manager */
-    onOwnershipChanged?: (newOwnerId: number) => void;
-    /** Called after a leave request is successfully submitted */
-    onLeaveRequested?: () => void;
+    managers: ProjectManagerRowData[];
 }
 
-export function ManagersTab({
-    initialManagers = MOCK_MANAGERS,
-    onOwnershipChanged,
-    onLeaveRequested,
-}: ManagersTabProps) {
+const BLUE_BUTTON_CLASSES =
+    'bg-brand-blue-700 hover:bg-brand-blue-800 h-[30px] cursor-pointer rounded-lg px-3.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50';
+const YELLOW_BUTTON_CLASSES =
+    'text-brand-blue-900 h-[30px] cursor-pointer rounded-lg bg-yellow-300 px-3.5 text-sm font-semibold hover:bg-yellow-400';
+
+function WarningAlert({ children }: { children: ReactNode }) {
+    return (
+        <div
+            className="mb-6 flex gap-3 rounded-md border border-yellow-500 bg-yellow-50 p-3"
+            role="alert"
+        >
+            <TriangleAlert className="size-[19px] shrink-0 text-yellow-600" aria-hidden="true" />
+            <p className="text-xs leading-5 font-medium text-yellow-600">{children}</p>
+        </div>
+    );
+}
+
+/** Disabled action button with a "Requested" note and an Undo link below it */
+function RequestedIndicator({ buttonLabel, onUndo }: { buttonLabel: string; onUndo: () => void }) {
+    const { t } = useTranslations();
+
+    return (
+        <div className="flex flex-col items-center gap-1">
+            <button type="button" disabled className={BLUE_BUTTON_CLASSES}>
+                {buttonLabel}
+            </button>
+            <span className="text-xs font-medium text-slate-500">
+                {t('projects.managers_tab.requested_label')}{' '}
+                <button
+                    type="button"
+                    onClick={onUndo}
+                    className="cursor-pointer font-semibold text-slate-600 underline"
+                >
+                    {t('projects.managers_tab.undo_label')}
+                </button>
+            </span>
+        </div>
+    );
+}
+
+function StatusBadge({ manager }: { manager: ProjectManagerRowData }) {
+    const { t } = useTranslations();
+
+    if (!manager.accepted) {
+        return <Badge variant="slate">{t('projects.managers_tab.status_pending')}</Badge>;
+    }
+    if (manager.isActive) {
+        return <Badge variant="lime">{t('projects.managers_tab.status_active')}</Badge>;
+    }
+    return <Badge variant="slate">{t('projects.managers_tab.status_inactive')}</Badge>;
+}
+
+interface OwnershipCellProps {
+    manager: ProjectManagerRowData;
+    onAcceptOwnership: () => void;
+    onTransfer: () => void;
+    onUndoTransfer: () => void;
+}
+
+function OwnershipCell({
+    manager,
+    onAcceptOwnership,
+    onTransfer,
+    onUndoTransfer,
+}: OwnershipCellProps) {
+    const { t } = useTranslations();
+
+    if (manager.canAcceptToBecomeOwner) {
+        return (
+            <button type="button" onClick={onAcceptOwnership} className={YELLOW_BUTTON_CLASSES}>
+                {t('projects.managers_tab.ownership_request_button')}
+            </button>
+        );
+    }
+    if (manager.proposedToBecomeOwner) {
+        return (
+            <RequestedIndicator
+                buttonLabel={t('projects.managers_tab.transfer_button')}
+                onUndo={onUndoTransfer}
+            />
+        );
+    }
+    if (manager.canTransferOwnership) {
+        return (
+            <button
+                type="button"
+                onClick={onTransfer}
+                disabled={!manager.accepted}
+                className={BLUE_BUTTON_CLASSES}
+            >
+                {t('projects.managers_tab.transfer_button')}
+            </button>
+        );
+    }
+    return null;
+}
+
+interface ActionsCellProps {
+    manager: ProjectManagerRowData;
+    onLeaveApproval: () => void;
+    onLeaveRequest: () => void;
+    onUndoLeaveRequest: () => void;
+    onRemove: () => void;
+}
+
+function ActionsCell({
+    manager,
+    onLeaveApproval,
+    onLeaveRequest,
+    onUndoLeaveRequest,
+    onRemove,
+}: ActionsCellProps) {
+    const { t } = useTranslations();
+
+    return (
+        <div className="flex items-center justify-center gap-2">
+            {manager.canAcceptRequestToLeave && (
+                <button type="button" onClick={onLeaveApproval} className={YELLOW_BUTTON_CLASSES}>
+                    {t('projects.managers_tab.leave_request_button')}
+                </button>
+            )}
+            {manager.canRequestToLeave &&
+                (manager.requestToLeave ? (
+                    <RequestedIndicator
+                        buttonLabel={t('projects.managers_tab.leave_button')}
+                        onUndo={onUndoLeaveRequest}
+                    />
+                ) : (
+                    <button type="button" onClick={onLeaveRequest} className={BLUE_BUTTON_CLASSES}>
+                        {t('projects.managers_tab.leave_button')}
+                    </button>
+                ))}
+            {manager.canRemove && (
+                <button type="button" onClick={onRemove} className={BLUE_BUTTON_CLASSES}>
+                    {t('projects.managers_tab.remove_button')}
+                </button>
+            )}
+        </div>
+    );
+}
+
+export function ManagersTab({ managers }: ManagersTabProps) {
     const { t, trans } = useTranslations();
-    const [managers, setManagers] = useState<ProjectManagerRowData[]>(initialManagers);
     const [dialogType, setDialogType] = useState<ManagerDialogType>(null);
     const [dialogManager, setDialogManager] = useState<ProjectManagerRowData | null>(null);
 
@@ -84,21 +209,41 @@ export function ManagersTab({
 
     const handleApproveOwnership = () => {
         if (!dialogManager) return;
-        setManagers((prev) =>
-            prev.map((m) => {
-                if (m.id === dialogManager.id)
-                    return { ...m, role: 'owner' as const, hasOwnershipRequest: false };
-                if (m.role === 'owner') return { ...m, role: 'co-manager' as const };
-                return m;
-            })
-        );
-        onOwnershipChanged?.(dialogManager.id);
+        // TODO(backend): router.post(route('projects.managers.accept-ownership', ...))
         closeDialog();
     };
 
     const handleSendLeaveRequest = () => {
+        // TODO(backend): router.post(route('projects.managers.request-to-leave', ...))
         toast.success('Leave request sent successfully.');
-        onLeaveRequested?.();
+        closeDialog();
+    };
+
+    const handleUndoLeaveRequest = () => {
+        // TODO(backend): router.delete(route('projects.managers.request-to-leave', ...))
+        // — will need the row's manager passed back in.
+    };
+
+    const handleApproveLeave = () => {
+        if (!dialogManager) return;
+        // TODO(backend): router.post(route('projects.managers.accept-request-to-leave', ...))
+        closeDialog();
+    };
+
+    const handleConfirmTransfer = () => {
+        if (!dialogManager) return;
+        // TODO(backend): router.post(route('projects.managers.transfer-ownership', ...))
+        closeDialog();
+    };
+
+    const handleUndoTransfer = () => {
+        // TODO(backend): router.delete(route('projects.managers.transfer-ownership', ...))
+        // — will need the row's manager passed back in.
+    };
+
+    const handleConfirmRemove = () => {
+        if (!dialogManager) return;
+        // TODO(backend): router.delete(route('projects.managers.detach', ...))
         closeDialog();
     };
 
@@ -141,6 +286,9 @@ export function ManagersTab({
                                     {t('projects.managers_tab.table_role')}
                                 </TableHead>
                                 <TableHead className="text-center text-sm font-semibold text-slate-800">
+                                    {t('projects.managers_tab.table_status')}
+                                </TableHead>
+                                <TableHead className="text-center text-sm font-semibold text-slate-800">
                                     {t('projects.managers_tab.table_ownership')}
                                 </TableHead>
                                 <TableHead className="text-center text-sm font-semibold text-slate-800">
@@ -155,12 +303,16 @@ export function ManagersTab({
                                     className="hover:bg-brand-blue-50 h-[76px] border-b border-slate-300 bg-white"
                                 >
                                     <TableCell className="pl-4">
-                                        <UserTableCell
-                                            initials={manager.initials}
-                                            username={manager.username}
-                                            email={manager.email}
-                                            onMessage={() => openDialog('send-message', manager)}
-                                        />
+                                        <div className={cn(!manager.accepted && 'opacity-50')}>
+                                            <UserTableCell
+                                                initials={manager.initials}
+                                                username={manager.username}
+                                                email={manager.email}
+                                                onMessage={() =>
+                                                    openDialog('send-message', manager)
+                                                }
+                                            />
+                                        </div>
                                     </TableCell>
                                     <TableCell className="text-center">
                                         {manager.role === 'owner' ? (
@@ -168,34 +320,43 @@ export function ManagersTab({
                                                 {t('projects.managers_tab.role_owner')}
                                             </span>
                                         ) : (
-                                            <span className="inline-flex h-[22px] items-center justify-center rounded border border-cyan-300 px-2 py-px text-center text-xs font-semibold text-cyan-600">
+                                            <span
+                                                className={cn(
+                                                    'inline-flex h-[22px] items-center justify-center rounded border border-cyan-300 px-2 py-px text-center text-xs font-semibold text-cyan-600',
+                                                    !manager.accepted && 'opacity-50'
+                                                )}
+                                            >
                                                 {t('projects.managers_tab.role_co_manager')}
                                             </span>
                                         )}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        {manager.hasOwnershipRequest && (
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    openDialog('ownership-request', manager)
-                                                }
-                                                className="text-brand-blue-900 h-[30px] cursor-pointer rounded-lg bg-yellow-300 px-3.5 text-sm font-semibold hover:bg-yellow-400"
-                                            >
-                                                {t(
-                                                    'projects.managers_tab.ownership_request_button'
-                                                )}
-                                            </button>
-                                        )}
+                                        <StatusBadge manager={manager} />
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <button
-                                            type="button"
-                                            onClick={() => openDialog('leave-request', manager)}
-                                            className="bg-brand-blue-700 hover:bg-brand-blue-800 h-[30px] cursor-pointer rounded-lg px-3.5 text-sm font-semibold text-white"
-                                        >
-                                            {t('projects.managers_tab.leave_button')}
-                                        </button>
+                                        <OwnershipCell
+                                            manager={manager}
+                                            onAcceptOwnership={() =>
+                                                openDialog('ownership-request', manager)
+                                            }
+                                            onTransfer={() =>
+                                                openDialog('transfer-ownership', manager)
+                                            }
+                                            onUndoTransfer={handleUndoTransfer}
+                                        />
+                                    </TableCell>
+                                    <TableCell className="text-center">
+                                        <ActionsCell
+                                            manager={manager}
+                                            onLeaveApproval={() =>
+                                                openDialog('leave-approval', manager)
+                                            }
+                                            onLeaveRequest={() =>
+                                                openDialog('leave-request', manager)
+                                            }
+                                            onUndoLeaveRequest={handleUndoLeaveRequest}
+                                            onRemove={() => openDialog('remove', manager)}
+                                        />
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -204,7 +365,9 @@ export function ManagersTab({
                 </div>
             </div>
 
-            {/* ── Ownership Request dialog ─────────────────────────────────── */}
+            {/* ── Ownership Request dialog (accept proposed ownership) ─────── */}
+            {/* TODO(backend): Reject must become its own action — ProjectDialog's
+                cancel button only calls onClose today. */}
             <ProjectDialog
                 open={dialogType === 'ownership-request'}
                 onClose={closeDialog}
@@ -230,7 +393,7 @@ export function ManagersTab({
                 actionStyle="highlighted"
             />
 
-            {/* ── Leave Request dialog ──────────────────────────────────────── */}
+            {/* ── Leave Request dialog (send my own request) ────────────────── */}
             <ProjectDialog
                 open={dialogType === 'leave-request'}
                 onClose={closeDialog}
@@ -249,18 +412,77 @@ export function ManagersTab({
                 onAction={handleSendLeaveRequest}
                 actionStyle="highlighted"
             >
-                <div
-                    className="mb-6 flex gap-3 rounded-md border border-yellow-500 bg-yellow-50 p-3"
-                    role="alert"
-                >
-                    <TriangleAlert
-                        className="size-[19px] shrink-0 text-yellow-600"
-                        aria-hidden="true"
-                    />
-                    <p className="text-xs leading-5 font-medium text-yellow-600">
-                        {t('projects.managers_tab.dialog_leave_warning')}
-                    </p>
-                </div>
+                <WarningAlert>{t('projects.managers_tab.dialog_leave_warning')}</WarningAlert>
+            </ProjectDialog>
+
+            {/* ── Leave Request approval dialog (owner approves/rejects) ────── */}
+            {/* TODO(backend): Reject must become its own action — see note above. */}
+            <ProjectDialog
+                open={dialogType === 'leave-approval'}
+                onClose={closeDialog}
+                icon={<LogOut />}
+                title={t('projects.managers_tab.dialog_leave_approval_title')}
+                description={
+                    <>
+                        <p>
+                            {trans('projects.managers_tab.dialog_leave_approval_description', {
+                                username: dialogManager?.username ?? '',
+                            })}
+                        </p>
+                        <p className="mt-[14px]">
+                            {t('projects.managers_tab.dialog_leave_approval_question')}
+                        </p>
+                    </>
+                }
+                cancelLabel={t('projects.managers_tab.dialog_ownership_reject')}
+                cancelIcon={<X className="size-4" aria-hidden="true" />}
+                actionLabel={t('projects.managers_tab.dialog_ownership_approve')}
+                actionIcon={<Check className="size-4" aria-hidden="true" />}
+                onAction={handleApproveLeave}
+                actionStyle="highlighted"
+            >
+                <WarningAlert>
+                    {trans('projects.managers_tab.dialog_leave_approval_warning', {
+                        username: dialogManager?.username ?? '',
+                    })}
+                </WarningAlert>
+            </ProjectDialog>
+
+            {/* ── Transfer Ownership dialog ─────────────────────────────────── */}
+            <ProjectDialog
+                open={dialogType === 'transfer-ownership'}
+                onClose={closeDialog}
+                icon={<CircleStar />}
+                title={t('projects.managers_tab.dialog_transfer_title')}
+                description={trans('projects.managers_tab.dialog_transfer_description', {
+                    username: dialogManager?.username ?? '',
+                })}
+                actionLabel={t('projects.managers_tab.dialog_transfer_send')}
+                actionIcon={<Send className="size-4" aria-hidden="true" />}
+                onAction={handleConfirmTransfer}
+                actionStyle="highlighted"
+            >
+                <WarningAlert>{t('projects.managers_tab.dialog_transfer_warning')}</WarningAlert>
+            </ProjectDialog>
+
+            {/* ── Remove co-manager dialog ──────────────────────────────────── */}
+            <ProjectDialog
+                open={dialogType === 'remove'}
+                onClose={closeDialog}
+                icon={<UserMinus />}
+                title={t('projects.managers_tab.remove_dialog_title')}
+                description={trans('projects.managers_tab.remove_dialog_description', {
+                    username: dialogManager?.username ?? '',
+                })}
+                cancelLabel={t('projects.create.cancel')}
+                actionLabel={t('projects.managers_tab.remove_confirm')}
+                onAction={handleConfirmRemove}
+            >
+                <WarningAlert>
+                    {trans('projects.managers_tab.remove_dialog_warning', {
+                        username: dialogManager?.username ?? '',
+                    })}
+                </WarningAlert>
             </ProjectDialog>
 
             {/* ── Send Message dialog ───────────────────────────────────────── */}

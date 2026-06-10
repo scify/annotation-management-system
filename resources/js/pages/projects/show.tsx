@@ -59,6 +59,13 @@ interface BackendManagerData {
     status: string;
     owner: boolean;
     accepted: boolean;
+    request_to_leave: boolean;
+    proposed_to_become_owner: boolean;
+    can_request_to_leave: boolean;
+    can_remove: boolean;
+    can_transfer_ownership: boolean;
+    can_accept_to_become_owner: boolean;
+    can_accept_request_to_leave: boolean;
 }
 
 interface Props {
@@ -116,7 +123,15 @@ export default function ProjectShow({
         username: m.username,
         email: m.email,
         role: m.owner ? 'owner' : 'co-manager',
-        hasOwnershipRequest: false, // TODO: awaiting backend field
+        isActive: m.status === 'active',
+        accepted: m.accepted,
+        requestToLeave: m.request_to_leave,
+        proposedToBecomeOwner: m.proposed_to_become_owner,
+        canRequestToLeave: m.can_request_to_leave,
+        canRemove: m.can_remove,
+        canTransferOwnership: m.can_transfer_ownership,
+        canAcceptToBecomeOwner: m.can_accept_to_become_owner,
+        canAcceptRequestToLeave: m.can_accept_request_to_leave,
     }));
 
     const progress = Math.round(project_data.project_progress * 100);
@@ -223,7 +238,7 @@ export default function ProjectShow({
                         projectStatus={project_data.status}
                     />
                 )}
-                {activeTab === 'managers' && <ManagersTab initialManagers={managers} />}
+                {activeTab === 'managers' && <ManagersTab managers={managers} />}
                 {activeTab === 'export' && (
                     <ExportTab projectId={project_data.id} subProjects={subProjects} />
                 )}

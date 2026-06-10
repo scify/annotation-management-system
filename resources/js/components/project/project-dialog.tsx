@@ -64,7 +64,7 @@ export function ProjectDialog({
                 if (!isOpen) onClose();
             }}
         >
-            <DialogContent className="flex flex-col gap-6 rounded-2xl p-6 shadow-[0px_2px_5px_3px_rgba(0,0,0,0.1)] sm:max-w-sm">
+            <DialogContent className="flex flex-col gap-6 rounded-2xl p-6 shadow-[0px_2px_5px_3px_rgba(0,0,0,0.1)] sm:max-w-md">
                 <DialogHeader className="flex flex-col gap-4 pb-6">
                     {/* Icon */}
                     <div className="text-brand-blue-700 [&_svg]:size-9">{icon}</div>
