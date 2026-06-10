@@ -11,6 +11,7 @@ use App\Http\Requests\Project\DetachAnnotatorFromProjectRequest;
 use App\Http\Requests\Project\ProjectChangeStatusRequest;
 use App\Http\Requests\Project\ProjectExportRequest;
 use App\Http\Requests\Project\ProjectStoreRequest;
+use App\Http\Requests\Project\ProposeOwnershipTransferRequest;
 use App\Http\Requests\Project\ToggleCanFlagRequest;
 use App\Models\Project;
 use App\Models\User;
@@ -18,6 +19,7 @@ use App\Services\Annotation\AnnotatorService;
 use App\Services\Project\ProjectReadService;
 use App\Services\Project\ProjectWriteService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -165,5 +167,17 @@ class ProjectController extends Controller {
         $this->dumpDebugJson($data, 'project-show-data-' . $user->role . '.json');
 
         return Inertia::render('projects/show', $data);
+    }
+
+    public function proposeOwnership(ProposeOwnershipTransferRequest $request, int $id): JsonResponse {
+        try {
+            $this->projectService->proposeOwnershipTransfer($id, $request->integer('user_id'));
+        } catch (PresentableError $presentableError) {
+            return response()->json(['error' => $presentableError->getUserMessage()], 422);
+        }
+
+        return response()->json([
+            'comanagers_data' => $this->projectReadService->getCoManagersData($id),
+        ]);
     }
 }

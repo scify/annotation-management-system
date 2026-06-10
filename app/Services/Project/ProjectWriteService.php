@@ -7,6 +7,7 @@ namespace App\Services\Project;
 use App\Enums\ProjectStatusEnum;
 use App\Exceptions\AnnotatorDetachException;
 use App\Exceptions\InvalidProjectStatusTransitionException;
+use App\Exceptions\ProjectOwnershipException;
 use App\Models\Project;
 use App\Models\User;
 use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
@@ -16,6 +17,7 @@ use App\Queries\Project\CompleteSubProjectsByProjectQuery;
 use App\Queries\Project\DeleteAnnotationsByProjectQuery;
 use App\Queries\Project\DetachAnnotatorFromProjectQuery;
 use App\Queries\Project\GetSubProjectIdsQuery;
+use App\Queries\Project\ProposeOwnershipTransferQuery;
 use App\Queries\Project\StoreInstanceShuffleMappersQuery;
 use App\Queries\Project\StoreProjectManagerQuery;
 use App\Queries\Project\StoreProjectQuery;
@@ -36,6 +38,7 @@ readonly class ProjectWriteService {
         private CompleteSubProjectsByProjectQuery $completeSubProjectsByProjectQuery,
         private DeleteAnnotationsByProjectQuery $deleteAnnotationsByProjectQuery,
         private DetachAnnotatorFromProjectQuery $detachAnnotatorFromProjectQuery,
+        private ProposeOwnershipTransferQuery $proposeOwnershipTransferQuery,
         private StoreInstanceShuffleMappersQuery $storeInstanceShuffleMappersQuery,
         private StoreProjectManagerQuery $storeProjectManagerQuery,
         private StoreProjectQuery $storeProjectQuery,
@@ -130,6 +133,14 @@ readonly class ProjectWriteService {
     public function deleteProject(Project $project): void {
         $this->deleteAnnotationsByProjectQuery->execute($project->id);
         $project->delete();
+    }
+
+    public function proposeOwnershipTransfer(int $projectId, int $userId): void {
+        if ($this->proposeOwnershipTransferQuery->hasActiveProposal($projectId)) {
+            throw ProjectOwnershipException::ownershipAlreadyProposed();
+        }
+
+        $this->proposeOwnershipTransferQuery->execute($projectId, $userId);
     }
 
     /**
