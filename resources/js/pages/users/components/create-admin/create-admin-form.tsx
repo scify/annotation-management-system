@@ -159,6 +159,7 @@ export function CreateAdminForm({ adminData, user }: CreateAdminFormProps) {
                 currentStep={currentStep}
                 steps={steps}
                 stepsWithErrors={stepsWithErrors}
+                onStepClick={isEditing ? setCurrentStep : undefined}
             />
 
             <div>

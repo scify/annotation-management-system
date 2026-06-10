@@ -119,13 +119,13 @@ export function CreateManagerForm({ managerData, user }: CreateManagerFormProps)
                 return personalInfoFilled && passwordValid;
             }
             case 1:
-                return form.data.annotation_task_ids.length >= 1;
+                return isEditing || form.data.annotation_task_ids.length >= 1;
             case 2:
-                return form.data.dataset_ids.length >= 1;
+                return isEditing || form.data.dataset_ids.length >= 1;
             case 3:
-                return form.data.project_ids.length >= 1;
+                return isEditing || form.data.project_ids.length >= 1;
             case 4:
-                return form.data.annotator_ids.length + lockedAnnotatorIds.length >= 1;
+                return isEditing || form.data.annotator_ids.length + lockedAnnotatorIds.length >= 1;
             default:
                 return true;
         }
@@ -174,6 +174,7 @@ export function CreateManagerForm({ managerData, user }: CreateManagerFormProps)
                 currentStep={currentStep}
                 steps={steps}
                 stepsWithErrors={stepsWithErrors}
+                onStepClick={isEditing ? setCurrentStep : undefined}
             />
 
             <div>

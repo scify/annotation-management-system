@@ -152,6 +152,59 @@ describe('UserController', function (): void {
             ->name->not->toBe('Updated Name');
     });
 
+    it('allows updating a manager with empty task, dataset, project and annotator collections', function (): void {
+        // Arrange
+        $this->actingAs($this->admin)->get(route('users.edit', $this->annotationManager));
+
+        // Act
+        $response = $this->put(route('users.update', $this->annotationManager), [
+            'type' => RolesEnum::ANNOTATION_MANAGER->value,
+            'name' => 'Updated Manager',
+            'username' => $this->faker->unique()->userName(),
+            'email' => $this->annotationManager->email,
+            'annotation_task_ids' => [],
+            'dataset_ids' => [],
+            'project_ids' => [],
+            'annotator_ids' => [],
+            '_token' => session('_token'),
+        ]);
+
+        // Assert
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('users.index'));
+
+        expect(User::query()->find($this->annotationManager->id))
+            ->name->toBe('Updated Manager');
+    });
+
+    it('still requires at least one of each collection when creating a manager', function (): void {
+        // Arrange
+        $this->actingAs($this->admin)->get(route('users.create', ['type' => RolesEnum::ANNOTATION_MANAGER->value]));
+
+        // Act
+        $response = $this->post(route('users.store'), [
+            'type' => RolesEnum::ANNOTATION_MANAGER->value,
+            'name' => 'New Manager',
+            'username' => $this->faker->unique()->userName(),
+            'email' => $this->faker->unique()->safeEmail(),
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+            'annotation_task_ids' => [],
+            'dataset_ids' => [],
+            'project_ids' => [],
+            'annotator_ids' => [],
+            '_token' => session('_token'),
+        ]);
+
+        // Assert
+        $response->assertSessionHasErrors([
+            'annotation_task_ids',
+            'dataset_ids',
+            'project_ids',
+            'annotator_ids',
+        ]);
+    });
+
     it('soft deletes an active or inactive user', function (): void {
         // Arrange
         $user = User::factory()->create(['status' => StatusEnum::ACTIVE]);
