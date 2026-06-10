@@ -177,15 +177,16 @@ describe('UserController', function (): void {
             ->name->toBe('Updated Manager');
     });
 
-    it('still requires at least one of each collection when creating a manager', function (): void {
+    it('allows creating a manager with empty task, dataset, project and annotator collections', function (): void {
         // Arrange
         $this->actingAs($this->admin)->get(route('users.create', ['type' => RolesEnum::ANNOTATION_MANAGER->value]));
+        $username = $this->faker->unique()->userName();
 
         // Act
         $response = $this->post(route('users.store'), [
             'type' => RolesEnum::ANNOTATION_MANAGER->value,
             'name' => 'New Manager',
-            'username' => $this->faker->unique()->userName(),
+            'username' => $username,
             'email' => $this->faker->unique()->safeEmail(),
             'password' => 'password123',
             'password_confirmation' => 'password123',
@@ -197,12 +198,15 @@ describe('UserController', function (): void {
         ]);
 
         // Assert
-        $response->assertSessionHasErrors([
-            'annotation_task_ids',
-            'dataset_ids',
-            'project_ids',
-            'annotator_ids',
-        ]);
+        $response->assertSessionHasNoErrors();
+        $response->assertRedirect(route('users.index'));
+
+        $manager = User::query()->where('username', $username)->first();
+
+        expect($manager)
+            ->not->toBeNull()
+            ->name->toBe('New Manager')
+            ->and($manager->hasRole(RolesEnum::ANNOTATION_MANAGER->value))->toBeTrue();
     });
 
     it('soft deletes an active or inactive user', function (): void {

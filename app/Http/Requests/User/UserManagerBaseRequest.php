@@ -28,18 +28,16 @@ abstract class UserManagerBaseRequest extends FormRequest {
     /**
      * @return array<string, mixed>
      */
-    protected function sharedRules(bool $collectionsRequired = true): array {
-        $collectionRules = $collectionsRequired ? ['required', 'array', 'min:1'] : ['present', 'array'];
-
+    protected function sharedRules(): array {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'project_ids' => $collectionRules,
+            'project_ids' => ['present', 'array'],
             'project_ids.*' => ['integer', Rule::exists('projects', 'id')],
-            'annotator_ids' => $collectionRules,
+            'annotator_ids' => ['present', 'array'],
             'annotator_ids.*' => ['integer', Rule::exists('users', 'id')],
-            'annotation_task_ids' => $collectionRules,
+            'annotation_task_ids' => ['present', 'array'],
             'annotation_task_ids.*' => ['integer', Rule::exists('annotation_tasks', 'id')],
-            'dataset_ids' => $collectionRules,
+            'dataset_ids' => ['present', 'array'],
             'dataset_ids.*' => ['integer', Rule::exists('datasets', 'id')],
         ];
     }

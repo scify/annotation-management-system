@@ -43,7 +43,6 @@ return [
         'heading' => 'Datasets',
         'instances' => ':count Instances',
         'no_task_types' => 'No task types selected. Go back to step 2 and select at least one task type.',
-        'min_one_required' => 'Select at least 1 dataset to continue.',
     ],
     'select_annotators' => [
         'heading' => 'Connect to Annotators',
@@ -93,7 +92,6 @@ return [
     ],
     'tasks_access' => [
         'heading' => 'Tasks & Datasets',
-        'min_one_required' => 'Select at least 1 task type to continue.',
     ],
     'steps' => [
         'personal_info' => 'Personal Info',

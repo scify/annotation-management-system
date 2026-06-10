@@ -21,7 +21,7 @@ class UserUpdateManagerRequest extends UserManagerBaseRequest {
         $routeUser = $this->route('user');
         $userId = $routeUser instanceof User ? $routeUser->id : 0;
 
-        return array_merge($this->sharedRules(false), [
+        return array_merge($this->sharedRules(), [
             'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($userId)],
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($userId)],
             'password' => ['sometimes', 'confirmed', Password::defaults()],

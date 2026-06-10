@@ -118,14 +118,6 @@ export function CreateManagerForm({ managerData, user }: CreateManagerFormProps)
                       form.data.password === form.data.password_confirmation;
                 return personalInfoFilled && passwordValid;
             }
-            case 1:
-                return isEditing || form.data.annotation_task_ids.length >= 1;
-            case 2:
-                return isEditing || form.data.dataset_ids.length >= 1;
-            case 3:
-                return isEditing || form.data.project_ids.length >= 1;
-            case 4:
-                return isEditing || form.data.annotator_ids.length + lockedAnnotatorIds.length >= 1;
             default:
                 return true;
         }
@@ -234,10 +226,6 @@ export function CreateManagerForm({ managerData, user }: CreateManagerFormProps)
                                 : form.data.password !== '' && !isPasswordStrong(form.data.password)
                                   ? t('users.validation.password_weak')
                                   : t('users.steps.personal_info_hint'))}
-                        {currentStep === 1 && t('users.tasks_access.min_one_required')}
-                        {currentStep === 2 && t('users.datasets.min_one_required')}
-                        {currentStep === 3 && t('users.connect_projects.min_one_required')}
-                        {currentStep === 4 && t('users.select_annotators.min_one_required')}
                     </p>
                 )}
                 <Link
