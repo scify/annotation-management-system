@@ -45,6 +45,9 @@ return [
         'action_set_in_progress' => 'Set as In Progress',
         'action_test' => 'Test',
         'action_view_edit' => 'View / Edit',
+        'delete_dialog_title' => 'Delete Subproject',
+        'delete_dialog_description' => 'Are you sure you want to delete ":name"? This action cannot be undone.',
+        'delete_confirm' => 'Delete',
     ],
 
     'select_annotators' => [

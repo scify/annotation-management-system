@@ -45,6 +45,9 @@ return [
         'action_set_in_progress' => 'Ορισμός ως Σε Εξέλιξη',
         'action_test' => 'Δοκιμή',
         'action_view_edit' => 'Προβολή / Επεξεργασία',
+        'delete_dialog_title' => 'Διαγραφή Υποέργου',
+        'delete_dialog_description' => 'Είστε βέβαιοι ότι θέλετε να διαγράψετε το ":name"; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.',
+        'delete_confirm' => 'Διαγραφή',
     ],
 
     'select_annotators' => [
