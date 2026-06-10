@@ -6,7 +6,6 @@ namespace App\Services\Project;
 
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
-use App\Models\AnnotationAssignment;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfProject;
 use App\Models\Dataset;
@@ -17,13 +16,16 @@ use App\Models\User;
 use App\Queries\Annotator\GetAnnotatorIdsByProjectsQuery;
 use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\Manager\GetCoManagersQuery;
+use App\Queries\Manager\GetConnectedProjectIdsByUserQuery;
 use App\Queries\Project\GetAnnotationTasksQuery;
+use App\Queries\Project\GetManagerIdsByProjectsQuery;
 use App\Queries\Project\GetProjectBasicDataQuery;
 use App\Queries\Project\GetProjectIdsManagedByUserQuery;
 use App\Queries\Project\GetProjectsByIdsQuery;
 use App\Queries\Project\GetProjectsManagedByUserQuery;
 use App\Queries\Project\GetProjectsQuery;
 use App\Queries\Project\GetSubProjectIdsQuery;
+use App\Queries\SubProject\GetAnnotatorIdsBySubProjectQuery;
 use App\Services\Annotation\AnnotatorService;
 use App\Services\SubProject\SubProjectWriteService;
 use Illuminate\Database\Eloquent\Collection;
@@ -33,10 +35,13 @@ readonly class ProjectReadService {
     public function __construct(
         private AnnotatorService $annotatorService,
         private SubProjectWriteService $subProjectService,
+        private GetAnnotatorIdsBySubProjectQuery $annotatorIdsBySubProjectQuery,
+        private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
         private GetCoManagersQuery $coManagersQuery,
+        private GetConnectedProjectIdsByUserQuery $connectedProjectIdsQuery,
         private GetAnnotationTasksQuery $getAnnotationTasksQuery,
         private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
-        private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
+        private GetManagerIdsByProjectsQuery $managerIdsByProjectsQuery,
         private GetProjectBasicDataQuery $projectBasicDataQuery,
         private GetProjectIdsManagedByUserQuery $projectIdsByManagerQuery,
         private GetProjectsByIdsQuery $projectsByIdsQuery,
@@ -82,7 +87,7 @@ readonly class ProjectReadService {
         $project = $this->projectsByIdsQuery->get([$id])->firstOrFail();
         $subprojectsData = $this->subProjectService->getSubProjectsData($project->subProjects);
 
-        $annotatorPivotRows = AnnotatorOfProject::query()->where('project_id', $project->id)->get();
+        $annotatorPivotRows = $this->annotatorProjectLinksQuery->getAll($project->id);
 
         /** @var array<int, int> $annotatorIds */
         $annotatorIds = $annotatorPivotRows->pluck('user_id')->all();
@@ -99,11 +104,9 @@ readonly class ProjectReadService {
         $annotatorsData = $this->annotatorService->getProjectAnnotatorsData($annotatorIds, $subProjectIds, $progressBySubProject);
 
         /** @var array<int, true> $blockedAnnotatorIds */
-        $blockedAnnotatorIds = AnnotationAssignment::query()
-            ->whereIn('sub_project_id', $subProjectIds->all())
-            ->pluck('user_id')
-            ->flip()
-            ->all();
+        $blockedAnnotatorIds = array_flip(
+            $this->annotatorIdsBySubProjectQuery->getBySubProjectIds($subProjectIds->all())
+        );
 
         $annotatorsData = array_map(
             function (array $annotator) use ($canFlagByAnnotatorId, $blockedAnnotatorIds): array {
@@ -443,14 +446,8 @@ readonly class ProjectReadService {
             ];
         }
 
-        $myProjectIds = ProjectManager::query()->where('user_id', $user->id)->pluck('project_id');
-        $collaboratorIds = ProjectManager::query()
-            ->whereIn('project_id', $myProjectIds)
-            ->pluck('user_id')
-            ->unique()
-            ->reject(fn (mixed $id): bool => is_numeric($id) && (int) $id === $user->id)
-            ->values()
-            ->all();
+        $myProjectIds = $this->connectedProjectIdsQuery->get($user->id);
+        $collaboratorIds = $this->managerIdsByProjectsQuery->get($myProjectIds, $user->id);
 
         if ($collaboratorIds === []) {
             return ['co_managers' => []];

@@ -6,6 +6,7 @@ namespace App\Services\Settings;
 
 use App\Enums\PasswordCompositionEnum;
 use App\Models\AnnotatorPasswordPolicy;
+use App\Queries\Settings\GetAnnotatorPasswordPolicyQuery;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rules\Password;
 
@@ -13,6 +14,10 @@ readonly class AnnotatorPasswordPolicyService {
     private const string CACHE_KEY = 'annotator_password_policy';
 
     private const int CACHE_TTL = 3600;
+
+    public function __construct(
+        private GetAnnotatorPasswordPolicyQuery $policyQuery,
+    ) {}
 
     public function getPolicy(): AnnotatorPasswordPolicy {
         $cached = Cache::get(self::CACHE_KEY);
@@ -25,7 +30,7 @@ readonly class AnnotatorPasswordPolicyService {
         }
 
         if ($cached === null) {
-            $record = AnnotatorPasswordPolicy::query()->firstOrFail();
+            $record = $this->policyQuery->get();
             $cached = [
                 'min_length' => $record->min_length,
                 'composition_mode' => $record->composition_mode->value,
@@ -64,7 +69,7 @@ readonly class AnnotatorPasswordPolicyService {
      * @param  array<string, mixed>  $data
      */
     public function updatePolicy(array $data): AnnotatorPasswordPolicy {
-        $policy = AnnotatorPasswordPolicy::query()->firstOrFail();
+        $policy = $this->policyQuery->get();
 
         $policy->update($data);
 

@@ -256,7 +256,7 @@ class DummyProjectSeeder extends Seeder {
             if ($entry['project']['is_instance_shuffled']) {
                 /** @var int $datasetId */
                 $datasetId = $entry['project']['dataset_id'];
-                $shuffled = new DatasetService()->generateShuffledIndexArray($datasetId);
+                $shuffled = resolve(DatasetService::class)->generateShuffledIndexArray($datasetId);
                 $counter = count($shuffled);
                 for ($i = 0; $i < $counter; $i++) {
                     InstanceShuffleMapper::query()->updateOrCreate(

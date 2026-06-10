@@ -20,6 +20,23 @@ final readonly class GetAnnotatorIdsBySubProjectQuery {
         return $result;
     }
 
+    /**
+     * @param  array<int, int>  $subProjectIds
+     *
+     * @return array<int, int>
+     */
+    public function getBySubProjectIds(array $subProjectIds): array {
+        if ($subProjectIds === []) {
+            return [];
+        }
+
+        /** @var array<int, int> */
+        return AnnotationAssignment::query()
+            ->whereIn('sub_project_id', $subProjectIds)
+            ->pluck('user_id')
+            ->all();
+    }
+
     public function isInstanceShuffled(int $subProjectId): bool {
         return (bool) AnnotationAssignment::query()
             ->where('sub_project_id', $subProjectId)

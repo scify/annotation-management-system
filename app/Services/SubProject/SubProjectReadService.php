@@ -6,7 +6,6 @@ namespace App\Services\SubProject;
 
 use App\Enums\AgreementEnum;
 use App\Enums\ProjectStatusEnum;
-use App\Models\AnnotationAssignment;
 use App\Models\AnnotatorOfProject;
 use App\Models\SubProject;
 use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
@@ -15,6 +14,7 @@ use App\Queries\Project\GetProjectBasicDataQuery;
 use App\Queries\Project\GetSubProjectIdsQuery;
 use App\Queries\Project\GetSubsetInfoByProjectQuery;
 use App\Queries\SubProject\GetAnnotatorIdsBySubProjectQuery;
+use App\Queries\SubProject\GetSubProjectByProjectAndIdQuery;
 use App\Services\Annotation\AnnotationService;
 use App\Services\Annotation\AnnotatorService;
 use Illuminate\Support\Collection;
@@ -30,6 +30,7 @@ readonly class SubProjectReadService {
         private GetSubProjectIdsQuery $subProjectIdsQuery,
         private GetSubsetInfoByProjectQuery $subsetInfoQuery,
         private GetAnnotatorIdsBySubProjectQuery $annotatorIdsBySubProjectQuery,
+        private GetSubProjectByProjectAndIdQuery $subProjectByProjectAndIdQuery,
     ) {}
 
     /**
@@ -47,10 +48,7 @@ readonly class SubProjectReadService {
      * @return array<string, mixed>
      */
     public function getDataForEditSubProject(int $projectId, int $subprojectId): array {
-        $subProject = SubProject::query()
-            ->with(['project.annotationTask', 'project.dataset:id,name'])
-            ->where('project_id', $projectId)
-            ->findOrFail($subprojectId);
+        $subProject = $this->subProjectByProjectAndIdQuery->getForEdit($projectId, $subprojectId);
 
         return [
             'project_name' => $subProject->project->name,
@@ -64,11 +62,7 @@ readonly class SubProjectReadService {
      * @return array<string, mixed>
      */
     public function getDataForAddAnnotators(int $projectId, int $subprojectId): array {
-        $subProject = SubProject::query()
-            ->select(['id', 'project_id', 'name'])
-            ->with('project:id,name')
-            ->where('project_id', $projectId)
-            ->findOrFail($subprojectId);
+        $subProject = $this->subProjectByProjectAndIdQuery->getForAddAnnotators($projectId, $subprojectId);
 
         /** @var array<int, int> $projectAnnotatorIds */
         $projectAnnotatorIds = $this->annotatorProjectLinksQuery->getAll($projectId)
@@ -135,10 +129,7 @@ readonly class SubProjectReadService {
      */
     private function buildAnnotatorsData(SubProject $subProject): array {
         /** @var array<int, int> $annotatorIds */
-        $annotatorIds = AnnotationAssignment::query()
-            ->where('sub_project_id', $subProject->id)
-            ->pluck('user_id')
-            ->all();
+        $annotatorIds = $this->annotatorIdsBySubProjectQuery->get($subProject->id);
 
         /** @var Collection<int, int> $activeSubProjectIds */
         $activeSubProjectIds = collect([$subProject->id]);

@@ -9,13 +9,13 @@ use Database\Seeders\DummyDataSeeder;
 describe('DatasetService::generateShuffledIndexArray', function (): void {
     beforeEach(function (): void {
         $this->seed(DummyDataSeeder::class);
-        $this->dataset = Dataset::query()->first();
+        $this->dataset = Dataset::query()->where('name', 'News Articles EL')->firstOrFail();
     });
 
     it('returns a permutation of 0..size-1 matching the number of dataset instances', function (): void {
 
         // Act
-        $result = new DatasetService()->generateShuffledIndexArray($this->dataset->id);
+        $result = resolve(DatasetService::class)->generateShuffledIndexArray($this->dataset->id);
 
         // Assert
         $sorted = $result;

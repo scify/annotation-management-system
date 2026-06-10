@@ -4,15 +4,19 @@ declare(strict_types=1);
 
 namespace App\Services\Dataset;
 
-use App\Models\DatasetInstance;
+use App\Queries\Dataset\GetDatasetSizeQuery;
 use Illuminate\Support\Arr;
 
 class DatasetService {
+    public function __construct(
+        private readonly GetDatasetSizeQuery $datasetSizeQuery,
+    ) {}
+
     /**
      * @return list<int>
      */
     public function generateShuffledIndexArray(int $datasetId): array {
-        $size = DatasetInstance::query()->where('dataset_id', $datasetId)->count();
+        $size = $this->datasetSizeQuery->get($datasetId);
 
         $indices = range(1, $size);
         $indices = Arr::shuffle($indices);

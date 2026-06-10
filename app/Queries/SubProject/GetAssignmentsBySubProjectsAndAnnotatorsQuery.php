@@ -24,4 +24,18 @@ final readonly class GetAssignmentsBySubProjectsAndAnnotatorsQuery {
             ->whereIn('user_id', $annotatorIds)
             ->get();
     }
+
+    /**
+     * @param  array<int, int>  $subProjectIds
+     */
+    public function existsBySubProjectsAndAnnotator(array $subProjectIds, int $annotatorId): bool {
+        if ($subProjectIds === []) {
+            return false;
+        }
+
+        return AnnotationAssignment::query()
+            ->whereIn('sub_project_id', $subProjectIds)
+            ->where('user_id', $annotatorId)
+            ->exists();
+    }
 }

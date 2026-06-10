@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Services\User;
 
 use App\Enums\RolesEnum;
-use App\Models\AnnotatorOfProject;
 use App\Models\User;
 use App\Queries\Annotator\GetAnnotatorIdsByManagerQuery;
+use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\Annotator\GetAnnotatorsByManagerQuery;
 use App\Queries\Annotator\GetAnnotatorsQuery;
 use App\Queries\Annotator\GetManagerIdsByAnnotatorQuery;
@@ -30,6 +30,7 @@ readonly class UserManagementService {
         private AnnotatorStatsService $annotatorStatsService,
         private GetManagerIdsByAnnotatorQuery $getManagerIdsByAnnotatorQuery,
         private GetAnnotatorIdsByManagerQuery $getAnnotatorIdsByManagerQuery,
+        private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
         private GetConnectedProjectIdsByUserQuery $getConnectedProjectIdsByUserQuery,
         private GetAnnotationTaskIdsByManagerQuery $getAnnotationTaskIdsByManagerQuery,
         private GetDatasetIdsByManagerQuery $getDatasetIdsByManagerQuery,
@@ -285,11 +286,10 @@ readonly class UserManagementService {
             return;
         }
 
+        /** @var array<int, int> $projectIds */
         $projectIds = array_column($projects, 'id');
 
-        $rows = AnnotatorOfProject::query()
-            ->whereIn('project_id', $projectIds)
-            ->get(['project_id', 'user_id']);
+        $rows = $this->annotatorProjectLinksQuery->getByProjectIds($projectIds);
 
         /** @var array<int, array<int, int>> $annotatorIdsByProject */
         $annotatorIdsByProject = [];

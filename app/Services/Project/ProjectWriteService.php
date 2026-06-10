@@ -7,18 +7,20 @@ namespace App\Services\Project;
 use App\Enums\ProjectStatusEnum;
 use App\Exceptions\AnnotatorDetachException;
 use App\Exceptions\InvalidProjectStatusTransitionException;
-use App\Models\AnnotationAssignment;
-use App\Models\AnnotatorOfProject;
-use App\Models\InstanceShuffleMapper;
 use App\Models\Project;
-use App\Models\ProjectManager;
-use App\Models\SubProject;
 use App\Models\User;
+use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
+use App\Queries\Manager\ConnectManagerToAnnotatorsQuery;
 use App\Queries\Project\AttachAnnotatorsToProjectQuery;
 use App\Queries\Project\CompleteSubProjectsByProjectQuery;
 use App\Queries\Project\DeleteAnnotationsByProjectQuery;
 use App\Queries\Project\DetachAnnotatorFromProjectQuery;
+use App\Queries\Project\GetSubProjectIdsQuery;
+use App\Queries\Project\StoreInstanceShuffleMappersQuery;
+use App\Queries\Project\StoreProjectManagerQuery;
+use App\Queries\Project\StoreProjectQuery;
 use App\Queries\Project\UpdateProjectStatusQuery;
+use App\Queries\SubProject\GetAssignmentsBySubProjectsAndAnnotatorsQuery;
 use App\Services\Dataset\DatasetService;
 use Illuminate\Support\Facades\DB;
 use Throwable;
@@ -26,11 +28,18 @@ use Throwable;
 readonly class ProjectWriteService {
     public function __construct(
         private DatasetService $datasetService,
+        private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
+        private GetAssignmentsBySubProjectsAndAnnotatorsQuery $assignmentsBySubProjectsAndAnnotatorsQuery,
+        private GetSubProjectIdsQuery $subProjectIdsQuery,
+        private ConnectManagerToAnnotatorsQuery $connectManagerToAnnotatorsQuery,
         private AttachAnnotatorsToProjectQuery $attachAnnotatorsToProjectQuery,
-        private DetachAnnotatorFromProjectQuery $detachAnnotatorFromProjectQuery,
-        private UpdateProjectStatusQuery $updateProjectStatusQuery,
         private CompleteSubProjectsByProjectQuery $completeSubProjectsByProjectQuery,
         private DeleteAnnotationsByProjectQuery $deleteAnnotationsByProjectQuery,
+        private DetachAnnotatorFromProjectQuery $detachAnnotatorFromProjectQuery,
+        private StoreInstanceShuffleMappersQuery $storeInstanceShuffleMappersQuery,
+        private StoreProjectManagerQuery $storeProjectManagerQuery,
+        private StoreProjectQuery $storeProjectQuery,
+        private UpdateProjectStatusQuery $updateProjectStatusQuery,
     ) {}
 
     /**
@@ -47,30 +56,12 @@ readonly class ProjectWriteService {
             /** @var array<int, int> $coManagerIds */
             $coManagerIds = $data['co_manager_ids'] ?? [];
 
-            $project = Project::query()->create([
-                'name' => $data['name'],
-                'owner_user_id' => $owner->id,
-                'annotation_task_id' => $data['annotation_task_id'],
-                'dataset_id' => $data['dataset_id'],
-                'status' => ProjectStatusEnum::PENDING,
-                'is_instance_shuffled' => $data['is_instance_shuffled'],
-                'annotation_task_configuration' => $data['annotation_task_configuration'] ?? null,
-                'restricted_visibility' => $data['restricted_visibility'],
-                'scheduled_at' => $data['scheduled_at'] ?? null,
-                'deadline_at' => $data['deadline_at'] ?? null,
-            ]);
+            $project = $this->storeProjectQuery->execute($data, $owner->id);
 
-            ProjectManager::query()->create([
-                'project_id' => $project->id,
-                'user_id' => $owner->id,
-                'accepted' => true,
-            ]);
+            $this->storeProjectManagerQuery->create($project->id, $owner->id);
 
             foreach ($coManagerIds as $managerId) {
-                ProjectManager::query()->firstOrCreate(
-                    ['project_id' => $project->id, 'user_id' => $managerId],
-                    ['accepted' => true],
-                );
+                $this->storeProjectManagerQuery->firstOrCreate($project->id, $managerId);
             }
 
             if ($project->is_instance_shuffled) {
@@ -87,7 +78,7 @@ readonly class ProjectWriteService {
                     ];
                 }
 
-                InstanceShuffleMapper::query()->insert($rows);
+                $this->storeInstanceShuffleMappersQuery->insert($rows);
             }
 
             $project->annotators()->sync($annotatorIds);
@@ -104,15 +95,10 @@ readonly class ProjectWriteService {
     }
 
     public function detachAnnotator(int $projectId, int $annotatorId): void {
-        $subProjectIds = SubProject::query()
-            ->where('project_id', $projectId)
-            ->pluck('id')
-            ->all();
+        $subProjectIds = $this->subProjectIdsQuery->get([$projectId])->all();
 
-        $hasAssignments = AnnotationAssignment::query()
-            ->whereIn('sub_project_id', $subProjectIds)
-            ->where('user_id', $annotatorId)
-            ->exists();
+        $hasAssignments = $this->assignmentsBySubProjectsAndAnnotatorsQuery
+            ->existsBySubProjectsAndAnnotator($subProjectIds, $annotatorId);
 
         if ($hasAssignments) {
             throw AnnotatorDetachException::annotatorHasSubProjectAssignments();
@@ -153,26 +139,12 @@ readonly class ProjectWriteService {
      * TODO: wire this call into the invitation acceptance handler once implemented.
      */
     public function assignAnnotatorsToManagers(int $projectId, int $managerId): void {
-        $annotatorIds = AnnotatorOfProject::query()
-            ->where('project_id', $projectId)
-            ->pluck('user_id')
-            ->all();
+        $annotatorIds = $this->annotatorProjectLinksQuery->getUserIds($projectId);
 
         if ($annotatorIds === []) {
             return;
         }
 
-        $now = now();
-        $rows = [];
-        foreach ($annotatorIds as $annotatorId) {
-            $rows[] = [
-                'manager_id' => $managerId,
-                'annotator_id' => $annotatorId,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
-        }
-
-        DB::table('annotator_of_managers')->insertOrIgnore($rows);
+        $this->connectManagerToAnnotatorsQuery->bulkConnect($managerId, $annotatorIds);
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Queries\Manager;
 
 use App\Models\AnnotatorOfManager;
+use Illuminate\Support\Facades\Date;
 
 final readonly class ConnectManagerToAnnotatorsQuery {
     /**
@@ -17,5 +18,24 @@ final readonly class ConnectManagerToAnnotatorsQuery {
                 'annotator_id' => $annotatorId,
             ]);
         }
+    }
+
+    /**
+     * @param  array<int, int>  $annotatorIds
+     */
+    public function bulkConnect(int $managerId, array $annotatorIds): void {
+        if ($annotatorIds === []) {
+            return;
+        }
+
+        $now = Date::now();
+        $rows = array_map(fn (int $annotatorId): array => [
+            'manager_id' => $managerId,
+            'annotator_id' => $annotatorId,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ], $annotatorIds);
+
+        AnnotatorOfManager::query()->insertOrIgnore($rows);
     }
 }

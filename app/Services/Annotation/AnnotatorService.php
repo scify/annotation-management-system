@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Annotation;
 
-use App\Models\AnnotatorOfProject;
 use App\Models\User;
+use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\Annotator\GetAnnotatorsQuery;
 use App\Queries\Annotator\GetCountsOfActiveProjectsPerAnnotatorQuery;
 use App\Queries\Annotator\GetCountsOfSubprojectsPerAnnotatorQuery;
@@ -15,6 +15,7 @@ readonly class AnnotatorService {
     public function __construct(
         private WorkloadService $workloadService,
         private GetAnnotatorsQuery $activeAnnotatorsQuery,
+        private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
         private GetCountsOfActiveProjectsPerAnnotatorQuery $annotatorActiveProjectCountsQuery,
         private GetCountsOfSubprojectsPerAnnotatorQuery $annotatorSubprojectCountsQuery,
     ) {}
@@ -80,9 +81,7 @@ readonly class AnnotatorService {
     }
 
     public function toggleCanFlag(int $annotatorId, int $projectId): void {
-        $record = AnnotatorOfProject::query()->where('user_id', $annotatorId)
-            ->where('project_id', $projectId)
-            ->firstOrFail();
+        $record = $this->annotatorProjectLinksQuery->getByAnnotatorAndProject($annotatorId, $projectId);
 
         $record->can_flag = ! $record->can_flag;
         $record->save();

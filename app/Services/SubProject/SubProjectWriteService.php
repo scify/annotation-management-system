@@ -13,7 +13,10 @@ use App\Queries\Project\UpdateProjectStatusQuery;
 use App\Queries\SubProject\AttachAnnotatorsToSubProjectQuery;
 use App\Queries\SubProject\DeleteAnnotationsBySubProjectQuery;
 use App\Queries\SubProject\DetachAnnotatorFromSubProjectQuery;
+use App\Queries\SubProject\GetAssignmentsBySubProjectsQuery;
+use App\Queries\SubProject\GetPendingSubProjectsRangeQuery;
 use App\Queries\SubProject\GetProgressQuery;
+use App\Queries\SubProject\GetSubProjectByIdQuery;
 use App\Queries\SubProject\StoreSubProjectQuery;
 use App\Queries\SubProject\UpdateSubProjectStatusQuery;
 use Carbon\Carbon;
@@ -25,7 +28,10 @@ readonly class SubProjectWriteService {
         private AttachAnnotatorsToSubProjectQuery $attachAnnotatorsToSubProjectQuery,
         private DeleteAnnotationsBySubProjectQuery $deleteAnnotationsBySubProjectQuery,
         private DetachAnnotatorFromSubProjectQuery $detachAnnotatorFromSubProjectQuery,
+        private GetAssignmentsBySubProjectsQuery $assignmentsBySubProjectsQuery,
+        private GetPendingSubProjectsRangeQuery $pendingSubProjectsRangeQuery,
         private GetProgressQuery $progressQuery,
+        private GetSubProjectByIdQuery $subProjectByIdQuery,
         private StoreSubProjectQuery $storeSubProjectQuery,
         private UpdateSubProjectStatusQuery $updateSubProjectStatusQuery,
         private UpdateProjectStatusQuery $updateProjectStatusQuery,
@@ -69,12 +75,12 @@ readonly class SubProjectWriteService {
      * @param  array<int, int>  $annotatorIds
      */
     public function attachAnnotators(int $subProjectId, array $annotatorIds): void {
-        $subProject = SubProject::query()->with('project')->findOrFail($subProjectId);
+        $subProject = $this->subProjectByIdQuery->getWithProject($subProjectId);
         $this->attachAnnotatorsToSubProjectQuery->attach($subProject, $annotatorIds);
     }
 
     public function detachAnnotator(int $subProjectId, int $annotatorId): void {
-        $subProject = SubProject::query()->findOrFail($subProjectId);
+        $subProject = $this->subProjectByIdQuery->get($subProjectId);
 
         if ($subProject->status !== ProjectStatusEnum::PENDING) {
             throw AnnotatorDetachException::subProjectNotPending();
@@ -134,10 +140,7 @@ readonly class SubProjectWriteService {
         $assignmentsBySubProject = array_fill_keys($subProjectIds, []);
 
         /** @var Collection<int, AnnotationAssignment> $assignmentRows */
-        $assignmentRows = AnnotationAssignment::query()
-            ->whereIn('sub_project_id', $subProjectIds)
-            ->select('id', 'sub_project_id', 'user_id')
-            ->get();
+        $assignmentRows = $this->assignmentsBySubProjectsQuery->get($subProjectIds);
 
         $assignmentToSubProject = [];
         $assignmentUsers = [];
@@ -164,12 +167,7 @@ readonly class SubProjectWriteService {
             ));
 
             /** @var \Illuminate\Support\Collection<int, SubProject> $pendingMeta */
-            $pendingMeta = SubProject::query()
-                ->whereIn('id', $spIdsForMissing)
-                ->where('status', ProjectStatusEnum::PENDING)
-                ->select('id', 'first_instance_index', 'last_instance_index')
-                ->get()
-                ->keyBy('id');
+            $pendingMeta = $this->pendingSubProjectsRangeQuery->get($spIdsForMissing)->keyBy('id');
 
             foreach ($assignmentIdsWithNoData as $assignmentId) {
                 $spId = $assignmentToSubProject[$assignmentId];
@@ -224,6 +222,7 @@ readonly class SubProjectWriteService {
                 'id' => $subProject->id,
                 'name' => $subProject->name,
                 'status' => $subProject->status->value,
+                'priority' => $subProject->priority->value,
                 'scheduled_at' => $subProject->scheduled_at,
                 'deadline_at' => $subProject->deadline_at,
                 'started_at' => $subProject->started_at,

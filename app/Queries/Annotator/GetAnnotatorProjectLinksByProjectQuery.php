@@ -32,4 +32,38 @@ final readonly class GetAnnotatorProjectLinksByProjectQuery {
             ->where('project_id', $projectId)
             ->get();
     }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getUserIds(int $projectId): array {
+        /** @var array<int, int> */
+        return AnnotatorOfProject::query()
+            ->where('project_id', $projectId)
+            ->pluck('user_id')
+            ->all();
+    }
+
+    public function getByAnnotatorAndProject(int $annotatorId, int $projectId): AnnotatorOfProject {
+        /** @var AnnotatorOfProject */
+        return AnnotatorOfProject::query()
+            ->where('user_id', $annotatorId)
+            ->where('project_id', $projectId)
+            ->firstOrFail();
+    }
+
+    /**
+     * @param  array<int, int>  $projectIds
+     *
+     * @return Collection<int, AnnotatorOfProject>
+     */
+    public function getByProjectIds(array $projectIds): Collection {
+        if ($projectIds === []) {
+            return new Collection();
+        }
+
+        return AnnotatorOfProject::query()
+            ->whereIn('project_id', $projectIds)
+            ->get(['project_id', 'user_id']);
+    }
 }
