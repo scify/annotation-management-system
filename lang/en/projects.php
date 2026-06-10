@@ -120,6 +120,9 @@ return [
         'dialog_transfer_description' => 'This action will send a request to transfer the Ownership of this Project to :username.',
         'dialog_transfer_warning' => 'By transferring the Ownership, you will become a Co-Manager of this Project',
         'dialog_transfer_send' => 'Request Transfer',
+        'transfer_proposed' => 'Ownership transfer requested.',
+        'ownership_accepted' => 'You are now the owner of this project.',
+        'ownership_rejected' => 'Ownership proposal declined.',
         'remove_dialog_title' => 'Remove Co-Manager',
         'remove_dialog_description' => 'Do you want to remove :username from this Project?',
         'remove_dialog_warning' => "By removing them, :username will no longer have access to this Project's data",
@@ -195,6 +198,7 @@ return [
         'deleted' => 'Project deleted successfully.',
         'status_changed' => 'Project status updated successfully.',
         'invalid_status_transition' => 'This status transition is not allowed.',
+        'generic_error' => 'Something went wrong. Please try again.',
     ],
 
     'validation' => [

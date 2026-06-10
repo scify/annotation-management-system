@@ -11,6 +11,7 @@ import { type ProjectManagerRowData } from '@/components/project/managers-tab';
 import { SubprojectsTab } from '@/components/project/subprojects-tab';
 import { STATUS_VARIANT, toInitials } from '@/components/project/project-card';
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
+import { apiFetch } from '@/lib/api';
 import { type BreadcrumbItem } from '@/types';
 import { formatDate } from '@/utils/format';
 import { Head, router } from '@inertiajs/react';
@@ -87,6 +88,31 @@ export default function ProjectShow({
 }: Props) {
     const { t } = useTranslations();
     const [activeTab, setActiveTab] = useState<TabKey>('subprojects');
+    const [comanagers, setComanagers] = useState(comanagers_data);
+
+    const handleTransferOwnership = async (managerId: number) => {
+        const { comanagers_data: updated } = await apiFetch<{
+            comanagers_data: BackendManagerData[];
+        }>(route('projects.propose-ownership', project_data.id), {
+            method: 'POST',
+            body: JSON.stringify({ user_id: managerId }),
+        });
+        setComanagers(updated);
+    };
+
+    const handleAcceptOwnership = async () => {
+        const { comanagers_data: updated } = await apiFetch<{
+            comanagers_data: BackendManagerData[];
+        }>(route('projects.accept-ownership', project_data.id), { method: 'POST' });
+        setComanagers(updated);
+    };
+
+    const handleRejectOwnership = async () => {
+        const { comanagers_data: updated } = await apiFetch<{
+            comanagers_data: BackendManagerData[];
+        }>(route('projects.reject-ownership', project_data.id), { method: 'POST' });
+        setComanagers(updated);
+    };
 
     const subProjects: SubProjectListItemData[] = subprojects_data.map((sp) => ({
         id: sp.id,
@@ -117,7 +143,7 @@ export default function ProjectShow({
         can_be_removed: a.can_be_removed,
     }));
 
-    const managers: ProjectManagerRowData[] = comanagers_data.map((m) => ({
+    const managers: ProjectManagerRowData[] = comanagers.map((m) => ({
         id: m.id,
         initials: toInitials(m.username),
         username: m.username,
@@ -147,7 +173,7 @@ export default function ProjectShow({
             label: t('projects.show.tab_annotators'),
             count: annotators_data.length,
         },
-        { key: 'managers', label: t('projects.show.tab_managers'), count: comanagers_data.length },
+        { key: 'managers', label: t('projects.show.tab_managers'), count: comanagers.length },
         { key: 'export', label: t('projects.show.tab_export') },
     ];
 
@@ -238,7 +264,14 @@ export default function ProjectShow({
                         projectStatus={project_data.status}
                     />
                 )}
-                {activeTab === 'managers' && <ManagersTab managers={managers} />}
+                {activeTab === 'managers' && (
+                    <ManagersTab
+                        managers={managers}
+                        onTransferOwnership={handleTransferOwnership}
+                        onAcceptOwnership={handleAcceptOwnership}
+                        onRejectOwnership={handleRejectOwnership}
+                    />
+                )}
                 {activeTab === 'export' && (
                     <ExportTab projectId={project_data.id} subProjects={subProjects} />
                 )}
