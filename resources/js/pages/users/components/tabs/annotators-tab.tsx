@@ -68,28 +68,30 @@ export function AnnotatorsTab({ allAnnotators, myAnnotators }: AnnotatorsTabProp
                     <h2 className="text-xl font-medium text-slate-800">
                         {t('users.tabs.annotators')}
                     </h2>
-                    <div className="flex items-center gap-2">
-                        <button
-                            role="switch"
-                            type="button"
-                            aria-checked={showOnlyMine}
-                            onClick={() => setShowOnlyMine(!showOnlyMine)}
-                            className={cn(
-                                'focus-visible:ring-brand-blue-700 relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-                                showOnlyMine ? 'bg-brand-blue-700' : 'bg-slate-300'
-                            )}
-                        >
-                            <span
+                    {!!allAnnotators?.length && (
+                        <div className="flex items-center gap-2">
+                            <button
+                                role="switch"
+                                type="button"
+                                aria-checked={showOnlyMine}
+                                onClick={() => setShowOnlyMine(!showOnlyMine)}
                                 className={cn(
-                                    'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm motion-safe:transition-transform motion-safe:duration-200',
-                                    showOnlyMine ? 'translate-x-5' : 'translate-x-0'
+                                    'focus-visible:ring-brand-blue-700 relative h-6 w-11 shrink-0 cursor-pointer rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
+                                    showOnlyMine ? 'bg-brand-blue-700' : 'bg-slate-300'
                                 )}
-                            />
-                        </button>
-                        <span className="text-sm font-medium text-slate-800">
-                            {t('users.filters.show_only_mine_annotators')}
-                        </span>
-                    </div>
+                            >
+                                <span
+                                    className={cn(
+                                        'absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm motion-safe:transition-transform motion-safe:duration-200',
+                                        showOnlyMine ? 'translate-x-5' : 'translate-x-0'
+                                    )}
+                                />
+                            </button>
+                            <span className="text-sm font-medium text-slate-800">
+                                {t('users.filters.show_only_mine_annotators')}
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 {can('create_annotators') && (
