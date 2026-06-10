@@ -202,7 +202,11 @@ export function ManagersTab({ allManagers, myManagers }: ManagersTabProps) {
                                     <TableCell>
                                         <div className="flex items-center justify-center gap-2">
                                             <Link
-                                                href={route('users.edit', manager.id)}
+                                                href={
+                                                    isAnnotationManager()
+                                                        ? route('users.annotators.add', manager.id)
+                                                        : route('users.edit', manager.id)
+                                                }
                                                 className="bg-brand-yellow-300 text-brand-blue-900 hover:bg-brand-yellow-400 focus-visible:ring-brand-yellow-300 inline-flex h-[30px] min-w-[100px] items-center justify-center rounded-lg px-3.5 text-sm font-semibold focus-visible:ring-2 focus-visible:outline-none"
                                             >
                                                 {isAnnotationManager()
