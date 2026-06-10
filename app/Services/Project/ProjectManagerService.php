@@ -8,6 +8,7 @@ use App\Exceptions\ProjectOwnershipException;
 use App\Queries\Project\AcceptOwnershipTransferQuery;
 use App\Queries\Project\ProposeOwnershipTransferQuery;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 readonly class ProjectManagerService {
     public function __construct(
@@ -23,6 +24,9 @@ readonly class ProjectManagerService {
         $this->proposeOwnershipTransferQuery->execute($projectId, $userId);
     }
 
+    /**
+     * @throws Throwable
+     */
     public function acceptOwnershipTransfer(int $projectId, int $userId): void {
         DB::transaction(function () use ($projectId, $userId): void {
             $this->acceptOwnershipTransferQuery->clearProposal($projectId, $userId);
@@ -31,6 +35,10 @@ readonly class ProjectManagerService {
     }
 
     public function rejectOwnershipTransfer(int $projectId, int $userId): void {
+        $this->acceptOwnershipTransferQuery->clearProposal($projectId, $userId);
+    }
+
+    public function cancelOwnershipTransfer(int $projectId, int $userId): void {
         $this->acceptOwnershipTransferQuery->clearProposal($projectId, $userId);
     }
 }

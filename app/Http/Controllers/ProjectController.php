@@ -8,6 +8,7 @@ use App\Enums\ProjectStatusEnum;
 use App\Exceptions\PresentableError;
 use App\Http\Requests\Project\AcceptOwnershipTransferRequest;
 use App\Http\Requests\Project\AttachAnnotatorsToProjectRequest;
+use App\Http\Requests\Project\CancelOwnershipTransferRequest;
 use App\Http\Requests\Project\DetachAnnotatorFromProjectRequest;
 use App\Http\Requests\Project\ProjectChangeStatusRequest;
 use App\Http\Requests\Project\ProjectExportRequest;
@@ -189,6 +190,14 @@ class ProjectController extends Controller {
         abort_unless($user instanceof User, 401);
 
         $this->projectManagerService->rejectOwnershipTransfer($id, $user->id);
+
+        return response()->json([
+            'comanagers_data' => $this->projectReadService->getCoManagersData($id),
+        ]);
+    }
+
+    public function cancelOwnership(CancelOwnershipTransferRequest $request, int $id): JsonResponse {
+        $this->projectManagerService->cancelOwnershipTransfer($id, $request->integer('user_id'));
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
