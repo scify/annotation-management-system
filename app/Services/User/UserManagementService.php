@@ -11,6 +11,7 @@ use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\Annotator\GetAnnotatorsByManagerQuery;
 use App\Queries\Annotator\GetAnnotatorsQuery;
 use App\Queries\Annotator\GetManagerIdsByAnnotatorQuery;
+use App\Queries\Manager\ConnectManagerToAnnotatorsQuery;
 use App\Queries\Manager\GetAnnotationTaskIdsByManagerQuery;
 use App\Queries\Manager\GetConnectedProjectIdsByUserQuery;
 use App\Queries\Manager\GetDatasetIdsByManagerQuery;
@@ -31,6 +32,7 @@ readonly class UserManagementService {
         private GetManagerIdsByAnnotatorQuery $getManagerIdsByAnnotatorQuery,
         private GetAnnotatorIdsByManagerQuery $getAnnotatorIdsByManagerQuery,
         private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
+        private ConnectManagerToAnnotatorsQuery $connectManagerToAnnotatorsQuery,
         private GetConnectedProjectIdsByUserQuery $getConnectedProjectIdsByUserQuery,
         private GetAnnotationTaskIdsByManagerQuery $getAnnotationTaskIdsByManagerQuery,
         private GetDatasetIdsByManagerQuery $getDatasetIdsByManagerQuery,
@@ -78,6 +80,35 @@ readonly class UserManagementService {
             $allProjects = $this->projectReadService->getAllProjects();
             $this->augmentProjectsWithAnnotatorIds($allProjects);
             $data['all_projects'] = $allProjects;
+            $data['all_annotators'] = $this->getAllAnnotators();
+        }
+
+        return $data;
+    }
+
+    /**
+     * @param  array<int, int>  $annotatorIds
+     */
+    public function connectAnnotatorsToManager(int $managerId, array $annotatorIds): void {
+        $this->connectManagerToAnnotatorsQuery->bulkConnect($managerId, $annotatorIds);
+    }
+
+    /**
+     * @return array{
+     *     manager: array{id: int, username: string},
+     *     my_annotators: array<int, array<string, mixed>>,
+     *     annotator_ids: array<int, int>,
+     *     all_annotators?: array<int, array<string, mixed>>
+     * }
+     */
+    public function getDataForConnectAnnotators(User $targetManager, User $currentUser): array {
+        $data = [
+            'manager' => ['id' => $targetManager->id, 'username' => $targetManager->username],
+            'my_annotators' => $this->getMyAnnotatorsForCreate($currentUser->id),
+            'annotator_ids' => $this->getAnnotatorIdsByManagerQuery->get($targetManager->id),
+        ];
+
+        if ($currentUser->hasRole(RolesEnum::ADMIN)) {
             $data['all_annotators'] = $this->getAllAnnotators();
         }
 

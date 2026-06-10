@@ -97,6 +97,14 @@ class UserPolicy {
         return $user->hasRole(RolesEnum::ADMIN);
     }
 
+    public function connectAnnotators(User $user): bool {
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+
+        return $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
+    }
+
     public function restore(User $user): bool {
         return $user->hasRole(RolesEnum::ADMIN);
     }

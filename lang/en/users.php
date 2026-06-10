@@ -139,6 +139,7 @@ return [
         'updated' => 'User updated successfully',
         'deleted' => 'User deleted successfully',
         'restored' => 'User restored successfully',
+        'annotators_connected' => 'Annotators connected successfully.',
     ],
     'validation' => [
         'name_taken' => 'A user with this name already exists.',

@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\RolesEnum;
 use App\Exceptions\PresentableError;
+use App\Http\Requests\User\ConnectAnnotatorsToManagerRequest;
 use App\Http\Requests\User\UserCreateRequest;
 use App\Http\Requests\User\UserStoreAdminRequest;
 use App\Http\Requests\User\UserStoreAnnotatorRequest;
@@ -189,6 +190,28 @@ class UserController extends Controller {
 
         return to_route('users.index')
             ->with('success', __('users.messages.updated'));
+    }
+
+    public function showConnectAnnotators(Request $request, User $user): Response {
+        $this->authorize('connectAnnotators', User::class);
+
+        /** @var User $currentUser */
+        $currentUser = $request->user();
+
+        $data = $this->userManagementService->getDataForConnectAnnotators($user, $currentUser);
+
+        $this->dumpDebugJson($data, 'user-connect-annotators-data.json');
+
+        return Inertia::render('users/connect-annotators', $data);
+    }
+
+    public function connectAnnotators(ConnectAnnotatorsToManagerRequest $request, User $user): RedirectResponse {
+        /** @var array<int, int> $annotatorIds */
+        $annotatorIds = $request->validated('annotator_ids');
+
+        $this->userManagementService->connectAnnotatorsToManager($user->id, $annotatorIds);
+
+        return to_route('users.index')->with('success', __('users.messages.annotators_connected'));
     }
 
     /**

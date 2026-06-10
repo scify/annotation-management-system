@@ -10,8 +10,6 @@ use App\Http\Controllers\SubProjectController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserRestoreController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Inertia\Response;
 
 Route::put('locale', [LocaleController::class, 'update'])->name('locale.update');
 
@@ -51,19 +49,8 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('projects/{projectId}/subprojects/{subprojectId}/add-annotators', [SubProjectController::class, 'showAddAnnotators'])->name('projects.subprojects.annotators.add');
     Route::post('projects/{projectId}/subprojects/{subprojectId}/annotators', [SubProjectController::class, 'attachAnnotators'])->name('projects.subprojects.annotators.attach');
 
-    // TODO: Replace mock data — replace with a real controller/policy/service once the backend is wired up.
-    Route::get('users/{user}/connect-annotators', fn (string $user): Response => Inertia::render('users/connect-annotators', [
-        'manager' => ['id' => (int) $user, 'username' => 'paulisaris'],
-        'my_annotators' => [
-            ['id' => 1, 'name' => 'Adam Smith', 'username' => 'adamsmith', 'status' => 'active', 'total_projects' => 23, 'total_subprojects' => 23, 'total_annotations' => 23, 'total_flags' => 23],
-            ['id' => 2, 'name' => 'Emily Jones', 'username' => 'emilyjones', 'status' => 'active', 'total_projects' => 23, 'total_subprojects' => 23, 'total_annotations' => 23, 'total_flags' => 23],
-            ['id' => 3, 'name' => 'Sarah Lee', 'username' => 'sarahlee', 'status' => 'active', 'total_projects' => 23, 'total_subprojects' => 23, 'total_annotations' => 23, 'total_flags' => 23],
-            ['id' => 4, 'name' => 'David Brown', 'username' => 'davidbrown', 'status' => 'pending', 'total_projects' => 0, 'total_subprojects' => 0, 'total_annotations' => 0, 'total_flags' => 0],
-            ['id' => 5, 'name' => 'John Doe', 'username' => 'johndoe', 'status' => 'active', 'total_projects' => 23, 'total_subprojects' => 23, 'total_annotations' => 23, 'total_flags' => 23],
-            ['id' => 6, 'name' => 'Angela Yang', 'username' => 'angelayang', 'status' => 'active', 'total_projects' => 23, 'total_subprojects' => 23, 'total_annotations' => 23, 'total_flags' => 23],
-        ],
-        'annotator_ids' => [1, 2],
-    ]))->name('users.annotators.add');
+    Route::get('users/{user}/connect-annotators', [UserController::class, 'showConnectAnnotators'])->name('users.annotators.add');
+    Route::post('users/{user}/connect-annotators', [UserController::class, 'connectAnnotators'])->name('users.annotators.connect');
 
     Route::resource('users', UserController::class)->except('show');
 
