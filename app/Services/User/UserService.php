@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Queries\Annotator\ConnectAnnotatorToManagersQuery;
 use App\Queries\Annotator\GetWorkloadsByAnnotatorsQuery;
 use App\Queries\Annotator\SyncManagersForAnnotatorQuery;
+use App\Queries\Dataset\GetDatasetIdsByAnnotationTaskIdsQuery;
 use App\Queries\Manager\ConnectManagerToAnnotationTasksQuery;
 use App\Queries\Manager\ConnectManagerToAnnotatorsQuery;
 use App\Queries\Manager\ConnectManagerToDatasetsQuery;
@@ -19,7 +20,6 @@ use App\Queries\Manager\SyncAnnotationTasksForManagerQuery;
 use App\Queries\Manager\SyncAnnotatorsForManagerQuery;
 use App\Queries\Manager\SyncDatasetsForManagerQuery;
 use App\Queries\Manager\SyncProjectsForManagerQuery;
-use App\Queries\Project\GetDatasetIdsByProjectIdsQuery;
 use App\Queries\User\CreateAdminQuery;
 use App\Queries\User\CreateAnnotatorQuery;
 use App\Queries\User\CreateManagerQuery;
@@ -52,7 +52,7 @@ readonly class UserService {
         private SyncProjectsForManagerQuery $syncProjectsForManagerQuery,
         private SyncAnnotationTasksForManagerQuery $syncAnnotationTasksForManagerQuery,
         private SyncDatasetsForManagerQuery $syncDatasetsForManagerQuery,
-        private GetDatasetIdsByProjectIdsQuery $getDatasetIdsByProjectIdsQuery,
+        private GetDatasetIdsByAnnotationTaskIdsQuery $getDatasetIdsByAnnotationTaskIdsQuery,
     ) {}
 
     /**
@@ -248,8 +248,8 @@ readonly class UserService {
         $this->syncAnnotatorsForManagerQuery->sync(managerId: $user->id, annotatorIds: $data['annotator_ids']);
         $this->syncAnnotationTasksForManagerQuery->sync(managerId: $user->id, annotationTaskIds: $data['annotation_task_ids']);
 
-        $projectDatasetIds = $this->getDatasetIdsByProjectIdsQuery->get($data['project_ids']);
-        $filteredDatasetIds = array_values(array_intersect($data['dataset_ids'], $projectDatasetIds));
+        $taskDatasetIds = $this->getDatasetIdsByAnnotationTaskIdsQuery->get($data['annotation_task_ids']);
+        $filteredDatasetIds = array_values(array_intersect($data['dataset_ids'], $taskDatasetIds));
         $this->syncDatasetsForManagerQuery->sync(managerId: $user->id, datasetIds: $filteredDatasetIds);
 
         return $user;
