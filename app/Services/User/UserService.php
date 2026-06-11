@@ -19,6 +19,7 @@ use App\Queries\Manager\SyncAnnotationTasksForManagerQuery;
 use App\Queries\Manager\SyncAnnotatorsForManagerQuery;
 use App\Queries\Manager\SyncDatasetsForManagerQuery;
 use App\Queries\Manager\SyncProjectsForManagerQuery;
+use App\Queries\Project\GetDatasetIdsByProjectIdsQuery;
 use App\Queries\User\CreateAdminQuery;
 use App\Queries\User\CreateAnnotatorQuery;
 use App\Queries\User\CreateManagerQuery;
@@ -51,6 +52,7 @@ readonly class UserService {
         private SyncProjectsForManagerQuery $syncProjectsForManagerQuery,
         private SyncAnnotationTasksForManagerQuery $syncAnnotationTasksForManagerQuery,
         private SyncDatasetsForManagerQuery $syncDatasetsForManagerQuery,
+        private GetDatasetIdsByProjectIdsQuery $getDatasetIdsByProjectIdsQuery,
     ) {}
 
     /**
@@ -245,7 +247,10 @@ readonly class UserService {
         $this->syncProjectsForManagerQuery->sync(managerId: $user->id, projectIds: $data['project_ids']);
         $this->syncAnnotatorsForManagerQuery->sync(managerId: $user->id, annotatorIds: $data['annotator_ids']);
         $this->syncAnnotationTasksForManagerQuery->sync(managerId: $user->id, annotationTaskIds: $data['annotation_task_ids']);
-        $this->syncDatasetsForManagerQuery->sync(managerId: $user->id, datasetIds: $data['dataset_ids']);
+
+        $projectDatasetIds = $this->getDatasetIdsByProjectIdsQuery->get($data['project_ids']);
+        $filteredDatasetIds = array_values(array_intersect($data['dataset_ids'], $projectDatasetIds));
+        $this->syncDatasetsForManagerQuery->sync(managerId: $user->id, datasetIds: $filteredDatasetIds);
 
         return $user;
     }
