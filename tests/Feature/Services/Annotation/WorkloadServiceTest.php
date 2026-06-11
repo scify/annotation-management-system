@@ -29,7 +29,7 @@ describe('WorkloadService::computeNormalizedWorkloads', function (): void {
             $rows = [];
             for ($i = 0; $i < $count; $i++) {
                 $rows[] = [
-                    'index' => $i,
+                    'index' => $i + 1,
                     'dataset_id' => $dataset->id,
                     'content' => '{}',
                     'created_at' => $now,
@@ -195,15 +195,15 @@ describe('WorkloadService::computeNormalizedWorkloads', function (): void {
         foreach ($assignments as $assignment) {
             /** @var SubProject $sp */
             $sp = $this->allSubProjects->firstWhere('id', $assignment->sub_project_id);
-            $count = $sp->last_instance_index - $sp->first_instance_index;
+            $count = $sp->last_instance_index - $sp->first_instance_index + 1;
 
             $rows = [];
             for ($i = 0; $i < $count; $i++) {
                 $rows[] = [
                     'annotation_assignment_id' => $assignment->id,
                     'dataset_instance_id' => $instanceIds[$i],
-                    'project_instance_index' => $i,
-                    'annotator_instance_index' => $i,
+                    'project_instance_index' => $i + 1,
+                    'annotator_instance_index' => $i + 1,
                     'annotations' => '[]',
                     'created_at' => $now,
                     'updated_at' => $now,
