@@ -1,0 +1,17 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Queries\Notification;
+
+use App\Enums\NotificationThreadTypeEnum;
+use App\Models\NotificationThread;
+
+final readonly class CreateNotificationThreadQuery {
+    public function create(NotificationThreadTypeEnum $type): NotificationThread {
+        /** @var NotificationThread */
+        return NotificationThread::query()->create([
+            'type' => $type,
+        ]);
+    }
+}

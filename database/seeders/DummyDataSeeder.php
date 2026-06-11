@@ -17,6 +17,7 @@ class DummyDataSeeder extends Seeder {
             DummyUsersSeeder::class,
             DummyDatasetsSeeder::class,
             DummyProjectSeeder::class,
+            DummyNotificationsSeeder::class,
         ]);
     }
 }

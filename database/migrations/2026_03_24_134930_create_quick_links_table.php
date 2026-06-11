@@ -11,16 +11,12 @@ return new class() extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('notifications', function (Blueprint $table): void {
+        Schema::create('quick_links', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('notification_thread_id')->constrained('notification_threads')->cascadeOnDelete();
-            $table->foreignId('sender_user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('recipient_user_id')->constrained('users')->cascadeOnDelete();
-            $table->text('body');
-            $table->boolean('is_read')->default(false);
+            $table->string('label');
+            $table->string('url');
             $table->timestamps();
-            $table->index('sender_user_id');
-            $table->index('recipient_user_id');
         });
     }
 
@@ -28,6 +24,6 @@ return new class() extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('quick_links');
     }
 };

@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MonitorController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SubProjectController;
 use App\Http\Controllers\UserController;
@@ -61,6 +62,8 @@ Route::middleware(['auth'])->group(function (): void {
     Route::resource('users', UserController::class)->except('show');
 
     Route::put('/users/{user}/restore', UserRestoreController::class)->name('users.restore')->withTrashed();
+
+    Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
 });
 
 // NOSONAR - this comes from Laravel

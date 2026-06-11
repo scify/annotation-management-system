@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Notification;
 use App\Models\NotificationThread;
-use App\Models\User;
+use App\Models\QuickLink;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Notification>
+ * @extends Factory<QuickLink>
  */
-class NotificationFactory extends Factory {
+class QuickLinkFactory extends Factory {
     /**
      * Define the model's default state.
      *
@@ -21,10 +20,8 @@ class NotificationFactory extends Factory {
     public function definition(): array {
         return [
             'notification_thread_id' => NotificationThread::factory(),
-            'sender_user_id' => null,
-            'recipient_user_id' => User::factory(),
-            'body' => fake()->sentence(),
-            'is_read' => false,
+            'label' => fake()->words(3, true),
+            'url' => '/' . fake()->slug(),
         ];
     }
 }
