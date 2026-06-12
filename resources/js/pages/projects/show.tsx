@@ -124,6 +124,48 @@ export default function ProjectShow({
         setComanagers(updated);
     };
 
+    const handleRequestToLeave = async () => {
+        const { comanagers_data: updated } = await apiFetch<{
+            comanagers_data: BackendManagerData[];
+        }>(route('projects.request-to-leave', project_data.id), { method: 'POST' });
+        setComanagers(updated);
+    };
+
+    const handleCancelLeaveRequest = async () => {
+        const { comanagers_data: updated } = await apiFetch<{
+            comanagers_data: BackendManagerData[];
+        }>(route('projects.cancel-leave-request', project_data.id), { method: 'POST' });
+        setComanagers(updated);
+    };
+
+    const handleApproveLeave = async (managerId: number) => {
+        const { comanagers_data: updated } = await apiFetch<{
+            comanagers_data: BackendManagerData[];
+        }>(route('projects.accept-leave-request', { id: project_data.id, managerId }), {
+            method: 'DELETE',
+        });
+        setComanagers(updated);
+    };
+
+    const handleRejectLeave = async (managerId: number) => {
+        const { comanagers_data: updated } = await apiFetch<{
+            comanagers_data: BackendManagerData[];
+        }>(route('projects.reject-leave-request', project_data.id), {
+            method: 'POST',
+            body: JSON.stringify({ user_id: managerId }),
+        });
+        setComanagers(updated);
+    };
+
+    const handleRemoveManager = async (managerId: number) => {
+        const { comanagers_data: updated } = await apiFetch<{
+            comanagers_data: BackendManagerData[];
+        }>(route('projects.managers.remove', { id: project_data.id, managerId }), {
+            method: 'DELETE',
+        });
+        setComanagers(updated);
+    };
+
     const subProjects: SubProjectListItemData[] = subprojects_data.map((sp) => ({
         id: sp.id,
         name: sp.name,
@@ -281,6 +323,11 @@ export default function ProjectShow({
                         onAcceptOwnership={handleAcceptOwnership}
                         onRejectOwnership={handleRejectOwnership}
                         onCancelOwnership={handleCancelOwnership}
+                        onRequestToLeave={handleRequestToLeave}
+                        onCancelLeaveRequest={handleCancelLeaveRequest}
+                        onApproveLeave={handleApproveLeave}
+                        onRejectLeave={handleRejectLeave}
+                        onRemoveManager={handleRemoveManager}
                     />
                 )}
                 {activeTab === 'export' && (
