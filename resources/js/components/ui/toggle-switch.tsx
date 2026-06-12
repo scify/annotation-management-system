@@ -9,6 +9,8 @@ interface ToggleSwitchProps {
     description?: string;
     /** Accessible label used when no visible `label` text is provided */
     ariaLabel?: string;
+    /** Override the on/off state text shown next to the switch */
+    stateLabels?: { on: string; off: string };
 }
 
 export function ToggleSwitch({
@@ -18,6 +20,7 @@ export function ToggleSwitch({
     label,
     description,
     ariaLabel,
+    stateLabels,
 }: Readonly<ToggleSwitchProps>) {
     const { t } = useTranslations();
 
@@ -56,8 +59,8 @@ export function ToggleSwitch({
                 </span>
                 <span className="text-sm font-medium text-slate-600">
                     {checked
-                        ? t('sub-projects.configuration.toggle_on')
-                        : t('sub-projects.configuration.toggle_off')}
+                        ? (stateLabels?.on ?? t('sub-projects.configuration.toggle_on'))
+                        : (stateLabels?.off ?? t('sub-projects.configuration.toggle_off'))}
                 </span>
             </label>
             {description && <span className="text-sm text-slate-500">{description}</span>}

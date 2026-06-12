@@ -24,5 +24,6 @@ return [
         'users.annotators.add', 'users.annotators.connect', 'projects.cancel-ownership',
         'projects.managers.remove', 'projects.request-to-leave', 'projects.cancel-leave-request',
         'projects.reject-leave-request', 'projects.accept-leave-request',
+        'notifications.index',
     ],
 ];

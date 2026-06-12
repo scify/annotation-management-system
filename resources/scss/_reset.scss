@@ -2,72 +2,80 @@
   Custom Wordplate (aka "_scify") Reset.
   Based on Josh W. Comeau's The CSS Reset, 2023.
   @link https://www.joshwcomeau.com/css/custom-css-reset/
+
+  Wrapped in @layer base (where Tailwind's preflight also lives) so that
+  Tailwind utilities — which live in @layer utilities — can override these
+  rules. Unlayered CSS would always beat layered utilities in the cascade,
+  e.g. `p { padding: 0 }` would override `p-4`.
  */
 
-/* Main reset */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-}
+/* stylelint-disable-next-line at-rule-no-unknown */
+@layer base {
+    /* Main reset */
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+    }
 
-body {
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-}
+    body {
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+    }
 
-html {
-    text-size-adjust: none;
-    text-size-adjust: none;
-    text-size-adjust: none;
-}
+    html {
+        text-size-adjust: none;
+        text-size-adjust: none;
+        text-size-adjust: none;
+    }
 
-p,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-    padding: 0;
-    overflow-wrap: break-word;
-}
+    p,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        padding: 0;
+        overflow-wrap: break-word;
+    }
 
-h1,
-h2,
-h3,
-h4,
-button,
-input,
-label {
-    line-height: 1.1;
-}
+    h1,
+    h2,
+    h3,
+    h4,
+    button,
+    input,
+    label {
+        line-height: 1.1;
+    }
 
-img,
-picture,
-video,
-canvas,
-svg {
-    display: block;
-    max-width: 100%;
-}
+    img,
+    picture,
+    video,
+    canvas,
+    svg {
+        display: block;
+        max-width: 100%;
+    }
 
-input,
-button,
-textarea,
-select {
-    font: inherit;
-}
+    input,
+    button,
+    textarea,
+    select {
+        font: inherit;
+    }
 
-/* Behaves disabled buttons */
-button:disabled,
-button.disabled {
-    cursor: default;
-    pointer-events: none;
-}
+    /* Behaves disabled buttons */
+    button:disabled,
+    button.disabled {
+        cursor: default;
+        pointer-events: none;
+    }
 
-/* Isolates app's z-index */
-#root,
-#app {
-    isolation: isolate;
+    /* Isolates app's z-index */
+    #root,
+    #app {
+        isolation: isolate;
+    }
 }

@@ -40,7 +40,7 @@ export function useNavItems(): SidebarNavItem[] {
         ...(isAdmin() || isAnnotationManager()
             ? [{ title: t('navbar.users'), icon: Users, href: route('users.index') }]
             : []),
-        { title: t('navbar.notifications'), icon: BellRing, href: '#', placeholder: true },
+        { title: t('navbar.notifications'), icon: BellRing, href: route('notifications.index') },
         { title: t('navbar.audit_log'), icon: Captions, href: '#', placeholder: true },
         {
             title: t('navbar.cookies_settings'),

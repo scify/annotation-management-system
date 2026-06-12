@@ -18,15 +18,8 @@ export default function AuthCardLayout({
                 <LocaleToggle className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100" />
             </div>
             <div className="flex w-full max-w-xl flex-col gap-6">
-                <Link
-                    href={route('home')}
-                    className="flex items-center gap-2 self-center font-medium"
-                >
-                    <div className="flex items-center gap-6">
-                        <div className="flex h-22 w-22 items-center justify-center rounded-md">
-                            <AppLogoIcon className="size-22 h-22 fill-current text-[var(--foreground)] dark:text-white" />
-                        </div>
-                    </div>
+                <Link href={route('home')} className="self-center">
+                    <AppLogoIcon className="h-12 gap-2" />
                 </Link>
 
                 <div className="flex flex-col gap-6">

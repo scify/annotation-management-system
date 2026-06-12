@@ -64,6 +64,7 @@ class HandleInertiaRequests extends Middleware {
                 'monitor' => trans('monitor'),
                 'projects' => trans('projects'),
                 'sub-projects' => trans('sub-projects'),
+                'notifications' => trans('notifications'),
             ],
             'auth' => [
                 'user' => $request->user() ? [

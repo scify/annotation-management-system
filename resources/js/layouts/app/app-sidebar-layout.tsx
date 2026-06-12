@@ -61,7 +61,7 @@ export default function AppSidebarLayout({
                                 {t('common.navigation_menu_label')}
                             </SheetTitle>
                             <SheetHeader className="px-4 py-5">
-                                <AppLogoIcon className="h-9 w-auto" />
+                                <AppLogoIcon className="h-[26px]" />
                             </SheetHeader>
                             <nav
                                 className="flex flex-1 flex-col gap-1 px-2 py-2"
@@ -115,7 +115,7 @@ export default function AppSidebarLayout({
                     </Sheet>
 
                     <Link href="/dashboard" prefetch aria-label="Home">
-                        <AppLogoIcon className="h-7 w-auto" />
+                        <AppLogoIcon className="h-7" />
                     </Link>
 
                     <div className="ml-auto">

@@ -6,15 +6,16 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Services\Notification\NotificationService;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class NotificationController extends Controller {
     public function __construct(
         private readonly NotificationService $notificationService,
     ) {}
 
-    public function index(): JsonResponse {
+    public function index(): Response {
         /** @var User $user */
         $user = Auth::user();
 
@@ -22,6 +23,6 @@ class NotificationController extends Controller {
 
         $this->dumpDebugJson($data, 'notifications-index-data.json');
 
-        return response()->json($data);
+        return Inertia::render('notifications/index', $data);
     }
 }

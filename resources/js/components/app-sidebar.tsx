@@ -1,4 +1,4 @@
-import AppLogoIconMinimal from '@/components/app-logo-icon-minimal';
+import AppLogoIcon from '@/components/app-logo-icon';
 import { isNavItemActive, useNavItems } from '@/hooks/use-nav-items';
 import { cn } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/react';
@@ -26,12 +26,12 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
                 {/* Logo */}
                 <div
                     className={cn(
-                        'flex items-center py-5',
+                        'mb-8 flex items-center py-5',
                         isCollapsed ? 'justify-center px-2' : 'px-4'
                     )}
                 >
                     <Link href="/dashboard" prefetch aria-label="Home">
-                        <AppLogoIconMinimal className="h-9 w-auto" />
+                        <AppLogoIcon className="h-[26px]" iconOnly={isCollapsed} />
                     </Link>
                 </div>
 
