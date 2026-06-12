@@ -58,6 +58,16 @@ interface ManagersTabProps {
     onRejectOwnership: () => Promise<void>;
     /** Withdraws a pending ownership proposal for the given user; resolves once the table has been updated */
     onCancelOwnership: (managerId: number) => Promise<void>;
+    /** Sends the current user's request to leave; resolves once the table has been updated */
+    onRequestToLeave: () => Promise<void>;
+    /** Withdraws the current user's pending leave request; resolves once the table has been updated */
+    onCancelLeaveRequest: () => Promise<void>;
+    /** Owner approves the given co-manager's leave request; resolves once the table has been updated */
+    onApproveLeave: (managerId: number) => Promise<void>;
+    /** Owner rejects the given co-manager's leave request; resolves once the table has been updated */
+    onRejectLeave: (managerId: number) => Promise<void>;
+    /** Removes the given co-manager from the project; resolves once the table has been updated */
+    onRemoveManager: (managerId: number) => Promise<void>;
 }
 
 const BLUE_BUTTON_CLASSES =
@@ -207,12 +217,21 @@ export function ManagersTab({
     onAcceptOwnership,
     onRejectOwnership,
     onCancelOwnership,
+    onRequestToLeave,
+    onCancelLeaveRequest,
+    onApproveLeave,
+    onRejectLeave,
+    onRemoveManager,
 }: ManagersTabProps) {
     const { t, trans } = useTranslations();
     const [dialogType, setDialogType] = useState<ManagerDialogType>(null);
     const [dialogManager, setDialogManager] = useState<ProjectManagerRowData | null>(null);
     const [transferring, setTransferring] = useState(false);
     const [ownershipAction, setOwnershipAction] = useState<'accept' | 'reject' | null>(null);
+    const [submitting, setSubmitting] = useState(false);
+    const [leaveApprovalAction, setLeaveApprovalAction] = useState<'approve' | 'reject' | null>(
+        null
+    );
 
     const openDialog = (type: Exclude<ManagerDialogType, null>, manager: ProjectManagerRowData) => {
         setDialogType(type);
@@ -250,21 +269,54 @@ export function ManagersTab({
         }
     };
 
-    const handleSendLeaveRequest = () => {
-        // TODO(backend): router.post(route('projects.managers.request-to-leave', ...))
-        toast.success('Leave request sent successfully.');
-        closeDialog();
+    const handleSendLeaveRequest = async () => {
+        setSubmitting(true);
+        try {
+            await onRequestToLeave();
+            toast.success(t('projects.managers_tab.leave_request_sent'));
+            closeDialog();
+        } catch (e) {
+            toast.error(e instanceof ApiError ? e.message : t('projects.messages.generic_error'));
+        } finally {
+            setSubmitting(false);
+        }
     };
 
-    const handleUndoLeaveRequest = () => {
-        // TODO(backend): router.delete(route('projects.managers.request-to-leave', ...))
-        // — will need the row's manager passed back in.
+    const handleUndoLeaveRequest = async () => {
+        try {
+            await onCancelLeaveRequest();
+            toast.success(t('projects.managers_tab.leave_request_cancelled'));
+        } catch (e) {
+            toast.error(e instanceof ApiError ? e.message : t('projects.messages.generic_error'));
+        }
     };
 
-    const handleApproveLeave = () => {
+    const handleApproveLeave = async () => {
         if (!dialogManager) return;
-        // TODO(backend): router.post(route('projects.managers.accept-request-to-leave', ...))
-        closeDialog();
+        setLeaveApprovalAction('approve');
+        try {
+            await onApproveLeave(dialogManager.id);
+            toast.success(t('projects.managers_tab.leave_approved'));
+            closeDialog();
+        } catch (e) {
+            toast.error(e instanceof ApiError ? e.message : t('projects.messages.generic_error'));
+        } finally {
+            setLeaveApprovalAction(null);
+        }
+    };
+
+    const handleRejectLeave = async () => {
+        if (!dialogManager) return;
+        setLeaveApprovalAction('reject');
+        try {
+            await onRejectLeave(dialogManager.id);
+            toast.success(t('projects.managers_tab.leave_rejected'));
+            closeDialog();
+        } catch (e) {
+            toast.error(e instanceof ApiError ? e.message : t('projects.messages.generic_error'));
+        } finally {
+            setLeaveApprovalAction(null);
+        }
     };
 
     const handleConfirmTransfer = async () => {
@@ -290,10 +342,18 @@ export function ManagersTab({
         }
     };
 
-    const handleConfirmRemove = () => {
+    const handleConfirmRemove = async () => {
         if (!dialogManager) return;
-        // TODO(backend): router.delete(route('projects.managers.detach', ...))
-        closeDialog();
+        setSubmitting(true);
+        try {
+            await onRemoveManager(dialogManager.id);
+            toast.success(t('projects.messages.manager_removed'));
+            closeDialog();
+        } catch (e) {
+            toast.error(e instanceof ApiError ? e.message : t('projects.messages.generic_error'));
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     const handleSendMessage = (_message: string) => {
@@ -405,7 +465,7 @@ export function ManagersTab({
                                             onLeaveRequest={() =>
                                                 openDialog('leave-request', manager)
                                             }
-                                            onUndoLeaveRequest={handleUndoLeaveRequest}
+                                            onUndoLeaveRequest={() => void handleUndoLeaveRequest()}
                                             onRemove={() => openDialog('remove', manager)}
                                         />
                                     </TableCell>
@@ -461,14 +521,14 @@ export function ManagersTab({
                 }
                 actionLabel={t('projects.managers_tab.dialog_leave_send')}
                 actionIcon={<Send className="size-4" aria-hidden="true" />}
-                onAction={handleSendLeaveRequest}
+                onAction={() => void handleSendLeaveRequest()}
+                loading={submitting}
                 actionStyle="highlighted"
             >
                 <WarningAlert>{t('projects.managers_tab.dialog_leave_warning')}</WarningAlert>
             </ProjectDialog>
 
             {/* ── Leave Request approval dialog (owner approves/rejects) ────── */}
-            {/* TODO(backend): Reject must become its own action — see note above. */}
             <ProjectDialog
                 open={dialogType === 'leave-approval'}
                 onClose={closeDialog}
@@ -488,9 +548,12 @@ export function ManagersTab({
                 }
                 cancelLabel={t('projects.managers_tab.dialog_ownership_reject')}
                 cancelIcon={<X className="size-4" aria-hidden="true" />}
+                onCancel={() => void handleRejectLeave()}
+                cancelLoading={leaveApprovalAction === 'reject'}
                 actionLabel={t('projects.managers_tab.dialog_ownership_approve')}
                 actionIcon={<Check className="size-4" aria-hidden="true" />}
-                onAction={handleApproveLeave}
+                onAction={() => void handleApproveLeave()}
+                loading={leaveApprovalAction === 'approve'}
                 actionStyle="highlighted"
             >
                 <WarningAlert>
@@ -529,7 +592,8 @@ export function ManagersTab({
                 })}
                 cancelLabel={t('projects.create.cancel')}
                 actionLabel={t('projects.managers_tab.remove_confirm')}
-                onAction={handleConfirmRemove}
+                onAction={() => void handleConfirmRemove()}
+                loading={submitting}
             >
                 <WarningAlert>
                     {trans('projects.managers_tab.remove_dialog_warning', {
