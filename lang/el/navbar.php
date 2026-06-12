@@ -11,5 +11,5 @@ return [
     'monitor' => 'Monitor',
     'notifications' => 'Ειδοποιήσεις',
     'audit_log' => 'Αρχείο Ελέγχου',
-    'cookies_settings' => 'Ρυθμίσεις Cookies',
+    'cookies_settings' => 'Ρυθμ. Cookies',
 ];

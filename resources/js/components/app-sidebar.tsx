@@ -40,7 +40,7 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
                     {navItems.map((item) => {
                         const active = isNavItemActive(item.href, page.url);
                         const itemClass = cn(
-                            'flex items-center rounded-lg px-1 py-2 text-xs font-small text-white transition-colors mb-2',
+                            'flex items-center rounded-lg px-1 py-2 text-sm font-small text-white transition-colors mb-2',
                             isCollapsed ? 'justify-center' : 'gap-1.5',
                             active ? 'bg-slate-800' : 'hover:bg-white/10',
                             item.placeholder && 'cursor-not-allowed opacity-60'
@@ -53,10 +53,10 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
                                     Size lives on the label, not just the container: the global
                                     reset (resources/scss/_reset.scss) forces `font: inherit` on
                                     <button>. That rule is unlayered, so it beats the container's
-                                    text-xs utility on the action-item path. The <span> isn't a
-                                    form control, so it keeps text-xs uniformly across all items.
+                                    text-sm utility on the action-item path. The <span> isn't a
+                                    form control, so it keeps text-sm uniformly across all items.
                                 */}
-                                <span className={cn('truncate text-xs', isCollapsed && 'sr-only')}>
+                                <span className={cn('truncate text-sm', isCollapsed && 'sr-only')}>
                                     {item.title}
                                 </span>
                             </>
