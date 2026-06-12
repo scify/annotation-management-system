@@ -1,6 +1,6 @@
 import { ProjectDialog } from '@/components/project/project-dialog';
 import { useTranslations } from '@/hooks/use-translations';
-import { Mail, Send } from 'lucide-react';
+import { Mails, Send } from 'lucide-react';
 import { useState } from 'react';
 
 interface SendMessageDialogProps {
@@ -31,7 +31,7 @@ export function SendMessageDialog({ open, onClose, targetName, onSend }: SendMes
         <ProjectDialog
             open={open}
             onClose={handleClose}
-            icon={<Mail />}
+            icon={<Mails />}
             title={t('common.send_message.title')}
             description={trans('common.send_message.description', { username: targetName })}
             cancelLabel={t('common.send_message.cancel')}

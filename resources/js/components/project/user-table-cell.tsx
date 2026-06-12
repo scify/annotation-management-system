@@ -1,6 +1,6 @@
 import { InitialsAvatar } from '@/components/ui/initials-avatar';
 import { Button } from '@/components/ui/button';
-import { Mail } from 'lucide-react';
+import { Mails } from 'lucide-react';
 
 export interface UserTableCellProps {
     initials: string;
@@ -35,7 +35,7 @@ export function UserTableCell({
                     aria-label={`Send message to ${username}`}
                     onClick={onMessage}
                 >
-                    <Mail className="size-6" aria-hidden="true" />
+                    <Mails className="size-6" aria-hidden="true" />
                 </Button>
             )}
         </div>

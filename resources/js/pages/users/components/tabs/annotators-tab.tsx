@@ -21,7 +21,7 @@ import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { type ManagedUser, RolesEnum } from '@/types';
 import { Link } from '@inertiajs/react';
-import { Mail, Plus } from 'lucide-react';
+import { Mails, Plus } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { RoleBadge } from '../shared/role-badge';
 import { StatusBadge } from '../shared/status-badge';
@@ -208,7 +208,7 @@ export function AnnotatorsTab({ allAnnotators, myAnnotators }: AnnotatorsTabProp
                                                 onClick={() => setMessageTarget(annotator)}
                                                 className="bg-brand-blue-50 text-brand-blue-700 hover:bg-brand-blue-100 focus-visible:ring-brand-blue-700 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg hover:cursor-pointer focus-visible:ring-2 focus-visible:outline-none"
                                             >
-                                                <Mail className="h-5 w-5" aria-hidden="true" />
+                                                <Mails className="h-5 w-5" aria-hidden="true" />
                                             </button>
                                         </div>
                                     </TableCell>

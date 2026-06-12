@@ -13,7 +13,7 @@ import {
 import { WorkloadGauge } from '@/components/workload-gauge';
 import { useTranslations } from '@/hooks/use-translations';
 import { UserTableCell } from '@/components/project/user-table-cell';
-import { CircleMinus, Info, Mail } from 'lucide-react';
+import { CircleMinus, Info, Mails } from 'lucide-react';
 
 export interface ProjectAnnotatorRowData {
     id: number;
@@ -260,7 +260,7 @@ export function AnnotatorsTable(props: AnnotatorsTableProps) {
                                                         props.onMessageAnnotator?.(annotator.id)
                                                     }
                                                 >
-                                                    <Mail className="size-6" aria-hidden="true" />
+                                                    <Mails className="size-6" aria-hidden="true" />
                                                 </Button>
                                             </div>
                                         </TableCell>
