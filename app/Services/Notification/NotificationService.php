@@ -7,6 +7,7 @@ namespace App\Services\Notification;
 use App\Enums\NotificationThreadTypeEnum;
 use App\Models\Notification;
 use App\Models\NotificationThread;
+use App\Models\QuickLink;
 use App\Queries\Notification\CreateNotificationQuery;
 use App\Queries\Notification\CreateNotificationThreadQuery;
 use App\Queries\Notification\GetMyNotificationsQuery;
@@ -58,6 +59,20 @@ readonly class NotificationService {
      * @return Collection<int, NotificationThread>
      */
     public function getMyNotifications(int $userId): Collection {
-        return $this->getMyNotificationsQuery->get($userId);
+        return $this->getMyNotificationsQuery->get($userId)->map(function (NotificationThread $thread): NotificationThread {
+            $thread->quickLinks->each(fn (QuickLink $link) => $link->makeHidden(['id', 'notification_thread_id', 'created_at', 'updated_at']));
+
+            $thread->notifications->transform(function (Notification $notification): Notification {
+                $notification->setAttribute('sender_username', $notification->sender?->username);
+                $notification->setAttribute('sender_role', $notification->sender?->role);
+                $notification->setAttribute('date', $notification->created_at->toDateString());
+                $notification->unsetRelation('sender');
+                $notification->makeHidden(['created_at', 'updated_at']);
+
+                return $notification;
+            });
+
+            return $thread;
+        });
     }
 }

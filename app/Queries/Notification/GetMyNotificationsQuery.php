@@ -18,7 +18,7 @@ final readonly class GetMyNotificationsQuery {
     public function get(int $userId): Collection {
         return NotificationThread::query()
             ->whereHas('notifications', fn ($q) => $q->where('recipient_user_id', $userId))
-            ->with(['notifications', 'quickLinks'])
+            ->with(['notifications.sender', 'quickLinks'])
             ->get()
             ->sortBy(function (NotificationThread $thread): string {
                 /** @var Carbon|null $min */
