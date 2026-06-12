@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# Detect how PHP/Node tooling must be run (see APP_DEVELOPMENT_ENV in .env).
+# "ddev" -> run inside the container; anything else (or missing) -> run on the host.
+APP_DEV_ENV=$(grep -E '^APP_DEVELOPMENT_ENV=' .env 2>/dev/null | head -n1 | sed -E "s/^[^=]+=//; s/^[\"']//; s/[\"']$//")
+if [ "$APP_DEV_ENV" = "ddev" ]; then
+    PHP_RUNNER="ddev exec"
+    NPM_RUNNER="ddev npm"
+    echo "🐳 Detected ddev environment — running tooling inside the container."
+else
+    PHP_RUNNER=""
+    NPM_RUNNER="npm"
+fi
+
 # Run Gitleaks secret scanning
 echo "🔒 Running Gitleaks secret scan..."
 if [ -f "./gitleaks" ]; then
@@ -24,23 +36,37 @@ STAGED_SCSS=$(git diff --cached --name-only --diff-filter=d | grep -E "\.scss|\.
 # Refactor + format PHP files (Rector first, then Pint — same order as fix:backend)
 if [ -n "$STAGED_PHP" ]; then
     echo "🔍 Running Rector on PHP files..."
-    echo "$STAGED_PHP" | xargs -d '\n' ./vendor/bin/rector process --no-progress-bar
+    echo "$STAGED_PHP" | xargs -d '\n' $PHP_RUNNER ./vendor/bin/rector process --no-progress-bar
     echo "🔍 Formatting PHP files with Pint..."
-    echo "$STAGED_PHP" | xargs -d '\n' ./vendor/bin/pint --parallel
+    echo "$STAGED_PHP" | xargs -d '\n' $PHP_RUNNER ./vendor/bin/pint --parallel
     echo "$STAGED_PHP" | xargs -d '\n' git add
+fi
+
+# Static analysis with PHPStan (after Rector/Pint so it sees the final staged code)
+if [ -n "$STAGED_PHP" ]; then
+    echo "🔍 Running PHPStan static analysis..."
+    $PHP_RUNNER ./vendor/bin/phpstan analyse --memory-limit=2G --no-progress
+    PHPSTAN_EXIT_CODE=$?
+    if [ $PHPSTAN_EXIT_CODE -ne 0 ]; then
+        echo "❌ PHPStan found static analysis errors. Commit blocked."
+        echo "Please fix the errors above and try again."
+        echo "If you must bypass this check, use the --no-verify flag."
+        exit 1
+    fi
+    echo "✅ PHPStan found no errors."
 fi
 
 # Format JS/TS/SCSS files
 if [ -n "$STAGED_JS_TS" ]; then
     echo "🔍 Formatting JS/TS/SCSS files..."
-    echo "$STAGED_JS_TS" | xargs -d '\n' npm run format:staged
+    echo "$STAGED_JS_TS" | xargs -d '\n' $NPM_RUNNER run format:staged
     echo "$STAGED_JS_TS" | xargs -d '\n' git add
 fi
 
 # Format SCSS files
 if [ -n "$STAGED_SCSS" ]; then
     echo "🔍 Formatting SCSS files..."
-    echo "$STAGED_SCSS" | xargs -d '\n' npm run format:staged:styles
+    echo "$STAGED_SCSS" | xargs -d '\n' $NPM_RUNNER run format:staged:styles
     echo "$STAGED_SCSS" | xargs -d '\n' git add
 fi
 
