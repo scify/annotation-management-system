@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Models\QuickLink;
 use App\Models\User;
 use App\Services\Notification\NotificationService;
 use Illuminate\Database\Seeder;
@@ -21,6 +22,12 @@ class DummyNotificationsSeeder extends Seeder {
             body: 'Hi Carol, I have a question about the annotation guidelines for Batch 1.',
             senderUserId: $eva->id,
         );
+
+        QuickLink::query()->create([
+            'notification_thread_id' => $evaToCarol->notification_thread_id,
+            'label' => 'Batch 1',
+            'url' => 'projects/1/subprojects/1/edit',
+        ]);
 
         $carolToEvaReply = $service->replyToGenericNotification(
             notificationThreadId: $evaToCarol->notification_thread_id,
