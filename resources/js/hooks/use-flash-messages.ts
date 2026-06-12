@@ -3,14 +3,18 @@ import { router, usePage } from '@inertiajs/react';
 import { useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 
+// Per-severity auto-dismiss durations (ms). Errors and warnings linger longer so
+// they aren't gone before the user has read them; success/info clear quickly.
+const DURATION = { success: 4000, info: 4000, warning: 6000, error: 8000 } as const;
+
 function showFlashToasts(flash: SharedData['flash'], errors?: Record<string, string>) {
-    if (flash.success) toast.success(flash.success);
-    if (flash.error) toast.error(flash.error);
-    if (flash.warning) toast.warning(flash.warning);
-    if (flash.info) toast.info(flash.info);
+    if (flash.success) toast.success(flash.success, { duration: DURATION.success });
+    if (flash.error) toast.error(flash.error, { duration: DURATION.error });
+    if (flash.warning) toast.warning(flash.warning, { duration: DURATION.warning });
+    if (flash.info) toast.info(flash.info, { duration: DURATION.info });
     Object.values(errors ?? {})
         .filter(Boolean)
-        .forEach((msg) => toast.error(msg));
+        .forEach((msg) => toast.error(msg, { duration: DURATION.error }));
 }
 
 // Set by the success listener before the incoming component mounts on

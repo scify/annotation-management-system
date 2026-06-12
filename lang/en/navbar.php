@@ -11,4 +11,5 @@ return [
     'monitor' => 'Monitor',
     'notifications' => 'Notifications',
     'audit_log' => 'Audit Log',
+    'cookies_settings' => 'Cookies Settings',
 ];

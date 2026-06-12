@@ -3,6 +3,12 @@ import type { route as routeFn } from 'ziggy-js';
 declare global {
     // var (not const) so the SSR entry point can assign global.route
     var route: typeof routeFn;
+
+    interface Window {
+        // Exposed by the scify/laravel-cookie-guard package (resources/js/scripts.js).
+        // Optional because it's only defined once the package's script has loaded client-side.
+        toggleCookieBanner?: () => void;
+    }
 }
 
 // The altcha package's React JSX types (altcha/types/react) don't extend HTMLAttributes,

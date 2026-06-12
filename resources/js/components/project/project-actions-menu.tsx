@@ -25,7 +25,7 @@ export function ProjectActionsMenu({ project }: ProjectActionsMenuProps) {
         router.post(
             route('projects.change-status'),
             { project_id: project.id, status },
-            { preserveScroll: true }
+            { preserveScroll: true, preserveState: true }
         );
     }
 

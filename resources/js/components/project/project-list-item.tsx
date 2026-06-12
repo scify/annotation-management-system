@@ -1,5 +1,5 @@
-import { Badge } from '@/components/ui/badge';
 import { ProjectActionsMenu } from '@/components/project/project-actions-menu';
+import { ProjectStatusBadge } from '@/components/project/project-status-badge';
 import { useTranslations } from '@/hooks/use-translations';
 import type { Project } from '@/types';
 import { formatDateDMY, formatDateDMYShort } from '@/utils/format';
@@ -13,13 +13,11 @@ import {
     UserRound,
 } from 'lucide-react';
 import { InitialsAvatar } from '@/components/ui/initials-avatar';
-import { STATUS_VARIANT, toInitials } from './project-card';
+import { toInitials } from './project-card';
 
 export function ProjectListItem({ project }: { project: Project }) {
     const { t } = useTranslations();
 
-    const statusVariant = STATUS_VARIANT[project.status];
-    const statusLabel = t(`projects.status.${project.status}`);
     const progress = Math.round(project.project_progress * 100);
     const ownerInitials = toInitials(project.owner_name ?? '?');
     const ownerUsername = project.owner_name ? `${project.owner_name}` : '—';
@@ -71,7 +69,7 @@ export function ProjectListItem({ project }: { project: Project }) {
                                 </span>
                             )}
                         </div>
-                        <Badge variant={statusVariant}>{statusLabel}</Badge>
+                        <ProjectStatusBadge status={project.status} />
                     </div>
                 </div>
 

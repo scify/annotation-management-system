@@ -150,11 +150,10 @@ class ProjectController extends Controller {
                 ProjectStatusEnum::from($request->string('status')->value()),
             );
         } catch (PresentableError $presentableError) {
-            return to_route('projects.show', $project->id)->with('error', $presentableError->getUserMessage());
+            return back()->with('error', $presentableError->getUserMessage());
         }
 
-        return to_route('projects.show', $project->id)
-            ->with('success', __('projects.messages.status_changed'));
+        return back()->with('success', __('projects.messages.status_changed'));
     }
 
     public function destroy(int $id): RedirectResponse {

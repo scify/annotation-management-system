@@ -13,6 +13,7 @@
     --font-sans: 'Inter Variable', Inter, sans-serif;
     --font-heading: Ubuntu, sans-serif;
     --font-mono: 'Fira Code Variable', ui-monospace, monospace;
+    --animate-status-pulse: status-pulse 0.9s ease-out;
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
     --radius-sm: calc(var(--radius) - 4px);
@@ -225,5 +226,38 @@ body {
     #scify-cookie-consent-floating-button {
         right: var(--scify-cookies-floating-btn-left);
         left: auto;
+    }
+}
+
+/* Bump the toast text up from Sonner's ~13px default for better legibility. */
+[data-sonner-toast] [data-title] {
+    font-size: 0.9375rem; /* 15px */
+}
+
+[data-sonner-toast] [data-description] {
+    font-size: 0.875rem; /* 14px */
+}
+
+/* Honor the user's reduced-motion preference for toast notifications (Sonner). */
+@media (prefers-reduced-motion: reduce) {
+    [data-sonner-toast] {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+/* One-shot attention pulse for a project status badge after it changes. */
+@keyframes status-pulse {
+    0% {
+        transform: scale(1);
+    }
+    25% {
+        transform: scale(1.18);
+    }
+    60% {
+        transform: scale(0.97);
+    }
+    100% {
+        transform: scale(1);
     }
 }

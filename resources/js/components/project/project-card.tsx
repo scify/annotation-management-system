@@ -1,10 +1,10 @@
 import { InitialsAvatar } from '@/components/ui/initials-avatar';
-import { Badge, badgeVariants } from '@/components/ui/badge';
 import { ProjectActionsMenu } from '@/components/project/project-actions-menu';
+import { ProjectStatusBadge } from '@/components/project/project-status-badge';
+import type { StatusVariant } from '@/components/project/project-status-badge';
 import { useTranslations } from '@/hooks/use-translations';
-import type { Project, ProjectStatus } from '@/types';
+import type { Project } from '@/types';
 import { formatDateDMY, formatDateDMYShort } from '@/utils/format';
-import { type VariantProps } from 'class-variance-authority';
 import {
     BellRing,
     CircleAlert,
@@ -15,10 +15,8 @@ import {
     UserRound,
 } from 'lucide-react';
 
-export type StatusVariant = Extract<
-    NonNullable<VariantProps<typeof badgeVariants>['variant']>,
-    'yellow' | 'lime' | 'slate' | 'pink'
->;
+export { STATUS_VARIANT } from '@/components/project/project-status-badge';
+export type { StatusVariant } from '@/components/project/project-status-badge';
 
 /** @deprecated Use Project from @/types instead */
 export interface ProjectCardData {
@@ -36,12 +34,6 @@ export interface ProjectCardData {
     coManagers: Array<{ initials: string; username: string }>;
 }
 
-export const STATUS_VARIANT: Record<ProjectStatus, StatusVariant> = {
-    in_progress: 'yellow',
-    pending: 'slate',
-    completed: 'lime',
-};
-
 export function toInitials(username: string): string {
     return username.charAt(0).toUpperCase();
 }
@@ -49,8 +41,6 @@ export function toInitials(username: string): string {
 export function ProjectCard({ project }: { project: Project }) {
     const { t } = useTranslations();
 
-    const statusVariant = STATUS_VARIANT[project.status];
-    const statusLabel = t(`projects.status.${project.status}`);
     const progress = Math.round(project.project_progress * 100);
     const ownerInitials = toInitials(project.owner_name ?? '?');
     const ownerUsername = project.owner_name ? `${project.owner_name}` : '—';
@@ -72,7 +62,7 @@ export function ProjectCard({ project }: { project: Project }) {
                             />
                         </div>
                         <div className="flex shrink-0 items-start gap-2">
-                            <Badge variant={statusVariant}>{statusLabel}</Badge>
+                            <ProjectStatusBadge status={project.status} />
                             <ProjectActionsMenu project={project} />
                         </div>
                     </div>

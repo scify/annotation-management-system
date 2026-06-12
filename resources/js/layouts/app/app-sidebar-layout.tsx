@@ -18,15 +18,14 @@ import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BellRing, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { useCallback, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
 export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
-    notificationCount = 0,
-}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[]; notificationCount?: number }>) {
+}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
@@ -56,7 +55,7 @@ export default function AppSidebarLayout({
                         </SheetTrigger>
                         <SheetContent
                             side="left"
-                            className="from-brand-blue-700 to-brand-blue-950 flex h-full w-[152px] flex-col rounded-tr-[20px] rounded-br-[20px] bg-gradient-to-t p-0"
+                            className="from-brand-blue-700 to-brand-blue-950 flex h-full w-[158px] flex-col rounded-tr-[20px] rounded-br-[20px] bg-gradient-to-t p-0"
                         >
                             <SheetTitle className="sr-only">
                                 {t('common.navigation_menu_label')}
@@ -171,29 +170,6 @@ export default function AppSidebarLayout({
                         </DropdownMenu>
 
                         <LocaleToggle className="bg-brand-blue-50 hover:bg-brand-blue-75 focus-visible:outline-brand-blue-700 rounded-lg px-2.5 py-[10px] text-sm font-semibold text-slate-600 transition-colors focus-visible:outline focus-visible:outline-2" />
-
-                        {/* Notifications button */}
-                        <div className="relative">
-                            <button
-                                type="button"
-                                className="bg-brand-blue-50 hover:bg-brand-blue-75 focus-visible:outline-brand-blue-700 rounded-lg p-[10px] text-slate-600 transition-colors focus-visible:outline focus-visible:outline-2"
-                                aria-label={
-                                    notificationCount > 0
-                                        ? `Notifications — ${notificationCount} unread`
-                                        : 'Notifications'
-                                }
-                            >
-                                <BellRing className="size-6" />
-                            </button>
-                            {notificationCount > 0 && (
-                                <span
-                                    aria-hidden="true"
-                                    className="bg-brand-red-700 absolute -top-0.5 -right-1 flex min-w-[17px] items-center justify-center rounded-full px-[4.5px] text-xs leading-[18px] font-semibold text-white"
-                                >
-                                    {notificationCount}
-                                </span>
-                            )}
-                        </div>
                     </div>
                 </div>
 

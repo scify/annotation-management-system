@@ -1,6 +1,14 @@
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslations } from '@/hooks/use-translations';
-import { Activity, BellRing, Captions, FolderDot, LayoutDashboard, Users } from 'lucide-react';
+import {
+    Activity,
+    BellRing,
+    Captions,
+    Cookie,
+    FolderDot,
+    LayoutDashboard,
+    Users,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 export interface SidebarNavItem {
@@ -8,6 +16,8 @@ export interface SidebarNavItem {
     href: string;
     icon: LucideIcon;
     placeholder?: boolean;
+    /** When set, the item renders as an action button instead of a navigation link. */
+    onClick?: () => void;
 }
 
 export function isNavItemActive(href: string, currentUrl: string): boolean {
@@ -32,5 +42,11 @@ export function useNavItems(): SidebarNavItem[] {
             : []),
         { title: t('navbar.notifications'), icon: BellRing, href: '#', placeholder: true },
         { title: t('navbar.audit_log'), icon: Captions, href: '#', placeholder: true },
+        {
+            title: t('navbar.cookies_settings'),
+            icon: Cookie,
+            href: '#',
+            onClick: () => window.toggleCookieBanner?.(),
+        },
     ];
 }

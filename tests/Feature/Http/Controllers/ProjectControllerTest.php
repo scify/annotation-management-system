@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfProject;
@@ -274,5 +275,51 @@ describe('ProjectController::store', function (): void {
         $this->actingAs($this->admin)
             ->post(route('projects.store'), $payload)
             ->assertSessionHasErrors('dataset_id');
+    });
+});
+
+describe('ProjectController::changeStatus', function (): void {
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $this->admin = User::factory()->create()->assignRole(RolesEnum::ADMIN)->load('roles');
+    });
+
+    it('changes the status and redirects back to the originating page', function (): void {
+        // Arrange — a pending project may only transition to in_progress
+        $project = Project::factory()->create(['status' => ProjectStatusEnum::PENDING]);
+
+        // Act — `from()` sets the referer so the controller's back() has a target
+        $response = $this->actingAs($this->admin)
+            ->from(route('projects.index'))
+            ->post(route('projects.change-status'), [
+                'project_id' => $project->id,
+                'status' => ProjectStatusEnum::IN_PROGRESS->value,
+            ]);
+
+        // Assert — stays on (returns to) the originating page, flashes success, DB updated
+        $response->assertRedirect(route('projects.index'));
+        $response->assertSessionHas('success', __('projects.messages.status_changed'));
+
+        expect($project->refresh()->status)->toBe(ProjectStatusEnum::IN_PROGRESS);
+    });
+
+    it('flashes an error and leaves the status unchanged on an invalid transition', function (): void {
+        // Arrange — pending cannot jump straight to completed
+        $project = Project::factory()->create(['status' => ProjectStatusEnum::PENDING]);
+
+        // Act
+        $response = $this->actingAs($this->admin)
+            ->from(route('projects.index'))
+            ->post(route('projects.change-status'), [
+                'project_id' => $project->id,
+                'status' => ProjectStatusEnum::COMPLETED->value,
+            ]);
+
+        // Assert
+        $response->assertRedirect(route('projects.index'));
+        $response->assertSessionHas('error');
+
+        expect($project->refresh()->status)->toBe(ProjectStatusEnum::PENDING);
     });
 });

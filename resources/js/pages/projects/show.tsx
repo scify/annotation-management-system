@@ -10,6 +10,7 @@ import { ManagersTab } from '@/components/project/managers-tab';
 import { type ProjectManagerRowData } from '@/components/project/managers-tab';
 import { SubprojectsTab } from '@/components/project/subprojects-tab';
 import { STATUS_VARIANT, toInitials } from '@/components/project/project-card';
+import { ProjectStatusBadge } from '@/components/project/project-status-badge';
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
 import { apiFetch } from '@/lib/api';
 import { type BreadcrumbItem } from '@/types';
@@ -239,7 +240,10 @@ export default function ProjectShow({
             <Head title={project_data.name} />
             <div className="flex flex-col gap-4 px-6 py-6">
                 {/* Project title */}
-                <h1 className="text-slate-800">{project_data.name}</h1>
+                <div className="flex items-center gap-3">
+                    <h1 className="text-slate-800">{project_data.name}</h1>
+                    <ProjectStatusBadge status={project_data.status} />
+                </div>
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-3">

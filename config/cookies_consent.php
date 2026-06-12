@@ -19,7 +19,7 @@ return [
      * }
      */
     'cookie_prefix' => 'scify_ams_',
-    'display_floating_button' => true, // Set to false to display the footer link instead
+    'display_floating_button' => false, // Set to false to display the footer link instead
     'hide_floating_button_on_mobile' => false, // Set to true to hide the floating button on mobile
     'use_separate_page' => false, // Set to true to use a separate page for cookies explanation
     'categories_collapsed_by_default' => true, // Set to false to initially collapse the optional categories
