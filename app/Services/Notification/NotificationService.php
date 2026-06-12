@@ -11,7 +11,7 @@ use App\Queries\Notification\CreateNotificationQuery;
 use App\Queries\Notification\CreateNotificationThreadQuery;
 use App\Queries\Notification\GetMyNotificationsQuery;
 use App\Queries\Notification\MarkNotificationAsReadQuery;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 
 readonly class NotificationService {
     public function __construct(

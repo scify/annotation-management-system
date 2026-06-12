@@ -14,6 +14,7 @@ final readonly class GetMyNotificationsQuery {
      * addressed to the given user, with all thread notifications and quick links
      * loaded. Threads are sorted ascending by the oldest notification created_at.
      */
+    /** @return Collection<int, NotificationThread> */
     public function get(int $userId): Collection {
         return NotificationThread::query()
             ->whereHas('notifications', fn ($q) => $q->where('recipient_user_id', $userId))
