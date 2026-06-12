@@ -42,7 +42,9 @@ export function ProjectListItem({ project }: { project: Project }) {
                         </p>
                         <div className="flex items-center gap-1 text-sm">
                             <span className="text-slate-800">
-                                {formatDateDMY(project.started_at)}
+                                {project.started_at
+                                    ? formatDateDMY(project.started_at)
+                                    : t('projects.card.open')}
                             </span>
                             {project.is_delayed_to_start && (
                                 <CircleAlert

@@ -36,6 +36,7 @@ return [
     'card' => [
         'overall_progress' => 'Συνολική Πρόοδος',
         'ongoing' => 'Σε εξέλιξη',
+        'open' => 'Ανοιχτό',
         'owner' => 'Ιδιοκτήτης:',
         'co_managers' => 'Συνυπεύθυνοι:',
         'view_project' => 'Προβολή Έργου',

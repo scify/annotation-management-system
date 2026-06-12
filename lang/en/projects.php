@@ -35,7 +35,8 @@ return [
 
     'card' => [
         'overall_progress' => 'Overall Progress',
-        'ongoing' => 'Ongoing',
+        'ongoing' => 'In Progress',
+        'open' => 'Open',
         'owner' => 'Owner:',
         'co_managers' => 'Co-managers:',
         'view_project' => 'View Project',
