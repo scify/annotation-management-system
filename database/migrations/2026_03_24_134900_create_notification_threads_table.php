@@ -16,6 +16,7 @@ return new class() extends Migration {
             $table->string('type');
             $table->boolean('is_accepted')->nullable()->default(null);
             $table->boolean('is_rejected')->nullable()->default(null);
+            $table->string('title')->nullable()->default(null);
             $table->timestamps();
         });
     }

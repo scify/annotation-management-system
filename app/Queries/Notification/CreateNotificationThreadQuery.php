@@ -8,10 +8,11 @@ use App\Enums\NotificationThreadTypeEnum;
 use App\Models\NotificationThread;
 
 final readonly class CreateNotificationThreadQuery {
-    public function create(NotificationThreadTypeEnum $type): NotificationThread {
+    public function create(NotificationThreadTypeEnum $type, ?string $title = null): NotificationThread {
         /** @var NotificationThread */
         return NotificationThread::query()->create([
             'type' => $type,
+            'title' => $title,
         ]);
     }
 }

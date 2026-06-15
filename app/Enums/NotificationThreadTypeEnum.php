@@ -28,8 +28,8 @@ enum NotificationThreadTypeEnum: string {
             self::GENERIC => 'Generic',
             self::INFO => 'Info',
             self::WARNING => 'Warning',
-            self::PROJECT_OWNERSHIP => 'Project Ownership',
-            self::PROJECT_INVITATION => 'Project Invitation',
+            self::PROJECT_OWNERSHIP => 'Ownership',
+            self::PROJECT_INVITATION => 'Invitation to Project',
             self::ANNOUNCEMENT => 'Announcement',
         };
     }

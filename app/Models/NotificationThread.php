@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property NotificationThreadTypeEnum $type
  * @property bool|null $is_accepted
  * @property bool|null $is_rejected
+ * @property string|null $title
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
  * @property-read Collection<int, Notification> $notifications
@@ -27,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
     'type',
     'is_accepted',
     'is_rejected',
+    'title',
 ])]
 class NotificationThread extends Model {
     /** @use HasFactory<NotificationThreadFactory> */
