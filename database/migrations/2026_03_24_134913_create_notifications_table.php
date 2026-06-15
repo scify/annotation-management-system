@@ -15,12 +15,9 @@ return new class() extends Migration {
             $table->id();
             $table->foreignId('notification_thread_id')->constrained('notification_threads')->cascadeOnDelete();
             $table->foreignId('sender_user_id')->nullable()->constrained('users')->nullOnDelete();
-            $table->foreignId('recipient_user_id')->constrained('users')->cascadeOnDelete();
             $table->text('body');
-            $table->boolean('is_read')->default(false);
             $table->timestamps();
             $table->index('sender_user_id');
-            $table->index('recipient_user_id');
         });
     }
 

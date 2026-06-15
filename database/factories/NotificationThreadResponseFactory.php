@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Notification;
+use App\Enums\NotificationThreadResponseEnum;
 use App\Models\NotificationThread;
+use App\Models\NotificationThreadResponse;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Notification>
+ * @extends Factory<NotificationThreadResponse>
  */
-class NotificationFactory extends Factory {
+class NotificationThreadResponseFactory extends Factory {
     /**
      * Define the model's default state.
      *
@@ -20,8 +21,7 @@ class NotificationFactory extends Factory {
     public function definition(): array {
         return [
             'notification_thread_id' => NotificationThread::factory(),
-            'sender_user_id' => null,
-            'body' => fake()->sentence(),
+            'response' => NotificationThreadResponseEnum::UNREPLIED,
         ];
     }
 }

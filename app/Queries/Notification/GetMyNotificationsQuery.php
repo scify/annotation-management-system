@@ -11,18 +11,19 @@ use Illuminate\Support\Collection;
 final readonly class GetMyNotificationsQuery {
     /**
      * Returns all NotificationThreads that contain at least one notification
-     * addressed to the given user, with all thread notifications and quick links
-     * loaded. Threads are sorted ascending by the oldest notification created_at.
+     * where the given user is a thread_member, with all thread notifications,
+     * their members (scoped to the user), and quick links loaded.
+     * Threads are sorted ascending by the oldest notification created_at.
      */
     /** @return Collection<int, NotificationThread> */
     public function get(int $userId): Collection {
         return NotificationThread::query()
-            ->select(['id', 'type', 'is_accepted', 'is_rejected', 'title'])
-            ->whereHas('notifications', fn ($q) => $q->where('recipient_user_id', $userId))
+            ->select(['id', 'type', 'title'])
+            ->whereHas('notifications.members', fn ($q) => $q->where('user_id', $userId))
             ->with([
                 'notifications' => fn ($q) => $q
-                    ->select(['id', 'notification_thread_id', 'sender_user_id', 'recipient_user_id', 'body', 'is_read', 'created_at'])
-                    ->with(['sender', 'recipient']),
+                    ->select(['id', 'notification_thread_id', 'sender_user_id', 'body', 'created_at'])
+                    ->with(['sender', 'members.user']),
                 'quickLinks',
             ])
             ->get()

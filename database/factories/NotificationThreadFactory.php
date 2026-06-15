@@ -20,8 +20,6 @@ class NotificationThreadFactory extends Factory {
     public function definition(): array {
         return [
             'type' => fake()->randomElement(NotificationThreadTypeEnum::cases()),
-            'is_accepted' => null,
-            'is_rejected' => null,
         ];
     }
 }

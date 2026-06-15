@@ -12,22 +12,20 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property-read int $id
  * @property NotificationThreadTypeEnum $type
- * @property bool|null $is_accepted
- * @property bool|null $is_rejected
  * @property string|null $title
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
  * @property-read Collection<int, Notification> $notifications
  * @property-read Collection<int, QuickLink> $quickLinks
+ * @property-read NotificationThreadResponse|null $response
  */
 #[Fillable([
     'type',
-    'is_accepted',
-    'is_rejected',
     'title',
 ])]
 class NotificationThread extends Model {
@@ -49,13 +47,18 @@ class NotificationThread extends Model {
     }
 
     /**
+     * @return HasOne<NotificationThreadResponse, $this>
+     */
+    public function response(): HasOne {
+        return $this->hasOne(NotificationThreadResponse::class);
+    }
+
+    /**
      * @return array<string, string|class-string>
      */
     protected function casts(): array {
         return [
             'type' => NotificationThreadTypeEnum::class,
-            'is_accepted' => 'boolean',
-            'is_rejected' => 'boolean',
         ];
     }
 }

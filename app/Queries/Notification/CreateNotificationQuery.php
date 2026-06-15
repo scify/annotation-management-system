@@ -9,7 +9,6 @@ use App\Models\Notification;
 final readonly class CreateNotificationQuery {
     public function create(
         int $notificationThreadId,
-        int $recipientUserId,
         string $body,
         ?int $senderUserId = null,
     ): Notification {
@@ -17,9 +16,7 @@ final readonly class CreateNotificationQuery {
         return Notification::query()->create([
             'notification_thread_id' => $notificationThreadId,
             'sender_user_id' => $senderUserId,
-            'recipient_user_id' => $recipientUserId,
             'body' => $body,
-            'is_read' => false,
         ]);
     }
 }

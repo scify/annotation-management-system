@@ -11,10 +11,10 @@ return new class() extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::create('notification_threads', function (Blueprint $table): void {
+        Schema::create('notification_thread_responses', function (Blueprint $table): void {
             $table->id();
-            $table->string('type');
-            $table->string('title')->nullable()->default(null);
+            $table->foreignId('notification_thread_id')->constrained('notification_threads')->cascadeOnDelete();
+            $table->string('response')->default('unreplied');
             $table->timestamps();
         });
     }
@@ -23,6 +23,6 @@ return new class() extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::dropIfExists('notification_threads');
+        Schema::dropIfExists('notification_thread_responses');
     }
 };

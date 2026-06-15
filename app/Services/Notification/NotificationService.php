@@ -11,7 +11,9 @@ use App\Models\NotificationThread;
 use App\Models\QuickLink;
 use App\Queries\Notification\CreateNotificationQuery;
 use App\Queries\Notification\CreateNotificationThreadQuery;
+use App\Queries\Notification\CreateNotificationThreadResponseQuery;
 use App\Queries\Notification\CreateQuickLinkQuery;
+use App\Queries\Notification\CreateThreadMemberQuery;
 use App\Queries\Notification\GetMyNotificationsQuery;
 use App\Queries\Notification\MarkNotificationAsReadQuery;
 use Carbon\Carbon;
@@ -22,6 +24,8 @@ readonly class NotificationService {
         private CreateNotificationThreadQuery $createNotificationThreadQuery,
         private CreateNotificationQuery $createNotificationQuery,
         private CreateQuickLinkQuery $createQuickLinkQuery,
+        private CreateThreadMemberQuery $createThreadMemberQuery,
+        private CreateNotificationThreadResponseQuery $createNotificationThreadResponseQuery,
         private MarkNotificationAsReadQuery $markNotificationAsReadQuery,
         private GetMyNotificationsQuery $getMyNotificationsQuery,
     ) {}
@@ -33,12 +37,15 @@ readonly class NotificationService {
     ): Notification {
         $thread = $this->createNotificationThreadQuery->create(NotificationThreadTypeEnum::GENERIC);
 
-        return $this->createNotificationQuery->create(
+        $notification = $this->createNotificationQuery->create(
             notificationThreadId: $thread->id,
-            recipientUserId: $recipientUserId,
             body: $body,
             senderUserId: $senderUserId,
         );
+
+        $this->createThreadMembers($notification, $recipientUserId, $senderUserId);
+
+        return $notification;
     }
 
     /**
@@ -52,11 +59,12 @@ readonly class NotificationService {
         $thread = $this->createNotificationThreadQuery->create(NotificationThreadTypeEnum::WARNING, $title);
 
         foreach ($recipientUserIds as $recipientUserId) {
-            $this->createNotificationQuery->create(
+            $notification = $this->createNotificationQuery->create(
                 notificationThreadId: $thread->id,
-                recipientUserId: $recipientUserId,
                 body: $body,
             );
+
+            $this->createThreadMemberQuery->create($notification->id, $recipientUserId, false);
         }
     }
 
@@ -71,11 +79,12 @@ readonly class NotificationService {
         $thread = $this->createNotificationThreadQuery->create(NotificationThreadTypeEnum::INFO, $title);
 
         foreach ($recipientUserIds as $recipientUserId) {
-            $this->createNotificationQuery->create(
+            $notification = $this->createNotificationQuery->create(
                 notificationThreadId: $thread->id,
-                recipientUserId: $recipientUserId,
                 body: $body,
             );
+
+            $this->createThreadMemberQuery->create($notification->id, $recipientUserId, false);
         }
     }
 
@@ -90,10 +99,11 @@ readonly class NotificationService {
 
         $notification = $this->createNotificationQuery->create(
             notificationThreadId: $thread->id,
-            recipientUserId: $recipientUserId,
             body: $body,
             senderUserId: $senderUserId,
         );
+
+        $this->createThreadMembers($notification, $recipientUserId, $senderUserId);
 
         $this->createQuickLinkQuery->create($thread->id, $firstQuickLink->label, $firstQuickLink->url);
         $this->createQuickLinkQuery->create($thread->id, $secondQuickLink->label, $secondQuickLink->url);
@@ -112,10 +122,11 @@ readonly class NotificationService {
 
         $notification = $this->createNotificationQuery->create(
             notificationThreadId: $thread->id,
-            recipientUserId: $recipientUserId,
             body: $body,
             senderUserId: $senderUserId,
         );
+
+        $this->createThreadMembers($notification, $recipientUserId, $senderUserId);
 
         $this->createQuickLinkQuery->create($thread->id, $firstQuickLink->label, $firstQuickLink->url);
         $this->createQuickLinkQuery->create($thread->id, $secondQuickLink->label, $secondQuickLink->url);
@@ -135,12 +146,13 @@ readonly class NotificationService {
         $thread = $this->createNotificationThreadQuery->create(NotificationThreadTypeEnum::ANNOUNCEMENT);
 
         foreach ($recipientUserIds as $recipientUserId) {
-            $this->createNotificationQuery->create(
+            $notification = $this->createNotificationQuery->create(
                 notificationThreadId: $thread->id,
-                recipientUserId: $recipientUserId,
                 body: $body,
                 senderUserId: $senderUserId,
             );
+
+            $this->createThreadMembers($notification, $recipientUserId, $senderUserId);
         }
 
         $this->createQuickLinkQuery->create($thread->id, $quickLink->label, $quickLink->url);
@@ -156,10 +168,12 @@ readonly class NotificationService {
 
         $notification = $this->createNotificationQuery->create(
             notificationThreadId: $thread->id,
-            recipientUserId: $recipientUserId,
             body: $body,
             senderUserId: $senderUserId,
         );
+
+        $this->createThreadMembers($notification, $recipientUserId, $senderUserId);
+        $this->createNotificationThreadResponseQuery->create($thread->id);
 
         $this->createQuickLinkQuery->create($thread->id, $quickLink->label, $quickLink->url);
 
@@ -176,10 +190,12 @@ readonly class NotificationService {
 
         $notification = $this->createNotificationQuery->create(
             notificationThreadId: $thread->id,
-            recipientUserId: $recipientUserId,
             body: $body,
             senderUserId: $senderUserId,
         );
+
+        $this->createThreadMembers($notification, $recipientUserId, $senderUserId);
+        $this->createNotificationThreadResponseQuery->create($thread->id);
 
         $this->createQuickLinkQuery->create($thread->id, $quickLink->label, $quickLink->url);
 
@@ -192,16 +208,19 @@ readonly class NotificationService {
         string $body,
         ?int $senderUserId = null,
     ): Notification {
-        return $this->createNotificationQuery->create(
+        $notification = $this->createNotificationQuery->create(
             notificationThreadId: $notificationThreadId,
-            recipientUserId: $recipientUserId,
             body: $body,
             senderUserId: $senderUserId,
         );
+
+        $this->createThreadMembers($notification, $recipientUserId, $senderUserId);
+
+        return $notification;
     }
 
-    public function markAsRead(Notification $notification): void {
-        $this->markNotificationAsReadQuery->mark($notification);
+    public function markAsRead(Notification $notification, int $userId): void {
+        $this->markNotificationAsReadQuery->mark($notification, $userId);
     }
 
     /**
@@ -215,12 +234,9 @@ readonly class NotificationService {
             $latestAt = $thread->notifications->max('created_at');
             $thread->setAttribute('datetime', $latestAt?->toDateTimeString() ?? '');
 
-            $thread->setAttribute(
-                'is_read',
-                $thread->notifications
-                    ->where('recipient_user_id', $userId)
-                    ->every(fn (Notification $n): bool => $n->is_read),
-            );
+            $userMembers = $thread->notifications->flatMap(fn (Notification $n) => $n->members->where('user_id', $userId));
+
+            $thread->setAttribute('is_read', $userMembers->every(fn ($m) => $m->is_read));
 
             $thread->setAttribute('top_right', match ($thread->type) {
                 NotificationThreadTypeEnum::FLAG_NOTIFICATION,
@@ -233,11 +249,12 @@ readonly class NotificationService {
 
             if ($thread->type === NotificationThreadTypeEnum::GENERIC) {
                 $first = $thread->notifications->first();
+                $otherMember = $first?->members->firstWhere('user_id', '!=', $userId);
                 $thread->setAttribute(
                     'title',
                     $first?->sender_user_id !== null && $first->sender_user_id !== $userId
                         ? $first->sender?->username
-                        : $first?->recipient?->username,
+                        : $otherMember?->user?->username,
                 );
             }
 
@@ -246,7 +263,7 @@ readonly class NotificationService {
                 $notification->setAttribute('sender_role', $notification->sender?->role);
                 $notification->setAttribute('datetime', $notification->created_at->toDateTimeString());
                 $notification->unsetRelation('sender');
-                $notification->unsetRelation('recipient');
+                $notification->unsetRelation('members');
                 $notification->makeHidden(['created_at', 'updated_at']);
 
                 return $notification;
@@ -254,5 +271,13 @@ readonly class NotificationService {
 
             return $thread;
         })->sortByDesc('datetime')->values();
+    }
+
+    private function createThreadMembers(Notification $notification, int $recipientUserId, ?int $senderUserId): void {
+        $this->createThreadMemberQuery->create($notification->id, $recipientUserId, false);
+
+        if ($senderUserId !== null) {
+            $this->createThreadMemberQuery->create($notification->id, $senderUserId, true);
+        }
     }
 }

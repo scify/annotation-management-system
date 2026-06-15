@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Notification;
-use App\Models\NotificationThread;
+use App\Models\ThreadMember;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Notification>
+ * @extends Factory<ThreadMember>
  */
-class NotificationFactory extends Factory {
+class ThreadMemberFactory extends Factory {
     /**
      * Define the model's default state.
      *
@@ -19,9 +20,9 @@ class NotificationFactory extends Factory {
      */
     public function definition(): array {
         return [
-            'notification_thread_id' => NotificationThread::factory(),
-            'sender_user_id' => null,
-            'body' => fake()->sentence(),
+            'notification_id' => Notification::factory(),
+            'user_id' => User::factory(),
+            'is_read' => false,
         ];
     }
 }

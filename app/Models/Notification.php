@@ -7,29 +7,27 @@ namespace App\Models;
 use Carbon\Carbon;
 use Database\Factories\NotificationFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property-read int $id
  * @property int $notification_thread_id
  * @property int|null $sender_user_id
- * @property int $recipient_user_id
  * @property string $body
- * @property bool $is_read
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
  * @property-read NotificationThread $thread
  * @property-read User|null $sender
- * @property-read User $recipient
+ * @property-read Collection<int, ThreadMember> $members
  */
 #[Fillable([
     'notification_thread_id',
     'sender_user_id',
-    'recipient_user_id',
     'body',
-    'is_read',
 ])]
 class Notification extends Model {
     /** @use HasFactory<NotificationFactory> */
@@ -50,18 +48,9 @@ class Notification extends Model {
     }
 
     /**
-     * @return BelongsTo<User, $this>
+     * @return HasMany<ThreadMember, $this>
      */
-    public function recipient(): BelongsTo {
-        return $this->belongsTo(User::class, 'recipient_user_id');
-    }
-
-    /**
-     * @return array<string, string|class-string>
-     */
-    protected function casts(): array {
-        return [
-            'is_read' => 'boolean',
-        ];
+    public function members(): HasMany {
+        return $this->hasMany(ThreadMember::class);
     }
 }
