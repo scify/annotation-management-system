@@ -14,6 +14,7 @@ use App\Queries\Project\GetProjectsQuery;
 use App\Queries\Project\GetSubProjectIdsQuery;
 use App\Services\Annotation\AnnotatorService;
 use App\Services\Project\ProjectReadService;
+use App\Services\SubProject\SubProjectReadService;
 use App\Services\SubProject\SubProjectWriteService;
 use Illuminate\Support\Collection;
 
@@ -26,8 +27,18 @@ readonly class DashboardService {
         private GetProjectsQuery $projectsQuery,
         private GetSubProjectIdsQuery $subProjectIdsQuery,
         private ProjectReadService $projectReadService,
+        private SubProjectReadService $subProjectReadService,
         private SubProjectWriteService $subProjectService,
     ) {}
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function getDataForAnnotatorDashboard(User $user): array {
+        return [
+            'subprojects' => $this->subProjectReadService->getInProgressSubProjectsForAnnotator($user),
+        ];
+    }
 
     /**
      * @return array<string, mixed>

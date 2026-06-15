@@ -142,6 +142,21 @@ export interface Project {
     annotators?: number[];
 }
 
+/** A subproject as shown on the annotator dashboard ("My Tasks"). */
+export interface AnnotatorSubProject {
+    id: number;
+    name: string;
+    /** Browsing mode: true = flexible, false = strict. */
+    flexible: boolean;
+    annotation_task_title: string | null;
+    scheduled_at: string | null;
+    deadline_at: string | null;
+    started_at: string | null;
+    completed_at: string | null;
+    first_instance_index: number;
+    last_instance_index: number;
+}
+
 export interface PlatformStats {
     all_projects: number;
     all_annotators: number;

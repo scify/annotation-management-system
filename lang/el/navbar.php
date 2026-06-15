@@ -10,6 +10,7 @@ return [
     'projects' => 'Έργα',
     'monitor' => 'Monitor',
     'notifications' => 'Ειδοποιήσεις',
+    'my_reports' => 'Οι Αναφορές μου',
     'audit_log' => 'Αρχείο Ελέγχου',
     'cookies_settings' => 'Ρυθμ. Cookies',
 ];

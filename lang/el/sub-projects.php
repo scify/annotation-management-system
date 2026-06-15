@@ -84,6 +84,7 @@ return [
         'min_annotations_placeholder' => 'Ορίστε αριθμό από 1 έως :max',
         'browsing_label' => 'Περιήγηση και Υποβολή',
         'flexible_browsing_label' => 'Ευέλικτη Περιήγηση',
+        'strict_browsing_label' => 'Αυστηρή Περιήγηση',
         'flexible_browsing_description' => 'Επιτρέπει στον επισημειωτή να πλοηγείται μπρος-πίσω στα παραδείγματα',
         'toggle_on' => 'Ενεργό',
         'toggle_off' => 'Ανενεργό',

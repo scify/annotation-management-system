@@ -84,6 +84,7 @@ return [
         'min_annotations_placeholder' => 'Set a number from 1 to :max',
         'browsing_label' => 'Browsing and Submission',
         'flexible_browsing_label' => 'Flexible Browsing',
+        'strict_browsing_label' => 'Strict Browsing',
         'flexible_browsing_description' => 'Allows annotator to go back and forth through instances',
         'toggle_on' => 'On',
         'toggle_off' => 'Off',

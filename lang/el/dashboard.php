@@ -13,4 +13,13 @@ return [
     'deleted_users' => 'Απανεργοποιημένοι χρήστες',
     'users' => 'χρήστες',
     'recent_users' => 'Πρόσφατοι χρήστες',
+    'annotator' => [
+        'title' => 'Οι Εργασίες μου',
+        'resume' => 'Συνέχεια',
+        'submitted_progress' => 'Υποβληθείσα Πρόοδος',
+        'legend_submitted' => 'ΥΠΟΒΛΗΘΗΚΑΝ',
+        'legend_pending' => 'ΣΕ ΕΚΚΡΕΜΟΤΗΤΑ',
+        'legend_not_annotated' => 'ΜΗ ΕΠΙΣΗΜΕΙΩΜΕΝΑ',
+        'empty' => 'Δεν έχετε εργασίες σε εξέλιξη.',
+    ],
 ];

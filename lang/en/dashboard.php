@@ -13,4 +13,13 @@ return [
     'deleted_users' => 'deleted users',
     'users' => 'users',
     'recent_users' => 'Recent users',
+    'annotator' => [
+        'title' => 'My Tasks',
+        'resume' => 'Resume',
+        'submitted_progress' => 'Submitted Progress',
+        'legend_submitted' => 'SUBMITTED',
+        'legend_pending' => 'PENDING',
+        'legend_not_annotated' => 'NOT ANNOTATED',
+        'empty' => 'You have no tasks in progress.',
+    ],
 ];

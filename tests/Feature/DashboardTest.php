@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
+use App\Models\SubProject;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
@@ -37,7 +39,7 @@ describe('DashboardController', function (): void {
             ->assertInertia(fn ($page) => $page->component('dashboard'));
     });
 
-    it('renders the simple dashboard for annotators', function (): void {
+    it('renders the annotator dashboard with subprojects for annotators', function (): void {
         // Arrange
         $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
 
@@ -45,6 +47,24 @@ describe('DashboardController', function (): void {
         $this->actingAs($user)
             ->get('/dashboard')
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('dashboard-simple'));
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard-annotator')
+                ->has('subprojects'));
+    });
+
+    it('lists in-progress subprojects (but not other statuses) on the annotator dashboard', function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
+        SubProject::factory()->create(['status' => ProjectStatusEnum::IN_PROGRESS, 'name' => 'Active batch']);
+        SubProject::factory()->create(['status' => ProjectStatusEnum::COMPLETED, 'name' => 'Done batch']);
+
+        // Act & Assert
+        $this->actingAs($user)
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard-annotator')
+                ->has('subprojects', 1)
+                ->where('subprojects.0.name', 'Active batch'));
     });
 });

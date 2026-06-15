@@ -4,6 +4,7 @@ import {
     Activity,
     BellRing,
     Captions,
+    ChartColumnBig,
     Cookie,
     FolderDot,
     LayoutDashboard,
@@ -28,8 +29,21 @@ export function isNavItemActive(href: string, currentUrl: string): boolean {
 }
 
 export function useNavItems(): SidebarNavItem[] {
-    const { isAdmin, isAnnotationManager } = useAuth();
+    const { isAdmin, isAnnotationManager, isAnnotator } = useAuth();
     const { t } = useTranslations();
+
+    if (isAnnotator()) {
+        return [
+            { title: t('navbar.dashboard'), icon: LayoutDashboard, href: '/dashboard' },
+            {
+                title: t('navbar.notifications'),
+                icon: BellRing,
+                href: route('notifications.index'),
+            },
+            // "My Reports" has no route yet — render as a disabled placeholder.
+            { title: t('navbar.my_reports'), icon: ChartColumnBig, href: '#', placeholder: true },
+        ];
+    }
 
     return [
         { title: t('navbar.dashboard'), icon: LayoutDashboard, href: '/dashboard' },
