@@ -8,6 +8,7 @@ use App\Enums\AgreementEnum;
 use App\Enums\ProjectStatusEnum;
 use App\Models\AnnotatorOfProject;
 use App\Models\SubProject;
+use App\Models\User;
 use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\Annotator\GetCountsOfFlagsQuery;
 use App\Queries\Project\GetProjectBasicDataQuery;
@@ -15,6 +16,7 @@ use App\Queries\Project\GetSubProjectIdsQuery;
 use App\Queries\Project\GetSubsetInfoByProjectQuery;
 use App\Queries\SubProject\GetAnnotatorIdsBySubProjectQuery;
 use App\Queries\SubProject\GetSubProjectByProjectAndIdQuery;
+use App\Queries\SubProject\GetSubProjectsForAnnotatorQuery;
 use App\Services\Annotation\AnnotationService;
 use App\Services\Annotation\AnnotatorService;
 use Illuminate\Support\Collection;
@@ -31,7 +33,33 @@ readonly class SubProjectReadService {
         private GetSubsetInfoByProjectQuery $subsetInfoQuery,
         private GetAnnotatorIdsBySubProjectQuery $annotatorIdsBySubProjectQuery,
         private GetSubProjectByProjectAndIdQuery $subProjectByProjectAndIdQuery,
+        private GetSubProjectsForAnnotatorQuery $subProjectsForAnnotatorQuery,
     ) {}
+
+    /**
+     * In-progress subprojects shown on the annotator dashboard ("My Tasks").
+     *
+     * The 3-segment progress (submitted/pending/not-annotated) is mocked on the
+     * frontend for now, so it is intentionally not computed here.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    public function getInProgressSubProjectsForAnnotator(User $user): array {
+        return $this->subProjectsForAnnotatorQuery->get($user)
+            ->map(fn (SubProject $subProject): array => [
+                'id' => $subProject->id,
+                'name' => $subProject->name,
+                'flexible' => $subProject->flexible,
+                'annotation_task_title' => $subProject->project->annotationTask->title,
+                'scheduled_at' => $subProject->scheduled_at,
+                'deadline_at' => $subProject->deadline_at,
+                'started_at' => $subProject->started_at,
+                'completed_at' => $subProject->completed_at,
+                'first_instance_index' => $subProject->first_instance_index,
+                'last_instance_index' => $subProject->last_instance_index,
+            ])
+            ->all();
+    }
 
     /**
      * @return array<string, mixed>

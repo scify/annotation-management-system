@@ -15,7 +15,7 @@ describe('DashboardController::index', function (): void {
         $this->get(route('dashboard'))->assertRedirect(route('login'));
     });
 
-    it('renders dashboard-simple for annotators without calling the service', function (): void {
+    it('renders the annotator dashboard with in-progress subprojects for annotators', function (): void {
         // Arrange
         $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
 
@@ -23,7 +23,10 @@ describe('DashboardController::index', function (): void {
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('dashboard-simple'));
+            ->assertInertia(fn ($page) => $page
+                ->component('dashboard-annotator')
+                ->has('subprojects')
+            );
     });
 
     it('passes all in-progress projects for admins via getAllInProgressProjects', function (): void {
