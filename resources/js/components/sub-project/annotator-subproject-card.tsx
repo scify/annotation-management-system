@@ -1,8 +1,9 @@
+import { AnnotationTaskModeDialog } from '@/pages/annotation-task/components/annotation-task-mode-dialog';
 import { useTranslations } from '@/hooks/use-translations';
 import type { AnnotatorSubProject } from '@/types';
 import { formatDateDMY, formatDateDMYShort } from '@/utils/format';
 import { Container, FolderDot } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 /**
  * Deterministic mock of the submitted / pending / not-annotated breakdown.
@@ -37,6 +38,7 @@ function useMockProgress(subProject: AnnotatorSubProject) {
 export function AnnotatorSubProjectCard({ subProject }: { subProject: AnnotatorSubProject }) {
     const { t } = useTranslations();
     const progress = useMockProgress(subProject);
+    const [modeDialogOpen, setModeDialogOpen] = useState(false);
 
     const browsingLabel = subProject.flexible
         ? t('sub-projects.configuration.flexible_browsing_label')
@@ -140,13 +142,19 @@ export function AnnotatorSubProjectCard({ subProject }: { subProject: AnnotatorS
             </div>
 
             {/* Resume button */}
-            {/* TODO: wire to the annotation tool route once it exists. */}
             <button
                 type="button"
+                onClick={() => setModeDialogOpen(true)}
                 className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 flex h-10 w-full touch-manipulation items-center justify-center rounded-lg text-base font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
             >
                 {t('dashboard.annotator.resume')}
             </button>
+
+            <AnnotationTaskModeDialog
+                open={modeDialogOpen}
+                onOpenChange={setModeDialogOpen}
+                subProjectId={subProject.id}
+            />
         </article>
     );
 }

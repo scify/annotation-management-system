@@ -50,6 +50,7 @@ class HandleInertiaRequests extends Middleware {
             ],
             'quote' => ['message' => mb_trim($message ?? ''), 'author' => mb_trim($author ?? '')],
             'translations' => fn (): array => [
+                'annotation-task' => trans('annotation-task'),
                 'auth' => trans('auth'),
                 'pagination' => trans('pagination'),
                 'passwords' => trans('passwords'),

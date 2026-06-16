@@ -76,6 +76,7 @@ export interface AppData {
 export type TranslationRecord = Record<string, string | Record<string, string>>;
 
 export interface TranslationMap {
+    'annotation-task': TranslationRecord;
     auth: TranslationRecord;
     'client-applications': TranslationRecord;
     common: TranslationRecord;
@@ -155,6 +156,60 @@ export interface AnnotatorSubProject {
     completed_at: string | null;
     first_instance_index: number;
     last_instance_index: number;
+}
+
+/**
+ * Annotation-task page (the annotation tool the "Resume" button opens).
+ *
+ * The question schema mirrors the shape the backend will emit from the
+ * annotation-task settings, so the mocked frontend payload drops in unchanged
+ * once the API is ready.
+ */
+export type AnnotationTaskMode = 'strict' | 'flexible';
+
+/** One configurable question, as defined in the annotation-task settings. */
+export interface AnnotationTaskQuestion {
+    id: number;
+    /** Prompt, e.g. "Does the word ability have the same meaning?" */
+    question: string;
+    /** Selectable options rendered as the "Select an Option" dropdown. */
+    answers: string[];
+    /** Secondary controls — confidence chips (low/medium/high) or extra options ("Not sure"). */
+    parameters: string[];
+}
+
+/** The item under annotation (Figma sample = word-in-context task). */
+export interface AnnotationTaskInstance {
+    id: number;
+    /** Shown as "Instance: 23". */
+    index: number;
+    focusWord: string;
+    leftContext: string;
+    rightContext: string;
+    flagged: boolean;
+}
+
+export interface AnnotationTaskProgress {
+    submitted: number;
+    /** Strict mode rows. */
+    thisSession: number;
+    /** Flexible mode rows. */
+    pending: number;
+    notAnnotated: number;
+    totalInstances: number;
+    submittedPct: number;
+}
+
+/** Full mocked payload the annotation-task page consumes. */
+export interface AnnotationTaskData {
+    projectName: string;
+    subProjectName: string;
+    /** Sidebar "Description" body (supports newlines). */
+    description: string;
+    questions: AnnotationTaskQuestion[];
+    instances: AnnotationTaskInstance[];
+    progress: AnnotationTaskProgress;
+    flagged: { total: number; replied: number };
 }
 
 export interface PlatformStats {

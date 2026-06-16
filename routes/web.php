@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\AnnotationTaskController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MonitorController;
@@ -64,6 +65,8 @@ Route::middleware(['auth'])->group(function (): void {
     Route::put('/users/{user}/restore', UserRestoreController::class)->name('users.restore')->withTrashed();
 
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+
+    Route::get('subprojects/{subProject}/annotation-task', [AnnotationTaskController::class, 'show'])->name('annotation-tasks.show');
 });
 
 // NOSONAR - this comes from Laravel
