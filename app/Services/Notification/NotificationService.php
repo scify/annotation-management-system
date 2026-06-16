@@ -238,6 +238,19 @@ readonly class NotificationService {
 
             $thread->setAttribute('is_read', $userMembers->every(fn ($m) => $m->is_read));
 
+            $thread->setAttribute('allowed_to_reply', match ($thread->type) {
+                NotificationThreadTypeEnum::GENERIC,
+                NotificationThreadTypeEnum::FLAG_NOTIFICATION,
+                NotificationThreadTypeEnum::INSTANCE_RELATED => true,
+                default => false,
+            });
+
+            $lastNotification = $thread->notifications->last();
+            $thread->setAttribute(
+                'replied_by',
+                $thread->notifications->count() === 1 ? null : $lastNotification?->sender?->username,
+            );
+
             $thread->setAttribute('top_right', match ($thread->type) {
                 NotificationThreadTypeEnum::FLAG_NOTIFICATION,
                 NotificationThreadTypeEnum::INSTANCE_RELATED,
@@ -247,15 +260,19 @@ readonly class NotificationService {
                 default => null,
             });
 
-            if ($thread->type === NotificationThreadTypeEnum::GENERIC) {
+            if (! in_array($thread->type, [NotificationThreadTypeEnum::WARNING, NotificationThreadTypeEnum::INFO], true)) {
                 $first = $thread->notifications->first();
-                $otherMember = $first?->members->firstWhere('user_id', '!=', $userId);
-                $thread->setAttribute(
-                    'title',
-                    $first?->sender_user_id !== null && $first->sender_user_id !== $userId
-                        ? $first->sender?->username
-                        : $otherMember?->user?->username,
-                );
+                if ($thread->type === NotificationThreadTypeEnum::GENERIC) {
+                    $otherMember = $first?->members->firstWhere('user_id', '!=', $userId);
+                    $thread->setAttribute(
+                        'title',
+                        $first?->sender_user_id !== null && $first->sender_user_id !== $userId
+                            ? $first->sender?->username
+                            : $otherMember?->user?->username,
+                    );
+                } else {
+                    $thread->setAttribute('title', $first?->sender?->username);
+                }
             }
 
             $thread->notifications->transform(function (Notification $notification): Notification {
