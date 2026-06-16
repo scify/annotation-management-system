@@ -16,11 +16,11 @@ class NotificationController extends Controller {
         private readonly NotificationService $notificationService,
     ) {}
 
-    public function markAsRead(int $notificationId): RedirectResponse {
+    public function markAsRead(int $notificationThreadId): RedirectResponse {
         /** @var User $user */
         $user = Auth::user();
 
-        $this->notificationService->markAsRead($notificationId, $user->id);
+        $this->notificationService->markAsRead($notificationThreadId, $user->id);
 
         return back();
     }

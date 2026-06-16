@@ -15,8 +15,7 @@ use App\Queries\Notification\CreateNotificationThreadResponseQuery;
 use App\Queries\Notification\CreateQuickLinkQuery;
 use App\Queries\Notification\CreateThreadMemberQuery;
 use App\Queries\Notification\GetMyNotificationsQuery;
-use App\Queries\Notification\MarkNotificationAsReadQuery;
-use App\Queries\Notification\MarkThreadAsUnreadQuery;
+use App\Queries\Notification\MarkThreadReadStatusQuery;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -27,8 +26,7 @@ readonly class NotificationService {
         private CreateQuickLinkQuery $createQuickLinkQuery,
         private CreateThreadMemberQuery $createThreadMemberQuery,
         private CreateNotificationThreadResponseQuery $createNotificationThreadResponseQuery,
-        private MarkNotificationAsReadQuery $markNotificationAsReadQuery,
-        private MarkThreadAsUnreadQuery $markThreadAsUnreadQuery,
+        private MarkThreadReadStatusQuery $markThreadReadStatusQuery,
         private GetMyNotificationsQuery $getMyNotificationsQuery,
     ) {}
 
@@ -221,12 +219,12 @@ readonly class NotificationService {
         return $notification;
     }
 
-    public function markAsRead(int $notificationId, int $userId): void {
-        $this->markNotificationAsReadQuery->mark($notificationId, $userId);
+    public function markAsRead(int $notificationThreadId, int $userId): void {
+        $this->markThreadReadStatusQuery->mark($notificationThreadId, $userId, true);
     }
 
     public function markAsUnread(int $notificationThreadId, int $userId): void {
-        $this->markThreadAsUnreadQuery->mark($notificationThreadId, $userId);
+        $this->markThreadReadStatusQuery->mark($notificationThreadId, $userId, false);
     }
 
     /**
