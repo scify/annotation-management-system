@@ -251,6 +251,12 @@ readonly class NotificationService {
                 $thread->notifications->count() === 1 ? null : $lastNotification?->sender?->username,
             );
 
+            if (in_array($thread->type, [NotificationThreadTypeEnum::PROJECT_OWNERSHIP, NotificationThreadTypeEnum::PROJECT_INVITATION], true)) {
+                $thread->setAttribute('response', $thread->response?->response->value);
+            }
+
+            $thread->unsetRelation('response');
+
             $thread->setAttribute('top_right', match ($thread->type) {
                 NotificationThreadTypeEnum::FLAG_NOTIFICATION,
                 NotificationThreadTypeEnum::INSTANCE_RELATED,

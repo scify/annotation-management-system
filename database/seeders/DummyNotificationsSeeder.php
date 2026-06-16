@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Data\QuickLinkData;
+use App\Enums\NotificationThreadResponseEnum;
 use App\Models\User;
 use App\Services\Notification\NotificationService;
 use Illuminate\Database\Seeder;
@@ -96,6 +97,28 @@ class DummyNotificationsSeeder extends Seeder {
                 url: 'projects/1',
             ),
         );
+
+        $acceptedInvitation = $service->createProjectInvitationNotification(
+            recipientUserId: $carol->id,
+            senderUserId: $alice->id,
+            body: 'You have been invited to collaborate on Project Sentiment Analysis.',
+            quickLink: new QuickLinkData(
+                label: 'Project Sentiment Analysis',
+                url: 'projects/2',
+            ),
+        );
+        $acceptedInvitation->thread->response?->update(['response' => NotificationThreadResponseEnum::ACCEPTED]);
+
+        $rejectedOwnership = $service->createProjectOwnershipNotification(
+            recipientUserId: $carol->id,
+            senderUserId: $alice->id,
+            body: 'You have been assigned as owner of Project Sentiment Analysis.',
+            quickLink: new QuickLinkData(
+                label: 'Project Sentiment Analysis',
+                url: 'projects/2',
+            ),
+        );
+        $rejectedOwnership->thread->response?->update(['response' => NotificationThreadResponseEnum::REJECTED]);
 
         $service->createWarningNotification(
             recipientUserIds: [$carol->id],

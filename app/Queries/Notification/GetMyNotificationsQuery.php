@@ -25,6 +25,7 @@ final readonly class GetMyNotificationsQuery {
                     ->select(['id', 'notification_thread_id', 'sender_user_id', 'body', 'created_at'])
                     ->with(['sender', 'members.user']),
                 'quickLinks',
+                'response',
             ])
             ->get()
             ->sortBy(function (NotificationThread $thread): string {
