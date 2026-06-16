@@ -65,6 +65,8 @@ Route::middleware(['auth'])->group(function (): void {
     Route::put('/users/{user}/restore', UserRestoreController::class)->name('users.restore')->withTrashed();
 
     Route::get('notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('notifications/{notificationId}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::post('notifications/{notificationThreadId}/unread', [NotificationController::class, 'markAsUnread'])->name('notifications.unread');
 
     Route::get('subprojects/{subProject}/annotation-task', [AnnotationTaskController::class, 'show'])->name('annotation-tasks.show');
 });

@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace App\Queries\Notification;
 
-use App\Models\Notification;
 use App\Models\ThreadMember;
 
 final readonly class MarkNotificationAsReadQuery {
-    public function mark(Notification $notification, int $userId): void {
+    public function mark(int $notificationId, int $userId): void {
         $member = ThreadMember::query()
-            ->where('notification_id', $notification->id)
+            ->where('notification_id', $notificationId)
             ->where('user_id', $userId)
             ->first();
 

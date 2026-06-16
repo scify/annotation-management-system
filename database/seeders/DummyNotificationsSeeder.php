@@ -32,7 +32,7 @@ class DummyNotificationsSeeder extends Seeder {
             senderUserId: $carol->id,
         );
 
-        $service->markAsRead($carolToEvaReply, $eva->id);
+        $service->markAsRead($carolToEvaReply->id, $eva->id);
 
         $service->createGenericNotification(
             recipientUserId: $frank->id,
