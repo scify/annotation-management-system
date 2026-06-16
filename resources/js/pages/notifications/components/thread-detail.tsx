@@ -6,10 +6,11 @@ import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { Check, Info, MessageSquare, Send, TriangleAlert, X } from 'lucide-react';
 import { useState } from 'react';
+import { useNotificationDate } from '../format-date';
 import { SenderRoleTag, SubjectTag } from './notification-tags';
 import {
+    isActionThread,
     isNoticeThread,
-    isPendingActionThread,
     type NotificationMessage,
     type NotificationThread,
 } from '../types';
@@ -17,10 +18,13 @@ import {
 interface MessageBubbleProps {
     message: NotificationMessage;
     isOwn: boolean;
+    /** Overrides the sender username line, e.g. "kevinNash made an announcement:". */
+    label?: string;
 }
 
-function MessageBubble({ message, isOwn }: MessageBubbleProps) {
+function MessageBubble({ message, isOwn, label }: MessageBubbleProps) {
     const getInitials = useInitials();
+    const formatDate = useNotificationDate();
 
     return (
         <li className={cn('flex w-full flex-col gap-2', isOwn && 'items-end')}>
@@ -37,11 +41,11 @@ function MessageBubble({ message, isOwn }: MessageBubbleProps) {
                         </AvatarFallback>
                     </Avatar>
                     <span className="text-base font-medium text-slate-800">
-                        {message.sender_username}
+                        {label ?? message.sender_username}
                     </span>
                 </span>
                 <span className="text-sm whitespace-nowrap text-slate-600 tabular-nums">
-                    {message.date}
+                    {formatDate(message.datetime, 'detail')}
                 </span>
             </div>
             <p
@@ -73,10 +77,12 @@ export function ThreadDetail({
     onApprove,
     onReject,
 }: ThreadDetailProps) {
-    const { t } = useTranslations();
+    const { t, trans } = useTranslations();
+    const formatDate = useNotificationDate();
     const [replyBody, setReplyBody] = useState('');
     const isNotice = isNoticeThread(thread);
-    const isPendingAction = isPendingActionThread(thread);
+    const isDecided = Boolean(thread.is_accepted || thread.is_rejected);
+    const showActions = isActionThread(thread) && !isDecided;
     const firstMessage = thread.notifications[0];
 
     if (!firstMessage) return null;
@@ -106,7 +112,7 @@ export function ThreadDetail({
                         <h2 className="text-lg font-semibold text-slate-800">{thread.title}</h2>
                     </div>
                     <span className="text-sm whitespace-nowrap text-slate-600 tabular-nums">
-                        {firstMessage.date}
+                        {formatDate(firstMessage.datetime, 'detail')}
                     </span>
                 </div>
                 <p className="text-base whitespace-pre-line text-slate-800">{firstMessage.body}</p>
@@ -120,11 +126,11 @@ export function ThreadDetail({
                 <div className="flex min-w-0 items-center gap-3">
                     <MessageSquare aria-hidden="true" className="size-6 shrink-0 text-slate-700" />
                     <h2 className="truncate text-lg font-semibold text-slate-800">
-                        {firstMessage.sender_username}
+                        {thread.title}
                     </h2>
                     {firstMessage.sender_role && <SenderRoleTag role={firstMessage.sender_role} />}
                 </div>
-                {thread.subject && <SubjectTag type={thread.type} label={thread.subject} />}
+                {thread.top_right && <SubjectTag type={thread.type} label={thread.top_right} />}
             </div>
 
             {thread.quick_links.length > 0 && (
@@ -150,11 +156,18 @@ export function ThreadDetail({
                         key={message.id}
                         message={message}
                         isOwn={message.sender_user_id === currentUserId}
+                        label={
+                            thread.type === 'announcement'
+                                ? trans('notifications.messages.announcement', {
+                                      username: message.sender_username ?? '',
+                                  })
+                                : undefined
+                        }
                     />
                 ))}
             </ul>
 
-            {isPendingAction ? (
+            {showActions ? (
                 <div className="flex items-center justify-end gap-3">
                     <Button
                         variant="secondary"
@@ -170,7 +183,7 @@ export function ThreadDetail({
                         {t('notifications.approve')}
                     </Button>
                 </div>
-            ) : (
+            ) : thread.allowed_to_reply ? (
                 <form className="flex flex-col items-end gap-4" onSubmit={handleReplySubmit}>
                     <div className="flex w-full flex-col gap-1.5">
                         <label
@@ -198,7 +211,7 @@ export function ThreadDetail({
                         <Send aria-hidden="true" />
                     </Button>
                 </form>
-            )}
+            ) : null}
         </article>
     );
 }

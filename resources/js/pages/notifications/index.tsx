@@ -7,18 +7,19 @@ import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { NotificationListItem } from './components/notification-list-item';
 import { ThreadDetail } from './components/thread-detail';
-import { createMockThreads } from './mock-data';
 import { isThreadUnread, type NotificationMessage, type NotificationThread } from './types';
 
-// The `threads` prop sent by NotificationController is intentionally ignored
-// for now — the backend returns an empty collection. The page runs on mock
-// data (see ./mock-data.ts) until the real notification flow lands.
-export default function NotificationsIndex() {
+interface Props {
+    threads: NotificationThread[];
+}
+
+// Threads come from NotificationController::index (NotificationService::getMyNotifications).
+// They are seeded into local state so reply / mark-read / approve interactions can update
+// optimistically — these have no backend endpoint yet (see tasks/notifications-backend-gaps.md).
+export default function NotificationsIndex({ threads: initialThreads }: Props) {
     const { t } = useTranslations();
     const { auth } = usePage<PageProps>().props;
-    const [threads, setThreads] = useState<NotificationThread[]>(() =>
-        createMockThreads(auth.user.id, auth.user.name)
-    );
+    const [threads, setThreads] = useState<NotificationThread[]>(initialThreads);
     const [selectedThreadId, setSelectedThreadId] = useState<number | null>(null);
     const [showUnreadOnly, setShowUnreadOnly] = useState(false);
 
@@ -40,13 +41,7 @@ export default function NotificationsIndex() {
     };
 
     const setThreadRead = (threadId: number, isRead: boolean) => {
-        updateThread(threadId, (thread) => ({
-            ...thread,
-            notifications: thread.notifications.map((message) =>
-                // Own messages always stay read — only incoming ones toggle.
-                message.sender_user_id === auth.user.id ? message : { ...message, is_read: isRead }
-            ),
-        }));
+        updateThread(threadId, (thread) => ({ ...thread, is_read: isRead }));
     };
 
     const handleSelect = (threadId: number) => {
@@ -61,31 +56,24 @@ export default function NotificationsIndex() {
     };
 
     const handleMarkAllRead = () => {
-        setThreads((current) =>
-            current.map((thread) => ({
-                ...thread,
-                notifications: thread.notifications.map((message) => ({
-                    ...message,
-                    is_read: true,
-                })),
-            }))
-        );
+        setThreads((current) => current.map((thread) => ({ ...thread, is_read: true })));
     };
 
     const handleReply = (body: string) => {
         if (selectedThreadId === null) return;
         const nextId =
             Math.max(...threads.flatMap((thread) => thread.notifications.map((m) => m.id))) + 1;
+        const now = new Date();
+        const pad = (n: number) => String(n).padStart(2, '0');
+        const datetime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
         const reply: NotificationMessage = {
             id: nextId,
             notification_thread_id: selectedThreadId,
             sender_user_id: auth.user.id,
-            recipient_user_id: 0,
             body,
-            is_read: true,
             sender_username: auth.user.name,
             sender_role: null,
-            date: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            datetime,
         };
         updateThread(selectedThreadId, (thread) => ({
             ...thread,

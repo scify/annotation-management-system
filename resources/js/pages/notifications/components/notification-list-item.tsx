@@ -1,6 +1,7 @@
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { Info, MessageSquare, TriangleAlert } from 'lucide-react';
+import { useNotificationDate } from '../format-date';
 import { SenderRoleTag, SubjectTag } from './notification-tags';
 import {
     isNoticeThread,
@@ -39,8 +40,10 @@ interface NotificationListItemProps extends React.ComponentProps<'button'> {
 
 export function NotificationListItem({ thread, className, ...props }: NotificationListItemProps) {
     const { t } = useTranslations();
+    const formatDate = useNotificationDate();
     const isNotice = isNoticeThread(thread);
     const isUnread = isThreadUnread(thread);
+    const firstMessage = thread.notifications[0];
     const lastMessage = thread.notifications[thread.notifications.length - 1];
 
     if (!lastMessage) return null;
@@ -78,29 +81,33 @@ export function NotificationListItem({ thread, className, ...props }: Notificati
             <span className="flex min-w-0 flex-1 flex-col gap-2">
                 <span className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                     <span className="flex min-w-0 items-center gap-3">
-                        {isNotice ? (
-                            <span className="truncate text-base font-semibold text-slate-800">
-                                {thread.title}
-                            </span>
-                        ) : (
-                            <>
-                                <span className="truncate text-base font-semibold text-slate-500">
-                                    {lastMessage.sender_username}
-                                </span>
-                                {lastMessage.sender_role && (
-                                    <SenderRoleTag role={lastMessage.sender_role} />
-                                )}
-                            </>
+                        <span
+                            className={cn(
+                                'truncate text-base font-semibold',
+                                isNotice ? 'text-slate-800' : 'text-slate-500'
+                            )}
+                        >
+                            {thread.title}
+                        </span>
+                        {!isNotice && firstMessage?.sender_role && (
+                            <SenderRoleTag role={firstMessage.sender_role} />
                         )}
                     </span>
                     <span className="flex shrink-0 items-center gap-4">
-                        {thread.subject && <SubjectTag type={thread.type} label={thread.subject} />}
+                        {thread.top_right && (
+                            <SubjectTag type={thread.type} label={thread.top_right} />
+                        )}
                         <span className="text-sm whitespace-nowrap text-slate-800 tabular-nums">
-                            {lastMessage.date}
+                            {formatDate(lastMessage.datetime, 'list')}
                         </span>
                     </span>
                 </span>
-                <span className="truncate text-sm text-slate-500">{lastMessage.body}</span>
+                <span className="truncate text-sm text-slate-500">
+                    {thread.replied_by && (
+                        <span className="font-semibold text-slate-700">{thread.replied_by}: </span>
+                    )}
+                    {lastMessage.body}
+                </span>
             </span>
         </button>
     );

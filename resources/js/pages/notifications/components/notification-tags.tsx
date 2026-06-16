@@ -9,21 +9,43 @@ const SENDER_ROLE_STYLES: Record<NotificationSenderRole, string> = {
     owner: 'border-purple-300 bg-purple-50 text-purple-600',
 };
 
+/**
+ * The backend currently sends the sender's *global* role; the design wants the
+ * *project-contextual* role (annotator/manager/owner). Best-effort map until the
+ * backend exposes the contextual role — see `tasks/notifications-backend-gaps.md`.
+ */
+function normalizeSenderRole(role: string): NotificationSenderRole | null {
+    switch (role) {
+        case 'annotator':
+            return 'annotator';
+        case 'annotation-manager':
+        case 'manager':
+            return 'manager';
+        case 'owner':
+            return 'owner';
+        default:
+            return null;
+    }
+}
+
 interface SenderRoleTagProps {
-    role: NotificationSenderRole;
+    role: string;
 }
 
 export function SenderRoleTag({ role }: SenderRoleTagProps) {
     const { t } = useTranslations();
+    const displayRole = normalizeSenderRole(role);
+
+    if (!displayRole) return null;
 
     return (
         <span
             className={cn(
                 'inline-flex h-[22px] shrink-0 items-center rounded border px-2 py-px text-xs font-semibold',
-                SENDER_ROLE_STYLES[role]
+                SENDER_ROLE_STYLES[displayRole]
             )}
         >
-            {t(`notifications.roles.${role}`)}
+            {t(`notifications.roles.${displayRole}`)}
         </span>
     );
 }
