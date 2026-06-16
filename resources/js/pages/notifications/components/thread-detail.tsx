@@ -81,8 +81,7 @@ export function ThreadDetail({
     const formatDate = useNotificationDate();
     const [replyBody, setReplyBody] = useState('');
     const isNotice = isNoticeThread(thread);
-    const isDecided = Boolean(thread.is_accepted || thread.is_rejected);
-    const showActions = isActionThread(thread) && !isDecided;
+    const isDecided = thread.response === 'accepted' || thread.response === 'rejected';
     const firstMessage = thread.notifications[0];
 
     if (!firstMessage) return null;
@@ -167,22 +166,44 @@ export function ThreadDetail({
                 ))}
             </ul>
 
-            {showActions ? (
-                <div className="flex items-center justify-end gap-3">
-                    <Button
-                        variant="secondary"
-                        size="sm"
-                        className="min-w-[100px]"
-                        onPress={onReject}
+            {isActionThread(thread) ? (
+                isDecided ? (
+                    <div
+                        role="status"
+                        className={cn(
+                            'flex items-center justify-end gap-1.5 text-sm font-semibold',
+                            thread.response === 'accepted' ? 'text-green-600' : 'text-red-500'
+                        )}
                     >
-                        <X aria-hidden="true" />
-                        {t('notifications.reject')}
-                    </Button>
-                    <Button size="sm" className="min-w-[100px]" onPress={onApprove}>
-                        <Check aria-hidden="true" />
-                        {t('notifications.approve')}
-                    </Button>
-                </div>
+                        {thread.response === 'accepted' ? (
+                            <>
+                                <Check aria-hidden="true" className="size-4" />
+                                {t('notifications.accepted')}
+                            </>
+                        ) : (
+                            <>
+                                <X aria-hidden="true" className="size-4" />
+                                {t('notifications.rejected')}
+                            </>
+                        )}
+                    </div>
+                ) : (
+                    <div className="flex items-center justify-end gap-3">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="min-w-[100px]"
+                            onPress={onReject}
+                        >
+                            <X aria-hidden="true" />
+                            {t('notifications.reject')}
+                        </Button>
+                        <Button size="sm" className="min-w-[100px]" onPress={onApprove}>
+                            <Check aria-hidden="true" />
+                            {t('notifications.approve')}
+                        </Button>
+                    </div>
+                )
             ) : thread.allowed_to_reply ? (
                 <form className="flex flex-col items-end gap-4" onSubmit={handleReplySubmit}>
                     <div className="flex w-full flex-col gap-1.5">

@@ -16,6 +16,8 @@ return [
     'send_reply' => 'Send Reply',
     'approve' => 'Approve',
     'reject' => 'Reject',
+    'accepted' => 'Accepted',
+    'rejected' => 'Rejected',
     'select_notification_hint' => 'Select a notification to view its details',
     'today_at' => 'Today at',
     'roles' => [

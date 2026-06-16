@@ -85,8 +85,7 @@ export default function NotificationsIndex({ threads: initialThreads }: Props) {
         if (selectedThreadId === null) return;
         updateThread(selectedThreadId, (thread) => ({
             ...thread,
-            is_accepted: isAccepted,
-            is_rejected: !isAccepted,
+            response: isAccepted ? 'accepted' : 'rejected',
         }));
     };
 

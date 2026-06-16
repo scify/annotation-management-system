@@ -18,6 +18,9 @@ export type NotificationThreadType =
 /** Display role of a message sender within a project context. */
 export type NotificationSenderRole = 'annotator' | 'manager' | 'owner';
 
+/** Decision state of an action thread, mirrors `App\Enums\NotificationThreadResponseEnum`. */
+export type NotificationThreadResponse = 'accepted' | 'rejected' | 'unreplied';
+
 /** Mirrors `App\Models\Notification` with the appended sender/date attributes. */
 export interface NotificationMessage {
     id: number;
@@ -60,12 +63,11 @@ export interface NotificationThread {
     notifications: NotificationMessage[];
     quick_links: NotificationQuickLink[];
     /**
-     * Client-only optimistic decision state for project_ownership /
-     * project_invitation threads. NOT sent by the backend — set locally when the
-     * user approves/rejects. See `tasks/notifications-backend-gaps.md`.
+     * Decision state for project_ownership / project_invitation threads. Only
+     * present on those types. Updated optimistically on approve/reject — no
+     * persistence endpoint yet (see `tasks/notifications-backend-gaps.md`).
      */
-    is_accepted?: boolean;
-    is_rejected?: boolean;
+    response?: NotificationThreadResponse;
 }
 
 /** Notices are read in place — they have no conversation or reply box. */
