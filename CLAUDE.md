@@ -31,7 +31,7 @@ You are working with a team of senior software engineers who are well-versed in 
 - **Sonner**: Toast notifications
 - **Spatie Laravel Permission**: Role-based access control
 - **Vite**: Asset compilation (NOT Laravel Mix)
-- **PHPStan**: Static analysis at **level 8** (via Larastan)
+- **PHPStan**: Static analysis (via Larastan)
 
 ### Project Structure
 
@@ -113,7 +113,7 @@ Commands are split by *what they do to your repo*:
 | `composer fix:backend` | Yes | Backend dev — Rector + Pint, no Node required |
 | `composer check` | No | CI-safe style/lint verification |
 | `composer check:backend` | No | Backend dev — Pint + Rector dry-run, no Node |
-| `composer check:types` | No | PHPStan level 8 + TypeScript tsc |
+| `composer check:types` | No | PHPStan + TypeScript tsc |
 | `composer check:types:backend` | No | PHPStan only, no Node required |
 | `npm run fix` | Yes | Frontend dev — ESLint + Stylelint + Prettier |
 | `npm run check` | No | Frontend dev — CI-safe verification |
