@@ -19,6 +19,8 @@ export interface SidebarNavItem {
     placeholder?: boolean;
     /** When set, the item renders as an action button instead of a navigation link. */
     onClick?: () => void;
+    /** When true, a red dot is shown on the item (e.g. unread notifications). */
+    showUnreadDot?: boolean;
 }
 
 export function isNavItemActive(href: string, currentUrl: string): boolean {
@@ -29,8 +31,9 @@ export function isNavItemActive(href: string, currentUrl: string): boolean {
 }
 
 export function useNavItems(): SidebarNavItem[] {
-    const { isAdmin, isAnnotationManager, isAnnotator } = useAuth();
+    const { user, isAdmin, isAnnotationManager, isAnnotator } = useAuth();
     const { t } = useTranslations();
+    const hasUnreadNotifications = user?.new_notifications_exist ?? false;
 
     if (isAnnotator()) {
         return [
@@ -39,6 +42,7 @@ export function useNavItems(): SidebarNavItem[] {
                 title: t('navbar.notifications'),
                 icon: BellRing,
                 href: route('notifications.index'),
+                showUnreadDot: hasUnreadNotifications,
             },
             // "My Reports" has no route yet — render as a disabled placeholder.
             { title: t('navbar.my_reports'), icon: ChartColumnBig, href: '#', placeholder: true },
@@ -54,7 +58,12 @@ export function useNavItems(): SidebarNavItem[] {
         ...(isAdmin() || isAnnotationManager()
             ? [{ title: t('navbar.users'), icon: Users, href: route('users.index') }]
             : []),
-        { title: t('navbar.notifications'), icon: BellRing, href: route('notifications.index') },
+        {
+            title: t('navbar.notifications'),
+            icon: BellRing,
+            href: route('notifications.index'),
+            showUnreadDot: hasUnreadNotifications,
+        },
         { title: t('navbar.audit_log'), icon: Captions, href: '#', placeholder: true },
         {
             title: t('navbar.cookies_settings'),

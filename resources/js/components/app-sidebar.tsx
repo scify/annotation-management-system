@@ -1,5 +1,6 @@
 import AppLogoIcon from '@/components/app-logo-icon';
 import { isNavItemActive, useNavItems } from '@/hooks/use-nav-items';
+import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { Link, usePage } from '@inertiajs/react';
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
@@ -13,6 +14,7 @@ export interface AppSidebarProps {
 export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
     const page = usePage<SharedData>();
     const navItems = useNavItems();
+    const { t } = useTranslations();
 
     return (
         <aside
@@ -40,7 +42,7 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
                     {navItems.map((item) => {
                         const active = isNavItemActive(item.href, page.url);
                         const itemClass = cn(
-                            'flex items-center rounded-lg px-1 py-2 text-sm font-small text-white transition-colors mb-2',
+                            'relative flex items-center rounded-lg px-1 py-2 text-sm font-small text-white transition-colors mb-2',
                             isCollapsed ? 'justify-center' : 'gap-1.5',
                             active ? 'bg-slate-800' : 'hover:bg-white/10',
                             item.placeholder && 'cursor-not-allowed opacity-60'
@@ -59,6 +61,15 @@ export function AppSidebar({ isCollapsed, onToggle }: AppSidebarProps) {
                                 <span className={cn('truncate text-sm', isCollapsed && 'sr-only')}>
                                     {item.title}
                                 </span>
+                                {item.showUnreadDot && (
+                                    <>
+                                        <span
+                                            aria-hidden="true"
+                                            className="absolute top-1.5 right-1.5 size-2 rounded-full bg-red-500"
+                                        />
+                                        <span className="sr-only">{t('navbar.unread')}</span>
+                                    </>
+                                )}
                             </>
                         );
 

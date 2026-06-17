@@ -40,6 +40,8 @@ export interface User {
  */
 export type AuthUser = User & {
     can: Record<ServerPermission, boolean>;
+    /** True when the user has at least one unread notification (drives the sidebar red dot). */
+    new_notifications_exist: boolean;
 };
 
 export interface Auth {

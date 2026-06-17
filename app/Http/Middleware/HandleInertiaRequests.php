@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Enums\PermissionsEnum;
+use App\Services\Notification\NotificationService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -19,6 +20,10 @@ class HandleInertiaRequests extends Middleware {
      * @var string
      */
     protected $rootView = 'app';
+
+    public function __construct(
+        private readonly NotificationService $notificationService,
+    ) {}
 
     public function version(Request $request): ?string {
         $base = parent::version($request);
@@ -76,6 +81,7 @@ class HandleInertiaRequests extends Middleware {
                     'created_at' => $request->user()->created_at,
                     'updated_at' => $request->user()->updated_at,
                     'deleted_at' => $request->user()->deleted_at,
+                    'new_notifications_exist' => $this->notificationService->hasUnreadNotifications($request->user()->id),
                     'can' => collect(PermissionsEnum::cases())
                         ->mapWithKeys(function (PermissionsEnum $permissionsEnum) use ($request): array {
                             $result = $request->user()->can($permissionsEnum->value);
