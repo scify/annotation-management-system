@@ -13,11 +13,11 @@ return new class() extends Migration {
     public function up(): void {
         Schema::create('thread_members', function (Blueprint $table): void {
             $table->id();
-            $table->foreignId('notification_id')->constrained('notifications')->cascadeOnDelete();
+            $table->foreignId('notification_thread_id')->constrained('notification_threads')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->boolean('is_read')->default(false);
             $table->timestamps();
-            $table->unique(['notification_id', 'user_id']);
+            $table->unique(['notification_thread_id', 'user_id']);
             $table->index('user_id');
         });
     }

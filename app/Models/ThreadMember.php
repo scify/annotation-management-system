@@ -13,16 +13,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property-read int $id
- * @property int $notification_id
+ * @property int $notification_thread_id
  * @property int $user_id
  * @property bool $is_read
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
- * @property-read Notification $notification
+ * @property-read NotificationThread $thread
  * @property-read User $user
  */
 #[Fillable([
-    'notification_id',
+    'notification_thread_id',
     'user_id',
     'is_read',
 ])]
@@ -31,10 +31,10 @@ class ThreadMember extends Model {
     use HasFactory;
 
     /**
-     * @return BelongsTo<Notification, $this>
+     * @return BelongsTo<NotificationThread, $this>
      */
-    public function notification(): BelongsTo {
-        return $this->belongsTo(Notification::class);
+    public function thread(): BelongsTo {
+        return $this->belongsTo(NotificationThread::class);
     }
 
     /**

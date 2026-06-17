@@ -7,14 +7,14 @@ use App\Enums\NotificationThreadResponseEnum;
 use App\Enums\RolesEnum;
 use App\Models\NotificationThreadResponse;
 use App\Models\User;
-use App\Services\Notification\NotificationService;
+use App\Services\Notification\NotificationsService;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\Hash;
 
 describe('Notifications page', function (): void {
     beforeEach(function (): void {
         $this->seed(RolesAndPermissionsSeeder::class);
-        $this->service = resolve(NotificationService::class);
+        $this->service = resolve(NotificationsService::class);
     });
 
     it('redirects unauthenticated users to the login page', function (): void {

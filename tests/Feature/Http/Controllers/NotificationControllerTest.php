@@ -3,21 +3,19 @@
 declare(strict_types=1);
 
 use App\Enums\RolesEnum;
-use App\Models\Notification;
 use App\Models\NotificationThread;
 use App\Models\ThreadMember;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
 /**
- * Builds a thread with a single notification and a membership for the given user,
+ * Builds a thread with a membership for the given user,
  * returning the thread so callers can hit the read/unread routes by thread id.
  */
 function makeThreadFor(User $user, bool $isRead): NotificationThread {
     $thread = NotificationThread::factory()->create();
-    $notification = Notification::factory()->create(['notification_thread_id' => $thread->id]);
     ThreadMember::factory()->create([
-        'notification_id' => $notification->id,
+        'notification_thread_id' => $thread->id,
         'user_id' => $user->id,
         'is_read' => $isRead,
     ]);
@@ -95,14 +93,13 @@ describe('NotificationController::markAsRead', function (): void {
         $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
         $other = User::factory()->create();
         $thread = NotificationThread::factory()->create();
-        $notification = Notification::factory()->create(['notification_thread_id' => $thread->id]);
         ThreadMember::factory()->create([
-            'notification_id' => $notification->id,
+            'notification_thread_id' => $thread->id,
             'user_id' => $user->id,
             'is_read' => false,
         ]);
         $otherMember = ThreadMember::factory()->create([
-            'notification_id' => $notification->id,
+            'notification_thread_id' => $thread->id,
             'user_id' => $other->id,
             'is_read' => false,
         ]);
@@ -189,7 +186,7 @@ describe('NotificationController::markAllAsRead', function (): void {
         $otherThread = makeThreadFor($other, isRead: false);
         $otherMember = ThreadMember::query()
             ->where('user_id', $other->id)
-            ->whereHas('notification', fn ($q) => $q->where('notification_thread_id', $otherThread->id))
+            ->where('notification_thread_id', $otherThread->id)
             ->firstOrFail();
 
         // Act

@@ -7,7 +7,15 @@ namespace Database\Seeders;
 use App\Data\QuickLinkData;
 use App\Enums\NotificationThreadResponseEnum;
 use App\Models\User;
-use App\Services\Notification\NotificationService;
+use App\Services\Notification\AnnouncementNotificationService;
+use App\Services\Notification\FlagNotificationService;
+use App\Services\Notification\GenericNotificationService;
+use App\Services\Notification\InfoNotificationService;
+use App\Services\Notification\InstanceRelatedNotificationService;
+use App\Services\Notification\NotificationsService;
+use App\Services\Notification\ProjectInvitationNotificationService;
+use App\Services\Notification\ProjectOwnershipNotificationService;
+use App\Services\Notification\WarningNotificationService;
 use Illuminate\Database\Seeder;
 
 class DummyNotificationsSeeder extends Seeder {
@@ -17,33 +25,40 @@ class DummyNotificationsSeeder extends Seeder {
         $carol = User::query()->where('email', 'manager.carol@example.com')->firstOrFail();
         $frank = User::query()->where('email', 'annotator.frank@example.com')->firstOrFail();
 
-        $service = resolve(NotificationService::class);
+        $genericService = resolve(GenericNotificationService::class);
+        $warningService = resolve(WarningNotificationService::class);
+        $infoService = resolve(InfoNotificationService::class);
+        $flagService = resolve(FlagNotificationService::class);
+        $instanceRelatedService = resolve(InstanceRelatedNotificationService::class);
+        $announcementService = resolve(AnnouncementNotificationService::class);
+        $projectOwnershipService = resolve(ProjectOwnershipNotificationService::class);
+        $projectInvitationService = resolve(ProjectInvitationNotificationService::class);
+        $service = resolve(NotificationsService::class);
 
-        $evaToCarol = $service->createGenericNotification(
+        $evaToCarol = $genericService->createNotification(
             recipientUserId: $carol->id,
             body: 'Hi Carol, I have a question about the annotation guidelines for Batch 1.',
             senderUserId: $eva->id,
         );
 
-        $carolToEvaReply = $service->replyToGenericNotification(
+        $carolToEvaReply = $genericService->reply(
             notificationThreadId: $evaToCarol->notification_thread_id,
-            recipientUserId: $eva->id,
-            body: 'Hi Eva, happy to help! Which part of the guidelines is unclear?',
             senderUserId: $carol->id,
+            body: 'Hi Eva, happy to help! Which part of the guidelines is unclear?',
         );
 
         $service->markAsRead($carolToEvaReply->notification_thread_id, $eva->id);
 
-        $service->createGenericNotification(
+        $genericService->createNotification(
             recipientUserId: $frank->id,
             body: 'Hi Frank, please review the latest annotation guidelines before starting Batch 2.',
             senderUserId: $carol->id,
         );
 
-        $service->createFlagNotification(
-            recipientUserId: $carol->id,
-            senderUserId: $alice->id,
+        $flagService->createNotification(
+            recipientUserIds: [$carol->id],
             body: 'Instance #2 in Subproject Batch 1 has been flagged for review.',
+            senderUserId: $alice->id,
             firstQuickLink: new QuickLinkData(
                 label: 'Flagged Instance#2',
                 url: 'projects/1/subprojects/1/edit',
@@ -54,10 +69,10 @@ class DummyNotificationsSeeder extends Seeder {
             ),
         );
 
-        $service->createInstanceRelatedNotification(
-            recipientUserId: $carol->id,
-            senderUserId: $alice->id,
+        $instanceRelatedService->createNotification(
+            recipientUserIds: [$carol->id],
             body: 'Instance #2 in Subproject Batch 1 has been updated.',
+            senderUserId: $alice->id,
             firstQuickLink: new QuickLinkData(
                 label: 'Instance#2',
                 url: 'projects/1/subprojects/1/edit',
@@ -68,18 +83,17 @@ class DummyNotificationsSeeder extends Seeder {
             ),
         );
 
-        $service->createAnnouncementNotification(
+        $announcementService->createNotification(
             recipientUserIds: [$carol->id],
-            senderUserId: $alice->id,
             body: 'Hello everyone!',
+            senderUserId: $alice->id,
             quickLink: new QuickLinkData(
                 label: 'Subproject Batch 1',
                 url: 'projects/1/subprojects/1/edit',
             ),
         );
 
-        $service->createProjectOwnershipNotification(
-            recipientUserId: $carol->id,
+        $projectOwnershipService->createNotification(
             senderUserId: $alice->id,
             body: 'You have been assigned as owner of Project NER – English News.',
             quickLink: new QuickLinkData(
@@ -88,8 +102,7 @@ class DummyNotificationsSeeder extends Seeder {
             ),
         );
 
-        $service->createProjectInvitationNotification(
-            recipientUserId: $carol->id,
+        $projectInvitationService->createNotification(
             senderUserId: $alice->id,
             body: 'You have been invited to collaborate on Project NER – English News.',
             quickLink: new QuickLinkData(
@@ -98,8 +111,7 @@ class DummyNotificationsSeeder extends Seeder {
             ),
         );
 
-        $acceptedInvitation = $service->createProjectInvitationNotification(
-            recipientUserId: $carol->id,
+        $acceptedInvitation = $projectInvitationService->createNotification(
             senderUserId: $alice->id,
             body: 'You have been invited to collaborate on Project Sentiment Analysis.',
             quickLink: new QuickLinkData(
@@ -109,8 +121,7 @@ class DummyNotificationsSeeder extends Seeder {
         );
         $acceptedInvitation->thread->response?->update(['response' => NotificationThreadResponseEnum::ACCEPTED]);
 
-        $rejectedOwnership = $service->createProjectOwnershipNotification(
-            recipientUserId: $carol->id,
+        $rejectedOwnership = $projectOwnershipService->createNotification(
             senderUserId: $alice->id,
             body: 'You have been assigned as owner of Project Sentiment Analysis.',
             quickLink: new QuickLinkData(
@@ -120,16 +131,16 @@ class DummyNotificationsSeeder extends Seeder {
         );
         $rejectedOwnership->thread->response?->update(['response' => NotificationThreadResponseEnum::REJECTED]);
 
-        $service->createWarningNotification(
-            recipientUserIds: [$carol->id],
-            title: 'Overdue Date Approaching',
+        $warningService->createNotification(
+            recipientUserId: $carol->id,
             body: 'Subproject New Nov26 will surpass due date in 3 days',
+            title: 'Overdue Date Approaching',
         );
 
-        $service->createInfoNotification(
-            recipientUserIds: [$carol->id],
-            title: 'Profile edit',
+        $infoService->createNotification(
+            recipientUserId: $carol->id,
             body: '@admin_alice just edited your profile',
+            title: 'Profile edit',
         );
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\Notification;
+use App\Models\NotificationThread;
 use App\Models\ThreadMember;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -20,7 +20,7 @@ class ThreadMemberFactory extends Factory {
      */
     public function definition(): array {
         return [
-            'notification_id' => Notification::factory(),
+            'notification_thread_id' => NotificationThread::factory(),
             'user_id' => User::factory(),
             'is_read' => false,
         ];

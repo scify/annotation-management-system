@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read Carbon $updated_at
  * @property-read Collection<int, Notification> $notifications
  * @property-read Collection<int, QuickLink> $quickLinks
+ * @property-read Collection<int, ThreadMember> $members
  * @property-read NotificationThreadResponse|null $response
  */
 #[Fillable([
@@ -44,6 +45,13 @@ class NotificationThread extends Model {
      */
     public function quickLinks(): HasMany {
         return $this->hasMany(QuickLink::class);
+    }
+
+    /**
+     * @return HasMany<ThreadMember, $this>
+     */
+    public function members(): HasMany {
+        return $this->hasMany(ThreadMember::class);
     }
 
     /**

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Enums\PermissionsEnum;
-use App\Services\Notification\NotificationService;
+use App\Services\Notification\NotificationsService;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -22,7 +22,7 @@ class HandleInertiaRequests extends Middleware {
     protected $rootView = 'app';
 
     public function __construct(
-        private readonly NotificationService $notificationService,
+        private readonly NotificationsService $notificationService,
     ) {}
 
     public function version(Request $request): ?string {

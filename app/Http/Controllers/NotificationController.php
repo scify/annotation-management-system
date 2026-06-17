@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Services\Notification\NotificationService;
+use App\Services\Notification\NotificationsService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -13,7 +13,7 @@ use Inertia\Response;
 
 class NotificationController extends Controller {
     public function __construct(
-        private readonly NotificationService $notificationService,
+        private readonly NotificationsService $notificationService,
     ) {}
 
     public function markAsRead(int $notificationThreadId): RedirectResponse {
