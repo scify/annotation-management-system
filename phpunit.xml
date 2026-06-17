@@ -26,6 +26,8 @@
         <exclude>
             <directory>app/Enums</directory>
             <file>app/Http/Middleware/HandleAppearance.php</file>
+            <file>app/Services/AnnotationTask/DummyAnnotationTaskService.php</file>
+            <file>app/Services/AnnotationTask/AnnotationTaskServiceFactory.php</file>
         </exclude>
     </source>
     <php>
