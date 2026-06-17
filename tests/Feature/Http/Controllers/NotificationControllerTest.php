@@ -151,3 +151,55 @@ describe('NotificationController::markAsUnread', function (): void {
         ]);
     });
 });
+
+describe('NotificationController::markAllAsRead', function (): void {
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
+    });
+
+    it('redirects guests to the login page', function (): void {
+        $this->post(route('notifications.read-all'))
+            ->assertRedirect(route('login'));
+    });
+
+    it("marks all the authenticated user's memberships as read and redirects back", function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
+        makeThreadFor($user, isRead: false);
+        makeThreadFor($user, isRead: false);
+
+        // Act
+        $response = $this->actingAs($user)
+            ->from(route('notifications.index'))
+            ->post(route('notifications.read-all'));
+
+        // Assert
+        $response->assertRedirect(route('notifications.index'));
+        $this->assertDatabaseMissing('thread_members', [
+            'user_id' => $user->id,
+            'is_read' => false,
+        ]);
+    });
+
+    it("does not touch another user's memberships", function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
+        $other = User::factory()->create();
+        makeThreadFor($user, isRead: false);
+        $otherThread = makeThreadFor($other, isRead: false);
+        $otherMember = ThreadMember::query()
+            ->where('user_id', $other->id)
+            ->whereHas('notification', fn ($q) => $q->where('notification_thread_id', $otherThread->id))
+            ->firstOrFail();
+
+        // Act
+        $this->actingAs($user)
+            ->post(route('notifications.read-all'));
+
+        // Assert
+        $this->assertDatabaseHas('thread_members', [
+            'id' => $otherMember->id,
+            'is_read' => false,
+        ]);
+    });
+});

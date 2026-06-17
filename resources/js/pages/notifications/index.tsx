@@ -15,8 +15,9 @@ interface Props {
 
 // Threads come from NotificationController::index (NotificationService::getMyNotifications).
 // They are seeded into local state so interactions can update optimistically. Mark-read /
-// mark-unread now persist via notifications.read / notifications.unread; reply / approve / reject
-// remain optimistic-only with no backend endpoint yet (see tasks/notifications-backend-gaps.md).
+// mark-unread / mark-all-read now persist via notifications.read / notifications.unread /
+// notifications.read-all; reply / approve / reject remain optimistic-only with no backend endpoint
+// yet (see tasks/notifications-backend-gaps.md).
 export default function NotificationsIndex({ threads: initialThreads }: Props) {
     const { t } = useTranslations();
     const { auth } = usePage<PageProps>().props;
@@ -69,6 +70,11 @@ export default function NotificationsIndex({ threads: initialThreads }: Props) {
 
     const handleMarkAllRead = () => {
         setThreads((current) => current.map((thread) => ({ ...thread, is_read: true })));
+        router.post(
+            route('notifications.read-all'),
+            {},
+            { preserveState: true, preserveScroll: true }
+        );
     };
 
     const handleReply = (body: string) => {

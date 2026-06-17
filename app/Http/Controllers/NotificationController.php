@@ -34,6 +34,15 @@ class NotificationController extends Controller {
         return back();
     }
 
+    public function markAllAsRead(): RedirectResponse {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $this->notificationService->markAllAsRead($user->id);
+
+        return back();
+    }
+
     public function index(): Response {
         /** @var User $user */
         $user = Auth::user();
