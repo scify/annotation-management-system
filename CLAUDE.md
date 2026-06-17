@@ -38,7 +38,7 @@ You are working with a team of senior software engineers who are well-versed in 
 ```text
 app/
 ├── Enums/                  # RolesEnum, PermissionsEnum
-├── Exceptions/             # PresentableError (interface), ExternalAPIException
+├── Exceptions/             # PresentableError (interface)
 ├── Http/
 │   ├── Controllers/
 │   │   ├── Api/V1/        # Versioned API controllers (UserController)
@@ -306,7 +306,6 @@ export default function UsersIndex({ users, abilities }: Props) {
 
 - `PresentableError` interface (`app/Exceptions/PresentableError.php`) marks exceptions safe to display to users
 - Controllers can `catch (PresentableError $e)` broadly to surface `$e->getUserMessage()` in flash messages
-- `ExternalAPIException` implements `PresentableError` — shows generic message in production, actual message in development
 
 ### Flash Messages
 
