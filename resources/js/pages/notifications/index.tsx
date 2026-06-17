@@ -3,7 +3,7 @@ import { ToggleSwitch } from '@/components/ui/toggle-switch';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
 import { type PageProps } from '@/types';
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { NotificationListItem } from './components/notification-list-item';
 import { ThreadDetail } from './components/thread-detail';
@@ -14,8 +14,9 @@ interface Props {
 }
 
 // Threads come from NotificationController::index (NotificationService::getMyNotifications).
-// They are seeded into local state so reply / mark-read / approve interactions can update
-// optimistically — these have no backend endpoint yet (see tasks/notifications-backend-gaps.md).
+// They are seeded into local state so interactions can update optimistically. Mark-read /
+// mark-unread now persist via notifications.read / notifications.unread; reply / approve / reject
+// remain optimistic-only with no backend endpoint yet (see tasks/notifications-backend-gaps.md).
 export default function NotificationsIndex({ threads: initialThreads }: Props) {
     const { t } = useTranslations();
     const { auth } = usePage<PageProps>().props;
@@ -47,12 +48,23 @@ export default function NotificationsIndex({ threads: initialThreads }: Props) {
     const handleSelect = (threadId: number) => {
         setSelectedThreadId(threadId);
         setThreadRead(threadId, true);
+        router.post(
+            route('notifications.read', threadId),
+            {},
+            { preserveState: true, preserveScroll: true }
+        );
     };
 
     const handleMarkSelectedUnread = () => {
         if (selectedThreadId === null) return;
-        setThreadRead(selectedThreadId, false);
+        const threadId = selectedThreadId;
+        setThreadRead(threadId, false);
         setSelectedThreadId(null);
+        router.post(
+            route('notifications.unread', threadId),
+            {},
+            { preserveState: true, preserveScroll: true }
+        );
     };
 
     const handleMarkAllRead = () => {
