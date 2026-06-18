@@ -101,7 +101,7 @@ class DummyNotificationsSeeder extends Seeder {
         $projectOwnershipService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: 'You have been assigned as owner of Project NER – English News.',
+            body: 'You have been proposed to become the owner of Project NER – English News.',
             quickLink: new QuickLinkData(
                 label: 'Project NER – English News',
                 url: 'projects/1',
@@ -132,7 +132,7 @@ class DummyNotificationsSeeder extends Seeder {
         $rejectedOwnership = $projectOwnershipService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: 'You have been assigned as owner of Project Sentiment Analysis.',
+            body: 'You have been proposed to become the owner of Project Sentiment Analysis.',
             quickLink: new QuickLinkData(
                 label: 'Project Sentiment Analysis',
                 url: 'projects/2',
@@ -143,7 +143,7 @@ class DummyNotificationsSeeder extends Seeder {
         $projectRequestToLeaveService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $dave->id,
-            body: 'You have been asked to leave Project NER – English News.',
+            body: 'Dave asked to leave Project Project NER – English News',
             quickLink: new QuickLinkData(
                 label: 'Project NER – English News',
                 url: 'projects/1',
@@ -153,7 +153,7 @@ class DummyNotificationsSeeder extends Seeder {
         $acceptedLeaveRequest = $projectRequestToLeaveService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $scifyManager->id,
-            body: 'You have been asked to leave Project NER – English News.',
+            body: 'ScifyManager asked to leave Project Project NER – English News',
             quickLink: new QuickLinkData(
                 label: 'Project NER – English News',
                 url: 'projects/1',
@@ -164,7 +164,7 @@ class DummyNotificationsSeeder extends Seeder {
         $rejectedLeaveRequest = $projectRequestToLeaveService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: 'You have been asked to leave Project NER – English News.',
+            body: 'Alice asked to leave Project Project NER – English News',
             quickLink: new QuickLinkData(
                 label: 'Project NER – English News',
                 url: 'projects/1',
