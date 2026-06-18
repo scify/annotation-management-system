@@ -88,6 +88,7 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('{notificationThreadId}/reply', 'reply')->name('reply');
         Route::post('{notificationThreadId}/read', 'markAsRead')->name('read');
         Route::post('{notificationThreadId}/unread', 'markAsUnread')->name('unread');
+        Route::post('send', 'sendMessage')->name('send');
     });
 
     // ----- Annotation tasks -----

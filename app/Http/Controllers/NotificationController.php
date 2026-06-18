@@ -6,8 +6,11 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\PresentableError;
 use App\Http\Requests\Notification\ReplyNotificationRequest;
+use App\Http\Requests\Notification\SendMessageRequest;
 use App\Models\User;
+use App\Services\Notification\GenericNotificationService;
 use App\Services\Notification\NotificationsService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -16,6 +19,7 @@ use Inertia\Response;
 class NotificationController extends Controller {
     public function __construct(
         private readonly NotificationsService $notificationService,
+        private readonly GenericNotificationService $genericNotificationService,
     ) {}
 
     public function markAsRead(int $notificationThreadId): RedirectResponse {
@@ -79,6 +83,19 @@ class NotificationController extends Controller {
         );
 
         return back()->with('success', __('notifications.reply_sent'));
+    }
+
+    public function sendMessage(SendMessageRequest $request): JsonResponse {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $this->genericNotificationService->createNotification(
+            recipientUserId: $request->integer('recipient_user_id'),
+            body: $request->string('body')->trim()->value(),
+            senderUserId: $user->id,
+        );
+
+        return response()->json();
     }
 
     public function index(): Response {
