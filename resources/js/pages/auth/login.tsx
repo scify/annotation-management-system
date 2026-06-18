@@ -4,7 +4,6 @@ import { FormEventHandler, useCallback, useEffect, useRef, useState } from 'reac
 import 'altcha';
 import InputError from '@/components/input-error';
 import { LocaleToggle } from '@/components/locale-toggle';
-import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -20,7 +19,6 @@ type LoginForm = {
 
 interface LoginProps {
     status?: string;
-    canResetPassword: boolean;
     token?: string;
     redirectTo?: string;
     skipCaptcha?: boolean;
@@ -28,7 +26,6 @@ interface LoginProps {
 
 export default function Login({
     status,
-    canResetPassword,
     token,
     redirectTo,
     skipCaptcha = false,
@@ -213,30 +210,19 @@ export default function Login({
                                 <InputError message={errors.password} />
                             </div>
 
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <Checkbox
-                                        id="remember"
-                                        name="remember"
-                                        checked={data.remember}
-                                        onCheckedChange={(checked) => setData('remember', checked)}
-                                    />
-                                    <Label
-                                        htmlFor="remember"
-                                        className="text-sm font-medium text-slate-700"
-                                    >
-                                        {t('auth.login.remember')}
-                                    </Label>
-                                </div>
-                                {canResetPassword && (
-                                    <TextLink
-                                        href={route('password.request')}
-                                        openInNewTab={false}
-                                        className="ml-0 text-sm font-semibold text-slate-800 underline"
-                                    >
-                                        {t('auth.login.forgot_password')}
-                                    </TextLink>
-                                )}
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    id="remember"
+                                    name="remember"
+                                    checked={data.remember}
+                                    onCheckedChange={(checked) => setData('remember', checked)}
+                                />
+                                <Label
+                                    htmlFor="remember"
+                                    className="text-sm font-medium text-slate-700"
+                                >
+                                    {t('auth.login.remember')}
+                                </Label>
                             </div>
 
                             {!skipCaptcha && mounted && (

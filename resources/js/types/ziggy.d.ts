@@ -10,15 +10,6 @@ declare module 'ziggy-js' {
     "password.update": [],
     "appearance": [],
     "login": [],
-    "password.request": [],
-    "password.email": [],
-    "password.reset": [
-        {
-            "name": "token",
-            "required": true
-        }
-    ],
-    "password.store": [],
     "verification.notice": [],
     "verification.verify": [
         {
