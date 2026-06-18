@@ -12,6 +12,7 @@ use App\Queries\Notification\CreateNotificationQuery;
 use App\Queries\Notification\CreateNotificationThreadQuery;
 use App\Queries\Notification\CreateQuickLinkQuery;
 use App\Queries\Notification\CreateThreadMemberQuery;
+use App\Queries\Notification\UpdateThreadMembersQuery;
 
 final class FlagNotificationService extends AbstractNotificationService {
     public function __construct(
@@ -19,6 +20,7 @@ final class FlagNotificationService extends AbstractNotificationService {
         private readonly CreateNotificationQuery $createNotificationQuery,
         private readonly CreateThreadMemberQuery $createThreadMemberQuery,
         private readonly CreateQuickLinkQuery $createQuickLinkQuery,
+        private readonly UpdateThreadMembersQuery $updateThreadMembersQuery,
     ) {}
 
     /**
@@ -44,6 +46,22 @@ final class FlagNotificationService extends AbstractNotificationService {
 
         $this->createQuickLinkQuery->create($thread->id, $firstQuickLink->label, $firstQuickLink->url);
         $this->createQuickLinkQuery->create($thread->id, $secondQuickLink->label, $secondQuickLink->url);
+
+        return $notification;
+    }
+
+    public function reply(
+        int $notificationThreadId,
+        int $senderUserId,
+        string $body,
+    ): Notification {
+        $notification = $this->createNotificationQuery->create(
+            notificationThreadId: $notificationThreadId,
+            body: $body,
+            senderUserId: $senderUserId,
+        );
+
+        $this->updateThreadMembersQuery->update($notificationThreadId, $senderUserId);
 
         return $notification;
     }

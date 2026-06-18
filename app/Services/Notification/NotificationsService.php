@@ -9,6 +9,7 @@ use App\Models\Notification;
 use App\Models\NotificationThread;
 use App\Models\QuickLink;
 use App\Queries\Notification\ExistsUnreadNotificationsQuery;
+use App\Queries\Notification\FindNotificationThreadQuery;
 use App\Queries\Notification\GetMyNotificationsQuery;
 use App\Queries\Notification\GetThreadRecipientsQuery;
 use App\Queries\Notification\MarkAllThreadsReadStatusQuery;
@@ -31,6 +32,7 @@ readonly class NotificationsService {
         private GetMyNotificationsQuery $getMyNotificationsQuery,
         private GetThreadRecipientsQuery $getThreadRecipientsQuery,
         private ExistsUnreadNotificationsQuery $existsUnreadNotificationsQuery,
+        private FindNotificationThreadQuery $findNotificationThreadQuery,
     ) {}
 
     /** Marks a specific notification thread as read for the given user. */
@@ -46,6 +48,17 @@ readonly class NotificationsService {
     /** Marks all notification threads the user belongs to as read. */
     public function markAllAsRead(int $userId): void {
         $this->markAllThreadsReadStatusQuery->markAll($userId, true);
+    }
+
+    public function reply(int $notificationThreadId, int $senderUserId, string $body): Notification {
+        $thread = $this->findNotificationThreadQuery->findOrFail($notificationThreadId);
+
+        return match ($thread->type) {
+            NotificationThreadTypeEnum::GENERIC => $this->genericService->reply($notificationThreadId, $senderUserId, $body),
+            NotificationThreadTypeEnum::FLAG_NOTIFICATION => $this->flagService->reply($notificationThreadId, $senderUserId, $body),
+            NotificationThreadTypeEnum::INSTANCE_RELATED => $this->instanceRelatedService->reply($notificationThreadId, $senderUserId, $body),
+            default => abort(403),
+        };
     }
 
     /** Returns true if the user has at least one unread notification thread. */

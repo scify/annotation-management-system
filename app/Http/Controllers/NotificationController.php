@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Notification\ReplyNotificationRequest;
 use App\Models\User;
 use App\Services\Notification\NotificationsService;
 use Illuminate\Http\RedirectResponse;
@@ -41,6 +42,22 @@ class NotificationController extends Controller {
         $this->notificationService->markAllAsRead($user->id);
 
         return back();
+    }
+
+    public function reply(ReplyNotificationRequest $request, int $notificationThreadId): RedirectResponse {
+        /** @var User $user */
+        $user = Auth::user();
+
+        /** @var string $body */
+        $body = $request->validated('body');
+
+        $this->notificationService->reply(
+            notificationThreadId: $notificationThreadId,
+            senderUserId: $user->id,
+            body: $body,
+        );
+
+        return back()->with('success', __('notifications.reply_sent'));
     }
 
     public function index(): Response {

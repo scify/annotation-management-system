@@ -14,6 +14,7 @@ return [
     'reply' => 'Reply',
     'reply_placeholder' => 'Write your reply…',
     'send_reply' => 'Send Reply',
+    'reply_sent' => 'Reply sent successfully.',
     'approve' => 'Approve',
     'reject' => 'Reject',
     'accepted' => 'Accepted',
