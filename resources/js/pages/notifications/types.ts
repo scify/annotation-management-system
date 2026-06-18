@@ -15,9 +15,6 @@ export type NotificationThreadType =
     | 'project_invitation'
     | 'announcement';
 
-/** Display role of a message sender within a project context. */
-export type NotificationSenderRole = 'annotator' | 'manager' | 'owner';
-
 /** Decision state of an action thread, mirrors `App\Enums\NotificationThreadResponseEnum`. */
 export type NotificationThreadResponse = 'accepted' | 'rejected' | 'unreplied';
 
@@ -60,6 +57,8 @@ export interface NotificationThread {
     replied_by: string | null;
     /** Tag label shown top-right on the card, e.g. "Instance#2" or "Ownership". Hidden when null. */
     top_right: string | null;
+    /** Usernames the notification was sent to, shown in the detail panel. */
+    recipients: string[];
     notifications: NotificationMessage[];
     quick_links: NotificationQuickLink[];
     /**

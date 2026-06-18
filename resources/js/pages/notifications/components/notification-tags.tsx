@@ -1,53 +1,20 @@
 import { Tag } from '@/components/ui/tag';
-import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import type { NotificationSenderRole, NotificationThreadType } from '../types';
+import { RolesEnum } from '@/types';
+import { RoleBadge } from '@/pages/users/components/shared/role-badge';
+import type { NotificationThreadType } from '../types';
 
-const SENDER_ROLE_STYLES: Record<NotificationSenderRole, string> = {
-    annotator: 'border-brand-blue-300 bg-brand-blue-50 text-brand-blue-600',
-    manager: 'border-sky-300 bg-sky-50 text-sky-600',
-    owner: 'border-purple-300 bg-purple-50 text-purple-600',
-};
-
-/**
- * The backend currently sends the sender's *global* role; the design wants the
- * *project-contextual* role (annotator/manager/owner). Best-effort map until the
- * backend exposes the contextual role — see `tasks/notifications-backend-gaps.md`.
- */
-function normalizeSenderRole(role: string): NotificationSenderRole | null {
-    switch (role) {
-        case 'annotator':
-            return 'annotator';
-        case 'annotation-manager':
-        case 'manager':
-            return 'manager';
-        case 'owner':
-            return 'owner';
-        default:
-            return null;
-    }
-}
+const KNOWN_ROLES = Object.values(RolesEnum);
 
 interface SenderRoleTagProps {
+    /** Raw global role from the backend (`admin` / `annotation-manager` / `annotator`). */
     role: string;
 }
 
 export function SenderRoleTag({ role }: SenderRoleTagProps) {
-    const { t } = useTranslations();
-    const displayRole = normalizeSenderRole(role);
+    if (!KNOWN_ROLES.includes(role as RolesEnum)) return null;
 
-    if (!displayRole) return null;
-
-    return (
-        <span
-            className={cn(
-                'inline-flex h-[22px] shrink-0 items-center rounded border px-2 py-px text-xs font-semibold',
-                SENDER_ROLE_STYLES[displayRole]
-            )}
-        >
-            {t(`notifications.roles.${displayRole}`)}
-        </span>
-    );
+    return <RoleBadge role={role as RolesEnum} />;
 }
 
 const SUBJECT_TAG_STYLES: Record<NotificationThreadType, string> = {

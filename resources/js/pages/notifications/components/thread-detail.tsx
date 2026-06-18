@@ -1,9 +1,14 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { useInitials } from '@/hooks/use-initials';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { Link } from '@inertiajs/react';
 import { Check, Info, MessageSquare, Send, TriangleAlert, X } from 'lucide-react';
 import { useState } from 'react';
 import { useNotificationDate } from '../format-date';
@@ -28,12 +33,7 @@ function MessageBubble({ message, isOwn, label }: MessageBubbleProps) {
 
     return (
         <li className={cn('flex w-full flex-col gap-2', isOwn && 'items-end')}>
-            <div
-                className={cn(
-                    'flex w-full items-center justify-between gap-4',
-                    isOwn && 'max-w-[85%]'
-                )}
-            >
+            <div className={cn('flex w-full items-center justify-between gap-4')}>
                 <span className="flex items-center gap-1.5">
                     <Avatar className="size-[22px]">
                         <AvatarFallback className="bg-brand-blue-700 text-xs font-semibold text-white">
@@ -59,6 +59,54 @@ function MessageBubble({ message, isOwn, label }: MessageBubbleProps) {
                 {message.body}
             </p>
         </li>
+    );
+}
+
+interface RecipientsLineProps {
+    recipients: string[];
+}
+
+/**
+ * Shows who the notification was sent to, below the header. A single recipient is
+ * shown inline; multiple recipients show the first plus a "+N more" trigger that
+ * lists the remaining recipients in a small popover.
+ */
+function RecipientsLine({ recipients }: RecipientsLineProps) {
+    const { t, trans } = useTranslations();
+
+    if (recipients.length === 0) return null;
+
+    const [first, ...rest] = recipients;
+
+    return (
+        <p className="text-sm text-slate-600">
+            <span className="font-medium text-slate-800">
+                {recipients.length === 1
+                    ? t('notifications.recipient')
+                    : t('notifications.recipients')}
+            </span>{' '}
+            {first}
+            {rest.length > 0 && (
+                <>
+                    {' '}
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="link"
+                                className="text-brand-blue-700 h-auto p-0 text-sm font-semibold"
+                            >
+                                {trans('notifications.recipients_more', { count: rest.length })}
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                            {rest.map((recipient) => (
+                                <DropdownMenuLabel key={recipient}>{recipient}</DropdownMenuLabel>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </>
+            )}
+        </p>
     );
 }
 
@@ -114,6 +162,7 @@ export function ThreadDetail({
                         {formatDate(firstMessage.datetime, 'detail')}
                     </span>
                 </div>
+                <RecipientsLine recipients={thread.recipients} />
                 <p className="text-base whitespace-pre-line text-slate-800">{firstMessage.body}</p>
             </article>
         );
@@ -132,19 +181,26 @@ export function ThreadDetail({
                 {thread.top_right && <SubjectTag type={thread.type} label={thread.top_right} />}
             </div>
 
+            <RecipientsLine recipients={thread.recipients} />
+
             {thread.quick_links.length > 0 && (
                 <div className="flex flex-wrap items-center gap-x-8 gap-y-2 border-b border-slate-200 pb-4">
                     <span className="text-sm font-medium text-slate-800">
                         {t('notifications.quick_links')}
                     </span>
                     {thread.quick_links.map((link) => (
-                        <Link
+                        // Native anchor (not Inertia <Link>): Inertia intercepts plain
+                        // left-clicks and ignores target="_blank", so it would open in the
+                        // same tab. A real anchor lets the browser open a new tab.
+                        <a
                             key={link.label}
                             href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="focus-visible:ring-brand-blue-700/50 rounded-sm text-sm font-semibold text-slate-800 underline outline-none hover:text-slate-600 focus-visible:ring-[3px]"
                         >
                             {link.label}
-                        </Link>
+                        </a>
                     ))}
                 </div>
             )}

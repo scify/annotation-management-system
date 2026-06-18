@@ -21,11 +21,9 @@ return [
     'rejected' => 'Rejected',
     'select_notification_hint' => 'Select a notification to view its details',
     'today_at' => 'Today at',
-    'roles' => [
-        'annotator' => 'Annotator',
-        'manager' => 'Manager',
-        'owner' => 'Owner',
-    ],
+    'recipient' => 'Recipient:',
+    'recipients' => 'Recipients:',
+    'recipients_more' => '+:count more',
     'empty_list' => 'You have no notifications',
     'empty_unread' => 'You have no unread notifications',
     'messages' => [

@@ -21,11 +21,9 @@ return [
     'rejected' => 'Απορρίφθηκε',
     'select_notification_hint' => 'Επιλέξτε μια ειδοποίηση για να δείτε τις λεπτομέρειές της',
     'today_at' => 'Σήμερα στις',
-    'roles' => [
-        'annotator' => 'Επισημειωτής',
-        'manager' => 'Υπεύθυνος',
-        'owner' => 'Κάτοχος',
-    ],
+    'recipient' => 'Παραλήπτης:',
+    'recipients' => 'Παραλήπτες:',
+    'recipients_more' => '+:count ακόμη',
     'empty_list' => 'Δεν έχετε ειδοποιήσεις',
     'empty_unread' => 'Δεν έχετε μη αναγνωσμένες ειδοποιήσεις',
     'messages' => [

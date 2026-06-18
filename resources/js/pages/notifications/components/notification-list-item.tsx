@@ -89,7 +89,7 @@ export function NotificationListItem({ thread, className, ...props }: Notificati
                         >
                             {thread.title}
                         </span>
-                        {!isNotice && firstMessage?.sender_role && (
+                        {firstMessage?.sender_role && (
                             <SenderRoleTag role={firstMessage.sender_role} />
                         )}
                     </span>
