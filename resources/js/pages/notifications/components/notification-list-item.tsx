@@ -1,3 +1,4 @@
+import { useTranslatableText } from '@/hooks/use-translatable-text';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { Info, MessageSquare, TriangleAlert } from 'lucide-react';
@@ -43,6 +44,7 @@ interface NotificationListItemProps extends React.ComponentProps<'button'> {
 export function NotificationListItem({ thread, className, ...props }: NotificationListItemProps) {
     const { t } = useTranslations();
     const formatDate = useNotificationDate();
+    const translateText = useTranslatableText();
     const isNotice = isNoticeThread(thread);
     const isUnread = isThreadUnread(thread);
     const firstMessage = thread.notifications[0];
@@ -89,7 +91,7 @@ export function NotificationListItem({ thread, className, ...props }: Notificati
                                 isNotice ? 'text-slate-800' : 'text-slate-500'
                             )}
                         >
-                            {thread.title}
+                            {translateText(thread.title)}
                         </span>
                         {firstMessage?.sender_role && (
                             <SenderRoleTag role={firstMessage.sender_role} />
@@ -108,7 +110,7 @@ export function NotificationListItem({ thread, className, ...props }: Notificati
                     {thread.replied_by && (
                         <span className="font-semibold text-slate-700">{thread.replied_by}: </span>
                     )}
-                    {lastMessage.body}
+                    {translateText(lastMessage.body)}
                 </span>
             </span>
         </button>

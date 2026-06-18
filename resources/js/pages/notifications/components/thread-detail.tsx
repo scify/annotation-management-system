@@ -7,6 +7,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useInitials } from '@/hooks/use-initials';
+import { useTranslatableText } from '@/hooks/use-translatable-text';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
 import { Check, Info, MessageSquare, Send, TriangleAlert, X } from 'lucide-react';
@@ -30,6 +31,7 @@ interface MessageBubbleProps {
 function MessageBubble({ message, isOwn, label }: MessageBubbleProps) {
     const getInitials = useInitials();
     const formatDate = useNotificationDate();
+    const translateText = useTranslatableText();
 
     return (
         <li className={cn('flex w-full flex-col gap-2', isOwn && 'items-end')}>
@@ -56,7 +58,7 @@ function MessageBubble({ message, isOwn, label }: MessageBubbleProps) {
                         : 'mx-7 self-stretch bg-slate-100 text-slate-800'
                 )}
             >
-                {message.body}
+                {translateText(message.body)}
             </p>
         </li>
     );
@@ -127,6 +129,7 @@ export function ThreadDetail({
 }: ThreadDetailProps) {
     const { t, trans } = useTranslations();
     const formatDate = useNotificationDate();
+    const translateText = useTranslatableText();
     const [replyBody, setReplyBody] = useState('');
     const isNotice = isNoticeThread(thread);
     const isDecided = thread.response === 'accepted' || thread.response === 'rejected';
@@ -156,14 +159,18 @@ export function ThreadDetail({
                                 thread.type === 'warning' ? 'text-red-400' : 'text-yellow-500'
                             )}
                         />
-                        <h2 className="text-lg font-semibold text-slate-800">{thread.title}</h2>
+                        <h2 className="text-lg font-semibold text-slate-800">
+                            {translateText(thread.title)}
+                        </h2>
                     </div>
                     <span className="text-sm whitespace-nowrap text-slate-600 tabular-nums">
                         {formatDate(firstMessage.datetime, 'detail')}
                     </span>
                 </div>
                 <RecipientsLine recipients={thread.recipients} />
-                <p className="text-base whitespace-pre-line text-slate-800">{firstMessage.body}</p>
+                <p className="text-base whitespace-pre-line text-slate-800">
+                    {translateText(firstMessage.body)}
+                </p>
             </article>
         );
     }

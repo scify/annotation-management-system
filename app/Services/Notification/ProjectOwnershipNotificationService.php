@@ -6,6 +6,7 @@ namespace App\Services\Notification;
 
 use App\Data\ProjectMemberContextData;
 use App\Data\QuickLinkData;
+use App\Data\TranslatableMessage;
 use App\Enums\NotificationThreadResponseEnum;
 use App\Enums\NotificationThreadTypeEnum;
 use App\Exceptions\NotificationResponseException;
@@ -45,7 +46,7 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
         $this->createNotification(
             recipientUserId: $recipientUserId,
             senderUserId: $senderUserId,
-            body: (string) __('notifications.messages.project_ownership', ['project' => $projectData['name']]),
+            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $projectData['name']]),
             quickLink: new QuickLinkData(
                 label: $projectData['name'],
                 url: route('projects.show', $projectId),

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Notification;
 
+use App\Data\TranslatableMessage;
 use App\Enums\NotificationThreadTypeEnum;
 use App\Models\NotificationThread;
 use App\Queries\Notification\CreateNotificationQuery;
@@ -34,12 +35,12 @@ final class InfoNotificationService extends AbstractNotificationService {
         $managerIds = $this->getManagerIdsByProjectsQuery->getAll([$projectId]);
         $recipientIds = array_unique([$projectData['owner_user_id'], ...$managerIds]);
 
-        $body = (string) __('notifications.messages.annotators_added_to_project.body', [
+        $body = TranslatableMessage::encode('notifications.messages.annotators_added_to_project.body', [
             'names' => $names,
             'project' => $projectData['name'],
         ]);
 
-        $title = (string) __('notifications.messages.annotators_added_to_project.title');
+        $title = TranslatableMessage::encode('notifications.messages.annotators_added_to_project.title');
 
         foreach ($recipientIds as $recipientId) {
             $this->createNotification($recipientId, $body, $title);
@@ -51,8 +52,8 @@ final class InfoNotificationService extends AbstractNotificationService {
 
         $this->createNotification(
             recipientUserId: $proposedOwnerUserId,
-            body: (string) __('notifications.messages.ownership_proposal_cancelled.body', ['project' => $projectData['name']]),
-            title: (string) __('notifications.messages.ownership_proposal_cancelled.title'),
+            body: TranslatableMessage::encode('notifications.messages.ownership_proposal_cancelled.body', ['project' => $projectData['name']]),
+            title: TranslatableMessage::encode('notifications.messages.ownership_proposal_cancelled.title'),
         );
     }
 
@@ -61,8 +62,8 @@ final class InfoNotificationService extends AbstractNotificationService {
 
         $this->createNotification(
             recipientUserId: $projectData['owner_user_id'],
-            body: (string) __('notifications.messages.leave_request_cancelled.body', ['project' => $projectData['name']]),
-            title: (string) __('notifications.messages.leave_request_cancelled.title'),
+            body: TranslatableMessage::encode('notifications.messages.leave_request_cancelled.body', ['project' => $projectData['name']]),
+            title: TranslatableMessage::encode('notifications.messages.leave_request_cancelled.title'),
         );
     }
 
@@ -71,8 +72,8 @@ final class InfoNotificationService extends AbstractNotificationService {
 
         $this->createNotification(
             recipientUserId: $memberUserId,
-            body: (string) __('notifications.messages.leave_request_accepted.body', ['project' => $projectData['name']]),
-            title: (string) __('notifications.messages.leave_request_accepted.title'),
+            body: TranslatableMessage::encode('notifications.messages.leave_request_accepted.body', ['project' => $projectData['name']]),
+            title: TranslatableMessage::encode('notifications.messages.leave_request_accepted.title'),
         );
     }
 
@@ -81,8 +82,8 @@ final class InfoNotificationService extends AbstractNotificationService {
 
         $this->createNotification(
             recipientUserId: $memberUserId,
-            body: (string) __('notifications.messages.leave_request_rejected.body', ['project' => $projectData['name']]),
-            title: (string) __('notifications.messages.leave_request_rejected.title'),
+            body: TranslatableMessage::encode('notifications.messages.leave_request_rejected.body', ['project' => $projectData['name']]),
+            title: TranslatableMessage::encode('notifications.messages.leave_request_rejected.title'),
         );
     }
 
@@ -92,11 +93,11 @@ final class InfoNotificationService extends AbstractNotificationService {
 
         $this->createNotification(
             recipientUserId: $oldOwnerUserId,
-            body: (string) __('notifications.messages.ownership_transfer_accepted.body', [
+            body: TranslatableMessage::encode('notifications.messages.ownership_transfer_accepted.body', [
                 'username' => $usernames[0] ?? '',
                 'project' => $projectData['name'],
             ]),
-            title: (string) __('notifications.messages.ownership_transfer_accepted.title'),
+            title: TranslatableMessage::encode('notifications.messages.ownership_transfer_accepted.title'),
         );
     }
 
@@ -106,11 +107,11 @@ final class InfoNotificationService extends AbstractNotificationService {
 
         $this->createNotification(
             recipientUserId: $projectData['owner_user_id'],
-            body: (string) __('notifications.messages.ownership_transfer_rejected.body', [
+            body: TranslatableMessage::encode('notifications.messages.ownership_transfer_rejected.body', [
                 'username' => $usernames[0] ?? '',
                 'project' => $projectData['name'],
             ]),
-            title: (string) __('notifications.messages.ownership_transfer_rejected.title'),
+            title: TranslatableMessage::encode('notifications.messages.ownership_transfer_rejected.title'),
         );
     }
 
@@ -119,8 +120,8 @@ final class InfoNotificationService extends AbstractNotificationService {
 
         $this->createNotification(
             recipientUserId: $removedUserId,
-            body: (string) __('notifications.messages.manager_removed_from_project.body', ['project' => $projectData['name']]),
-            title: (string) __('notifications.messages.manager_removed_from_project.title'),
+            body: TranslatableMessage::encode('notifications.messages.manager_removed_from_project.body', ['project' => $projectData['name']]),
+            title: TranslatableMessage::encode('notifications.messages.manager_removed_from_project.title'),
         );
     }
 

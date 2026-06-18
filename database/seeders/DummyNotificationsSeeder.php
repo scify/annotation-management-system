@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Data\QuickLinkData;
+use App\Data\TranslatableMessage;
 use App\Enums\NotificationThreadResponseEnum;
 use App\Models\Project;
 use App\Models\User;
@@ -105,30 +106,30 @@ class DummyNotificationsSeeder extends Seeder {
         $projectOwnershipService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: 'You have been proposed to become the owner of Project NER – English News.',
+            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $nerProject->name]),
             quickLink: new QuickLinkData(
-                label: 'Project NER – English News',
-                url: 'projects/1',
+                label: $nerProject->name,
+                url: 'projects/' . $nerProject->id,
             ),
         );
 
         $projectInvitationService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: 'You have been invited to collaborate on Project NER – English News.',
+            body: TranslatableMessage::encode('notifications.messages.project_invitation', ['project' => $nerProject->name]),
             quickLink: new QuickLinkData(
-                label: 'Project NER – English News',
-                url: 'projects/1',
+                label: $nerProject->name,
+                url: 'projects/' . $nerProject->id,
             ),
         );
 
         $acceptedInvitation = $projectInvitationService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: 'You have been invited to collaborate on Project Sentiment Analysis.',
+            body: TranslatableMessage::encode('notifications.messages.project_invitation', ['project' => $sentimentProject->name]),
             quickLink: new QuickLinkData(
-                label: 'Project Sentiment Analysis',
-                url: 'projects/2',
+                label: $sentimentProject->name,
+                url: 'projects/' . $sentimentProject->id,
             ),
         );
         $acceptedInvitation->thread->response?->update(['response' => NotificationThreadResponseEnum::ACCEPTED]);
@@ -136,10 +137,10 @@ class DummyNotificationsSeeder extends Seeder {
         $rejectedOwnership = $projectOwnershipService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: 'You have been proposed to become the owner of Project Sentiment Analysis.',
+            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $sentimentProject->name]),
             quickLink: new QuickLinkData(
-                label: 'Project Sentiment Analysis',
-                url: 'projects/2',
+                label: $sentimentProject->name,
+                url: 'projects/' . $sentimentProject->id,
             ),
         );
         $rejectedOwnership->thread->response?->update(['response' => NotificationThreadResponseEnum::REJECTED]);
@@ -147,20 +148,20 @@ class DummyNotificationsSeeder extends Seeder {
         $projectRequestToLeaveService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $dave->id,
-            body: 'Dave asked to leave Project Project NER – English News',
+            body: TranslatableMessage::encode('notifications.messages.project_request_to_leave', ['project' => $nerProject->name]),
             quickLink: new QuickLinkData(
-                label: 'Project NER – English News',
-                url: 'projects/1',
+                label: $nerProject->name,
+                url: 'projects/' . $nerProject->id,
             ),
         );
 
         $acceptedLeaveRequest = $projectRequestToLeaveService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $scifyManager->id,
-            body: 'ScifyManager asked to leave Project Project NER – English News',
+            body: TranslatableMessage::encode('notifications.messages.project_request_to_leave', ['project' => $nerProject->name]),
             quickLink: new QuickLinkData(
-                label: 'Project NER – English News',
-                url: 'projects/1',
+                label: $nerProject->name,
+                url: 'projects/' . $nerProject->id,
             ),
         );
         $acceptedLeaveRequest->thread->response?->update(['response' => NotificationThreadResponseEnum::ACCEPTED]);
@@ -168,32 +169,32 @@ class DummyNotificationsSeeder extends Seeder {
         $rejectedLeaveRequest = $projectRequestToLeaveService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: 'Alice asked to leave Project Project NER – English News',
+            body: TranslatableMessage::encode('notifications.messages.project_request_to_leave', ['project' => $nerProject->name]),
             quickLink: new QuickLinkData(
-                label: 'Project NER – English News',
-                url: 'projects/1',
+                label: $nerProject->name,
+                url: 'projects/' . $nerProject->id,
             ),
         );
         $rejectedLeaveRequest->thread->response?->update(['response' => NotificationThreadResponseEnum::REJECTED]);
 
         $warningService->createNotification(
             recipientUserId: $carol->id,
-            body: 'Subproject New Nov26 will surpass due date in 3 days',
-            title: 'Overdue Date Approaching',
+            body: TranslatableMessage::encode('notifications.messages.overdue_approaching.body', ['subproject' => 'New Nov26', 'days' => 3]),
+            title: TranslatableMessage::encode('notifications.messages.overdue_approaching.title'),
         );
 
         $infoService->createNotification(
             recipientUserId: $carol->id,
-            body: '@admin_alice just edited your profile',
-            title: 'Profile edit',
+            body: TranslatableMessage::encode('notifications.messages.profile_edited.body', ['editor' => 'admin_alice']),
+            title: TranslatableMessage::encode('notifications.messages.profile_edited.title'),
         );
 
         $canceledOwnership = $projectOwnershipService->createNotification(
             recipientUserId: $dave->id,
             senderUserId: $carol->id,
-            body: 'You have been proposed to become the owner of NER – English News.',
+            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $nerProject->name]),
             quickLink: new QuickLinkData(
-                label: 'NER – English News',
+                label: $nerProject->name,
                 url: 'projects/' . $nerProject->id,
             ),
         );
