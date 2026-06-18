@@ -15,6 +15,13 @@ return [
     'reply_placeholder' => 'Write your reply…',
     'send_reply' => 'Send Reply',
     'reply_sent' => 'Reply sent successfully.',
+    'action_approved' => 'Action approved successfully.',
+    'action_rejected' => 'Action rejected successfully.',
+    'errors' => [
+        'response_not_found' => 'No response record found for this notification.',
+        'cannot_reject_accepted' => 'This notification has already been accepted and cannot be rejected.',
+        'cannot_approve_rejected' => 'This notification has already been rejected and cannot be approved.',
+    ],
     'approve' => 'Approve',
     'reject' => 'Reject',
     'accepted' => 'Accepted',

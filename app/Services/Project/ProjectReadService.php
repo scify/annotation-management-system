@@ -343,7 +343,7 @@ readonly class ProjectReadService {
                 'request_to_leave' => $pm->request_to_leave,
                 'proposed_to_become_owner' => $pm->proposed_to_become_owner,
                 'can_request_to_leave' => $pm->user_id === $activeUserId && $pm->user_id !== $project->owner_user_id,
-                'can_remove' => ! $pm->proposed_to_become_owner && ($activeUserIsOwner || $activeUserIsAdmin) && $pm->user_id !== $project->owner_user_id && $pm->user_id !== $activeUserId,
+                'can_remove' => ! $pm->proposed_to_become_owner && ! ($pm->request_to_leave && $activeUserIsOwner) && ($activeUserIsOwner || $activeUserIsAdmin) && $pm->user_id !== $project->owner_user_id && $pm->user_id !== $activeUserId,
                 'can_transfer_ownership' => ! $anyProposed && $pm->user_id !== $project->owner_user_id && ($activeUserIsOwner || $activeUserIsAdmin),
                 'can_accept_to_become_owner' => $pm->proposed_to_become_owner && $pm->user_id === $activeUserId,
                 'can_accept_request_to_leave' => $pm->request_to_leave && $activeUserIsOwner,

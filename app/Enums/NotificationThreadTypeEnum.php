@@ -19,6 +19,8 @@ enum NotificationThreadTypeEnum: string {
 
     case PROJECT_INVITATION = 'project_invitation';
 
+    case PROJECT_REQUEST_TO_LEAVE = 'project_request_to_leave';
+
     case ANNOUNCEMENT = 'announcement';
 
     public function label(): string {
@@ -30,6 +32,7 @@ enum NotificationThreadTypeEnum: string {
             self::WARNING => 'Warning',
             self::PROJECT_OWNERSHIP => 'Ownership',
             self::PROJECT_INVITATION => 'Invitation to Project',
+            self::PROJECT_REQUEST_TO_LEAVE => 'Request to Leave',
             self::ANNOUNCEMENT => 'Announcement',
         };
     }
