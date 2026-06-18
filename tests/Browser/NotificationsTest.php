@@ -7,14 +7,18 @@ use App\Enums\NotificationThreadResponseEnum;
 use App\Enums\RolesEnum;
 use App\Models\NotificationThreadResponse;
 use App\Models\User;
-use App\Services\Notification\NotificationsService;
+use App\Services\Notification\AnnouncementNotificationService;
+use App\Services\Notification\FlagNotificationService;
+use App\Services\Notification\GenericNotificationService;
+use App\Services\Notification\ProjectInvitationNotificationService;
+use App\Services\Notification\ProjectOwnershipNotificationService;
+use App\Services\Notification\WarningNotificationService;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\Hash;
 
 describe('Notifications page', function (): void {
     beforeEach(function (): void {
         $this->seed(RolesAndPermissionsSeeder::class);
-        $this->service = resolve(NotificationsService::class);
     });
 
     it('redirects unauthenticated users to the login page', function (): void {
@@ -28,28 +32,28 @@ describe('Notifications page', function (): void {
             ->assignRole(RolesEnum::ANNOTATOR);
         $sender = User::factory()->create()->assignRole(RolesEnum::ANNOTATION_MANAGER);
 
-        $this->service->createGenericNotification(
+        resolve(GenericNotificationService::class)->createNotification(
             $recipient->id,
             'Question about the annotation guidelines for Batch 1.',
             $sender->id,
         );
-        $this->service->createWarningNotification(
-            [$recipient->id],
-            'Overdue Date Approaching',
-            'Subproject Nov26 will surpass due date in 3 days.',
-        );
-        $this->service->createFlagNotification(
+        resolve(WarningNotificationService::class)->createNotification(
             $recipient->id,
-            $sender->id,
-            'Instance #2 has been flagged for review.',
-            new QuickLinkData('Flagged Instance#2', 'projects/1/subprojects/1/edit'),
-            new QuickLinkData('Subproject Batch 1', 'projects/1/subprojects/1/edit'),
+            'Subproject Nov26 will surpass due date in 3 days.',
+            'Overdue Date Approaching',
         );
-        $this->service->createAnnouncementNotification(
-            [$recipient->id],
-            $sender->id,
-            'We have to speed up our work.',
-            new QuickLinkData('Subproject Batch 1', 'projects/1/subprojects/1/edit'),
+        resolve(FlagNotificationService::class)->createNotification(
+            recipientUserIds: [$recipient->id],
+            body: 'Instance #2 has been flagged for review.',
+            senderUserId: $sender->id,
+            firstQuickLink: new QuickLinkData('Flagged Instance#2', 'projects/1/subprojects/1/edit'),
+            secondQuickLink: new QuickLinkData('Subproject Batch 1', 'projects/1/subprojects/1/edit'),
+        );
+        resolve(AnnouncementNotificationService::class)->createNotification(
+            recipientUserIds: [$recipient->id],
+            body: 'We have to speed up our work.',
+            senderUserId: $sender->id,
+            quickLink: new QuickLinkData('Subproject Batch 1', 'projects/1/subprojects/1/edit'),
         );
 
         // Act + Assert
@@ -70,7 +74,7 @@ describe('Notifications page', function (): void {
             ->assignRole(RolesEnum::ANNOTATOR);
         $sender = User::factory()->create()->assignRole(RolesEnum::ANNOTATION_MANAGER);
 
-        $this->service->createGenericNotification(
+        resolve(GenericNotificationService::class)->createNotification(
             $recipient->id,
             'Please review the latest annotation guidelines.',
             $sender->id,
@@ -90,7 +94,7 @@ describe('Notifications page', function (): void {
             ->assignRole(RolesEnum::ANNOTATOR);
         $sender = User::factory()->create()->assignRole(RolesEnum::ADMIN);
 
-        $this->service->createProjectOwnershipNotification(
+        resolve(ProjectOwnershipNotificationService::class)->createNotification(
             $recipient->id,
             $sender->id,
             'You have been assigned as owner of Project NER.',
@@ -112,7 +116,7 @@ describe('Notifications page', function (): void {
             ->assignRole(RolesEnum::ANNOTATOR);
         $sender = User::factory()->create()->assignRole(RolesEnum::ADMIN);
 
-        $notification = $this->service->createProjectInvitationNotification(
+        $notification = resolve(ProjectInvitationNotificationService::class)->createNotification(
             $recipient->id,
             $sender->id,
             'You have been invited to collaborate on Project Sentiment Analysis.',
