@@ -18,6 +18,7 @@ const UNREAD_BORDER_STYLES: Record<NotificationThreadType, string> = {
     warning: 'border-l-red-400',
     project_ownership: 'border-l-brand-blue-700',
     project_invitation: 'border-l-brand-blue-700',
+    project_request_to_leave: 'border-l-brand-blue-700',
     announcement: 'border-l-brand-blue-700',
 };
 
@@ -29,6 +30,7 @@ const READ_BORDER_STYLES: Record<NotificationThreadType, string> = {
     warning: 'border-l-red-100',
     project_ownership: 'border-l-brand-blue-100',
     project_invitation: 'border-l-brand-blue-100',
+    project_request_to_leave: 'border-l-brand-blue-100',
     announcement: 'border-l-brand-blue-100',
 };
 

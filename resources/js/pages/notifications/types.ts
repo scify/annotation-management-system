@@ -13,6 +13,7 @@ export type NotificationThreadType =
     | 'warning'
     | 'project_ownership'
     | 'project_invitation'
+    | 'project_request_to_leave'
     | 'announcement';
 
 /** Decision state of an action thread, mirrors `App\Enums\NotificationThreadResponseEnum`. */
@@ -62,8 +63,9 @@ export interface NotificationThread {
     notifications: NotificationMessage[];
     quick_links: NotificationQuickLink[];
     /**
-     * Decision state for project_ownership / project_invitation threads. Only
-     * present on those types. Updated optimistically on approve/reject — no
+     * Decision state for project_ownership / project_invitation /
+     * project_request_to_leave threads. Only present on those types. Updated
+     * optimistically on approve/reject — no
      * persistence endpoint yet (see `tasks/notifications-backend-gaps.md`).
      */
     response?: NotificationThreadResponse;
@@ -74,9 +76,13 @@ export function isNoticeThread(thread: NotificationThread): boolean {
     return thread.type === 'info' || thread.type === 'warning';
 }
 
-/** Threads that ask the recipient to approve/reject (ownership / invitation). */
+/** Threads that ask the recipient to approve/reject (ownership / invitation / request to leave). */
 export function isActionThread(thread: NotificationThread): boolean {
-    return thread.type === 'project_ownership' || thread.type === 'project_invitation';
+    return (
+        thread.type === 'project_ownership' ||
+        thread.type === 'project_invitation' ||
+        thread.type === 'project_request_to_leave'
+    );
 }
 
 export function isThreadUnread(thread: NotificationThread): boolean {
