@@ -33,8 +33,8 @@ final class GenericNotificationService extends AbstractNotificationService {
             senderUserId: $senderUserId,
         );
 
-        $this->createThreadMemberQuery->create($thread->id, $recipientUserId, false);
         $this->createThreadMemberQuery->create($thread->id, $senderUserId, true);
+        $this->createThreadMemberQuery->create($thread->id, $recipientUserId);
 
         return $notification;
     }

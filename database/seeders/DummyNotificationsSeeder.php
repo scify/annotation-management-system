@@ -94,6 +94,7 @@ class DummyNotificationsSeeder extends Seeder {
         );
 
         $projectOwnershipService->createNotification(
+            recipientUserId: $carol->id,
             senderUserId: $alice->id,
             body: 'You have been assigned as owner of Project NER – English News.',
             quickLink: new QuickLinkData(
@@ -103,6 +104,7 @@ class DummyNotificationsSeeder extends Seeder {
         );
 
         $projectInvitationService->createNotification(
+            recipientUserId: $carol->id,
             senderUserId: $alice->id,
             body: 'You have been invited to collaborate on Project NER – English News.',
             quickLink: new QuickLinkData(
@@ -112,6 +114,7 @@ class DummyNotificationsSeeder extends Seeder {
         );
 
         $acceptedInvitation = $projectInvitationService->createNotification(
+            recipientUserId: $carol->id,
             senderUserId: $alice->id,
             body: 'You have been invited to collaborate on Project Sentiment Analysis.',
             quickLink: new QuickLinkData(
@@ -122,6 +125,7 @@ class DummyNotificationsSeeder extends Seeder {
         $acceptedInvitation->thread->response?->update(['response' => NotificationThreadResponseEnum::ACCEPTED]);
 
         $rejectedOwnership = $projectOwnershipService->createNotification(
+            recipientUserId: $carol->id,
             senderUserId: $alice->id,
             body: 'You have been assigned as owner of Project Sentiment Analysis.',
             quickLink: new QuickLinkData(

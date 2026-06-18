@@ -24,6 +24,7 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
     ) {}
 
     public function createNotification(
+        int $recipientUserId,
         int $senderUserId,
         string $body,
         QuickLinkData $quickLink,
@@ -36,7 +37,9 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
             senderUserId: $senderUserId,
         );
 
-        $this->createThreadMemberQuery->create($thread->id, $senderUserId);
+        $this->createThreadMemberQuery->create($thread->id, $senderUserId, true);
+        $this->createThreadMemberQuery->create($thread->id, $recipientUserId);
+
         $this->createNotificationThreadResponseQuery->create($thread->id);
         $this->createQuickLinkQuery->create($thread->id, $quickLink->label, $quickLink->url);
 
