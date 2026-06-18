@@ -85,7 +85,7 @@ function RecipientsLine({ recipients }: RecipientsLineProps) {
                     ? t('notifications.recipient')
                     : t('notifications.recipients')}
             </span>{' '}
-            {first}
+            @{first}
             {rest.length > 0 && (
                 <>
                     {' '}
@@ -100,7 +100,7 @@ function RecipientsLine({ recipients }: RecipientsLineProps) {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="start">
                             {rest.map((recipient) => (
-                                <DropdownMenuLabel key={recipient}>{recipient}</DropdownMenuLabel>
+                                <DropdownMenuLabel key={recipient}>@{recipient}</DropdownMenuLabel>
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
