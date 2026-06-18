@@ -20,6 +20,8 @@ use App\Queries\Notification\CreateThreadMemberQuery;
 use App\Queries\Notification\FindNotificationThreadResponseQuery;
 use App\Queries\Notification\FindProjectMemberContextByThreadQuery;
 use App\Queries\Notification\UpdateNotificationThreadResponseQuery;
+use App\Queries\Project\GetProjectBasicDataQuery;
+use App\Queries\Project\IsProposedOwnerQuery;
 use App\Services\Project\ProjectManagerService;
 
 final class ProjectOwnershipNotificationService extends AbstractNotificationService {
@@ -33,7 +35,23 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
         private readonly FindNotificationThreadResponseQuery $findNotificationThreadResponseQuery,
         private readonly FindProjectMemberContextByThreadQuery $findProjectMemberContextByThreadQuery,
         private readonly ProjectManagerService $projectManagerService,
+        private readonly GetProjectBasicDataQuery $getProjectBasicDataQuery,
+        private readonly IsProposedOwnerQuery $isProposedOwnerQuery,
     ) {}
+
+    public function notifyProposedOwner(int $projectId, int $senderUserId, int $recipientUserId): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+
+        $this->createNotification(
+            recipientUserId: $recipientUserId,
+            senderUserId: $senderUserId,
+            body: (string) __('notifications.messages.project_ownership', ['project' => $projectData['name']]),
+            quickLink: new QuickLinkData(
+                label: $projectData['name'],
+                url: route('projects.show', $projectId),
+            ),
+        );
+    }
 
     public function createNotification(
         int $recipientUserId,
@@ -65,13 +83,24 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
             throw NotificationResponseException::responseNotFound();
         }
 
+        if ($response->response === NotificationThreadResponseEnum::CANCELED) {
+            throw NotificationResponseException::cannotRespondCancelled();
+        }
+
         if ($response->response === NotificationThreadResponseEnum::REJECTED) {
             throw NotificationResponseException::cannotApproveRejected();
         }
 
-        $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::ACCEPTED);
-
         $memberContext = $this->findProjectMemberContextByThreadQuery->find($notificationThreadId);
+
+        if ($memberContext instanceof ProjectMemberContextData
+            && ! $this->isProposedOwnerQuery->check($memberContext->projectId, $memberContext->targetUserId)) {
+            $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::CANCELED);
+
+            throw NotificationResponseException::cannotRespondCancelled();
+        }
+
+        $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::ACCEPTED);
 
         if ($memberContext instanceof ProjectMemberContextData) {
             $this->projectManagerService->acceptOwnershipTransfer($memberContext->projectId, $memberContext->targetUserId);
@@ -85,13 +114,24 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
             throw NotificationResponseException::responseNotFound();
         }
 
+        if ($response->response === NotificationThreadResponseEnum::CANCELED) {
+            throw NotificationResponseException::cannotRespondCancelled();
+        }
+
         if ($response->response === NotificationThreadResponseEnum::ACCEPTED) {
             throw NotificationResponseException::cannotRejectAccepted();
         }
 
-        $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::REJECTED);
-
         $memberContext = $this->findProjectMemberContextByThreadQuery->find($notificationThreadId);
+
+        if ($memberContext instanceof ProjectMemberContextData
+            && ! $this->isProposedOwnerQuery->check($memberContext->projectId, $memberContext->targetUserId)) {
+            $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::CANCELED);
+
+            throw NotificationResponseException::cannotRespondCancelled();
+        }
+
+        $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::REJECTED);
 
         if ($memberContext instanceof ProjectMemberContextData) {
             $this->projectManagerService->rejectOwnershipTransfer($memberContext->projectId, $memberContext->targetUserId);

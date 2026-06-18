@@ -31,11 +31,15 @@ readonly class ProjectManagerService {
     /**
      * @throws Throwable
      */
-    public function acceptOwnershipTransfer(int $projectId, int $userId): void {
+    public function acceptOwnershipTransfer(int $projectId, int $userId): int {
+        $oldOwnerUserId = $this->acceptOwnershipTransferQuery->getOwnerUserId($projectId);
+
         DB::transaction(function () use ($projectId, $userId): void {
             $this->acceptOwnershipTransferQuery->clearProposal($projectId, $userId);
             $this->acceptOwnershipTransferQuery->transferOwner($projectId, $userId);
         });
+
+        return $oldOwnerUserId;
     }
 
     public function rejectOwnershipTransfer(int $projectId, int $userId): void {

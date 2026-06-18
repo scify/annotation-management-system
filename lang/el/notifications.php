@@ -19,8 +19,9 @@ return [
     'action_rejected' => 'Η ενέργεια απορρίφθηκε.',
     'errors' => [
         'response_not_found' => 'Δεν βρέθηκε εγγραφή απάντησης για αυτήν την ειδοποίηση.',
-        'cannot_reject_accepted' => 'Η ειδοποίηση έχει ήδη γίνει αποδεκτή και δεν μπορεί να απορριφθεί.',
-        'cannot_approve_rejected' => 'Η ειδοποίηση έχει ήδη απορριφθεί και δεν μπορεί να εγκριθεί.',
+        'cannot_reject_accepted' => 'Η πρόταση έχει ήδη γίνει αποδεκτή και δεν μπορεί να απορριφθεί.',
+        'cannot_approve_rejected' => 'Η πρόταση έχει ήδη απορριφθεί και δεν μπορεί να εγκριθεί.',
+        'cannot_respond_cancelled' => 'Η πρόταση έχει ακυρωθεί και δεν μπορεί πλέον να απαντηθεί.',
     ],
     'approve' => 'Έγκριση',
     'reject' => 'Απόρριψη',
@@ -55,5 +56,39 @@ return [
         'project_ownership_question' => 'Αποδέχεστε την κυριότητα;',
         'project_invitation' => 'σας προσκάλεσε να συμμετάσχετε στο :project.',
         'project_invitation_question' => 'Αποδέχεστε την πρόσκληση;',
+        'project_request_to_leave' => 'ζήτησε να αποχωρήσει από το :project.',
+        'project_request_to_leave_question' => 'Αποδέχεστε το αίτημα;',
+        'annotators_added_to_project' => [
+            'title' => 'Νέοι Επισημειωτές',
+            'body' => 'Οι επισημειωτές :names προστέθηκαν στο :project.',
+        ],
+        'manager_removed_from_project' => [
+            'title' => 'Εξαίρεση από Έργο',
+            'body' => 'Εξαιρεθήκατε από το :project.',
+        ],
+        'ownership_proposal_cancelled' => [
+            'title' => 'Αναίρεση Πρότασης για Αλλαγή Ιδιοκτησίας',
+            'body' => 'Η πρόταση αλλαγής ιδιοκτησίας για το έργο :project αναιρέθηκε.',
+        ],
+        'leave_request_cancelled' => [
+            'title' => 'Αναίρεση Αίτησης Αποχώρησης',
+            'body' => 'Η αίτηση αποχώρησης από το :project αναιρέθηκε.',
+        ],
+        'leave_request_accepted' => [
+            'title' => 'Αποδεχτή η αίτηση αποχώρησης',
+            'body' => 'Η αίτηση αποχώρησης από το έργο :project έγινε αποδεκτή.',
+        ],
+        'leave_request_rejected' => [
+            'title' => 'Απόρριψη αίτησης αποχώρησης',
+            'body' => 'Η αίτηση αποχώρησης από το έργο :project απορρίφθηκε.',
+        ],
+        'ownership_transfer_accepted' => [
+            'title' => 'Αποδοχή Μεταβίβασης Ιδιοκτησίας',
+            'body' => 'Ο χρήστης :username αποδέχτηκε να γίνει ιδιοκτήτης του έργου :project.',
+        ],
+        'ownership_transfer_rejected' => [
+            'title' => 'Απόρριψη Μεταβίβασης Ιδιοκτησίας',
+            'body' => 'Ο χρήστης :username αρνήθηκε να γίνει ιδιοκτήτης του έργου :project.',
+        ],
     ],
 ];

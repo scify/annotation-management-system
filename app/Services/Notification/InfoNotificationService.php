@@ -9,13 +9,120 @@ use App\Models\NotificationThread;
 use App\Queries\Notification\CreateNotificationQuery;
 use App\Queries\Notification\CreateNotificationThreadQuery;
 use App\Queries\Notification\CreateThreadMemberQuery;
+use App\Queries\Project\GetManagerIdsByProjectsQuery;
+use App\Queries\Project\GetProjectBasicDataQuery;
+use App\Queries\User\GetUsernamesByIdsQuery;
 
 final class InfoNotificationService extends AbstractNotificationService {
     public function __construct(
         private readonly CreateNotificationThreadQuery $createNotificationThreadQuery,
         private readonly CreateNotificationQuery $createNotificationQuery,
         private readonly CreateThreadMemberQuery $createThreadMemberQuery,
+        private readonly GetProjectBasicDataQuery $getProjectBasicDataQuery,
+        private readonly GetManagerIdsByProjectsQuery $getManagerIdsByProjectsQuery,
+        private readonly GetUsernamesByIdsQuery $getUsernamesByIdsQuery,
     ) {}
+
+    /**
+     * @param  array<int, int>  $annotatorIds
+     */
+    public function notifyManagersAboutNewAnnotatorsOfProject(int $projectId, array $annotatorIds): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+
+        $names = implode(', ', $this->getUsernamesByIdsQuery->get($annotatorIds));
+
+        $managerIds = $this->getManagerIdsByProjectsQuery->getAll([$projectId]);
+        $recipientIds = array_unique([$projectData['owner_user_id'], ...$managerIds]);
+
+        $body = (string) __('notifications.messages.annotators_added_to_project.body', [
+            'names' => $names,
+            'project' => $projectData['name'],
+        ]);
+
+        $title = (string) __('notifications.messages.annotators_added_to_project.title');
+
+        foreach ($recipientIds as $recipientId) {
+            $this->createNotification($recipientId, $body, $title);
+        }
+    }
+
+    public function notifyCancelledOwnershipProposal(int $projectId, int $proposedOwnerUserId): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+
+        $this->createNotification(
+            recipientUserId: $proposedOwnerUserId,
+            body: (string) __('notifications.messages.ownership_proposal_cancelled.body', ['project' => $projectData['name']]),
+            title: (string) __('notifications.messages.ownership_proposal_cancelled.title'),
+        );
+    }
+
+    public function notifyCancelledLeaveRequest(int $projectId, int $senderUserId): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+
+        $this->createNotification(
+            recipientUserId: $projectData['owner_user_id'],
+            body: (string) __('notifications.messages.leave_request_cancelled.body', ['project' => $projectData['name']]),
+            title: (string) __('notifications.messages.leave_request_cancelled.title'),
+        );
+    }
+
+    public function notifyLeaveRequestAccepted(int $projectId, int $memberUserId): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+
+        $this->createNotification(
+            recipientUserId: $memberUserId,
+            body: (string) __('notifications.messages.leave_request_accepted.body', ['project' => $projectData['name']]),
+            title: (string) __('notifications.messages.leave_request_accepted.title'),
+        );
+    }
+
+    public function notifyLeaveRequestRejected(int $projectId, int $memberUserId): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+
+        $this->createNotification(
+            recipientUserId: $memberUserId,
+            body: (string) __('notifications.messages.leave_request_rejected.body', ['project' => $projectData['name']]),
+            title: (string) __('notifications.messages.leave_request_rejected.title'),
+        );
+    }
+
+    public function notifyOwnerOfAcceptedOwnership(int $projectId, int $oldOwnerUserId, int $acceptingUserId): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+        $usernames = $this->getUsernamesByIdsQuery->get([$acceptingUserId]);
+
+        $this->createNotification(
+            recipientUserId: $oldOwnerUserId,
+            body: (string) __('notifications.messages.ownership_transfer_accepted.body', [
+                'username' => $usernames[0] ?? '',
+                'project' => $projectData['name'],
+            ]),
+            title: (string) __('notifications.messages.ownership_transfer_accepted.title'),
+        );
+    }
+
+    public function notifyOwnerOfRejectedOwnership(int $projectId, int $rejectingUserId): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+        $usernames = $this->getUsernamesByIdsQuery->get([$rejectingUserId]);
+
+        $this->createNotification(
+            recipientUserId: $projectData['owner_user_id'],
+            body: (string) __('notifications.messages.ownership_transfer_rejected.body', [
+                'username' => $usernames[0] ?? '',
+                'project' => $projectData['name'],
+            ]),
+            title: (string) __('notifications.messages.ownership_transfer_rejected.title'),
+        );
+    }
+
+    public function notifyRemovedManager(int $projectId, int $removedUserId): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+
+        $this->createNotification(
+            recipientUserId: $removedUserId,
+            body: (string) __('notifications.messages.manager_removed_from_project.body', ['project' => $projectData['name']]),
+            title: (string) __('notifications.messages.manager_removed_from_project.title'),
+        );
+    }
 
     public function createNotification(
         int $recipientUserId,

@@ -20,6 +20,8 @@ use App\Queries\Notification\CreateThreadMemberQuery;
 use App\Queries\Notification\FindNotificationThreadResponseQuery;
 use App\Queries\Notification\FindRequestToLeaveContextByThreadQuery;
 use App\Queries\Notification\UpdateNotificationThreadResponseQuery;
+use App\Queries\Project\GetProjectBasicDataQuery;
+use App\Queries\Project\RequestToLeaveQuery;
 use App\Services\Project\ProjectManagerService;
 
 final class ProjectRequestToLeaveNotificationService extends AbstractNotificationService {
@@ -33,12 +35,24 @@ final class ProjectRequestToLeaveNotificationService extends AbstractNotificatio
         private readonly FindNotificationThreadResponseQuery $findNotificationThreadResponseQuery,
         private readonly FindRequestToLeaveContextByThreadQuery $findRequestToLeaveContextByThreadQuery,
         private readonly ProjectManagerService $projectManagerService,
+        private readonly GetProjectBasicDataQuery $getProjectBasicDataQuery,
+        private readonly RequestToLeaveQuery $requestToLeaveQuery,
     ) {}
 
-    /**
-     * @param  int  $recipientUserId  The member being asked to leave (must not be the project owner)
-     * @param  int  $senderUserId  The admin/manager requesting the member to leave
-     */
+    public function notifyOwnerOfProject(int $projectId, int $senderUserId): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+
+        $this->createNotification(
+            recipientUserId: $projectData['owner_user_id'],
+            senderUserId: $senderUserId,
+            body: (string) __('notifications.messages.project_request_to_leave', ['project' => $projectData['name']]),
+            quickLink: new QuickLinkData(
+                label: $projectData['name'],
+                url: route('projects.show', $projectId),
+            ),
+        );
+    }
+
     public function createNotification(
         int $recipientUserId,
         int $senderUserId,
@@ -69,13 +83,24 @@ final class ProjectRequestToLeaveNotificationService extends AbstractNotificatio
             throw NotificationResponseException::responseNotFound();
         }
 
+        if ($response->response === NotificationThreadResponseEnum::CANCELED) {
+            throw NotificationResponseException::cannotRespondCancelled();
+        }
+
         if ($response->response === NotificationThreadResponseEnum::REJECTED) {
             throw NotificationResponseException::cannotApproveRejected();
         }
 
-        $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::ACCEPTED);
-
         $memberContext = $this->findRequestToLeaveContextByThreadQuery->find($notificationThreadId);
+
+        if ($memberContext instanceof ProjectMemberContextData
+            && ! $this->requestToLeaveQuery->check($memberContext->projectId, $memberContext->targetUserId)) {
+            $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::CANCELED);
+
+            throw NotificationResponseException::cannotRespondCancelled();
+        }
+
+        $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::ACCEPTED);
 
         if ($memberContext instanceof ProjectMemberContextData) {
             $this->projectManagerService->acceptRequestToLeave($memberContext->projectId, $memberContext->targetUserId);
@@ -89,13 +114,24 @@ final class ProjectRequestToLeaveNotificationService extends AbstractNotificatio
             throw NotificationResponseException::responseNotFound();
         }
 
+        if ($response->response === NotificationThreadResponseEnum::CANCELED) {
+            throw NotificationResponseException::cannotRespondCancelled();
+        }
+
         if ($response->response === NotificationThreadResponseEnum::ACCEPTED) {
             throw NotificationResponseException::cannotRejectAccepted();
         }
 
-        $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::REJECTED);
-
         $memberContext = $this->findRequestToLeaveContextByThreadQuery->find($notificationThreadId);
+
+        if ($memberContext instanceof ProjectMemberContextData
+            && ! $this->requestToLeaveQuery->check($memberContext->projectId, $memberContext->targetUserId)) {
+            $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::CANCELED);
+
+            throw NotificationResponseException::cannotRespondCancelled();
+        }
+
+        $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::REJECTED);
 
         if ($memberContext instanceof ProjectMemberContextData) {
             $this->projectManagerService->rejectRequestToLeave($memberContext->projectId, $memberContext->targetUserId);

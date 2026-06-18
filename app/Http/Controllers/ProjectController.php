@@ -24,6 +24,9 @@ use App\Http\Requests\Project\ToggleCanFlagRequest;
 use App\Models\Project;
 use App\Models\User;
 use App\Services\Annotation\AnnotatorService;
+use App\Services\Notification\InfoNotificationService;
+use App\Services\Notification\ProjectOwnershipNotificationService;
+use App\Services\Notification\ProjectRequestToLeaveNotificationService;
 use App\Services\Project\ProjectManagerService;
 use App\Services\Project\ProjectReadService;
 use App\Services\Project\ProjectWriteService;
@@ -45,6 +48,9 @@ class ProjectController extends Controller {
         private readonly ProjectWriteService $projectService,
         private readonly ProjectReadService $projectReadService,
         private readonly AnnotatorService $annotatorService,
+        private readonly ProjectOwnershipNotificationService $projectOwnershipNotificationService,
+        private readonly ProjectRequestToLeaveNotificationService $projectRequestToLeaveNotificationService,
+        private readonly InfoNotificationService $infoNotificationService,
     ) {}
 
     public function index(): Response {
@@ -137,6 +143,8 @@ class ProjectController extends Controller {
 
         $this->projectService->attachAnnotators($id, $annotatorIds);
 
+        $this->infoNotificationService->notifyManagersAboutNewAnnotatorsOfProject($id, $annotatorIds);
+
         return to_route('projects.show', $id)
             ->with('success', __('projects.messages.annotators_attached'));
     }
@@ -182,7 +190,9 @@ class ProjectController extends Controller {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
 
-        $this->projectManagerService->acceptOwnershipTransfer($id, $user->id);
+        $oldOwnerUserId = $this->projectManagerService->acceptOwnershipTransfer($id, $user->id);
+
+        $this->infoNotificationService->notifyOwnerOfAcceptedOwnership($id, $oldOwnerUserId, $user->id);
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
@@ -195,13 +205,19 @@ class ProjectController extends Controller {
 
         $this->projectManagerService->rejectOwnershipTransfer($id, $user->id);
 
+        $this->infoNotificationService->notifyOwnerOfRejectedOwnership($id, $user->id);
+
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
         ]);
     }
 
     public function removeManager(RemoveManagerFromProjectRequest $request, int $id): JsonResponse {
-        $this->projectManagerService->removeManager($id, $request->integer('manager_id'));
+        $managerId = $request->integer('manager_id');
+
+        $this->projectManagerService->removeManager($id, $managerId);
+
+        $this->infoNotificationService->notifyRemovedManager($id, $managerId);
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
@@ -214,6 +230,11 @@ class ProjectController extends Controller {
 
         $this->projectManagerService->requestToLeave($id, $user->id);
 
+        $this->projectRequestToLeaveNotificationService->notifyOwnerOfProject(
+            projectId: $id,
+            senderUserId: $user->id,
+        );
+
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
         ]);
@@ -225,13 +246,19 @@ class ProjectController extends Controller {
 
         $this->projectManagerService->cancelRequestToLeave($id, $user->id);
 
+        $this->infoNotificationService->notifyCancelledLeaveRequest($id, $user->id);
+
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
         ]);
     }
 
     public function rejectRequestToLeave(RejectRequestToLeaveRequest $request, int $id): JsonResponse {
-        $this->projectManagerService->rejectRequestToLeave($id, $request->integer('user_id'));
+        $memberUserId = $request->integer('user_id');
+
+        $this->projectManagerService->rejectRequestToLeave($id, $memberUserId);
+
+        $this->infoNotificationService->notifyLeaveRequestRejected($id, $memberUserId);
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
@@ -239,7 +266,11 @@ class ProjectController extends Controller {
     }
 
     public function acceptRequestToLeave(AcceptRequestToLeaveRequest $request, int $id): JsonResponse {
-        $this->projectManagerService->acceptRequestToLeave($id, $request->integer('user_id'));
+        $memberUserId = $request->integer('user_id');
+
+        $this->projectManagerService->acceptRequestToLeave($id, $memberUserId);
+
+        $this->infoNotificationService->notifyLeaveRequestAccepted($id, $memberUserId);
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
@@ -247,7 +278,11 @@ class ProjectController extends Controller {
     }
 
     public function cancelOwnership(CancelOwnershipTransferRequest $request, int $id): JsonResponse {
-        $this->projectManagerService->cancelOwnershipTransfer($id, $request->integer('user_id'));
+        $proposedOwnerUserId = $request->integer('user_id');
+
+        $this->projectManagerService->cancelOwnershipTransfer($id, $proposedOwnerUserId);
+
+        $this->infoNotificationService->notifyCancelledOwnershipProposal($id, $proposedOwnerUserId);
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
@@ -255,11 +290,20 @@ class ProjectController extends Controller {
     }
 
     public function proposeOwnership(ProposeOwnershipTransferRequest $request, int $id): JsonResponse {
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
         try {
             $this->projectManagerService->proposeOwnershipTransfer($id, $request->integer('user_id'));
         } catch (PresentableError $presentableError) {
             return response()->json(['error' => $presentableError->getUserMessage()], 422);
         }
+
+        $this->projectOwnershipNotificationService->notifyProposedOwner(
+            projectId: $id,
+            senderUserId: $user->id,
+            recipientUserId: $request->integer('user_id'),
+        );
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),

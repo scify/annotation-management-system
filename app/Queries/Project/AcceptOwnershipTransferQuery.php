@@ -8,6 +8,10 @@ use App\Models\Project;
 use App\Models\ProjectManager;
 
 final readonly class AcceptOwnershipTransferQuery {
+    public function getOwnerUserId(int $projectId): int {
+        return Project::query()->findOrFail($projectId)->owner_user_id;
+    }
+
     public function clearProposal(int $projectId, int $userId): void {
         ProjectManager::query()
             ->where('project_id', $projectId)

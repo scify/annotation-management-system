@@ -20,4 +20,12 @@ final readonly class RequestToLeaveQuery {
             ->where('user_id', $userId)
             ->update(['request_to_leave' => false]);
     }
+
+    public function check(int $projectId, int $userId): bool {
+        return ProjectManager::query()
+            ->where('project_id', $projectId)
+            ->where('user_id', $userId)
+            ->where('request_to_leave', true)
+            ->exists();
+    }
 }

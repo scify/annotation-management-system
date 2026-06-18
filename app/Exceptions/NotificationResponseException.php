@@ -19,6 +19,10 @@ class NotificationResponseException extends RuntimeException implements Presenta
         return new self((string) __('notifications.errors.cannot_approve_rejected'));
     }
 
+    public static function cannotRespondCancelled(): self {
+        return new self((string) __('notifications.errors.cannot_respond_cancelled'));
+    }
+
     public function getUserMessage(): string {
         return $this->getMessage();
     }

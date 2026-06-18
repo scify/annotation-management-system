@@ -7,6 +7,8 @@ namespace App\Enums;
 enum NotificationThreadResponseEnum: string {
     case ACCEPTED = 'accepted';
 
+    case CANCELED = 'canceled';
+
     case REJECTED = 'rejected';
 
     case UNREPLIED = 'unreplied';
@@ -14,6 +16,7 @@ enum NotificationThreadResponseEnum: string {
     public function label(): string {
         return match ($this) {
             self::ACCEPTED => 'Accepted',
+            self::CANCELED => 'Cancelled',
             self::REJECTED => 'Rejected',
             self::UNREPLIED => 'Unreplied',
         };

@@ -6,6 +6,7 @@ namespace Database\Seeders;
 
 use App\Data\QuickLinkData;
 use App\Enums\NotificationThreadResponseEnum;
+use App\Models\Project;
 use App\Models\User;
 use App\Services\Notification\AnnouncementNotificationService;
 use App\Services\Notification\FlagNotificationService;
@@ -28,6 +29,9 @@ class DummyNotificationsSeeder extends Seeder {
         $frank = User::query()->where('email', 'annotator.frank@example.com')->firstOrFail();
         $grace = User::query()->where('email', 'annotator.grace@example.com')->firstOrFail();
         $scifyManager = User::query()->where('email', 'annotation_manager@scify.org')->firstOrFail();
+
+        $nerProject = Project::query()->where('name', 'NER – English News')->firstOrFail();
+        $sentimentProject = Project::query()->where('name', 'Sentiment – Product Reviews')->firstOrFail();
 
         $genericService = resolve(GenericNotificationService::class);
         $warningService = resolve(WarningNotificationService::class);
@@ -183,5 +187,25 @@ class DummyNotificationsSeeder extends Seeder {
             body: '@admin_alice just edited your profile',
             title: 'Profile edit',
         );
+
+        $canceledOwnership = $projectOwnershipService->createNotification(
+            recipientUserId: $dave->id,
+            senderUserId: $carol->id,
+            body: 'You have been proposed to become the owner of NER – English News.',
+            quickLink: new QuickLinkData(
+                label: 'NER – English News',
+                url: 'projects/' . $nerProject->id,
+            ),
+        );
+        $canceledOwnership->thread->response?->update(['response' => NotificationThreadResponseEnum::CANCELED]);
+
+        $infoService->notifyRemovedManager($nerProject->id, $dave->id);
+        $infoService->notifyCancelledOwnershipProposal($nerProject->id, $dave->id);
+        $infoService->notifyCancelledLeaveRequest($nerProject->id, $dave->id);
+        $infoService->notifyOwnerOfAcceptedOwnership($nerProject->id, $carol->id, $dave->id);
+        $infoService->notifyOwnerOfRejectedOwnership($sentimentProject->id, $dave->id);
+        $infoService->notifyLeaveRequestAccepted($nerProject->id, $dave->id);
+        $infoService->notifyLeaveRequestRejected($sentimentProject->id, $scifyManager->id);
+        $infoService->notifyManagersAboutNewAnnotatorsOfProject($nerProject->id, [$eva->id, $frank->id]);
     }
 }

@@ -28,4 +28,25 @@ final readonly class GetManagerIdsByProjectsQuery {
             ->values()
             ->all();
     }
+
+    /**
+     * Returns unique user IDs of all project managers for the given project IDs.
+     *
+     * @param  array<int, int>  $projectIds
+     *
+     * @return array<int, int>
+     */
+    public function getAll(array $projectIds): array {
+        if ($projectIds === []) {
+            return [];
+        }
+
+        /** @var array<int, int> */
+        return ProjectManager::query()
+            ->whereIn('project_id', $projectIds)
+            ->pluck('user_id')
+            ->unique()
+            ->values()
+            ->all();
+    }
 }
