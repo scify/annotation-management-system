@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Console\Commands\Api;
 
 use App\Models\User;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\PersonalAccessToken;
 
+#[Description('Revoke a personal access token by its ID')]
+#[Signature('api:token:revoke {tokenId : The ID of the token to revoke}')]
 class TokenRevokeCommand extends Command {
-    protected $signature = 'api:token:revoke {tokenId : The ID of the token to revoke}';
-
-    protected $description = 'Revoke a personal access token by its ID';
-
     public function handle(): int {
         $tokenId = (string) $this->argument('tokenId');
 

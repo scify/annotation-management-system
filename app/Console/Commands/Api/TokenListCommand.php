@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace App\Console\Commands\Api;
 
 use App\Models\User;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 use Laravel\Sanctum\PersonalAccessToken;
 
+#[Description('List personal access tokens for a user')]
+#[Signature('api:token:list {email : The email address of the user}')]
 class TokenListCommand extends Command {
-    protected $signature = 'api:token:list {email : The email address of the user}';
-
-    protected $description = 'List personal access tokens for a user';
-
     public function handle(): int {
         $email = (string) $this->argument('email');
 

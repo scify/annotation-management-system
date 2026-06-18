@@ -137,7 +137,7 @@ final readonly class StoreSubProjectQuery {
                 ->pluck('id', 'index')
                 ->all();
 
-            return array_map(fn (int $oldIndex) => $instanceIds[$oldIndex], $shuffleMap);
+            return array_map(fn (int $oldIndex): int => $instanceIds[$oldIndex], $shuffleMap);
         }
 
         /** @var array<int, int> $result */

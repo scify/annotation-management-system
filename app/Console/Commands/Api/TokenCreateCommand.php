@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Console\Commands\Api;
 
 use App\Models\User;
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
 use Illuminate\Console\Command;
 
-class TokenCreateCommand extends Command {
-    protected $signature = 'api:token:create
+#[Description('Create a personal access token for a user (for API clients)')]
+#[Signature('api:token:create
                             {email : The email address of the user to issue a token for}
                             {--name=default : Name for the token}
-                            {--abilities=* : Abilities to grant (defaults to wildcard)}';
-
-    protected $description = 'Create a personal access token for a user (for API clients)';
-
+                            {--abilities=* : Abilities to grant (defaults to wildcard)}')]
+class TokenCreateCommand extends Command {
     public function handle(): int {
         $email = (string) $this->argument('email');
 
