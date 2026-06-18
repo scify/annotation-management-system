@@ -15,6 +15,7 @@ use App\Services\Notification\InstanceRelatedNotificationService;
 use App\Services\Notification\NotificationsService;
 use App\Services\Notification\ProjectInvitationNotificationService;
 use App\Services\Notification\ProjectOwnershipNotificationService;
+use App\Services\Notification\ProjectRequestToLeaveNotificationService;
 use App\Services\Notification\WarningNotificationService;
 use Illuminate\Database\Seeder;
 
@@ -23,7 +24,10 @@ class DummyNotificationsSeeder extends Seeder {
         $alice = User::query()->where('email', 'admin.alice@example.com')->firstOrFail();
         $eva = User::query()->where('email', 'annotator.eva@example.com')->firstOrFail();
         $carol = User::query()->where('email', 'manager.carol@example.com')->firstOrFail();
+        $dave = User::query()->where('email', 'manager.dave@example.com')->firstOrFail();
         $frank = User::query()->where('email', 'annotator.frank@example.com')->firstOrFail();
+        $grace = User::query()->where('email', 'annotator.grace@example.com')->firstOrFail();
+        $scifyManager = User::query()->where('email', 'annotation_manager@scify.org')->firstOrFail();
 
         $genericService = resolve(GenericNotificationService::class);
         $warningService = resolve(WarningNotificationService::class);
@@ -33,6 +37,7 @@ class DummyNotificationsSeeder extends Seeder {
         $announcementService = resolve(AnnouncementNotificationService::class);
         $projectOwnershipService = resolve(ProjectOwnershipNotificationService::class);
         $projectInvitationService = resolve(ProjectInvitationNotificationService::class);
+        $projectRequestToLeaveService = resolve(ProjectRequestToLeaveNotificationService::class);
         $service = resolve(NotificationsService::class);
 
         $evaToCarol = $genericService->createNotification(
@@ -84,7 +89,7 @@ class DummyNotificationsSeeder extends Seeder {
         );
 
         $announcementService->createNotification(
-            recipientUserIds: [$carol->id],
+            recipientUserIds: [$carol->id, $dave->id, $eva->id, $grace->id],
             body: 'Hello everyone!',
             senderUserId: $alice->id,
             quickLink: new QuickLinkData(
@@ -134,6 +139,38 @@ class DummyNotificationsSeeder extends Seeder {
             ),
         );
         $rejectedOwnership->thread->response?->update(['response' => NotificationThreadResponseEnum::REJECTED]);
+
+        $projectRequestToLeaveService->createNotification(
+            recipientUserId: $carol->id,
+            senderUserId: $dave->id,
+            body: 'You have been asked to leave Project NER – English News.',
+            quickLink: new QuickLinkData(
+                label: 'Project NER – English News',
+                url: 'projects/1',
+            ),
+        );
+
+        $acceptedLeaveRequest = $projectRequestToLeaveService->createNotification(
+            recipientUserId: $carol->id,
+            senderUserId: $scifyManager->id,
+            body: 'You have been asked to leave Project NER – English News.',
+            quickLink: new QuickLinkData(
+                label: 'Project NER – English News',
+                url: 'projects/1',
+            ),
+        );
+        $acceptedLeaveRequest->thread->response?->update(['response' => NotificationThreadResponseEnum::ACCEPTED]);
+
+        $rejectedLeaveRequest = $projectRequestToLeaveService->createNotification(
+            recipientUserId: $carol->id,
+            senderUserId: $alice->id,
+            body: 'You have been asked to leave Project NER – English News.',
+            quickLink: new QuickLinkData(
+                label: 'Project NER – English News',
+                url: 'projects/1',
+            ),
+        );
+        $rejectedLeaveRequest->thread->response?->update(['response' => NotificationThreadResponseEnum::REJECTED]);
 
         $warningService->createNotification(
             recipientUserId: $carol->id,

@@ -18,11 +18,11 @@ use App\Queries\Notification\CreateNotificationThreadResponseQuery;
 use App\Queries\Notification\CreateQuickLinkQuery;
 use App\Queries\Notification\CreateThreadMemberQuery;
 use App\Queries\Notification\FindNotificationThreadResponseQuery;
-use App\Queries\Notification\FindProjectMemberContextByThreadQuery;
+use App\Queries\Notification\FindRequestToLeaveContextByThreadQuery;
 use App\Queries\Notification\UpdateNotificationThreadResponseQuery;
 use App\Services\Project\ProjectManagerService;
 
-final class ProjectOwnershipNotificationService extends AbstractNotificationService {
+final class ProjectRequestToLeaveNotificationService extends AbstractNotificationService {
     public function __construct(
         private readonly CreateNotificationThreadQuery $createNotificationThreadQuery,
         private readonly CreateNotificationQuery $createNotificationQuery,
@@ -31,17 +31,21 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
         private readonly CreateQuickLinkQuery $createQuickLinkQuery,
         private readonly UpdateNotificationThreadResponseQuery $updateNotificationThreadResponseQuery,
         private readonly FindNotificationThreadResponseQuery $findNotificationThreadResponseQuery,
-        private readonly FindProjectMemberContextByThreadQuery $findProjectMemberContextByThreadQuery,
+        private readonly FindRequestToLeaveContextByThreadQuery $findRequestToLeaveContextByThreadQuery,
         private readonly ProjectManagerService $projectManagerService,
     ) {}
 
+    /**
+     * @param  int  $recipientUserId  The member being asked to leave (must not be the project owner)
+     * @param  int  $senderUserId  The admin/manager requesting the member to leave
+     */
     public function createNotification(
         int $recipientUserId,
         int $senderUserId,
         string $body,
         QuickLinkData $quickLink,
     ): Notification {
-        $thread = $this->createNotificationThreadQuery->create(NotificationThreadTypeEnum::PROJECT_OWNERSHIP);
+        $thread = $this->createNotificationThreadQuery->create(NotificationThreadTypeEnum::PROJECT_REQUEST_TO_LEAVE);
 
         $notification = $this->createNotificationQuery->create(
             notificationThreadId: $thread->id,
@@ -71,10 +75,10 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
 
         $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::ACCEPTED);
 
-        $memberContext = $this->findProjectMemberContextByThreadQuery->find($notificationThreadId);
+        $memberContext = $this->findRequestToLeaveContextByThreadQuery->find($notificationThreadId);
 
         if ($memberContext instanceof ProjectMemberContextData) {
-            $this->projectManagerService->acceptOwnershipTransfer($memberContext->projectId, $memberContext->targetUserId);
+            $this->projectManagerService->acceptRequestToLeave($memberContext->projectId, $memberContext->targetUserId);
         }
     }
 
@@ -91,10 +95,10 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
 
         $this->updateNotificationThreadResponseQuery->update($notificationThreadId, NotificationThreadResponseEnum::REJECTED);
 
-        $memberContext = $this->findProjectMemberContextByThreadQuery->find($notificationThreadId);
+        $memberContext = $this->findRequestToLeaveContextByThreadQuery->find($notificationThreadId);
 
         if ($memberContext instanceof ProjectMemberContextData) {
-            $this->projectManagerService->rejectOwnershipTransfer($memberContext->projectId, $memberContext->targetUserId);
+            $this->projectManagerService->rejectRequestToLeave($memberContext->projectId, $memberContext->targetUserId);
         }
     }
 
@@ -108,7 +112,7 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
     }
 
     protected function setTopRight(NotificationThread $thread): void {
-        $thread->setAttribute('top_right', 'Ownership');
+        $thread->setAttribute('top_right', 'Request to Leave');
     }
 
     protected function allowsReply(): bool {

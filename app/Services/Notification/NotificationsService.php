@@ -27,6 +27,7 @@ readonly class NotificationsService {
         private AnnouncementNotificationService $announcementService,
         private ProjectOwnershipNotificationService $projectOwnershipService,
         private ProjectInvitationNotificationService $projectInvitationService,
+        private ProjectRequestToLeaveNotificationService $projectRequestToLeaveService,
         private MarkThreadReadStatusQuery $markThreadReadStatusQuery,
         private MarkAllThreadsReadStatusQuery $markAllThreadsReadStatusQuery,
         private GetMyNotificationsQuery $getMyNotificationsQuery,
@@ -48,6 +49,28 @@ readonly class NotificationsService {
     /** Marks all notification threads the user belongs to as read. */
     public function markAllAsRead(int $userId): void {
         $this->markAllThreadsReadStatusQuery->markAll($userId, true);
+    }
+
+    public function approve(int $notificationThreadId): void {
+        $thread = $this->findNotificationThreadQuery->findOrFail($notificationThreadId);
+
+        match ($thread->type) {
+            NotificationThreadTypeEnum::PROJECT_OWNERSHIP => $this->projectOwnershipService->approve($notificationThreadId),
+            NotificationThreadTypeEnum::PROJECT_INVITATION => $this->projectInvitationService->approve($notificationThreadId),
+            NotificationThreadTypeEnum::PROJECT_REQUEST_TO_LEAVE => $this->projectRequestToLeaveService->approve($notificationThreadId),
+            default => abort(403),
+        };
+    }
+
+    public function reject(int $notificationThreadId): void {
+        $thread = $this->findNotificationThreadQuery->findOrFail($notificationThreadId);
+
+        match ($thread->type) {
+            NotificationThreadTypeEnum::PROJECT_OWNERSHIP => $this->projectOwnershipService->reject($notificationThreadId),
+            NotificationThreadTypeEnum::PROJECT_INVITATION => $this->projectInvitationService->reject($notificationThreadId),
+            NotificationThreadTypeEnum::PROJECT_REQUEST_TO_LEAVE => $this->projectRequestToLeaveService->reject($notificationThreadId),
+            default => abort(403),
+        };
     }
 
     public function reply(int $notificationThreadId, int $senderUserId, string $body): Notification {
@@ -121,6 +144,7 @@ readonly class NotificationsService {
             NotificationThreadTypeEnum::ANNOUNCEMENT => $this->announcementService,
             NotificationThreadTypeEnum::PROJECT_OWNERSHIP => $this->projectOwnershipService,
             NotificationThreadTypeEnum::PROJECT_INVITATION => $this->projectInvitationService,
+            NotificationThreadTypeEnum::PROJECT_REQUEST_TO_LEAVE => $this->projectRequestToLeaveService,
         };
     }
 }

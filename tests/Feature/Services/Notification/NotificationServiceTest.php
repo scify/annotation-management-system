@@ -141,8 +141,10 @@ describe('NotificationsService', function (): void {
 
     it('creates a project ownership notification with a thread response and quick link', function (): void {
         $sender = User::factory()->create();
+        $recipient = User::factory()->create();
 
         $notification = resolve(ProjectOwnershipNotificationService::class)->createNotification(
+            recipientUserId: $recipient->id,
             senderUserId: $sender->id,
             body: 'Ownership offer',
             quickLink: new QuickLinkData('Decide', '/decide'),
@@ -163,8 +165,10 @@ describe('NotificationsService', function (): void {
 
     it('creates a project invitation notification with a thread response and quick link', function (): void {
         $sender = User::factory()->create();
+        $recipient = User::factory()->create();
 
         $notification = resolve(ProjectInvitationNotificationService::class)->createNotification(
+            recipientUserId: $recipient->id,
             senderUserId: $sender->id,
             body: 'Join the project',
             quickLink: new QuickLinkData('Accept', '/accept'),

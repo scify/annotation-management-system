@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\PresentableError;
 use App\Http\Requests\Notification\ReplyNotificationRequest;
 use App\Models\User;
 use App\Services\Notification\NotificationsService;
@@ -42,6 +43,26 @@ class NotificationController extends Controller {
         $this->notificationService->markAllAsRead($user->id);
 
         return back();
+    }
+
+    public function approve(int $notificationThreadId): RedirectResponse {
+        try {
+            $this->notificationService->approve($notificationThreadId);
+        } catch (PresentableError $presentableError) {
+            return back()->with('error', $presentableError->getUserMessage());
+        }
+
+        return back()->with('success', __('notifications.action_approved'));
+    }
+
+    public function reject(int $notificationThreadId): RedirectResponse {
+        try {
+            $this->notificationService->reject($notificationThreadId);
+        } catch (PresentableError $presentableError) {
+            return back()->with('error', $presentableError->getUserMessage());
+        }
+
+        return back()->with('success', __('notifications.action_rejected'));
     }
 
     public function reply(ReplyNotificationRequest $request, int $notificationThreadId): RedirectResponse {
