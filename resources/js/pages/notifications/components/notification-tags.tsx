@@ -25,6 +25,7 @@ const SUBJECT_TAG_STYLES: Record<NotificationThreadType, string> = {
     warning: 'bg-brand-red-200',
     project_ownership: 'bg-yellow-200',
     project_invitation: 'bg-yellow-200',
+    project_request_to_leave: 'bg-yellow-200',
     announcement: 'bg-purple-200',
 };
 
