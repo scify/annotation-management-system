@@ -177,6 +177,16 @@ class DummyNotificationsSeeder extends Seeder {
         );
         $rejectedLeaveRequest->thread->response?->update(['response' => NotificationThreadResponseEnum::REJECTED]);
 
+        $projectRequestToLeaveService->createNotification(
+            recipientUserId: $alice->id,
+            senderUserId: $carol->id,
+            body: TranslatableMessage::encode('notifications.messages.project_request_to_leave', ['project' => $sentimentProject->name]),
+            quickLink: new QuickLinkData(
+                label: $sentimentProject->name,
+                url: 'projects/' . $sentimentProject->id,
+            ),
+        );
+
         $warningService->createNotification(
             recipientUserId: $carol->id,
             body: TranslatableMessage::encode('notifications.messages.overdue_approaching.body', ['subproject' => 'New Nov26', 'days' => 3]),
