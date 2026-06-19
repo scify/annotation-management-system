@@ -22,6 +22,8 @@ use App\Services\Notification\ProjectInvitationNotificationService;
 use App\Services\Notification\ProjectOwnershipNotificationService;
 use App\Services\Notification\WarningNotificationService;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 describe('NotificationsService', function (): void {
     beforeEach(function (): void {
@@ -409,5 +411,51 @@ describe('NotificationsService', function (): void {
 
         expect($result->first()->id)->toBe($newer->id)
             ->and($result->last()->id)->toBe($older->id);
+    });
+
+    // --- approve() / reject() delegation ---
+
+    it('approves an actionable thread by delegating to the matching type service', function (): void {
+        $thread = NotificationThread::factory()->create(['type' => NotificationThreadTypeEnum::PROJECT_OWNERSHIP]);
+        NotificationThreadResponse::factory()->create([
+            'notification_thread_id' => $thread->id,
+            'response' => NotificationThreadResponseEnum::UNREPLIED,
+        ]);
+
+        $this->service->approve($thread->id);
+
+        $this->assertDatabaseHas('notification_thread_responses', [
+            'notification_thread_id' => $thread->id,
+            'response' => NotificationThreadResponseEnum::ACCEPTED->value,
+        ]);
+    });
+
+    it('rejects an actionable thread by delegating to the matching type service', function (): void {
+        $thread = NotificationThread::factory()->create(['type' => NotificationThreadTypeEnum::PROJECT_OWNERSHIP]);
+        NotificationThreadResponse::factory()->create([
+            'notification_thread_id' => $thread->id,
+            'response' => NotificationThreadResponseEnum::UNREPLIED,
+        ]);
+
+        $this->service->reject($thread->id);
+
+        $this->assertDatabaseHas('notification_thread_responses', [
+            'notification_thread_id' => $thread->id,
+            'response' => NotificationThreadResponseEnum::REJECTED->value,
+        ]);
+    });
+
+    it('throws a model-not-found error when approving a missing thread', function (): void {
+        expect(function (): void {
+            $this->service->approve(999999);
+        })->toThrow(ModelNotFoundException::class);
+    });
+
+    it('aborts with 403 when approving a non-actionable thread type', function (): void {
+        $thread = NotificationThread::factory()->create(['type' => NotificationThreadTypeEnum::GENERIC]);
+
+        expect(function () use ($thread): void {
+            $this->service->approve($thread->id);
+        })->toThrow(HttpException::class);
     });
 });

@@ -1,6 +1,7 @@
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
 import { AnnotatorsTable } from '@/components/annotator/annotators-table';
 import { ProjectDialog } from '@/components/project/project-dialog';
+import { SendMessageDialog } from '@/components/send-message-dialog';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
 import { apiFetchWithFlash } from '@/lib/api';
@@ -25,6 +26,7 @@ export function SubprojectAnnotatorsPanel({
     const [annotatorToRemove, setAnnotatorToRemove] = useState<ProjectAnnotatorRowData | null>(
         null
     );
+    const [messageAnnotator, setMessageAnnotator] = useState<ProjectAnnotatorRowData | null>(null);
     const [removing, setRemoving] = useState(false);
     const [flaggingState, setFlaggingState] = useState<Record<number, boolean>>(() =>
         Object.fromEntries(annotators.map((a) => [a.id, a.allow_flagging ?? false]))
@@ -33,6 +35,11 @@ export function SubprojectAnnotatorsPanel({
     function handleRemoveRequest(id: number) {
         const annotator = annotators.find((a) => a.id === id);
         if (annotator) setAnnotatorToRemove(annotator);
+    }
+
+    function handleMessageRequest(id: number) {
+        const annotator = annotators.find((a) => a.id === id);
+        if (annotator) setMessageAnnotator(annotator);
     }
 
     function handleConfirmRemove() {
@@ -93,6 +100,7 @@ export function SubprojectAnnotatorsPanel({
                 canRemoveAnnotator={true}
                 onAnnotatorRemoved={handleRemoveRequest}
                 onAllowFlaggingChange={handleAllowFlaggingChange}
+                onMessageAnnotator={handleMessageRequest}
             />
 
             <ProjectDialog
@@ -107,6 +115,13 @@ export function SubprojectAnnotatorsPanel({
                 actionLabel={t('sub-projects.annotators_panel.remove_confirm')}
                 loading={removing}
                 onAction={handleConfirmRemove}
+            />
+
+            <SendMessageDialog
+                open={messageAnnotator !== null}
+                onClose={() => setMessageAnnotator(null)}
+                targetName={messageAnnotator?.name ?? ''}
+                recipientUserId={messageAnnotator?.id ?? 0}
             />
         </div>
     );
