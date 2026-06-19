@@ -132,7 +132,7 @@
             "@php -r \"file_exists('public/hot') && unlink('public/hot');\"",
             "pest --testsuite=Browser"
         ],
-        "test:coverage": "pest --coverage --exclude-testsuite=Browser"
+        "test:coverage": "pest --coverage"
     },
     "extra": {
         "laravel": {
