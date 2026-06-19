@@ -27,6 +27,7 @@ return [
     'reject' => 'Reject',
     'accepted' => 'Accepted',
     'rejected' => 'Rejected',
+    'canceled' => 'Cancelled',
     'select_notification_hint' => 'Select a notification to view its details',
     'today_at' => 'Today at',
     'recipient' => 'Recipient:',

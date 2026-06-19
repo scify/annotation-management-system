@@ -17,7 +17,7 @@ export type NotificationThreadType =
     | 'announcement';
 
 /** Decision state of an action thread, mirrors `App\Enums\NotificationThreadResponseEnum`. */
-export type NotificationThreadResponse = 'accepted' | 'rejected' | 'unreplied';
+export type NotificationThreadResponse = 'accepted' | 'rejected' | 'canceled' | 'unreplied';
 
 /** Mirrors `App\Models\Notification` with the appended sender/date attributes. */
 export interface NotificationMessage {

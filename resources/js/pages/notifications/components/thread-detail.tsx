@@ -9,7 +9,7 @@ import {
 import { useTranslatableText } from '@/hooks/use-translatable-text';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import { Check, Info, MessageSquare, Send, TriangleAlert, X } from 'lucide-react';
+import { Ban, Check, Info, MessageSquare, Send, TriangleAlert, X } from 'lucide-react';
 import { useState } from 'react';
 import { useNotificationDate } from '../format-date';
 import { SenderRoleTag, SubjectTag } from './notification-tags';
@@ -19,6 +19,16 @@ import {
     type NotificationMessage,
     type NotificationThread,
 } from '../types';
+
+/**
+ * Terminal decision states for an action thread, mapped to their indicator. `canceled`
+ * (the sender withdrew the proposal) is neutral slate to read distinctly from `rejected`.
+ */
+const RESPONSE_STATUS = {
+    accepted: { Icon: Check, className: 'text-green-600', label: 'notifications.accepted' },
+    rejected: { Icon: X, className: 'text-red-500', label: 'notifications.rejected' },
+    canceled: { Icon: Ban, className: 'text-slate-500', label: 'notifications.canceled' },
+} as const;
 
 interface MessageBubbleProps {
     message: NotificationMessage;
@@ -130,7 +140,12 @@ export function ThreadDetail({
     const translateText = useTranslatableText();
     const [replyBody, setReplyBody] = useState('');
     const isNotice = isNoticeThread(thread);
-    const isDecided = thread.response === 'accepted' || thread.response === 'rejected';
+    const decidedStatus =
+        thread.response === 'accepted' ||
+        thread.response === 'rejected' ||
+        thread.response === 'canceled'
+            ? RESPONSE_STATUS[thread.response]
+            : undefined;
     const firstMessage = thread.notifications[0];
     const isSender = firstMessage?.sender_user_id === currentUserId;
 
@@ -229,25 +244,16 @@ export function ThreadDetail({
             </ul>
 
             {isActionThread(thread) ? (
-                isDecided ? (
+                decidedStatus ? (
                     <div
                         role="status"
                         className={cn(
                             'flex items-center justify-end gap-1.5 text-sm font-semibold',
-                            thread.response === 'accepted' ? 'text-green-600' : 'text-red-500'
+                            decidedStatus.className
                         )}
                     >
-                        {thread.response === 'accepted' ? (
-                            <>
-                                <Check aria-hidden="true" className="size-4" />
-                                {t('notifications.accepted')}
-                            </>
-                        ) : (
-                            <>
-                                <X aria-hidden="true" className="size-4" />
-                                {t('notifications.rejected')}
-                            </>
-                        )}
+                        <decidedStatus.Icon aria-hidden="true" className="size-4" />
+                        {t(decidedStatus.label)}
                     </div>
                 ) : isSender ? null : (
                     <div className="flex items-center justify-end gap-3">
