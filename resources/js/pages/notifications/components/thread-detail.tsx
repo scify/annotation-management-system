@@ -132,6 +132,7 @@ export function ThreadDetail({
     const isNotice = isNoticeThread(thread);
     const isDecided = thread.response === 'accepted' || thread.response === 'rejected';
     const firstMessage = thread.notifications[0];
+    const isSender = firstMessage?.sender_user_id === currentUserId;
 
     if (!firstMessage) return null;
 
@@ -248,7 +249,7 @@ export function ThreadDetail({
                             </>
                         )}
                     </div>
-                ) : (
+                ) : isSender ? null : (
                     <div className="flex items-center justify-end gap-3">
                         <Button
                             variant="secondary"
