@@ -58,6 +58,7 @@ return [
         'tab_export' => 'Export',
         'tag_task' => 'Task:',
         'tag_dataset' => 'Dataset:',
+        'make_announcement' => 'Make Announcement',
     ],
 
     'annotators_tab' => [
