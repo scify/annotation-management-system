@@ -58,6 +58,7 @@ return [
         'tab_export' => 'Εξαγωγή',
         'tag_task' => 'Εργασία:',
         'tag_dataset' => 'Σύνολο δεδομένων:',
+        'make_announcement' => 'Ανακοίνωση',
     ],
 
     'annotators_tab' => [

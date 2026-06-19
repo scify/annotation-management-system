@@ -25,4 +25,11 @@ return [
         'success' => 'Message sent to :username.',
         'error' => 'The message could not be sent. Please try again.',
     ],
+    'make_announcement' => [
+        'title' => 'Make Announcement',
+        'description' => 'Send an announcement to all annotators of :name',
+        'send' => 'Send',
+        'cancel' => 'Cancel',
+        'placeholder' => 'Write your announcement…',
+    ],
 ];

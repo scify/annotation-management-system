@@ -18,6 +18,7 @@ import {
     formatDateRange,
     type DateRangeValue,
 } from '@/components/ui/date-range-picker-button';
+import { MakeAnnouncementDialog } from '@/components/make-announcement-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -234,6 +235,9 @@ export default function EditSubproject({
     // ── Tabs ──────────────────────────────────────────────────────────────────
     const [activeTab, setActiveTab] = useState<TabKey>('annotations');
 
+    // ── Announcement dialog ─────────────────────────────────────────────────────
+    const [announcementOpen, setAnnouncementOpen] = useState(false);
+
     const tabs: { key: TabKey; label: string }[] = [
         { key: 'annotations', label: t('sub-projects.edit.tab_annotations') },
         { key: 'annotators', label: t('sub-projects.edit.tab_annotators') },
@@ -270,7 +274,10 @@ export default function EditSubproject({
                             <h1 className="text-3xl font-light text-slate-800">{data.name}</h1>
                             <Badge variant={statusVariant}>{statusLabel}</Badge>
                         </div>
-                        <Button className="bg-brand-blue-700 hover:bg-brand-blue-800 font-semibold text-white">
+                        <Button
+                            className="bg-brand-blue-700 hover:bg-brand-blue-800 font-semibold text-white"
+                            onClick={() => setAnnouncementOpen(true)}
+                        >
                             <Megaphone className="size-4" aria-hidden="true" />
                             {t('sub-projects.annotators_panel.make_announcement')}
                         </Button>
@@ -737,6 +744,12 @@ export default function EditSubproject({
                     </section>
                 )}
             </div>
+
+            <MakeAnnouncementDialog
+                open={announcementOpen}
+                onClose={() => setAnnouncementOpen(false)}
+                targetName={data.name}
+            />
         </AppLayout>
     );
 }

@@ -1,5 +1,6 @@
 import { type SubProjectListItemData } from '@/components/sub-project/sub-project-list-item';
 import { type SubprojectPriority } from '@/components/sub-project/configuration-step';
+import { Button } from '@/components/ui/button';
 import { Tag } from '@/components/ui/tag';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
@@ -12,10 +13,12 @@ import { SubprojectsTab } from '@/components/project/subprojects-tab';
 import { STATUS_VARIANT, toInitials } from '@/components/project/project-card';
 import { ProjectStatusBadge } from '@/components/project/project-status-badge';
 import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-table';
+import { MakeAnnouncementDialog } from '@/components/make-announcement-dialog';
 import { apiFetch } from '@/lib/api';
 import { type BreadcrumbItem } from '@/types';
 import { formatDate } from '@/utils/format';
 import { Head, router } from '@inertiajs/react';
+import { Megaphone } from 'lucide-react';
 import { useState } from 'react';
 
 interface BackendProjectData {
@@ -90,6 +93,7 @@ export default function ProjectShow({
     const { t } = useTranslations();
     const [activeTab, setActiveTab] = useState<TabKey>('subprojects');
     const [comanagers, setComanagers] = useState(comanagers_data);
+    const [announcementOpen, setAnnouncementOpen] = useState(false);
 
     const handleTransferOwnership = async (managerId: number) => {
         const { comanagers_data: updated } = await apiFetch<{
@@ -240,9 +244,18 @@ export default function ProjectShow({
             <Head title={project_data.name} />
             <div className="flex flex-col gap-4 px-6 py-6">
                 {/* Project title */}
-                <div className="flex items-center gap-3">
-                    <h1 className="text-slate-800">{project_data.name}</h1>
-                    <ProjectStatusBadge status={project_data.status} />
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <h1 className="text-slate-800">{project_data.name}</h1>
+                        <ProjectStatusBadge status={project_data.status} />
+                    </div>
+                    <Button
+                        className="bg-brand-blue-700 hover:bg-brand-blue-800 font-semibold text-white"
+                        onClick={() => setAnnouncementOpen(true)}
+                    >
+                        <Megaphone className="size-4" aria-hidden="true" />
+                        {t('projects.show.make_announcement')}
+                    </Button>
                 </div>
 
                 {/* Tags */}
@@ -338,6 +351,12 @@ export default function ProjectShow({
                     <ExportTab projectId={project_data.id} subProjects={subProjects} />
                 )}
             </div>
+
+            <MakeAnnouncementDialog
+                open={announcementOpen}
+                onClose={() => setAnnouncementOpen(false)}
+                targetName={project_data.name}
+            />
         </AppLayout>
     );
 }
