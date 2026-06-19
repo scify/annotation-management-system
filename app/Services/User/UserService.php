@@ -8,6 +8,7 @@ use App\Enums\RolesEnum;
 use App\Enums\StatusEnum;
 use App\Exceptions\UserCreationException;
 use App\Models\User;
+use App\Notifications\UserWelcomeNotification;
 use App\Queries\Annotator\ConnectAnnotatorToManagersQuery;
 use App\Queries\Annotator\GetWorkloadsByAnnotatorsQuery;
 use App\Queries\Annotator\SyncManagersForAnnotatorQuery;
@@ -60,7 +61,7 @@ readonly class UserService {
      *
      * @throws UserCreationException
      */
-    public function create(array $data): User {
+    public function create(array $data, ?User $creator = null): User {
         $roleValue = $data['role'] ?? null;
         $role = is_string($roleValue) ? RolesEnum::tryFrom($roleValue) : null;
 
@@ -71,15 +72,20 @@ readonly class UserService {
 
         if ($role === RolesEnum::ADMIN) {
             /** @var array{name: string, username: string, email: string, password: string, password_confirmation: string, project_ids: array<int, int>, annotator_ids: array<int, int>, role: string} $data */
-            return $this->createAdmin($data);
-        }
-
-        if ($role === RolesEnum::ANNOTATION_MANAGER) {
+            $user = $this->createAdmin($data);
+        } elseif ($role === RolesEnum::ANNOTATION_MANAGER) {
             /** @var array{name: string, username: string, email: string, password: string, password_confirmation: string, project_ids: array<int, int>, annotator_ids: array<int, int>, annotation_task_ids: array<int, int>, dataset_ids: array<int, int>, role: string} $data */
-            return $this->createManager($data);
+            $user = $this->createManager($data);
+        } else {
+            throw new InvalidArgumentException('Unknown role');
         }
 
-        throw new InvalidArgumentException('Unknown role');
+        // Welcome the newly-created privileged user (admins/managers have an email).
+        $user->notify(
+            new UserWelcomeNotification($creator, $role)->locale(app()->getLocale())
+        );
+
+        return $user;
     }
 
     /**

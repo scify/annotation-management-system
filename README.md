@@ -13,6 +13,7 @@
 - [Tech Stack](#tech-stack)
 - [Installation - Local Development](#installation---local-development)
 - [Development Environment](#development-environment)
+- [Production: Email \& Queue Workers](#production-email--queue-workers)
 - [Changelog](#changelog)
 - [Contributing](#contributing)
   - [PHP code style - Laravel Pint](#php-code-style---laravel-pint)
@@ -92,6 +93,94 @@ The application supports two development environments, controlled by `APP_DEVELO
 > **All commands in this document are shown in native form.**
 > DDEV users: add the `ddev` prefix to every command — e.g. `composer test` becomes `ddev composer test`,
 > `npm run dev` becomes `ddev npm run dev`, and `php artisan migrate` becomes `ddev artisan migrate`.
+
+## Production: Email & Queue Workers
+
+The application sends transactional email (e.g. a welcome email when an **admin** or **annotation
+manager** account is created). These emails are dispatched as **queued** notifications. In local
+development they are delivered synchronously to MailHog/Mailpit (see
+[docs/LOCAL-DEVELOPMENT.md](docs/LOCAL-DEVELOPMENT.md#5-email)); in production you must configure a
+real mail transport and run a persistent queue worker under a process supervisor.
+
+> This section is production-only and is independent of the `APP_DEVELOPMENT_ENV`
+> (`native` / `ddev`) switch used for local development.
+
+### 1. Mail configuration
+
+Set real SMTP credentials and a real from-address in your production `.env`:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=your-smtp-host
+MAIL_PORT=587
+MAIL_USERNAME=your-username
+MAIL_PASSWORD=your-password
+MAIL_SCHEME=tls
+MAIL_FROM_ADDRESS="no-reply@your-domain.tld"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### 2. Queue configuration
+
+The notifications implement `ShouldQueue`. In production, use the `database` queue connection
+(in development this is `sync`, so mail is sent inline):
+
+```env
+QUEUE_CONNECTION=database
+```
+
+The `jobs`, `job_batches`, and `failed_jobs` tables already exist via migrations — no extra setup
+is required.
+
+### 3. Supervisor worker
+
+[Supervisor](http://supervisord.org/) keeps a `queue:work` process running and restarts it if it
+exits. Create `/etc/supervisor/conf.d/annotrain-worker.conf`:
+
+```ini
+[program:annotrain-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/annotrain/artisan queue:work database --queue=default --sleep=3 --tries=3 --max-time=3600 --rest=0
+directory=/var/www/annotrain
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/www/annotrain/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+Adjust the project path (`/var/www/annotrain`) and `user` to match your server. Then load and start
+the program:
+
+```shell
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start "annotrain-worker:*"
+```
+
+### 4. Deployments
+
+After each deploy, restart the workers so they pick up the new code (long-running PHP processes hold
+the old code in memory):
+
+```shell
+php artisan queue:restart
+```
+
+### 5. Failed jobs
+
+Inspect and re-run failed jobs:
+
+```shell
+php artisan queue:failed       # list failed jobs
+php artisan queue:retry all    # retry all failed jobs
+php artisan queue:retry <uuid> # retry a specific job
+php artisan queue:flush        # delete all failed job records
+```
 
 ## Changelog
 
