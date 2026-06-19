@@ -155,18 +155,19 @@ keywords = ["token", "secret"]
 # Laravel specific exclusions
 [allowlist]
 description = "Allowlisted files and patterns for Laravel"
-files = [
-    ".env.example",
-    ".env.ddev.example",
-    ".env.native.example",
-    ".env.testing",
-    ".env.dusk.local",
-    "docs/LOCAL-DEVELOPMENT.md",
-    "azure/deploy-laravel-to-azure.sh",
-    "README.md"
-]
 
 paths = [
+    # Documentation and example/template files that only contain placeholder secrets.
+    # NOTE: gitleaks allowlists files via `paths` (path regexes), NOT a `files` key —
+    # a `files = [...]` array is silently ignored, so these must live here.
+    '''(^|/)\.env\.example$''',
+    '''(^|/)\.env\.ddev\.example$''',
+    '''(^|/)\.env\.native\.example$''',
+    '''(^|/)\.env\.testing$''',
+    '''(^|/)\.env\.dusk\.local$''',
+    '''(^|/)docs/LOCAL-DEVELOPMENT\.md$''',
+    '''(^|/)azure/deploy-laravel-to-azure\.sh$''',
+    '''(^|/)README\.md$''',
     # Exclude vendor directories and compiled assets
     "vendor",
     "node_modules",

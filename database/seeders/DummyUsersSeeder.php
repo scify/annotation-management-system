@@ -10,9 +10,13 @@ use App\Models\AnnotationTask;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 
 class DummyUsersSeeder extends Seeder {
     public function run(): void {
+        // Suppress any user notifications (e.g. the welcome email) while seeding.
+        Notification::fake();
+
         $password = config()->string('app.default_user_password_for_seeder');
 
         $admins = [

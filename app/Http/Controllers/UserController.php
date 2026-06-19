@@ -112,9 +112,13 @@ class UserController extends Controller {
         /** @var UserStoreAdminRequest|UserStoreAnnotatorRequest|UserStoreManagerRequest $storeRequest */
         $storeRequest = resolve($requestClass);
 
+        /** @var User $creator */
+        $creator = $request->user();
+
         try {
             $this->userService->create(
-                array_merge($storeRequest->validated(), ['role' => $type->value])
+                array_merge($storeRequest->validated(), ['role' => $type->value]),
+                $creator,
             );
         } catch (PresentableError $presentableError) {
             return back()->with('error', $presentableError->getUserMessage());

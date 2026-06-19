@@ -13,9 +13,9 @@
 - [4. Switching Between DDEV and Native](#4-switching-between-ddev-and-native)
   - [4.1 Using DDEV](#41-using-ddev)
   - [4.2 Using Native](#42-using-native)
-- [5. Email Viewing](#5-email-viewing)
-  - [5.1 DDEV](#51-ddev)
-  - [5.2 Native](#52-native)
+- [5. Email](#5-email)
+  - [5.1 DDEV (Mailpit)](#51-ddev-mailpit)
+  - [5.2 Native (MailHog)](#52-native-mailhog)
 - [6. Tips - General Guidelines](#6-tips---general-guidelines)
   - [6.1 Keeping the dependencies up-to-date](#61-keeping-the-dependencies-up-to-date)
     - [6.1.1 Backend](#611-backend)
@@ -195,17 +195,43 @@ Start the development server:
 composer run dev
 ```
 
-## 5. Email Viewing
+## 5. Email
 
-### 5.1 DDEV
+In development, all outgoing mail (for example the welcome email sent when an **admin** or
+**annotation manager** is created) is captured locally and never leaves your machine. The base
+`.env` already points the SMTP transport at `127.0.0.1:1025`, which works for **both** DDEV
+(Mailpit) and Native (MailHog) — no per-environment overlay change is needed.
 
-When using **DDEV**, you can view emails sent by the application using [Mailpit](https://github.com/axllent/mailpit). [Read
-more here](https://ddev.readthedocs.io/en/stable/users/usage/developer-tools/#email-capture-and-review-mailpit).
+Mail is delivered **synchronously** in development because `QUEUE_CONNECTION=sync`, so creating an
+admin/manager sends the email during the request — no queue worker required. In production, mail is
+queued instead; see the
+[Production: Email & Queue Workers](../README.md#production-email--queue-workers) section of the
+README.
 
-### 5.2 Native
+### 5.1 DDEV (Mailpit)
 
-When using **Native**, you can view emails sent by the application using one of the [methods
-described here](https://laravel.com/docs/12.x/mail#mail-and-local-development).
+DDEV ships [Mailpit](https://github.com/axllent/mailpit) out of the box — no setup needed. The app
+already sends to `127.0.0.1:1025` (Mailpit runs inside the web container). Open the inbox with:
+
+```shell
+ddev launch -m
+```
+
+[Read more here](https://ddev.readthedocs.io/en/stable/users/usage/developer-tools/#email-capture-and-review-mailpit).
+
+### 5.2 Native (MailHog)
+
+When running Native, start [MailHog](https://github.com/mailhog/MailHog) locally so it listens on
+SMTP port `1025` (the base `.env` already targets it). For example, via Docker:
+
+```shell
+docker run -d --name mailhog -p 1025:1025 -p 8025:8025 mailhog/mailhog
+```
+
+(or install the MailHog binary for your platform). Then open the web UI at
+[http://localhost:8025](http://localhost:8025) to view captured emails.
+
+See also the [Laravel local mail docs](https://laravel.com/docs/12.x/mail#mail-and-local-development).
 
 ## 6. Tips - General Guidelines
 
