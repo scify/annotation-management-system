@@ -6,8 +6,10 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\PresentableError;
 use App\Http\Requests\Notification\ReplyNotificationRequest;
+use App\Http\Requests\Notification\SendAnnouncementRequest;
 use App\Http\Requests\Notification\SendMessageRequest;
 use App\Models\User;
+use App\Services\Notification\AnnouncementNotificationService;
 use App\Services\Notification\GenericNotificationService;
 use App\Services\Notification\NotificationsService;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +21,7 @@ class NotificationController extends Controller {
     public function __construct(
         private readonly NotificationsService $notificationService,
         private readonly GenericNotificationService $genericNotificationService,
+        private readonly AnnouncementNotificationService $announcementNotificationService,
     ) {}
 
     public function markAsRead(int $notificationThreadId): JsonResponse {
@@ -84,6 +87,20 @@ class NotificationController extends Controller {
         return $this->jsonSuccess(__('notifications.reply_sent'), [
             'notification' => $this->notificationService->presentNotification($notification),
         ]);
+    }
+
+    public function sendAnnouncement(SendAnnouncementRequest $request): JsonResponse {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $this->announcementNotificationService->notifyProjectMembers(
+            projectId: $request->integer('project_id'),
+            subProjectId: $request->filled('sub_project_id') ? $request->integer('sub_project_id') : null,
+            body: $request->string('body')->trim()->value(),
+            senderUserId: $user->id,
+        );
+
+        return $this->jsonSuccess();
     }
 
     public function sendMessage(SendMessageRequest $request): JsonResponse {
