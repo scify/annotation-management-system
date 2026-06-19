@@ -3,6 +3,7 @@ import { AnnotatorsTable } from '@/components/annotator/annotators-table';
 import { ProjectDialog } from '@/components/project/project-dialog';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
+import { apiFetchWithFlash } from '@/lib/api';
 import { router } from '@inertiajs/react';
 import { Plus, UserMinus } from 'lucide-react';
 import { useState } from 'react';
@@ -37,19 +38,22 @@ export function SubprojectAnnotatorsPanel({
     function handleConfirmRemove() {
         if (!annotatorToRemove) return;
         setRemoving(true);
-        router.delete(
+        apiFetchWithFlash(
             route('projects.subprojects.annotators.detach', [
                 projectId,
                 subprojectId,
                 annotatorToRemove.id,
             ]),
-            {
-                onFinish: () => {
-                    setRemoving(false);
-                    setAnnotatorToRemove(null);
-                },
-            }
-        );
+            { method: 'DELETE' }
+        )
+            // Refresh the annotators table — we're on the edit page; the error toast
+            // (if any) is already shown by apiFetchWithFlash.
+            .then(() => router.reload())
+            .catch(() => {})
+            .finally(() => {
+                setRemoving(false);
+                setAnnotatorToRemove(null);
+            });
     }
 
     function handleAllowFlaggingChange(id: number, enabled: boolean) {

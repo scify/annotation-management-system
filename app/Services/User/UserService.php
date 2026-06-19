@@ -115,12 +115,6 @@ readonly class UserService {
         }
     }
 
-    public function restore(User $user): User {
-        $user->restore();
-
-        return $user;
-    }
-
     /**
      * @param  array<int, int>  $userIds
      * @param  array<int, int>|null  $subProjectIds  When provided, restrict to these subprojects only

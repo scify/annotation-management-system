@@ -119,18 +119,26 @@ readonly class NotificationsService {
             $thread->setAttribute('recipients', $this->getThreadRecipientsQuery->get($thread->id, $senderUserId));
             $thread->unsetRelation('members');
 
-            $thread->notifications->transform(function (Notification $notification): Notification {
-                $notification->setAttribute('sender_username', $notification->sender?->username);
-                $notification->setAttribute('sender_role', $notification->sender?->role);
-                $notification->setAttribute('datetime', $notification->created_at->toDateTimeString());
-                $notification->unsetRelation('sender');
-                $notification->makeHidden(['created_at', 'updated_at']);
-
-                return $notification;
-            });
+            $thread->notifications->transform(fn (Notification $notification): Notification => $this->presentNotification($notification));
 
             return $thread;
         })->sortByDesc('datetime')->values();
+    }
+
+    /**
+     * Appends the display attributes (sender username/role, formatted datetime) the
+     * frontend `NotificationMessage` expects, and strips the relation and timestamps.
+     * Shared by getMyNotifications() and the single-message reply response.
+     */
+    public function presentNotification(Notification $notification): Notification {
+        $notification->loadMissing('sender');
+        $notification->setAttribute('sender_username', $notification->sender?->username);
+        $notification->setAttribute('sender_role', $notification->sender?->role);
+        $notification->setAttribute('datetime', $notification->created_at->toDateTimeString());
+        $notification->unsetRelation('sender');
+        $notification->makeHidden(['created_at', 'updated_at']);
+
+        return $notification;
     }
 
     /** Dispatches a thread type to its corresponding per-type notification service. */

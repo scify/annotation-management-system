@@ -19,7 +19,6 @@ return [
         'update' => 'Update User',
         'delete' => 'Delete User',
         'show' => 'Show User',
-        'restore' => 'Restore User',
         'view_edit' => 'View/Edit',
         'view' => 'View',
         'connect_to_annotators' => 'Connect to Annotators',
@@ -136,7 +135,6 @@ return [
         'created' => 'User created successfully',
         'updated' => 'User updated successfully',
         'deleted' => 'User deleted successfully',
-        'restored' => 'User restored successfully',
         'annotators_connected' => 'Annotators connected successfully.',
     ],
     'validation' => [
@@ -165,9 +163,5 @@ return [
         'inactive' => 'Inactive',
         'pending' => 'Pending',
         'pending_note' => 'The status of this user will be set as "Pending" until his first Login',
-    ],
-    'restore' => [
-        'title' => 'Restore User',
-        'description' => 'Are you sure you want to restore this user?',
     ],
 ];

@@ -155,7 +155,7 @@ export function AdminsTab({ admins }: AdminsTabProps) {
                 open={messageTarget !== null}
                 onClose={() => setMessageTarget(null)}
                 targetName={messageTarget?.name ?? ''}
-                onSend={() => setMessageTarget(null)}
+                recipientUserId={messageTarget?.id ?? 0}
             />
         </div>
     );

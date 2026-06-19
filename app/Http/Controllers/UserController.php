@@ -47,8 +47,6 @@ class UserController extends Controller {
 
         $this->dumpDebugJson($management, 'user-management-data.json');
 
-        $canRestore = $currentUser->can('restore', User::class);
-
         return Inertia::render('users/index', [
             'users' => $users,
             'management' => $management,
@@ -59,7 +57,6 @@ class UserController extends Controller {
                 $listedUser->id => [
                     'update' => $currentUser->can('update', $listedUser),
                     'delete' => $currentUser->can('delete', $listedUser),
-                    'restore' => $canRestore,
                 ],
             ]),
         ]);

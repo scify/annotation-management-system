@@ -24,6 +24,6 @@ return [
         'projects.managers.remove', 'projects.request-to-leave', 'projects.cancel-leave-request',
         'projects.reject-leave-request', 'projects.accept-leave-request',
         'notifications.index', 'notifications.read', 'notifications.unread', 'notifications.read-all',
-        'annotation-tasks.show',
+        'annotation-tasks.show', 'notifications.reply', 'notifications.approve', 'notifications.reject',
     ],
 ];

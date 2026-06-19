@@ -1,25 +1,51 @@
 import { ProjectDialog } from '@/components/project/project-dialog';
 import { useTranslations } from '@/hooks/use-translations';
+import { ApiError, apiFetch } from '@/lib/api';
 import { Mails, Send } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface SendMessageDialogProps {
     open: boolean;
     onClose: () => void;
     /** Display name shown in the dialog description */
     targetName: string;
-    /** Called with the message body when the user confirms send */
-    onSend: (message: string) => void;
+    /** Id of the user the message is delivered to (notifications.send) */
+    recipientUserId: number;
+    /** Called after a message is successfully sent */
+    onSent?: () => void;
 }
 
-export function SendMessageDialog({ open, onClose, targetName, onSend }: SendMessageDialogProps) {
+export function SendMessageDialog({
+    open,
+    onClose,
+    targetName,
+    recipientUserId,
+    onSent,
+}: SendMessageDialogProps) {
     const { t, trans } = useTranslations();
     const [message, setMessage] = useState('');
+    const [sending, setSending] = useState(false);
 
-    const handleSend = () => {
-        onSend(message);
-        setMessage('');
-        onClose();
+    const handleSend = async () => {
+        const body = message.trim();
+        if (!body || sending) return;
+
+        setSending(true);
+        try {
+            await apiFetch(route('notifications.send'), {
+                method: 'POST',
+                body: JSON.stringify({ recipient_user_id: recipientUserId, body }),
+            });
+            toast.success(trans('common.send_message.success', { username: targetName }));
+            setMessage('');
+            onSent?.();
+            onClose();
+        } catch (error) {
+            toast.error(error instanceof ApiError ? error.message : t('common.send_message.error'));
+        } finally {
+            setSending(false);
+        }
     };
 
     const handleClose = () => {
@@ -37,8 +63,10 @@ export function SendMessageDialog({ open, onClose, targetName, onSend }: SendMes
             cancelLabel={t('common.send_message.cancel')}
             actionLabel={t('common.send_message.send')}
             actionIcon={<Send className="size-4" aria-hidden="true" />}
-            onAction={handleSend}
+            onAction={() => void handleSend()}
             actionStyle="standard"
+            actionDisabled={message.trim().length === 0}
+            loading={sending}
         >
             <textarea
                 id="send-message-textarea"

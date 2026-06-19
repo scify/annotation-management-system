@@ -356,11 +356,6 @@ export function ManagersTab({
         }
     };
 
-    const handleSendMessage = (_message: string) => {
-        console.log('Sending message:', _message);
-        toast.success(`Message sent to ${dialogManager?.username ?? 'manager'}.`);
-    };
-
     return (
         <>
             <div
@@ -607,7 +602,7 @@ export function ManagersTab({
                 open={dialogType === 'send-message'}
                 onClose={closeDialog}
                 targetName={dialogManager?.username ?? ''}
-                onSend={handleSendMessage}
+                recipientUserId={dialogManager?.id ?? 0}
             />
         </>
     );

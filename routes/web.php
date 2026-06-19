@@ -10,7 +10,6 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\SubProjectController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\UserRestoreController;
 use Illuminate\Support\Facades\Route;
 
 Route::put('locale', [LocaleController::class, 'update'])->name('locale.update');
@@ -77,7 +76,6 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('{user}/connect-annotators', 'connectAnnotators')->name('annotators.connect');
     });
     Route::resource('users', UserController::class)->except('show');
-    Route::put('users/{user}/restore', UserRestoreController::class)->name('users.restore')->withTrashed();
 
     // ----- Notifications -----
     Route::controller(NotificationController::class)->prefix('notifications')->name('notifications.')->group(function (): void {

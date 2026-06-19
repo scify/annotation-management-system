@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Enums\NotificationThreadTypeEnum;
 use App\Enums\RolesEnum;
 use App\Models\NotificationThread;
 use App\Models\ThreadMember;
@@ -70,18 +71,17 @@ describe('NotificationController::markAsRead', function (): void {
             ->assertRedirect(route('login'));
     });
 
-    it("marks the authenticated user's membership as read and redirects back", function (): void {
+    it("marks the authenticated user's membership as read and returns ok", function (): void {
         // Arrange
         $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
         $thread = makeThreadFor($user, isRead: false);
 
         // Act
         $response = $this->actingAs($user)
-            ->from(route('notifications.index'))
             ->post(route('notifications.read', ['notificationThreadId' => $thread->id]));
 
         // Assert
-        $response->assertRedirect(route('notifications.index'));
+        $response->assertOk();
         $this->assertDatabaseHas('thread_members', [
             'user_id' => $user->id,
             'is_read' => true,
@@ -130,18 +130,17 @@ describe('NotificationController::markAsUnread', function (): void {
             ->assertRedirect(route('login'));
     });
 
-    it("marks the authenticated user's membership as unread and redirects back", function (): void {
+    it("marks the authenticated user's membership as unread and returns ok", function (): void {
         // Arrange
         $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
         $thread = makeThreadFor($user, isRead: true);
 
         // Act
         $response = $this->actingAs($user)
-            ->from(route('notifications.index'))
             ->post(route('notifications.unread', ['notificationThreadId' => $thread->id]));
 
         // Assert
-        $response->assertRedirect(route('notifications.index'));
+        $response->assertOk();
         $this->assertDatabaseHas('thread_members', [
             'user_id' => $user->id,
             'is_read' => false,
@@ -159,7 +158,7 @@ describe('NotificationController::markAllAsRead', function (): void {
             ->assertRedirect(route('login'));
     });
 
-    it("marks all the authenticated user's memberships as read and redirects back", function (): void {
+    it("marks all the authenticated user's memberships as read and returns ok", function (): void {
         // Arrange
         $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
         makeThreadFor($user, isRead: false);
@@ -167,11 +166,10 @@ describe('NotificationController::markAllAsRead', function (): void {
 
         // Act
         $response = $this->actingAs($user)
-            ->from(route('notifications.index'))
             ->post(route('notifications.read-all'));
 
         // Assert
-        $response->assertRedirect(route('notifications.index'));
+        $response->assertOk();
         $this->assertDatabaseMissing('thread_members', [
             'user_id' => $user->id,
             'is_read' => false,
@@ -198,5 +196,52 @@ describe('NotificationController::markAllAsRead', function (): void {
             'id' => $otherMember->id,
             'is_read' => false,
         ]);
+    });
+});
+
+describe('NotificationController::reply', function (): void {
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
+    });
+
+    it('redirects guests to the login page', function (): void {
+        $this->post(route('notifications.reply', ['notificationThreadId' => 1]), ['body' => 'Hi'])
+            ->assertRedirect(route('login'));
+    });
+
+    it('persists the reply and returns the created message as JSON', function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
+        $thread = NotificationThread::factory()->create(['type' => NotificationThreadTypeEnum::GENERIC]);
+
+        // Act
+        $response = $this->actingAs($user)
+            ->postJson(route('notifications.reply', ['notificationThreadId' => $thread->id]), [
+                'body' => 'My reply',
+            ]);
+
+        // Assert
+        $response->assertOk()
+            ->assertJsonPath('notification.body', 'My reply')
+            ->assertJsonPath('notification.sender_user_id', $user->id)
+            ->assertJsonPath('notification.sender_username', $user->username)
+            ->assertJsonStructure(['notification' => ['id', 'datetime', 'sender_role'], 'success']);
+        $this->assertDatabaseHas('notifications', [
+            'notification_thread_id' => $thread->id,
+            'sender_user_id' => $user->id,
+            'body' => 'My reply',
+        ]);
+    });
+
+    it('rejects an empty body with a validation error', function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
+        $thread = NotificationThread::factory()->create(['type' => NotificationThreadTypeEnum::GENERIC]);
+
+        // Act & Assert
+        $this->actingAs($user)
+            ->postJson(route('notifications.reply', ['notificationThreadId' => $thread->id]), ['body' => ''])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('body');
     });
 });

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
+use App\Models\AnnotationAssignment;
 use App\Models\AnnotationTask;
 use App\Models\AnnotatorOfProject;
 use App\Models\Dataset;
@@ -11,6 +12,7 @@ use App\Models\DatasetInstance;
 use App\Models\InstanceShuffleMapper;
 use App\Models\Project;
 use App\Models\ProjectManager;
+use App\Models\SubProject;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
@@ -285,41 +287,162 @@ describe('ProjectController::changeStatus', function (): void {
         $this->admin = User::factory()->create()->assignRole(RolesEnum::ADMIN)->load('roles');
     });
 
-    it('changes the status and redirects back to the originating page', function (): void {
+    it('changes the status and returns ok with a success message', function (): void {
         // Arrange — a pending project may only transition to in_progress
         $project = Project::factory()->create(['status' => ProjectStatusEnum::PENDING]);
 
-        // Act — `from()` sets the referer so the controller's back() has a target
+        // Act
         $response = $this->actingAs($this->admin)
-            ->from(route('projects.index'))
-            ->post(route('projects.change-status'), [
+            ->postJson(route('projects.change-status'), [
                 'project_id' => $project->id,
                 'status' => ProjectStatusEnum::IN_PROGRESS->value,
             ]);
 
-        // Assert — stays on (returns to) the originating page, flashes success, DB updated
-        $response->assertRedirect(route('projects.index'));
-        $response->assertSessionHas('success', __('projects.messages.status_changed'));
+        // Assert
+        $response->assertOk();
+        $response->assertJson(['success' => __('projects.messages.status_changed')]);
 
         expect($project->refresh()->status)->toBe(ProjectStatusEnum::IN_PROGRESS);
     });
 
-    it('flashes an error and leaves the status unchanged on an invalid transition', function (): void {
+    it('returns a 422 error and leaves the status unchanged on an invalid transition', function (): void {
         // Arrange — pending cannot jump straight to completed
         $project = Project::factory()->create(['status' => ProjectStatusEnum::PENDING]);
 
         // Act
         $response = $this->actingAs($this->admin)
-            ->from(route('projects.index'))
-            ->post(route('projects.change-status'), [
+            ->postJson(route('projects.change-status'), [
                 'project_id' => $project->id,
                 'status' => ProjectStatusEnum::COMPLETED->value,
             ]);
 
         // Assert
-        $response->assertRedirect(route('projects.index'));
-        $response->assertSessionHas('error');
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['error']);
 
         expect($project->refresh()->status)->toBe(ProjectStatusEnum::PENDING);
+    });
+});
+
+describe('ProjectController::toggleCanFlagOfAnnotator', function (): void {
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
+        $this->admin = User::factory()->create()->assignRole(RolesEnum::ADMIN)->load('roles');
+        $this->annotator = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR)->load('roles');
+    });
+
+    it('toggles the can_flag pivot and returns ok with a success message', function (): void {
+        // Arrange
+        $project = Project::factory()->create();
+        AnnotatorOfProject::factory()->create([
+            'project_id' => $project->id,
+            'user_id' => $this->annotator->id,
+            'can_flag' => false,
+        ]);
+
+        // Act
+        $response = $this->actingAs($this->admin)
+            ->postJson(route('projects.toggle-can-flag'), [
+                'project_id' => $project->id,
+                'annotator_id' => $this->annotator->id,
+            ]);
+
+        // Assert
+        $response->assertOk();
+        $response->assertJson(['success' => __('projects.messages.can_flag_toggled')]);
+        $this->assertDatabaseHas('annotator_of_project', [
+            'project_id' => $project->id,
+            'user_id' => $this->annotator->id,
+            'can_flag' => true,
+        ]);
+    });
+});
+
+describe('ProjectController::detachAnnotator', function (): void {
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
+        $this->admin = User::factory()->create()->assignRole(RolesEnum::ADMIN)->load('roles');
+        $this->annotator = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR)->load('roles');
+    });
+
+    it('detaches an annotator and returns ok with a success message', function (): void {
+        // Arrange
+        $project = Project::factory()->create(['status' => ProjectStatusEnum::PENDING]);
+        AnnotatorOfProject::factory()->create([
+            'project_id' => $project->id,
+            'user_id' => $this->annotator->id,
+        ]);
+
+        // Act
+        $response = $this->actingAs($this->admin)
+            ->deleteJson(route('projects.annotators.detach', [$project->id, $this->annotator->id]));
+
+        // Assert
+        $response->assertOk();
+        $response->assertJson(['success' => __('projects.messages.annotator_detached')]);
+        $this->assertDatabaseMissing('annotator_of_project', [
+            'project_id' => $project->id,
+            'user_id' => $this->annotator->id,
+        ]);
+    });
+
+    it('returns a 422 error when the annotator has subproject assignments', function (): void {
+        // Arrange — an assignment in one of the project's subprojects blocks detachment
+        $project = Project::factory()->create(['status' => ProjectStatusEnum::PENDING]);
+        AnnotatorOfProject::factory()->create([
+            'project_id' => $project->id,
+            'user_id' => $this->annotator->id,
+        ]);
+        $subProject = SubProject::factory()->create(['project_id' => $project->id]);
+        AnnotationAssignment::factory()->create([
+            'user_id' => $this->annotator->id,
+            'sub_project_id' => $subProject->id,
+        ]);
+
+        // Act
+        $response = $this->actingAs($this->admin)
+            ->deleteJson(route('projects.annotators.detach', [$project->id, $this->annotator->id]));
+
+        // Assert — PresentableError surfaces as JSON, the link survives
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['error']);
+        $this->assertDatabaseHas('annotator_of_project', [
+            'project_id' => $project->id,
+            'user_id' => $this->annotator->id,
+        ]);
+    });
+});
+
+describe('ProjectController::destroy', function (): void {
+    beforeEach(function (): void {
+        $this->seed(RolesAndPermissionsSeeder::class);
+        $this->admin = User::factory()->create()->assignRole(RolesEnum::ADMIN)->load('roles');
+        $this->annotator = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR)->load('roles');
+    });
+
+    it('deletes a project and returns ok with a success message', function (): void {
+        // Arrange
+        $project = Project::factory()->create(['status' => ProjectStatusEnum::PENDING]);
+
+        // Act
+        $response = $this->actingAs($this->admin)
+            ->deleteJson(route('projects.destroy', $project->id));
+
+        // Assert
+        $response->assertOk();
+        $response->assertJson(['success' => __('projects.messages.deleted')]);
+        $this->assertSoftDeleted($project);
+    });
+
+    it('forbids an annotator from deleting a project', function (): void {
+        // Arrange
+        $project = Project::factory()->create(['status' => ProjectStatusEnum::PENDING]);
+
+        // Act / Assert
+        $this->actingAs($this->annotator)
+            ->deleteJson(route('projects.destroy', $project->id))
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('projects', ['id' => $project->id, 'deleted_at' => null]);
     });
 });

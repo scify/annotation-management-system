@@ -11,7 +11,6 @@ use App\Models\User;
 use App\Services\Notification\GenericNotificationService;
 use App\Services\Notification\NotificationsService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,67 +21,69 @@ class NotificationController extends Controller {
         private readonly GenericNotificationService $genericNotificationService,
     ) {}
 
-    public function markAsRead(int $notificationThreadId): RedirectResponse {
+    public function markAsRead(int $notificationThreadId): JsonResponse {
         /** @var User $user */
         $user = Auth::user();
 
         $this->notificationService->markAsRead($notificationThreadId, $user->id);
 
-        return back();
+        return $this->jsonSuccess();
     }
 
-    public function markAsUnread(int $notificationThreadId): RedirectResponse {
+    public function markAsUnread(int $notificationThreadId): JsonResponse {
         /** @var User $user */
         $user = Auth::user();
 
         $this->notificationService->markAsUnread($notificationThreadId, $user->id);
 
-        return back();
+        return $this->jsonSuccess();
     }
 
-    public function markAllAsRead(): RedirectResponse {
+    public function markAllAsRead(): JsonResponse {
         /** @var User $user */
         $user = Auth::user();
 
         $this->notificationService->markAllAsRead($user->id);
 
-        return back();
+        return $this->jsonSuccess();
     }
 
-    public function approve(int $notificationThreadId): RedirectResponse {
+    public function approve(int $notificationThreadId): JsonResponse {
         try {
             $this->notificationService->approve($notificationThreadId);
         } catch (PresentableError $presentableError) {
-            return back()->with('error', $presentableError->getUserMessage());
+            return $this->jsonError($presentableError->getUserMessage());
         }
 
-        return back()->with('success', __('notifications.action_approved'));
+        return $this->jsonSuccess(__('notifications.action_approved'));
     }
 
-    public function reject(int $notificationThreadId): RedirectResponse {
+    public function reject(int $notificationThreadId): JsonResponse {
         try {
             $this->notificationService->reject($notificationThreadId);
         } catch (PresentableError $presentableError) {
-            return back()->with('error', $presentableError->getUserMessage());
+            return $this->jsonError($presentableError->getUserMessage());
         }
 
-        return back()->with('success', __('notifications.action_rejected'));
+        return $this->jsonSuccess(__('notifications.action_rejected'));
     }
 
-    public function reply(ReplyNotificationRequest $request, int $notificationThreadId): RedirectResponse {
+    public function reply(ReplyNotificationRequest $request, int $notificationThreadId): JsonResponse {
         /** @var User $user */
         $user = Auth::user();
 
         /** @var string $body */
         $body = $request->validated('body');
 
-        $this->notificationService->reply(
+        $notification = $this->notificationService->reply(
             notificationThreadId: $notificationThreadId,
             senderUserId: $user->id,
             body: $body,
         );
 
-        return back()->with('success', __('notifications.reply_sent'));
+        return $this->jsonSuccess(__('notifications.reply_sent'), [
+            'notification' => $this->notificationService->presentNotification($notification),
+        ]);
     }
 
     public function sendMessage(SendMessageRequest $request): JsonResponse {
@@ -95,7 +96,7 @@ class NotificationController extends Controller {
             senderUserId: $user->id,
         );
 
-        return response()->json();
+        return $this->jsonSuccess();
     }
 
     public function index(): Response {

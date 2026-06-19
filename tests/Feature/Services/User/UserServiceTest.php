@@ -292,20 +292,6 @@ describe('UserService', function (): void {
             ->and($updated->name)->toBe('Repassworded Manager');
     });
 
-    // --- restore() ---
-
-    it('restores a soft-deleted user', function (): void {
-        $user = User::factory()->create();
-        $user->delete();
-
-        expect($user->trashed())->toBeTrue();
-
-        $restored = $this->service->restore($user);
-
-        expect($restored->trashed())->toBeFalse()
-            ->and($restored->is($user))->toBeTrue();
-    });
-
     // --- findByEmail() ---
 
     it('finds a user by email', function (): void {

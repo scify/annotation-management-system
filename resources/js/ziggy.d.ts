@@ -35,13 +35,6 @@ declare module 'ziggy-js' {
             "binding": "id"
         }
     ],
-    "users.restore": [
-        {
-            "name": "user",
-            "required": true,
-            "binding": "id"
-        }
-    ],
     "profile.edit": [],
     "profile.update": [],
     "profile.destroy": [],

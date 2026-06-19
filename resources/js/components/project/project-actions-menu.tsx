@@ -7,6 +7,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useTranslations } from '@/hooks/use-translations';
+import { apiFetchWithFlash } from '@/lib/api';
 import type { Project } from '@/types';
 import { router } from '@inertiajs/react';
 import { MoreVertical, Trash2 } from 'lucide-react';
@@ -22,21 +23,26 @@ export function ProjectActionsMenu({ project }: ProjectActionsMenuProps) {
     const [deleting, setDeleting] = useState(false);
 
     function changeStatus(status: 'in_progress' | 'completed') {
-        router.post(
-            route('projects.change-status'),
-            { project_id: project.id, status },
-            { preserveScroll: true, preserveState: true }
-        );
+        apiFetchWithFlash(route('projects.change-status'), {
+            method: 'POST',
+            body: JSON.stringify({ project_id: project.id, status }),
+        })
+            // Reload the current page (this menu appears on both the list and show
+            // pages); the error toast, if any, is shown by apiFetchWithFlash.
+            .then(() => router.reload())
+            .catch(() => {});
     }
 
     function handleConfirmDelete() {
         setDeleting(true);
-        router.delete(route('projects.destroy', project.id), {
-            onFinish: () => {
+        apiFetchWithFlash(route('projects.destroy', project.id), { method: 'DELETE' })
+            // Matches the old redirect target.
+            .then(() => router.visit(route('projects.index')))
+            .catch(() => {})
+            .finally(() => {
                 setDeleting(false);
                 setConfirmDelete(false);
-            },
-        });
+            });
     }
 
     return (

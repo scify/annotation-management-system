@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Services\SubProject\SubProjectReadService;
 use App\Services\SubProject\SubProjectWriteService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
@@ -44,7 +45,7 @@ class SubProjectController extends Controller {
         ]);
     }
 
-    public function changeStatus(SubProjectChangeStatusRequest $request): RedirectResponse {
+    public function changeStatus(SubProjectChangeStatusRequest $request): JsonResponse {
         $subProject = SubProject::query()->with('project')->findOrFail($request->integer('sub_project_id'));
 
         try {
@@ -53,10 +54,10 @@ class SubProjectController extends Controller {
                 ProjectStatusEnum::from($request->string('status')->value()),
             );
         } catch (PresentableError $presentableError) {
-            return back()->with('error', $presentableError->getUserMessage());
+            return $this->jsonError($presentableError->getUserMessage());
         }
 
-        return back()->with('success', __('sub-projects.messages.status_changed'));
+        return $this->jsonSuccess(__('sub-projects.messages.status_changed'));
     }
 
     /**
@@ -73,14 +74,14 @@ class SubProjectController extends Controller {
             ->with('created_subproject_name', $request->validated()['name']);
     }
 
-    public function detachAnnotator(DetachAnnotatorFromSubProjectRequest $request, int $projectId, int $subprojectId): RedirectResponse {
+    public function detachAnnotator(DetachAnnotatorFromSubProjectRequest $request, int $projectId, int $subprojectId): JsonResponse {
         try {
             $this->subProjectService->detachAnnotator($subprojectId, $request->integer('annotator_id'));
         } catch (PresentableError $presentableError) {
-            return to_route('projects.subprojects.edit', [$projectId, $subprojectId])->with('error', $presentableError->getUserMessage());
+            return $this->jsonError($presentableError->getUserMessage());
         }
 
-        return to_route('projects.subprojects.edit', [$projectId, $subprojectId])->with('success', __('sub-projects.messages.annotator_detached'));
+        return $this->jsonSuccess(__('sub-projects.messages.annotator_detached'));
     }
 
     public function showAddAnnotators(int $projectId, int $subprojectId): Response {
@@ -105,14 +106,13 @@ class SubProjectController extends Controller {
             ->with('success', __('projects.messages.annotators_attached'));
     }
 
-    public function destroy(int $projectId, int $subprojectId): RedirectResponse {
+    public function destroy(int $projectId, int $subprojectId): JsonResponse {
         $subProject = SubProject::query()->findOrFail($subprojectId);
         $this->authorize('deleteSubProject', $subProject);
 
         $this->subProjectService->deleteSubProject($subProject);
 
-        return to_route('projects.show', $projectId)
-            ->with('success', __('sub-projects.messages.deleted'));
+        return $this->jsonSuccess(__('sub-projects.messages.deleted'));
     }
 
     public function update(SubProjectUpdateRequest $request, int $projectId, int $subprojectId): RedirectResponse {

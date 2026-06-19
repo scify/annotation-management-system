@@ -22,5 +22,7 @@ return [
         'send' => 'Send',
         'cancel' => 'Cancel',
         'placeholder' => 'Type your message…',
+        'success' => 'Message sent to :username.',
+        'error' => 'The message could not be sent. Please try again.',
     ],
 ];

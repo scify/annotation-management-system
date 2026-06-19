@@ -116,23 +116,4 @@ describe('userpolicy', function (): void {
         expect($this->policy->delete($this->annotator, $this->other_annotator))->toBeFalse();
         expect($this->policy->delete($this->annotator, $this->admin))->toBeFalse();
     });
-
-    it('restore', function (): void {
-        // Admin can restore all
-        expect($this->policy->restore($this->admin, $this->manager))->toBeTrue();
-        expect($this->policy->restore($this->admin, $this->annotator))->toBeTrue();
-        expect($this->policy->restore($this->admin, $this->other_admin))->toBeTrue();
-        // Manager cannot restore
-        expect($this->policy->restore($this->manager, $this->manager))->toBeFalse();
-        expect($this->policy->restore($this->manager, $this->manager_collaborator))->toBeFalse();
-        expect($this->policy->restore($this->manager, $this->manager_non_collaborator))->toBeFalse();
-        expect($this->policy->restore($this->manager, $this->annotator))->toBeFalse();
-        expect($this->policy->restore($this->manager, $this->other_annotator))->toBeFalse();
-        expect($this->policy->restore($this->manager, $this->admin))->toBeFalse();
-        // Annotator cannot restore
-        expect($this->policy->restore($this->annotator, $this->manager))->toBeFalse();
-        expect($this->policy->restore($this->annotator, $this->annotator))->toBeFalse();
-        expect($this->policy->restore($this->annotator, $this->other_annotator))->toBeFalse();
-        expect($this->policy->restore($this->annotator, $this->admin))->toBeFalse();
-    });
 });

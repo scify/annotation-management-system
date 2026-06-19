@@ -104,8 +104,4 @@ class UserPolicy {
 
         return $user->hasRole(RolesEnum::ANNOTATION_MANAGER);
     }
-
-    public function restore(User $user): bool {
-        return $user->hasRole(RolesEnum::ADMIN);
-    }
 }

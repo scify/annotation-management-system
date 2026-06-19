@@ -17,7 +17,6 @@ import { cn } from '@/lib/utils';
 import type { Annotator, BreadcrumbItem, PlatformStats, Project } from '@/types';
 import { Head } from '@inertiajs/react';
 import { useState } from 'react';
-import { toast } from 'sonner';
 
 interface Props {
     my_projects: Project[];
@@ -268,9 +267,7 @@ export default function Dashboard({
                 open={messageAnnotator !== null}
                 onClose={() => setMessageAnnotator(null)}
                 targetName={messageAnnotator?.name ?? ''}
-                onSend={() => {
-                    toast.success(`Message sent to ${messageAnnotator?.name}.`);
-                }}
+                recipientUserId={messageAnnotator?.id ?? 0}
             />
         </AppLayout>
     );

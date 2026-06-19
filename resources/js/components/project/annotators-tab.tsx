@@ -3,6 +3,7 @@ import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-
 import { ProjectDialog } from '@/components/project/project-dialog';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/hooks/use-translations';
+import { apiFetchWithFlash } from '@/lib/api';
 import { router } from '@inertiajs/react';
 import { Plus, UserMinus } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -31,14 +32,12 @@ export function AnnotatorsTab({ annotators = [], projectId, projectStatus }: Ann
 
     function handleAllowFlaggingChange(id: number, enabled: boolean) {
         setFlaggingState((prev) => ({ ...prev, [id]: enabled }));
-        router.post(
-            route('projects.toggle-can-flag'),
-            { project_id: projectId, annotator_id: id },
-            {
-                preserveScroll: true,
-                onError: () => setFlaggingState((prev) => ({ ...prev, [id]: !enabled })),
-            }
-        );
+        // Optimistic toggle; the JSON response keeps us off a full page reload. On
+        // failure apiFetchWithFlash toasts the error and we revert the switch.
+        apiFetchWithFlash(route('projects.toggle-can-flag'), {
+            method: 'POST',
+            body: JSON.stringify({ project_id: projectId, annotator_id: id }),
+        }).catch(() => setFlaggingState((prev) => ({ ...prev, [id]: !enabled })));
     }
 
     function handleRemoveRequest(id: number) {
@@ -49,12 +48,16 @@ export function AnnotatorsTab({ annotators = [], projectId, projectStatus }: Ann
     function handleConfirmRemove() {
         if (!annotatorToRemove) return;
         setRemoving(true);
-        router.delete(route('projects.annotators.detach', [projectId, annotatorToRemove.id]), {
-            onFinish: () => {
+        apiFetchWithFlash(route('projects.annotators.detach', [projectId, annotatorToRemove.id]), {
+            method: 'DELETE',
+        })
+            // Refresh the annotators list (we're on the project show page).
+            .then(() => router.reload())
+            .catch(() => {})
+            .finally(() => {
                 setRemoving(false);
                 setAnnotatorToRemove(null);
-            },
-        });
+            });
     }
 
     const annotatorsWithFlagging = annotators.map((a) => ({

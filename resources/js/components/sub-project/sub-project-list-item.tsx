@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tag } from '@/components/ui/tag';
 import { useTranslations } from '@/hooks/use-translations';
+import { apiFetchWithFlash } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import { router } from '@inertiajs/react';
 import { BellRing, FolderOpenDot, MoreVertical, Trash2, UserRound } from 'lucide-react';
@@ -51,21 +52,36 @@ export function SubProjectListItem({
     const [confirmDelete, setConfirmDelete] = useState(false);
     const [deleting, setDeleting] = useState(false);
 
+    // No local status state lives here, so once the change persists we reload the
+    // page props to refresh the badge — apiFetchWithFlash surfaces the success/error
+    // toast (and keeps the error body inspectable, unlike an Inertia 302 redirect).
+    function changeStatus(status: 'in_progress' | 'completed') {
+        apiFetchWithFlash(route('sub-projects.change-status'), {
+            method: 'POST',
+            body: JSON.stringify({ sub_project_id: subProject.id, status }),
+        })
+            .then(() => router.reload())
+            .catch(() => {});
+    }
+
     function handleConfirmDelete() {
         if (!projectId) return;
         setDeleting(true);
-        router.delete(
+        apiFetchWithFlash(
             route('projects.subprojects.destroy', {
                 projectId,
                 subprojectId: subProject.id,
             }),
-            {
-                onFinish: () => {
-                    setDeleting(false);
-                    setConfirmDelete(false);
-                },
-            }
-        );
+            { method: 'DELETE' }
+        )
+            // Matches the old redirect target; the error toast (if any) is shown by
+            // apiFetchWithFlash.
+            .then(() => router.visit(route('projects.show', projectId)))
+            .catch(() => {})
+            .finally(() => {
+                setDeleting(false);
+                setConfirmDelete(false);
+            });
     }
 
     return (
@@ -133,16 +149,7 @@ export function SubProjectListItem({
                                     </DropdownMenuItem>
                                     {subProject.subprojectStatus === 'in_progress' && (
                                         <DropdownMenuItem
-                                            onSelect={() =>
-                                                router.post(
-                                                    route('sub-projects.change-status'),
-                                                    {
-                                                        sub_project_id: subProject.id,
-                                                        status: 'completed',
-                                                    },
-                                                    { preserveScroll: true }
-                                                )
-                                            }
+                                            onSelect={() => changeStatus('completed')}
                                         >
                                             {t('sub-projects.list_item.action_set_completed')}
                                         </DropdownMenuItem>
@@ -150,16 +157,7 @@ export function SubProjectListItem({
                                     {subProject.subprojectStatus === 'pending' && (
                                         <>
                                             <DropdownMenuItem
-                                                onSelect={() =>
-                                                    router.post(
-                                                        route('sub-projects.change-status'),
-                                                        {
-                                                            sub_project_id: subProject.id,
-                                                            status: 'in_progress',
-                                                        },
-                                                        { preserveScroll: true }
-                                                    )
-                                                }
+                                                onSelect={() => changeStatus('in_progress')}
                                             >
                                                 {t('sub-projects.list_item.action_set_in_progress')}
                                             </DropdownMenuItem>

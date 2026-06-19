@@ -2,8 +2,9 @@ import { Button } from '@/components/ui/button';
 import { ToggleSwitch } from '@/components/ui/toggle-switch';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
+import { apiFetchWithFlash } from '@/lib/api';
 import { type PageProps } from '@/types';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { NotificationListItem } from './components/notification-list-item';
 import { ThreadDetail } from './components/thread-detail';
@@ -14,10 +15,9 @@ interface Props {
 }
 
 // Threads come from NotificationController::index (NotificationService::getMyNotifications).
-// They are seeded into local state so interactions can update optimistically. Mark-read /
-// mark-unread / mark-all-read now persist via notifications.read / notifications.unread /
-// notifications.read-all; reply / approve / reject remain optimistic-only with no backend endpoint
-// yet (see tasks/notifications-backend-gaps.md).
+// They are seeded into local state so interactions can update optimistically. All write
+// actions now persist server-side: mark-read / mark-unread / mark-all-read, plus reply /
+// approve / reject (optimistic update first, then the matching notifications.* endpoint).
 export default function NotificationsIndex({ threads: initialThreads }: Props) {
     const { t } = useTranslations();
     const { auth } = usePage<PageProps>().props;
@@ -49,10 +49,8 @@ export default function NotificationsIndex({ threads: initialThreads }: Props) {
     const handleSelect = (threadId: number) => {
         setSelectedThreadId(threadId);
         setThreadRead(threadId, true);
-        router.post(
-            route('notifications.read', threadId),
-            {},
-            { preserveState: true, preserveScroll: true }
+        apiFetchWithFlash(route('notifications.read', threadId), { method: 'POST' }).catch(() =>
+            setThreadRead(threadId, false)
         );
     };
 
@@ -61,50 +59,76 @@ export default function NotificationsIndex({ threads: initialThreads }: Props) {
         const threadId = selectedThreadId;
         setThreadRead(threadId, false);
         setSelectedThreadId(null);
-        router.post(
-            route('notifications.unread', threadId),
-            {},
-            { preserveState: true, preserveScroll: true }
+        apiFetchWithFlash(route('notifications.unread', threadId), { method: 'POST' }).catch(() =>
+            setThreadRead(threadId, true)
         );
     };
 
     const handleMarkAllRead = () => {
+        const previous = threads;
         setThreads((current) => current.map((thread) => ({ ...thread, is_read: true })));
-        router.post(
-            route('notifications.read-all'),
-            {},
-            { preserveState: true, preserveScroll: true }
+        apiFetchWithFlash(route('notifications.read-all'), { method: 'POST' }).catch(() =>
+            setThreads(previous)
         );
     };
 
     const handleReply = (body: string) => {
         if (selectedThreadId === null) return;
-        const nextId =
-            Math.max(...threads.flatMap((thread) => thread.notifications.map((m) => m.id))) + 1;
+        const threadId = selectedThreadId;
+        // Optimistically append a placeholder, reconciled with the server's real
+        // message (correct id, datetime, sender_role) on success. The temp id is
+        // below any real id so it can't collide while in flight.
+        const tempId = Math.min(0, ...threads.flatMap((t) => t.notifications.map((m) => m.id))) - 1;
         const now = new Date();
         const pad = (n: number) => String(n).padStart(2, '0');
         const datetime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-        const reply: NotificationMessage = {
-            id: nextId,
-            notification_thread_id: selectedThreadId,
+        const placeholder: NotificationMessage = {
+            id: tempId,
+            notification_thread_id: threadId,
             sender_user_id: auth.user.id,
             body,
             sender_username: auth.user.name,
             sender_role: null,
             datetime,
         };
-        updateThread(selectedThreadId, (thread) => ({
+        updateThread(threadId, (thread) => ({
             ...thread,
-            notifications: [...thread.notifications, reply],
+            notifications: [...thread.notifications, placeholder],
         }));
+        apiFetchWithFlash<{ notification: NotificationMessage }>(
+            route('notifications.reply', threadId),
+            { method: 'POST', body: JSON.stringify({ body }) }
+        )
+            .then(({ notification }) =>
+                updateThread(threadId, (thread) => ({
+                    ...thread,
+                    notifications: thread.notifications.map((m) =>
+                        m.id === tempId ? notification : m
+                    ),
+                }))
+            )
+            .catch(() =>
+                updateThread(threadId, (thread) => ({
+                    ...thread,
+                    notifications: thread.notifications.filter((m) => m.id !== tempId),
+                }))
+            );
     };
 
     const handleDecision = (isAccepted: boolean) => {
         if (selectedThreadId === null) return;
-        updateThread(selectedThreadId, (thread) => ({
+        const threadId = selectedThreadId;
+        updateThread(threadId, (thread) => ({
             ...thread,
             response: isAccepted ? 'accepted' : 'rejected',
         }));
+        // The decision can be rejected server-side (e.g. the thread was canceled
+        // meanwhile), returning 422 — apiFetchWithFlash toasts the error message and
+        // rejects, so we roll the optimistic state back.
+        apiFetchWithFlash(
+            route(isAccepted ? 'notifications.approve' : 'notifications.reject', threadId),
+            { method: 'POST' }
+        ).catch(() => updateThread(threadId, (thread) => ({ ...thread, response: 'unreplied' })));
     };
 
     return (

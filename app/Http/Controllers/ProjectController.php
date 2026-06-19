@@ -100,17 +100,16 @@ class ProjectController extends Controller {
         );
     }
 
-    public function toggleCanFlagOfAnnotator(ToggleCanFlagRequest $request): RedirectResponse {
+    public function toggleCanFlagOfAnnotator(ToggleCanFlagRequest $request): JsonResponse {
         $this->annotatorService->toggleCanFlag(
             $request->integer('annotator_id'),
             $request->integer('project_id'),
         );
 
-        return to_route('projects.show', $request->integer('project_id'))
-            ->with('success', __('projects.messages.can_flag_toggled'));
+        return $this->jsonSuccess(__('projects.messages.can_flag_toggled'));
     }
 
-    public function detachAnnotator(DetachAnnotatorFromProjectRequest $request, int $id): RedirectResponse {
+    public function detachAnnotator(DetachAnnotatorFromProjectRequest $request, int $id): JsonResponse {
         try {
             Log::info('Detaching annotator from project', [
                 'project_id' => $id,
@@ -118,10 +117,10 @@ class ProjectController extends Controller {
             ]);
             $this->projectService->detachAnnotator($id, $request->integer('annotator_id'));
         } catch (PresentableError $presentableError) {
-            return to_route('projects.show', $id)->with('error', $presentableError->getUserMessage());
+            return $this->jsonError($presentableError->getUserMessage());
         }
 
-        return to_route('projects.show', $id)->with('success', __('projects.messages.annotator_detached'));
+        return $this->jsonSuccess(__('projects.messages.annotator_detached'));
     }
 
     public function showAddAnnotators(int $id): Response {
@@ -149,7 +148,7 @@ class ProjectController extends Controller {
             ->with('success', __('projects.messages.annotators_attached'));
     }
 
-    public function changeStatus(ProjectChangeStatusRequest $request): RedirectResponse {
+    public function changeStatus(ProjectChangeStatusRequest $request): JsonResponse {
         $project = Project::query()->findOrFail($request->integer('project_id'));
 
         try {
@@ -158,20 +157,19 @@ class ProjectController extends Controller {
                 ProjectStatusEnum::from($request->string('status')->value()),
             );
         } catch (PresentableError $presentableError) {
-            return back()->with('error', $presentableError->getUserMessage());
+            return $this->jsonError($presentableError->getUserMessage());
         }
 
-        return back()->with('success', __('projects.messages.status_changed'));
+        return $this->jsonSuccess(__('projects.messages.status_changed'));
     }
 
-    public function destroy(int $id): RedirectResponse {
+    public function destroy(int $id): JsonResponse {
         $project = Project::query()->findOrFail($id);
         $this->authorize('delete', $project);
 
         $this->projectService->deleteProject($project);
 
-        return to_route('projects.index')
-            ->with('success', __('projects.messages.deleted'));
+        return $this->jsonSuccess(__('projects.messages.deleted'));
     }
 
     public function show(int $id): Response {
@@ -296,7 +294,7 @@ class ProjectController extends Controller {
         try {
             $this->projectManagerService->proposeOwnershipTransfer($id, $request->integer('user_id'));
         } catch (PresentableError $presentableError) {
-            return response()->json(['error' => $presentableError->getUserMessage()], 422);
+            return $this->jsonError($presentableError->getUserMessage());
         }
 
         $this->projectOwnershipNotificationService->notifyProposedOwner(

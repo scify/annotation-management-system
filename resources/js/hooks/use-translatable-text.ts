@@ -11,7 +11,7 @@ export function useTranslatableText(): (text: string | null) => string {
                 typeof parsed === 'object' &&
                 parsed !== null &&
                 'key' in parsed &&
-                typeof (parsed as { key: unknown }).key === 'string'
+                typeof parsed.key === 'string'
             ) {
                 const { key, params = {} } = parsed as {
                     key: string;

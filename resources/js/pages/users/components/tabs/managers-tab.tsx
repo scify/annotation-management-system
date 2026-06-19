@@ -234,7 +234,7 @@ export function ManagersTab({ allManagers, myManagers }: ManagersTabProps) {
                 open={messageTarget !== null}
                 onClose={() => setMessageTarget(null)}
                 targetName={messageTarget?.name ?? ''}
-                onSend={() => setMessageTarget(null)}
+                recipientUserId={messageTarget?.id ?? 0}
             />
         </div>
     );

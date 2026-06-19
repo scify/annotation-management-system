@@ -35,13 +35,13 @@ describe('ProjectController - detach annotator', function (): void {
         $this->actingAs($this->admin)->get(route('users.index'));
 
         // Act
-        $response = $this->delete(
+        $response = $this->deleteJson(
             route('projects.annotators.detach', [$this->project->id, $this->annotator->id]),
-            ['_token' => session('_token')],
         );
 
         // Assert
-        $response->assertRedirect(route('projects.show', $this->project->id));
+        $response->assertOk();
+        $response->assertJson(['success' => __('projects.messages.annotator_detached')]);
 
         $this->assertDatabaseMissing('annotator_of_project', [
             'project_id' => $this->project->id,
@@ -60,14 +60,13 @@ describe('ProjectController - detach annotator', function (): void {
         $this->actingAs($this->admin)->get(route('users.index'));
 
         // Act
-        $response = $this->delete(
+        $response = $this->deleteJson(
             route('projects.annotators.detach', [$this->project->id, $this->annotator->id]),
-            ['_token' => session('_token')],
         );
 
         // Assert
-        $response->assertRedirect(route('projects.show', $this->project->id));
-        $response->assertSessionHas('error');
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['error']);
 
         $this->assertDatabaseHas('annotator_of_project', [
             'project_id' => $this->project->id,
@@ -80,9 +79,8 @@ describe('ProjectController - detach annotator', function (): void {
         $this->actingAs($this->annotator)->get(route('users.index'));
 
         // Act
-        $response = $this->delete(
+        $response = $this->deleteJson(
             route('projects.annotators.detach', [$this->project->id, $this->annotator->id]),
-            ['_token' => session('_token')],
         );
 
         // Assert
@@ -95,14 +93,13 @@ describe('ProjectController - detach annotator', function (): void {
         $this->actingAs($this->admin)->get(route('users.index'));
 
         // Act
-        $response = $this->delete(
+        $response = $this->deleteJson(
             route('projects.annotators.detach', [$this->project->id, $outsider->id]),
-            ['_token' => session('_token')],
         );
 
         // Assert
-        $response->assertStatus(302);
-        $response->assertSessionHasErrors('annotator_id');
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('annotator_id');
     });
 });
 
@@ -139,13 +136,13 @@ describe('SubProjectController - detach annotator', function (): void {
         $this->actingAs($this->admin)->get(route('users.index'));
 
         // Act
-        $response = $this->delete(
+        $response = $this->deleteJson(
             route('projects.subprojects.annotators.detach', [$this->project->id, $this->subProject->id, $this->annotator->id]),
-            ['_token' => session('_token')],
         );
 
         // Assert
-        $response->assertRedirect(route('projects.subprojects.edit', [$this->project->id, $this->subProject->id]));
+        $response->assertOk();
+        $response->assertJson(['success' => __('sub-projects.messages.annotator_detached')]);
 
         $this->assertDatabaseMissing('annotation_assignments', ['id' => $this->assignment->id]);
         $this->assertDatabaseMissing('annotations', ['id' => $annotation->id]);
@@ -157,14 +154,13 @@ describe('SubProjectController - detach annotator', function (): void {
         $this->actingAs($this->admin)->get(route('users.index'));
 
         // Act
-        $response = $this->delete(
+        $response = $this->deleteJson(
             route('projects.subprojects.annotators.detach', [$this->project->id, $this->subProject->id, $this->annotator->id]),
-            ['_token' => session('_token')],
         );
 
         // Assert
-        $response->assertRedirect(route('projects.subprojects.edit', [$this->project->id, $this->subProject->id]));
-        $response->assertSessionHas('error');
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['error']);
 
         $this->assertDatabaseHas('annotation_assignments', ['id' => $this->assignment->id]);
     });
@@ -174,9 +170,8 @@ describe('SubProjectController - detach annotator', function (): void {
         $this->actingAs($this->annotator)->get(route('users.index'));
 
         // Act
-        $response = $this->delete(
+        $response = $this->deleteJson(
             route('projects.subprojects.annotators.detach', [$this->project->id, $this->subProject->id, $this->annotator->id]),
-            ['_token' => session('_token')],
         );
 
         // Assert
@@ -189,14 +184,13 @@ describe('SubProjectController - detach annotator', function (): void {
         $this->actingAs($this->admin)->get(route('users.index'));
 
         // Act
-        $response = $this->delete(
+        $response = $this->deleteJson(
             route('projects.subprojects.annotators.detach', [$this->project->id, $this->subProject->id, $outsider->id]),
-            ['_token' => session('_token')],
         );
 
         // Assert
-        $response->assertStatus(302);
-        $response->assertSessionHasErrors('annotator_id');
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors('annotator_id');
     });
 
     it('includes can_be_removed=true in annotators data when subproject is pending', function (): void {

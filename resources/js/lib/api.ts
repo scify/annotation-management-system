@@ -1,3 +1,5 @@
+import { type FlashPayload, showFlashToasts } from '@/lib/flash';
+
 /**
  * Typed error thrown by apiFetch when the server returns a non-2xx status.
  * The message comes from the API's `{ error: '...' }` response body.
@@ -59,4 +61,25 @@ export async function apiFetch<T = unknown>(path: string, options: RequestInit =
     }
 
     return response.json() as Promise<T>;
+}
+
+/**
+ * `apiFetch` variant that surfaces flash messages as toasts — the JSON-response
+ * counterpart to the Inertia flash mechanism in `useFlashMessages`. On success it
+ * toasts any `success`/`error`/`warning`/`info` field in the response body; on
+ * failure it toasts the `ApiError` message and rethrows so callers can roll back
+ * optimistic UI.
+ */
+export async function apiFetchWithFlash<T = unknown>(
+    path: string,
+    options: RequestInit = {}
+): Promise<T> {
+    try {
+        const body = await apiFetch<T>(path, options);
+        showFlashToasts(body as FlashPayload);
+        return body;
+    } catch (error) {
+        if (error instanceof ApiError) showFlashToasts({ error: error.message });
+        throw error;
+    }
 }

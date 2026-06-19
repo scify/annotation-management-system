@@ -224,14 +224,14 @@ describe('SubProjectController::changeStatus', function (): void {
 
         // Act
         $response = $this->actingAs($this->ctx->admin)
-            ->post(route('sub-projects.change-status'), [
+            ->postJson(route('sub-projects.change-status'), [
                 'sub_project_id' => $subProject->id,
                 'status' => ProjectStatusEnum::IN_PROGRESS->value,
             ]);
 
         // Assert
-        $response->assertRedirect();
-        $response->assertSessionHas('success');
+        $response->assertOk();
+        $response->assertJson(['success' => __('sub-projects.messages.status_changed')]);
 
         expect($subProject->fresh()->status)->toBe(ProjectStatusEnum::IN_PROGRESS);
         expect($this->ctx->project->fresh()->status)->toBe(ProjectStatusEnum::IN_PROGRESS);
@@ -246,13 +246,14 @@ describe('SubProjectController::changeStatus', function (): void {
 
         // Act
         $response = $this->actingAs($this->ctx->admin)
-            ->post(route('sub-projects.change-status'), [
+            ->postJson(route('sub-projects.change-status'), [
                 'sub_project_id' => $subProject->id,
                 'status' => ProjectStatusEnum::COMPLETED->value,
             ]);
 
         // Assert — catch block in the controller surfaces the PresentableError
-        $response->assertSessionHas('error');
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['error']);
 
         expect($subProject->fresh()->status)->toBe(ProjectStatusEnum::PENDING);
     });
@@ -267,13 +268,14 @@ describe('SubProjectController::changeStatus', function (): void {
 
         // Act
         $response = $this->actingAs($this->ctx->admin)
-            ->post(route('sub-projects.change-status'), [
+            ->postJson(route('sub-projects.change-status'), [
                 'sub_project_id' => $subProject->id,
                 'status' => ProjectStatusEnum::COMPLETED->value,
             ]);
 
         // Assert
-        $response->assertSessionHas('error');
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['error']);
 
         expect($subProject->fresh()->status)->toBe(ProjectStatusEnum::IN_PROGRESS);
     });
@@ -287,7 +289,7 @@ describe('SubProjectController::changeStatus', function (): void {
 
         // Act / Assert
         $this->actingAs($this->ctx->manager)
-            ->post(route('sub-projects.change-status'), [
+            ->postJson(route('sub-projects.change-status'), [
                 'sub_project_id' => $subProject->id,
                 'status' => ProjectStatusEnum::IN_PROGRESS->value,
             ])
@@ -303,11 +305,12 @@ describe('SubProjectController::changeStatus', function (): void {
 
         // Act / Assert
         $this->actingAs($this->ctx->admin)
-            ->post(route('sub-projects.change-status'), [
+            ->postJson(route('sub-projects.change-status'), [
                 'sub_project_id' => $subProject->id,
                 'status' => 'not-a-real-status',
             ])
-            ->assertSessionHasErrors('status');
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('status');
     });
 });
 
@@ -445,13 +448,13 @@ describe('SubProjectController::detachAnnotator', function (): void {
 
         // Act
         $response = $this->actingAs($this->ctx->admin)
-            ->delete(route('projects.subprojects.annotators.detach', [
+            ->deleteJson(route('projects.subprojects.annotators.detach', [
                 $this->ctx->project->id, $subProject->id, $this->ctx->annotator->id,
             ]));
 
         // Assert
-        $response->assertRedirect(route('projects.subprojects.edit', [$this->ctx->project->id, $subProject->id]));
-        $response->assertSessionHas('success');
+        $response->assertOk();
+        $response->assertJson(['success' => __('sub-projects.messages.annotator_detached')]);
         $this->assertDatabaseMissing('annotation_assignments', [
             'user_id' => $this->ctx->annotator->id,
             'sub_project_id' => $subProject->id,
@@ -471,12 +474,13 @@ describe('SubProjectController::detachAnnotator', function (): void {
 
         // Act
         $response = $this->actingAs($this->ctx->admin)
-            ->delete(route('projects.subprojects.annotators.detach', [
+            ->deleteJson(route('projects.subprojects.annotators.detach', [
                 $this->ctx->project->id, $subProject->id, $this->ctx->annotator->id,
             ]));
 
         // Assert — catch block surfaces the PresentableError, assignment survives
-        $response->assertSessionHas('error');
+        $response->assertStatus(422);
+        $response->assertJsonStructure(['error']);
         $this->assertDatabaseHas('annotation_assignments', [
             'user_id' => $this->ctx->annotator->id,
             'sub_project_id' => $subProject->id,
@@ -496,7 +500,7 @@ describe('SubProjectController::detachAnnotator', function (): void {
 
         // Act / Assert
         $this->actingAs($this->ctx->annotator)
-            ->delete(route('projects.subprojects.annotators.detach', [
+            ->deleteJson(route('projects.subprojects.annotators.detach', [
                 $this->ctx->project->id, $subProject->id, $this->ctx->annotator->id,
             ]))
             ->assertForbidden();
@@ -518,11 +522,11 @@ describe('SubProjectController::destroy', function (): void {
 
         // Act
         $response = $this->actingAs($this->ctx->admin)
-            ->delete(route('projects.subprojects.destroy', [$this->ctx->project->id, $subProject->id]));
+            ->deleteJson(route('projects.subprojects.destroy', [$this->ctx->project->id, $subProject->id]));
 
         // Assert
-        $response->assertRedirect(route('projects.show', $this->ctx->project->id));
-        $response->assertSessionHas('success');
+        $response->assertOk();
+        $response->assertJson(['success' => __('sub-projects.messages.deleted')]);
         $this->assertDatabaseMissing('sub_projects', ['id' => $subProject->id]);
     });
 
@@ -540,7 +544,7 @@ describe('SubProjectController::destroy', function (): void {
 
         // Act / Assert — deleteSubProject policy denies deletion of non-pending subprojects
         $this->actingAs($this->ctx->manager)
-            ->delete(route('projects.subprojects.destroy', [$this->ctx->project->id, $subProject->id]))
+            ->deleteJson(route('projects.subprojects.destroy', [$this->ctx->project->id, $subProject->id]))
             ->assertForbidden();
 
         $this->assertDatabaseHas('sub_projects', ['id' => $subProject->id]);
@@ -555,7 +559,7 @@ describe('SubProjectController::destroy', function (): void {
 
         // Act / Assert
         $this->actingAs($this->ctx->annotator)
-            ->delete(route('projects.subprojects.destroy', [$this->ctx->project->id, $subProject->id]))
+            ->deleteJson(route('projects.subprojects.destroy', [$this->ctx->project->id, $subProject->id]))
             ->assertForbidden();
     });
 });

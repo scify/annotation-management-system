@@ -6,7 +6,6 @@ import {
     DropdownMenuLabel,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useInitials } from '@/hooks/use-initials';
 import { useTranslatableText } from '@/hooks/use-translatable-text';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
@@ -29,7 +28,6 @@ interface MessageBubbleProps {
 }
 
 function MessageBubble({ message, isOwn, label }: MessageBubbleProps) {
-    const getInitials = useInitials();
     const formatDate = useNotificationDate();
     const translateText = useTranslatableText();
 
@@ -39,7 +37,7 @@ function MessageBubble({ message, isOwn, label }: MessageBubbleProps) {
                 <span className="flex items-center gap-1.5">
                     <Avatar className="size-[22px]">
                         <AvatarFallback className="bg-brand-blue-700 text-xs font-semibold text-white">
-                            {getInitials(message.sender_username ?? '')}
+                            {(message.sender_username ?? '').trim().charAt(0).toUpperCase()}
                         </AvatarFallback>
                     </Avatar>
                     <span className="text-base font-medium text-slate-800">
