@@ -51,6 +51,8 @@ final class ProjectRequestToLeaveNotificationService extends AbstractNotificatio
                 label: $projectData['name'],
                 url: route('projects.show', $projectId),
             ),
+            projectId: $projectId,
+            targetUserId: $senderUserId,
         );
     }
 
@@ -59,8 +61,14 @@ final class ProjectRequestToLeaveNotificationService extends AbstractNotificatio
         int $senderUserId,
         string $body,
         QuickLinkData $quickLink,
+        int $projectId,
+        int $targetUserId,
     ): Notification {
-        $thread = $this->createNotificationThreadQuery->create(NotificationThreadTypeEnum::PROJECT_REQUEST_TO_LEAVE);
+        $thread = $this->createNotificationThreadQuery->create(
+            NotificationThreadTypeEnum::PROJECT_REQUEST_TO_LEAVE,
+            projectId: $projectId,
+            targetUserId: $targetUserId,
+        );
 
         $notification = $this->createNotificationQuery->create(
             notificationThreadId: $thread->id,

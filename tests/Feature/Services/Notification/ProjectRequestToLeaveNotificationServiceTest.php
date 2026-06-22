@@ -8,6 +8,7 @@ use App\Enums\NotificationThreadTypeEnum;
 use App\Exceptions\NotificationResponseException;
 use App\Models\NotificationThread;
 use App\Models\NotificationThreadResponse;
+use App\Models\Project;
 use App\Models\QuickLink;
 use App\Models\ThreadMember;
 use App\Models\User;
@@ -43,12 +44,15 @@ describe('ProjectRequestToLeaveNotificationService', function (): void {
     it('creates a request-to-leave thread with both members, a response and a quick link', function (): void {
         $sender = User::factory()->create();
         $recipient = User::factory()->create();
+        $project = Project::factory()->create(['owner_user_id' => $recipient->id]);
 
         $notification = $this->service->createNotification(
             recipientUserId: $recipient->id,
             senderUserId: $sender->id,
             body: 'Please let me leave',
             quickLink: new QuickLinkData('Open project', '/projects/1'),
+            projectId: $project->id,
+            targetUserId: $sender->id,
         );
 
         $this->assertDatabaseHas('notification_threads', [

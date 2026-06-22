@@ -57,6 +57,8 @@ final class ProjectInvitationNotificationService extends AbstractNotificationSer
                 label: $projectData['name'],
                 url: route('projects.show', $projectId),
             ),
+            projectId: $projectId,
+            targetUserId: $recipient->id,
         );
 
         $recipient->notify(new CoManagerInvitationNotification($projectData['name'], $sender->name));
@@ -67,8 +69,14 @@ final class ProjectInvitationNotificationService extends AbstractNotificationSer
         int $senderUserId,
         string $body,
         QuickLinkData $quickLink,
+        int $projectId,
+        int $targetUserId,
     ): Notification {
-        $thread = $this->createNotificationThreadQuery->create(NotificationThreadTypeEnum::PROJECT_INVITATION);
+        $thread = $this->createNotificationThreadQuery->create(
+            NotificationThreadTypeEnum::PROJECT_INVITATION,
+            projectId: $projectId,
+            targetUserId: $targetUserId,
+        );
 
         $notification = $this->createNotificationQuery->create(
             notificationThreadId: $thread->id,

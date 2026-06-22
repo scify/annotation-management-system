@@ -111,6 +111,8 @@ class DummyNotificationsSeeder extends Seeder {
                 label: $nerProject->name,
                 url: 'projects/' . $nerProject->id,
             ),
+            projectId: $nerProject->id,
+            targetUserId: $carol->id,
         );
 
         $projectInvitationService->createNotification(
@@ -121,6 +123,8 @@ class DummyNotificationsSeeder extends Seeder {
                 label: $nerProject->name,
                 url: 'projects/' . $nerProject->id,
             ),
+            projectId: $nerProject->id,
+            targetUserId: $carol->id,
         );
 
         $acceptedInvitation = $projectInvitationService->createNotification(
@@ -131,6 +135,8 @@ class DummyNotificationsSeeder extends Seeder {
                 label: $sentimentProject->name,
                 url: 'projects/' . $sentimentProject->id,
             ),
+            projectId: $sentimentProject->id,
+            targetUserId: $carol->id,
         );
         $acceptedInvitation->thread->response?->update(['response' => NotificationThreadResponseEnum::ACCEPTED]);
 
@@ -142,6 +148,8 @@ class DummyNotificationsSeeder extends Seeder {
                 label: $sentimentProject->name,
                 url: 'projects/' . $sentimentProject->id,
             ),
+            projectId: $sentimentProject->id,
+            targetUserId: $carol->id,
         );
         $rejectedOwnership->thread->response?->update(['response' => NotificationThreadResponseEnum::REJECTED]);
 
@@ -153,6 +161,8 @@ class DummyNotificationsSeeder extends Seeder {
                 label: $nerProject->name,
                 url: 'projects/' . $nerProject->id,
             ),
+            projectId: $nerProject->id,
+            targetUserId: $dave->id,
         );
 
         $acceptedLeaveRequest = $projectRequestToLeaveService->createNotification(
@@ -163,6 +173,8 @@ class DummyNotificationsSeeder extends Seeder {
                 label: $nerProject->name,
                 url: 'projects/' . $nerProject->id,
             ),
+            projectId: $nerProject->id,
+            targetUserId: $scifyManager->id,
         );
         $acceptedLeaveRequest->thread->response?->update(['response' => NotificationThreadResponseEnum::ACCEPTED]);
 
@@ -174,6 +186,8 @@ class DummyNotificationsSeeder extends Seeder {
                 label: $nerProject->name,
                 url: 'projects/' . $nerProject->id,
             ),
+            projectId: $nerProject->id,
+            targetUserId: $alice->id,
         );
         $rejectedLeaveRequest->thread->response?->update(['response' => NotificationThreadResponseEnum::REJECTED]);
 
@@ -185,6 +199,8 @@ class DummyNotificationsSeeder extends Seeder {
                 label: $sentimentProject->name,
                 url: 'projects/' . $sentimentProject->id,
             ),
+            projectId: $sentimentProject->id,
+            targetUserId: $carol->id,
         );
 
         $warningService->createNotification(
@@ -207,6 +223,8 @@ class DummyNotificationsSeeder extends Seeder {
                 label: $nerProject->name,
                 url: 'projects/' . $nerProject->id,
             ),
+            projectId: $nerProject->id,
+            targetUserId: $dave->id,
         );
         $canceledOwnership->thread->response?->update(['response' => NotificationThreadResponseEnum::CANCELED]);
 
