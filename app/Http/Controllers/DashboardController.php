@@ -20,15 +20,17 @@ class DashboardController extends Controller {
     public function index(): Response|RedirectResponse {
         /** @var User $user */
         $user = Auth::user();
-        if ($user->hasRole(RolesEnum::ANNOTATOR->value)) {
-            return Inertia::render('dashboard-annotator', $this->dashboardService->getDataForAnnotatorDashboard($user));
-        }
+        $isAnnotator = $user->hasRole(RolesEnum::ANNOTATOR->value);
 
-        $data_for_dashboard = $this->dashboardService->getDataForDashboard($user);
+        $data_for_dashboard = $isAnnotator
+            ? $this->dashboardService->getDataForAnnotatorDashboard($user)
+            : $this->dashboardService->getDataForDashboard($user);
 
-        $this->dumpDebugJson($data_for_dashboard, 'dashboard-data.json');
+        $this->dumpDebugJson($data_for_dashboard, $isAnnotator ? 'dashboard-annotator-data.json' : 'dashboard-data.json');
 
-        return Inertia::render('dashboard', $data_for_dashboard);
-
+        return Inertia::render(
+            $isAnnotator ? 'dashboard-annotator' : 'dashboard',
+            $data_for_dashboard,
+        );
     }
 }

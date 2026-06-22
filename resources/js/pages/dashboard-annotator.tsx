@@ -24,7 +24,7 @@ export default function DashboardAnnotator({ subprojects }: Props) {
             <div className="flex flex-col gap-6 px-6 py-6">
                 <h1 className="text-slate-800">{t('dashboard.annotator.title')}</h1>
 
-                {subprojects.length === 0 ? (
+                {subprojects?.length === 0 ? (
                     <p className="py-10 text-center text-sm text-slate-400">
                         {t('dashboard.annotator.empty')}
                     </p>
