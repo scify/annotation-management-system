@@ -6,28 +6,31 @@ namespace App\Services\Dashboard;
 
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
+use App\Models\SubProject;
 use App\Models\User;
 use App\Queries\Annotator\GetAnnotatorIdsByProjectsQuery;
 use App\Queries\Dashboard\GetPlatformStatsQuery;
 use App\Queries\Project\GetProjectIdsManagedByUserQuery;
 use App\Queries\Project\GetProjectsQuery;
 use App\Queries\Project\GetSubProjectIdsQuery;
+use App\Queries\SubProject\GetAnnotationCountsBySubProjectsQuery;
+use App\Queries\SubProject\GetSubProjectsForAnnotatorQuery;
 use App\Services\Annotation\AnnotatorService;
 use App\Services\Project\ProjectReadService;
-use App\Services\SubProject\SubProjectReadService;
 use App\Services\SubProject\SubProjectWriteService;
 use Illuminate\Support\Collection;
 
 readonly class DashboardService {
     public function __construct(
         private AnnotatorService $annotatorService,
+        private GetAnnotationCountsBySubProjectsQuery $annotationCountsBySubProjectsQuery,
         private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
         private GetPlatformStatsQuery $platformStatsQuery,
         private GetProjectIdsManagedByUserQuery $projectIdsManagedByUserQuery,
         private GetProjectsQuery $projectsQuery,
         private GetSubProjectIdsQuery $subProjectIdsQuery,
+        private GetSubProjectsForAnnotatorQuery $subProjectsForAnnotatorQuery,
         private ProjectReadService $projectReadService,
-        private SubProjectReadService $subProjectReadService,
         private SubProjectWriteService $subProjectService,
     ) {}
 
@@ -35,8 +38,43 @@ readonly class DashboardService {
      * @return array<string, mixed>
      */
     public function getDataForAnnotatorDashboard(User $user): array {
+        $subprojectModels = $this->subProjectsForAnnotatorQuery->get($user);
+
+        /** @var array<int, int> $subProjectIds */
+        $subProjectIds = $subprojectModels->pluck('id')->all();
+        $counts = $this->annotationCountsBySubProjectsQuery->get($subProjectIds);
+
+        $subprojects = $subprojectModels
+            ->map(function (SubProject $subProject) use ($counts): array {
+                $c = $counts[$subProject->id] ?? ['pending_count' => 0, 'submitted_count' => 0, 'not_annotated_count' => 0];
+                $total = $c['not_annotated_count'] + $c['pending_count'] + $c['submitted_count'];
+
+                $entry = [
+                    'id' => $subProject->id,
+                    'name' => $subProject->name,
+                    'project_name' => $subProject->project->name,
+                    'flexible' => $subProject->flexible,
+                    'auto_submission' => $subProject->auto_submission,
+                    'scheduled_at' => $subProject->scheduled_at,
+                    'deadline_at' => $subProject->deadline_at,
+                    'started_at' => $subProject->started_at,
+                    'completed_at' => $subProject->completed_at,
+                    'submitted_count' => $c['submitted_count'],
+                    'not_annotated_count' => $c['not_annotated_count'],
+                    'submitted_pct' => $total > 0 ? round($c['submitted_count'] / $total * 100, 2) : 0.0,
+                ];
+
+                if (! $subProject->auto_submission) {
+                    $entry['pending_count'] = $c['pending_count'];
+                    $entry['submitted_and_pending_pct'] = $total > 0 ? round(($c['submitted_count'] + $c['pending_count']) / $total * 100, 2) : 0.0;
+                }
+
+                return $entry;
+            })
+            ->all();
+
         return [
-            'subprojects' => $this->subProjectReadService->getInProgressSubProjectsForAnnotator($user),
+            'subprojects' => $subprojects,
         ];
     }
 
