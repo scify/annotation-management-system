@@ -16,6 +16,7 @@
 - [5. Email](#5-email)
   - [5.1 DDEV (Mailpit)](#51-ddev-mailpit)
   - [5.2 Native (MailHog)](#52-native-mailhog)
+  - [5.3 Queue Worker (DDEV)](#53-queue-worker-ddev)
 - [6. Tips - General Guidelines](#6-tips---general-guidelines)
   - [6.1 Keeping the dependencies up-to-date](#61-keeping-the-dependencies-up-to-date)
     - [6.1.1 Backend](#611-backend)
@@ -232,6 +233,24 @@ docker run -d --name mailhog -p 1025:1025 -p 8025:8025 mailhog/mailhog
 [http://localhost:8025](http://localhost:8025) to view captured emails.
 
 See also the [Laravel local mail docs](https://laravel.com/docs/12.x/mail#mail-and-local-development).
+
+### 5.3 Queue Worker (DDEV)
+
+When `QUEUE_CONNECTION=database` (the base `.env` default), queued work — such as the welcome
+email sent when an admin/manager is created — is written to the `jobs` table and only delivered
+once a worker processes it. Start a worker in its own terminal:
+
+```shell
+ddev artisan queue:work
+```
+
+Leave it running while you develop; it picks up jobs as they are queued (use `--stop-when-empty`
+for a one-off drain). To smoke-test the queue and mail pipeline end-to-end, queue a sample
+welcome email and watch the worker deliver it to Mailpit:
+
+```shell
+ddev artisan mail:test-welcome you@example.com --name="Jane Doe"
+```
 
 ## 6. Tips - General Guidelines
 
