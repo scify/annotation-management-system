@@ -5,31 +5,16 @@ declare(strict_types=1);
 namespace App\Queries\Notification;
 
 use App\Data\ProjectMemberContextData;
-use App\Models\Notification;
-use App\Models\ProjectManager;
+use App\Models\NotificationThread;
 
 final readonly class FindRequestToLeaveContextByThreadQuery {
     public function find(int $notificationThreadId): ?ProjectMemberContextData {
-        $senderUserId = Notification::query()
-            ->where('notification_thread_id', $notificationThreadId)
-            ->orderBy('id')
-            ->first()
-            ?->sender_user_id;
+        $thread = NotificationThread::query()->find($notificationThreadId);
 
-        if ($senderUserId === null) {
+        if ($thread === null || $thread->project_id === null || $thread->target_user_id === null) {
             return null;
         }
 
-        $projectId = ProjectManager::query()
-            ->where('user_id', $senderUserId)
-            ->where('request_to_leave', true)
-            ->first()
-            ?->project_id;
-
-        if ($projectId === null) {
-            return null;
-        }
-
-        return new ProjectMemberContextData($projectId, $senderUserId);
+        return new ProjectMemberContextData($thread->project_id, $thread->target_user_id);
     }
 }

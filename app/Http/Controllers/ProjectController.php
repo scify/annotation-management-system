@@ -12,6 +12,7 @@ use App\Http\Requests\Project\AttachAnnotatorsToProjectRequest;
 use App\Http\Requests\Project\CancelOwnershipTransferRequest;
 use App\Http\Requests\Project\CancelRequestToLeaveRequest;
 use App\Http\Requests\Project\DetachAnnotatorFromProjectRequest;
+use App\Http\Requests\Project\InviteManagerByEmailRequest;
 use App\Http\Requests\Project\ProjectChangeStatusRequest;
 use App\Http\Requests\Project\ProjectExportRequest;
 use App\Http\Requests\Project\ProjectStoreRequest;
@@ -25,6 +26,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Services\Annotation\AnnotatorService;
 use App\Services\Notification\InfoNotificationService;
+use App\Services\Notification\ProjectInvitationNotificationService;
 use App\Services\Notification\ProjectOwnershipNotificationService;
 use App\Services\Notification\ProjectRequestToLeaveNotificationService;
 use App\Services\Project\ProjectManagerService;
@@ -50,6 +52,7 @@ class ProjectController extends Controller {
         private readonly AnnotatorService $annotatorService,
         private readonly ProjectOwnershipNotificationService $projectOwnershipNotificationService,
         private readonly ProjectRequestToLeaveNotificationService $projectRequestToLeaveNotificationService,
+        private readonly ProjectInvitationNotificationService $projectInvitationNotificationService,
         private readonly InfoNotificationService $infoNotificationService,
     ) {}
 
@@ -220,6 +223,26 @@ class ProjectController extends Controller {
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),
         ]);
+    }
+
+    public function inviteManager(InviteManagerByEmailRequest $request, int $id): JsonResponse {
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
+
+        $email = $request->string('email')->toString();
+        $invitee = $this->projectManagerService->findInvitableManagerByEmail($email);
+
+        if (! $invitee instanceof User) {
+            return $this->jsonError(__('projects.managers_tab.invite_user_not_found'), 404);
+        }
+
+        if ($this->projectManagerService->isManagerOfProject($id, $invitee->id)) {
+            return $this->jsonError(__('projects.managers_tab.invite_already_manager'));
+        }
+
+        $this->projectInvitationNotificationService->notifyInvitedManager($id, $user, $invitee);
+
+        return $this->jsonSuccess(__('projects.managers_tab.invite_success'));
     }
 
     public function requestToLeave(RequestToLeaveRequest $request, int $id): JsonResponse {

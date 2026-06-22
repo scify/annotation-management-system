@@ -85,8 +85,14 @@ return [
 
     'managers_tab' => [
         'title' => 'Συνυπεύθυνοι',
-        'invite_placeholder' => 'Κείμενο…',
+        'invite_placeholder' => 'Εισαγάγετε μια διεύθυνση email…',
         'invite_button' => 'Πρόσκληση μέσω email',
+        'invite_success' => 'Η πρόσκληση στάλθηκε.',
+        'invite_already_manager' => 'Αυτός ο χρήστης είναι ήδη συνυπεύθυνος αυτού του έργου.',
+        'invite_user_not_found' => 'Δεν βρέθηκε συνυπεύθυνος με αυτή τη διεύθυνση email.',
+        'invite_not_found_title' => 'Ο χρήστης δεν βρέθηκε',
+        'invite_not_found_description' => 'Δεν βρέθηκε συνυπεύθυνος με το email :email. Δημιουργήστε πρώτα τον χρήστη και έπειτα προσκαλέστε τον.',
+        'invite_create_user' => 'Δημιουργία χρήστη',
         'table_username' => 'Όνομα χρήστη',
         'table_role' => 'Ρόλος',
         'table_status' => 'Κατάσταση',

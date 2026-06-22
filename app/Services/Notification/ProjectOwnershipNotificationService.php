@@ -51,6 +51,8 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
                 label: $projectData['name'],
                 url: route('projects.show', $projectId),
             ),
+            projectId: $projectId,
+            targetUserId: $recipientUserId,
         );
     }
 
@@ -59,8 +61,14 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
         int $senderUserId,
         string $body,
         QuickLinkData $quickLink,
+        int $projectId,
+        int $targetUserId,
     ): Notification {
-        $thread = $this->createNotificationThreadQuery->create(NotificationThreadTypeEnum::PROJECT_OWNERSHIP);
+        $thread = $this->createNotificationThreadQuery->create(
+            NotificationThreadTypeEnum::PROJECT_OWNERSHIP,
+            projectId: $projectId,
+            targetUserId: $targetUserId,
+        );
 
         $notification = $this->createNotificationQuery->create(
             notificationThreadId: $thread->id,

@@ -9,6 +9,7 @@ use App\Enums\RolesEnum;
 use App\Models\Notification;
 use App\Models\NotificationThread;
 use App\Models\NotificationThreadResponse;
+use App\Models\Project;
 use App\Models\QuickLink;
 use App\Models\ThreadMember;
 use App\Models\User;
@@ -144,12 +145,15 @@ describe('NotificationsService', function (): void {
     it('creates a project ownership notification with a thread response and quick link', function (): void {
         $sender = User::factory()->create();
         $recipient = User::factory()->create();
+        $project = Project::factory()->create(['owner_user_id' => $sender->id]);
 
         $notification = resolve(ProjectOwnershipNotificationService::class)->createNotification(
             recipientUserId: $recipient->id,
             senderUserId: $sender->id,
             body: 'Ownership offer',
             quickLink: new QuickLinkData('Decide', '/decide'),
+            projectId: $project->id,
+            targetUserId: $recipient->id,
         );
 
         $this->assertDatabaseHas('notification_threads', [
@@ -168,12 +172,15 @@ describe('NotificationsService', function (): void {
     it('creates a project invitation notification with a thread response and quick link', function (): void {
         $sender = User::factory()->create();
         $recipient = User::factory()->create();
+        $project = Project::factory()->create(['owner_user_id' => $sender->id]);
 
         $notification = resolve(ProjectInvitationNotificationService::class)->createNotification(
             recipientUserId: $recipient->id,
             senderUserId: $sender->id,
             body: 'Join the project',
             quickLink: new QuickLinkData('Accept', '/accept'),
+            projectId: $project->id,
+            targetUserId: $recipient->id,
         );
 
         $this->assertDatabaseHas('notification_threads', [

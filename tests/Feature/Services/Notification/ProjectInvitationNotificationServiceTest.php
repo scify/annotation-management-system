@@ -7,6 +7,8 @@ use App\Enums\NotificationThreadTypeEnum;
 use App\Exceptions\NotificationResponseException;
 use App\Models\NotificationThread;
 use App\Models\NotificationThreadResponse;
+use App\Models\Project;
+use App\Models\User;
 use App\Services\Notification\ProjectInvitationNotificationService;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
@@ -60,6 +62,23 @@ describe('ProjectInvitationNotificationService', function (): void {
         $this->assertDatabaseHas('notification_thread_responses', [
             'notification_thread_id' => $thread->id,
             'response' => NotificationThreadResponseEnum::ACCEPTED->value,
+        ]);
+    });
+
+    it('adds the target user to the project on the thread when approved', function (): void {
+        // Arrange — thread carries explicit project + target context.
+        $project = Project::factory()->create();
+        $invitee = User::factory()->create();
+        $thread = makeInvitationThread(NotificationThreadResponseEnum::UNREPLIED);
+        $thread->update(['project_id' => $project->id, 'target_user_id' => $invitee->id]);
+
+        // Act
+        $this->service->approve($thread->id);
+
+        // Assert — the invitee is added as a co-manager of that exact project.
+        $this->assertDatabaseHas('project_managers', [
+            'project_id' => $project->id,
+            'user_id' => $invitee->id,
         ]);
     });
 

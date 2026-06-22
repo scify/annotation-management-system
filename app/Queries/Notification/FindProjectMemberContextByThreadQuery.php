@@ -5,41 +5,16 @@ declare(strict_types=1);
 namespace App\Queries\Notification;
 
 use App\Data\ProjectMemberContextData;
-use App\Models\Notification;
-use App\Models\Project;
-use App\Models\ThreadMember;
+use App\Models\NotificationThread;
 
 final readonly class FindProjectMemberContextByThreadQuery {
     public function find(int $notificationThreadId): ?ProjectMemberContextData {
-        $senderUserId = Notification::query()
-            ->where('notification_thread_id', $notificationThreadId)
-            ->orderBy('id')
-            ->first()
-            ?->sender_user_id;
+        $thread = NotificationThread::query()->find($notificationThreadId);
 
-        if ($senderUserId === null) {
+        if ($thread === null || $thread->project_id === null || $thread->target_user_id === null) {
             return null;
         }
 
-        $targetUserId = ThreadMember::query()
-            ->where('notification_thread_id', $notificationThreadId)
-            ->where('user_id', '!=', $senderUserId)
-            ->first()
-            ?->user_id;
-
-        if ($targetUserId === null) {
-            return null;
-        }
-
-        $projectId = Project::query()
-            ->where('owner_user_id', $senderUserId)
-            ->first()
-            ?->id;
-
-        if ($projectId === null) {
-            return null;
-        }
-
-        return new ProjectMemberContextData($projectId, $targetUserId);
+        return new ProjectMemberContextData($thread->project_id, $thread->target_user_id);
     }
 }

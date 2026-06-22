@@ -116,6 +116,14 @@ class ProjectPolicy {
         return $project->owner_user_id === $user->id;
     }
 
+    public function inviteManager(User $user, Project $project): bool {
+        if ($user->hasRole(RolesEnum::ADMIN)) {
+            return true;
+        }
+
+        return $project->owner_user_id === $user->id;
+    }
+
     public function acceptOwnership(User $user, Project $project): bool {
         return ProjectManager::query()
             ->where('project_id', $project->id)

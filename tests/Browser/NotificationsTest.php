@@ -6,6 +6,7 @@ use App\Data\QuickLinkData;
 use App\Enums\NotificationThreadResponseEnum;
 use App\Enums\RolesEnum;
 use App\Models\NotificationThreadResponse;
+use App\Models\Project;
 use App\Models\User;
 use App\Services\Notification\AnnouncementNotificationService;
 use App\Services\Notification\FlagNotificationService;
@@ -93,12 +94,15 @@ describe('Notifications page', function (): void {
         $recipient = User::factory()->create(['password' => Hash::make('password')])
             ->assignRole(RolesEnum::ANNOTATOR);
         $sender = User::factory()->create()->assignRole(RolesEnum::ADMIN);
+        $project = Project::factory()->create(['owner_user_id' => $sender->id]);
 
         resolve(ProjectOwnershipNotificationService::class)->createNotification(
             $recipient->id,
             $sender->id,
             'You have been assigned as owner of Project NER.',
             new QuickLinkData('Project NER', 'projects/1'),
+            $project->id,
+            $recipient->id,
         );
 
         loginViaForm($recipient->username)
@@ -115,12 +119,15 @@ describe('Notifications page', function (): void {
         $recipient = User::factory()->create(['password' => Hash::make('password')])
             ->assignRole(RolesEnum::ANNOTATOR);
         $sender = User::factory()->create()->assignRole(RolesEnum::ADMIN);
+        $project = Project::factory()->create(['owner_user_id' => $sender->id]);
 
         $notification = resolve(ProjectInvitationNotificationService::class)->createNotification(
             $recipient->id,
             $sender->id,
             'You have been invited to collaborate on Project Sentiment Analysis.',
             new QuickLinkData('Project Sentiment Analysis', 'projects/2'),
+            $project->id,
+            $recipient->id,
         );
 
         // Mark the invitation as accepted so the detail pane shows the status line.
