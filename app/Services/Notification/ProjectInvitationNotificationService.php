@@ -6,12 +6,15 @@ namespace App\Services\Notification;
 
 use App\Data\ProjectMemberContextData;
 use App\Data\QuickLinkData;
+use App\Data\TranslatableMessage;
 use App\Enums\NotificationThreadResponseEnum;
 use App\Enums\NotificationThreadTypeEnum;
 use App\Exceptions\NotificationResponseException;
 use App\Models\Notification;
 use App\Models\NotificationThread;
 use App\Models\NotificationThreadResponse;
+use App\Models\User;
+use App\Notifications\CoManagerInvitationNotification;
 use App\Queries\Notification\CreateNotificationQuery;
 use App\Queries\Notification\CreateNotificationThreadQuery;
 use App\Queries\Notification\CreateNotificationThreadResponseQuery;
@@ -20,6 +23,7 @@ use App\Queries\Notification\CreateThreadMemberQuery;
 use App\Queries\Notification\FindNotificationThreadResponseQuery;
 use App\Queries\Notification\FindProjectMemberContextByThreadQuery;
 use App\Queries\Notification\UpdateNotificationThreadResponseQuery;
+use App\Queries\Project\GetProjectBasicDataQuery;
 use App\Queries\Project\StoreProjectManagerQuery;
 use App\Services\Project\ProjectManagerService;
 
@@ -35,7 +39,28 @@ final class ProjectInvitationNotificationService extends AbstractNotificationSer
         private readonly FindProjectMemberContextByThreadQuery $findProjectMemberContextByThreadQuery,
         private readonly StoreProjectManagerQuery $storeProjectManagerQuery,
         private readonly ProjectManagerService $projectManagerService,
+        private readonly GetProjectBasicDataQuery $getProjectBasicDataQuery,
     ) {}
+
+    /**
+     * Sends both the in-app accept/reject notification and the invitation email to a
+     * co-manager who has been invited to the project.
+     */
+    public function notifyInvitedManager(int $projectId, User $sender, User $recipient): void {
+        $projectData = $this->getProjectBasicDataQuery->get($projectId);
+
+        $this->createNotification(
+            recipientUserId: $recipient->id,
+            senderUserId: $sender->id,
+            body: TranslatableMessage::encode('notifications.messages.project_invitation', ['project' => $projectData['name']]),
+            quickLink: new QuickLinkData(
+                label: $projectData['name'],
+                url: route('projects.show', $projectId),
+            ),
+        );
+
+        $recipient->notify(new CoManagerInvitationNotification($projectData['name'], $sender->name));
+    }
 
     public function createNotification(
         int $recipientUserId,

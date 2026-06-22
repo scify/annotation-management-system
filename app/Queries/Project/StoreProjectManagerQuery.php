@@ -21,4 +21,11 @@ final readonly class StoreProjectManagerQuery {
             ['accepted' => true],
         );
     }
+
+    public function exists(int $projectId, int $userId): bool {
+        return ProjectManager::query()
+            ->where('project_id', $projectId)
+            ->where('user_id', $userId)
+            ->exists();
+    }
 }

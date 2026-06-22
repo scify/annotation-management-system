@@ -44,6 +44,7 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('{id}/annotators', 'attachAnnotators')->name('annotators.attach');
         Route::delete('{id}/annotators/{annotatorId}', 'detachAnnotator')->name('annotators.detach');
         Route::delete('{id}/managers/{managerId}', 'removeManager')->name('managers.remove');
+        Route::post('{id}/invite-manager', 'inviteManager')->name('invite-manager');
         Route::post('{id}/propose-ownership', 'proposeOwnership')->name('propose-ownership');
         Route::post('{id}/accept-ownership', 'acceptOwnership')->name('accept-ownership');
         Route::post('{id}/reject-ownership', 'rejectOwnership')->name('reject-ownership');

@@ -171,6 +171,15 @@ export default function ProjectShow({
         setComanagers(updated);
     };
 
+    // The invitee appears in the table only after they accept, so there is nothing
+    // to update here; errors propagate to ManagersTab, which decides toast vs. dialog.
+    const handleInviteCoManager = async (email: string) => {
+        await apiFetch(route('projects.invite-manager', project_data.id), {
+            method: 'POST',
+            body: JSON.stringify({ email }),
+        });
+    };
+
     const subProjects: SubProjectListItemData[] = subprojects_data.map((sp) => ({
         id: sp.id,
         name: sp.name,
@@ -345,6 +354,7 @@ export default function ProjectShow({
                         onApproveLeave={handleApproveLeave}
                         onRejectLeave={handleRejectLeave}
                         onRemoveManager={handleRemoveManager}
+                        onInviteCoManager={handleInviteCoManager}
                     />
                 )}
                 {activeTab === 'export' && (

@@ -85,8 +85,14 @@ return [
 
     'managers_tab' => [
         'title' => 'Co-Managers',
-        'invite_placeholder' => 'Placeholder text',
+        'invite_placeholder' => 'Enter an email address…',
         'invite_button' => 'Invite by email',
+        'invite_success' => 'Invitation sent.',
+        'invite_already_manager' => 'This user is already a co-manager of this project.',
+        'invite_user_not_found' => 'No co-manager was found with this email address.',
+        'invite_not_found_title' => 'User not found',
+        'invite_not_found_description' => 'No co-manager was found with the email :email. Please create the user first, then invite them.',
+        'invite_create_user' => 'Create user',
         'table_username' => 'Username',
         'table_role' => 'Role',
         'table_status' => 'Status',

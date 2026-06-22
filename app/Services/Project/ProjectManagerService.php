@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Services\Project;
 
 use App\Exceptions\ProjectOwnershipException;
+use App\Models\User;
+use App\Queries\Manager\FindManagerByEmailQuery;
 use App\Queries\Project\AcceptOwnershipTransferQuery;
 use App\Queries\Project\ProposeOwnershipTransferQuery;
 use App\Queries\Project\RemoveProjectManagerQuery;
 use App\Queries\Project\RequestToLeaveQuery;
+use App\Queries\Project\StoreProjectManagerQuery;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -18,7 +21,18 @@ readonly class ProjectManagerService {
         private ProposeOwnershipTransferQuery $proposeOwnershipTransferQuery,
         private RemoveProjectManagerQuery $removeProjectManagerQuery,
         private RequestToLeaveQuery $requestToLeaveQuery,
+        private FindManagerByEmailQuery $findManagerByEmailQuery,
+        private StoreProjectManagerQuery $storeProjectManagerQuery,
     ) {}
+
+    /** Finds an eligible co-manager (ADMIN or ANNOTATION_MANAGER role) by email, or null. */
+    public function findInvitableManagerByEmail(string $email): ?User {
+        return $this->findManagerByEmailQuery->get($email);
+    }
+
+    public function isManagerOfProject(int $projectId, int $userId): bool {
+        return $this->storeProjectManagerQuery->exists($projectId, $userId);
+    }
 
     public function proposeOwnershipTransfer(int $projectId, int $userId): void {
         if ($this->proposeOwnershipTransferQuery->hasActiveProposal($projectId)) {

@@ -15,7 +15,18 @@ import { SendMessageDialog } from '@/components/send-message-dialog';
 import { useTranslations } from '@/hooks/use-translations';
 import { ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { Check, CircleStar, LogOut, Send, TriangleAlert, UserMinus, X } from 'lucide-react';
+import { router } from '@inertiajs/react';
+import {
+    Check,
+    CircleStar,
+    Loader2,
+    LogOut,
+    Send,
+    TriangleAlert,
+    UserMinus,
+    UserPlus,
+    X,
+} from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -68,6 +79,8 @@ interface ManagersTabProps {
     onRejectLeave: (managerId: number) => Promise<void>;
     /** Removes the given co-manager from the project; resolves once the table has been updated */
     onRemoveManager: (managerId: number) => Promise<void>;
+    /** Invites a co-manager by email; rejects with an ApiError (status 404 when no eligible user exists) */
+    onInviteCoManager: (email: string) => Promise<void>;
 }
 
 const BLUE_BUTTON_CLASSES =
@@ -222,6 +235,7 @@ export function ManagersTab({
     onApproveLeave,
     onRejectLeave,
     onRemoveManager,
+    onInviteCoManager,
 }: ManagersTabProps) {
     const { t, trans } = useTranslations();
     const [dialogType, setDialogType] = useState<ManagerDialogType>(null);
@@ -232,6 +246,30 @@ export function ManagersTab({
     const [leaveApprovalAction, setLeaveApprovalAction] = useState<'approve' | 'reject' | null>(
         null
     );
+    const [inviteEmail, setInviteEmail] = useState('');
+    const [inviting, setInviting] = useState(false);
+    const [inviteNotFoundEmail, setInviteNotFoundEmail] = useState<string | null>(null);
+
+    const handleInvite = async () => {
+        const email = inviteEmail.trim();
+        if (email === '' || inviting) return;
+        setInviting(true);
+        try {
+            await onInviteCoManager(email);
+            toast.success(t('projects.managers_tab.invite_success'));
+            setInviteEmail('');
+        } catch (e) {
+            if (e instanceof ApiError && e.status === 404) {
+                setInviteNotFoundEmail(email);
+            } else {
+                toast.error(
+                    e instanceof ApiError ? e.message : t('projects.messages.generic_error')
+                );
+            }
+        } finally {
+            setInviting(false);
+        }
+    };
 
     const openDialog = (type: Exclude<ManagerDialogType, null>, manager: ProjectManagerRowData) => {
         setDialogType(type);
@@ -370,11 +408,29 @@ export function ManagersTab({
                         <Input
                             id="invite-email"
                             type="email"
+                            value={inviteEmail}
+                            onChange={(e) => setInviteEmail(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    void handleInvite();
+                                }
+                            }}
                             placeholder={t('projects.managers_tab.invite_placeholder')}
                             className="w-48"
                             aria-label={t('projects.managers_tab.invite_placeholder')}
+                            autoComplete="off"
+                            spellCheck={false}
+                            disabled={inviting}
                         />
-                        <Button className="bg-brand-blue-700 hover:bg-brand-blue-800 h-10 px-4 font-semibold text-white">
+                        <Button
+                            onClick={() => void handleInvite()}
+                            disabled={inviting || inviteEmail.trim() === ''}
+                            className="bg-brand-blue-700 hover:bg-brand-blue-800 h-10 px-4 font-semibold text-white"
+                        >
+                            {inviting && (
+                                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                            )}
                             {t('projects.managers_tab.invite_button')}
                         </Button>
                     </div>
@@ -603,6 +659,21 @@ export function ManagersTab({
                 onClose={closeDialog}
                 targetName={dialogManager?.username ?? ''}
                 recipientUserId={dialogManager?.id ?? 0}
+            />
+
+            {/* ── Invite: user not found dialog ─────────────────────────────── */}
+            <ProjectDialog
+                open={inviteNotFoundEmail !== null}
+                onClose={() => setInviteNotFoundEmail(null)}
+                icon={<UserPlus />}
+                title={t('projects.managers_tab.invite_not_found_title')}
+                description={trans('projects.managers_tab.invite_not_found_description', {
+                    email: inviteNotFoundEmail ?? '',
+                })}
+                hideCancelButton
+                actionLabel={t('projects.managers_tab.invite_create_user')}
+                onAction={() => router.visit(route('users.index'))}
+                actionStyle="highlighted"
             />
         </>
     );

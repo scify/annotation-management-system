@@ -13,4 +13,11 @@ return [
         'cta' => 'Sign in to :app',
         'creator_fallback' => 'An administrator',
     ],
+    'co_manager_invitation' => [
+        'subject' => 'You have been invited to co-manage a project on :app',
+        'greeting' => 'Hello :name,',
+        'intro' => ':inviter has invited you to co-manage the project ":project".',
+        'outro' => 'Sign in to review the invitation and accept or decline it.',
+        'cta' => 'Sign in to :app',
+    ],
 ];
