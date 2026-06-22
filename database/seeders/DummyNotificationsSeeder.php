@@ -106,7 +106,7 @@ class DummyNotificationsSeeder extends Seeder {
         $projectOwnershipService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $nerProject->name]),
+            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $nerProject->name, 'recipient' => $carol->username]),
             quickLink: new QuickLinkData(
                 label: $nerProject->name,
                 url: 'projects/' . $nerProject->id,
@@ -118,7 +118,7 @@ class DummyNotificationsSeeder extends Seeder {
         $projectInvitationService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: TranslatableMessage::encode('notifications.messages.project_invitation', ['project' => $nerProject->name]),
+            body: TranslatableMessage::encode('notifications.messages.project_invitation', ['project' => $nerProject->name, 'recipient' => $carol->username]),
             quickLink: new QuickLinkData(
                 label: $nerProject->name,
                 url: 'projects/' . $nerProject->id,
@@ -130,7 +130,7 @@ class DummyNotificationsSeeder extends Seeder {
         $acceptedInvitation = $projectInvitationService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: TranslatableMessage::encode('notifications.messages.project_invitation', ['project' => $sentimentProject->name]),
+            body: TranslatableMessage::encode('notifications.messages.project_invitation', ['project' => $sentimentProject->name, 'recipient' => $carol->username]),
             quickLink: new QuickLinkData(
                 label: $sentimentProject->name,
                 url: 'projects/' . $sentimentProject->id,
@@ -143,7 +143,7 @@ class DummyNotificationsSeeder extends Seeder {
         $rejectedOwnership = $projectOwnershipService->createNotification(
             recipientUserId: $carol->id,
             senderUserId: $alice->id,
-            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $sentimentProject->name]),
+            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $sentimentProject->name, 'recipient' => $carol->username]),
             quickLink: new QuickLinkData(
                 label: $sentimentProject->name,
                 url: 'projects/' . $sentimentProject->id,
@@ -211,14 +211,14 @@ class DummyNotificationsSeeder extends Seeder {
 
         $infoService->createNotification(
             recipientUserId: $carol->id,
-            body: TranslatableMessage::encode('notifications.messages.profile_edited.body', ['editor' => 'admin_alice']),
+            body: TranslatableMessage::encode('notifications.messages.profile_edited.body', ['editor' => 'admin_alice', 'recipient' => $carol->username]),
             title: TranslatableMessage::encode('notifications.messages.profile_edited.title'),
         );
 
         $canceledOwnership = $projectOwnershipService->createNotification(
             recipientUserId: $dave->id,
             senderUserId: $carol->id,
-            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $nerProject->name]),
+            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $nerProject->name, 'recipient' => $dave->username]),
             quickLink: new QuickLinkData(
                 label: $nerProject->name,
                 url: 'projects/' . $nerProject->id,
