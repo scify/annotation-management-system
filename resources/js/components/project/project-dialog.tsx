@@ -31,10 +31,12 @@ export interface ProjectDialogProps {
      * the X, backdrop, or Esc still calls onClose.
      */
     onCancel?: () => void;
-    actionLabel: string;
+    /** Label for the primary action button. When omitted (with onAction), no action button is rendered */
+    actionLabel?: string;
     /** Optional icon rendered to the right of the action label */
     actionIcon?: React.ReactNode;
-    onAction: () => void;
+    /** Primary action handler. When omitted (with actionLabel), no action button is rendered */
+    onAction?: () => void;
     /** Disables the action button when true */
     actionDisabled?: boolean;
     /** Shows a spinner on the action button and disables both buttons */
@@ -109,25 +111,27 @@ export function ProjectDialog({
                             {cancelLabel}
                         </button>
                     )}
-                    <button
-                        type="button"
-                        onClick={onAction}
-                        disabled={actionDisabled || loading || cancelLoading}
-                        className={cn(
-                            'flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-                            hideCancelButton ? 'w-full' : 'flex-1',
-                            actionStyle === 'highlighted'
-                                ? 'bg-brand-blue-800 hover:bg-brand-blue-900 border-4 border-cyan-400'
-                                : 'bg-brand-blue-700 hover:bg-brand-blue-800'
-                        )}
-                    >
-                        {actionLabel}
-                        {loading ? (
-                            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                        ) : (
-                            actionIcon
-                        )}
-                    </button>
+                    {actionLabel !== undefined && onAction !== undefined && (
+                        <button
+                            type="button"
+                            onClick={onAction}
+                            disabled={actionDisabled || loading || cancelLoading}
+                            className={cn(
+                                'flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg text-base font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                                hideCancelButton ? 'w-full' : 'flex-1',
+                                actionStyle === 'highlighted'
+                                    ? 'bg-brand-blue-800 hover:bg-brand-blue-900 border-4 border-cyan-400'
+                                    : 'bg-brand-blue-700 hover:bg-brand-blue-800'
+                            )}
+                        >
+                            {actionLabel}
+                            {loading ? (
+                                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                            ) : (
+                                actionIcon
+                            )}
+                        </button>
+                    )}
                 </DialogFooter>
             </DialogContent>
         </Dialog>

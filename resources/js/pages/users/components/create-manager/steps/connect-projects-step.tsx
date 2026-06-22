@@ -264,6 +264,8 @@ interface ConnectProjectsStepProps {
     selectedProjectIds: number[];
     onSelectionChange: (ids: number[]) => void;
     showMineToggle?: boolean;
+    /** When set, shows a note explaining this project was pre-selected from a co-manager invite */
+    prefilledProjectId?: number;
 }
 
 function SelectAllButton({
@@ -319,6 +321,7 @@ export function ConnectProjectsStep({
     selectedProjectIds,
     onSelectionChange,
     showMineToggle = true,
+    prefilledProjectId,
 }: ConnectProjectsStepProps) {
     const { t, trans } = useTranslations();
 
@@ -330,8 +333,31 @@ export function ConnectProjectsStep({
         );
     }
 
+    const prefilledProjectName = prefilledProjectId
+        ? projects.find((p) => p.id === prefilledProjectId)?.name
+        : undefined;
+
     return (
         <div className="flex flex-col gap-4">
+            {prefilledProjectId !== undefined && (
+                <div
+                    className="border-brand-blue-200 bg-brand-blue-50 flex gap-3 rounded-md border p-3"
+                    role="note"
+                >
+                    <FolderDot
+                        className="text-brand-blue-700 size-[19px] shrink-0"
+                        aria-hidden="true"
+                    />
+                    <p className="text-brand-blue-900 text-sm leading-5">
+                        {prefilledProjectName
+                            ? trans('users.connect_projects.prefilled_note', {
+                                  project: prefilledProjectName,
+                              })
+                            : t('users.connect_projects.prefilled_note_generic')}
+                    </p>
+                </div>
+            )}
+
             {/* Heading row */}
             <div className="flex flex-col gap-0.5">
                 <h2 className="text-xl font-medium text-slate-800">

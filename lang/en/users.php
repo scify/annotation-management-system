@@ -82,6 +82,8 @@ return [
         'search_placeholder' => 'Search Projects...',
         'no_projects' => 'No projects found.',
         'min_one_required' => 'Select at least 1 project to continue.',
+        'prefilled_note' => '“:project” was pre-selected because you are creating this co-manager to invite them to it. You can change this selection.',
+        'prefilled_note_generic' => 'A project was pre-selected because you are creating this co-manager to invite them to it. You can change this selection.',
     ],
     'create_annotator' => [
         'user_details' => 'User Details',

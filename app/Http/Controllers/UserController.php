@@ -83,6 +83,7 @@ class UserController extends Controller {
             RolesEnum::ANNOTATION_MANAGER => [
                 'type' => RolesEnum::ANNOTATION_MANAGER->value,
                 'manager_data' => $this->userManagementService->getDataForCreateNewManager($currentUser),
+                ...$this->managerPrefillProps($request),
             ],
             RolesEnum::ANNOTATOR => [
                 'type' => RolesEnum::ANNOTATOR->value,
@@ -225,5 +226,27 @@ class UserController extends Controller {
 
         return to_route('users.index')
             ->with('success', __('users.messages.deleted'));
+    }
+
+    /**
+     * Optional pre-fill props for the create-manager form, sourced from query
+     * params when arriving from a co-manager invite that matched no existing user.
+     *
+     * @return array<string, mixed>
+     */
+    private function managerPrefillProps(UserCreateRequest $request): array {
+        $props = [];
+
+        $email = $request->string('email')->toString();
+        if ($email !== '') {
+            $props['prefill_email'] = $email;
+        }
+
+        $projectId = $request->integer('project_id');
+        if ($projectId > 0) {
+            $props['prefill_project_id'] = $projectId;
+        }
+
+        return $props;
     }
 }
