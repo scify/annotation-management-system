@@ -110,7 +110,7 @@ describe('Notifications page', function (): void {
             ->assertSee('You have been assigned as owner of Project NER.')
             ->click('button:has-text("You have been assigned as owner of Project NER.")')
             ->wait(0.2)
-            ->assertSee('Approve')
+            ->assertSee('Accept')
             ->assertSee('Reject')
             ->assertNoJavascriptErrors();
     });
@@ -141,7 +141,7 @@ describe('Notifications page', function (): void {
             ->click('button:has-text("You have been invited to collaborate on Project Sentiment Analysis.")')
             ->wait(0.2)
             ->assertSee('Accepted')
-            ->assertDontSee('Approve')
+            ->assertDontSee('Accept')
             ->assertNoJavascriptErrors();
     });
 });
