@@ -16,6 +16,10 @@ interface CreateUserProps {
     admin_data?: AdminCreateData;
     manager_data?: ManagerCreateData;
     annotator_data?: AnnotatorCreateData;
+    /** Pre-fills the email field when arriving from a co-manager invite */
+    prefill_email?: string;
+    /** Pre-selects this project in the connect-projects step */
+    prefill_project_id?: number;
 }
 
 const EMPTY_ADMIN_DATA: AdminCreateData = {
@@ -47,6 +51,8 @@ export default function Create({
     admin_data,
     manager_data,
     annotator_data,
+    prefill_email,
+    prefill_project_id,
 }: Readonly<CreateUserProps>) {
     const { t } = useTranslations();
 
@@ -69,7 +75,11 @@ export default function Create({
                     <CreateAdminForm adminData={admin_data ?? EMPTY_ADMIN_DATA} />
                 )}
                 {type === RolesEnum.ANNOTATION_MANAGER && (
-                    <CreateManagerForm managerData={manager_data ?? EMPTY_MANAGER_DATA} />
+                    <CreateManagerForm
+                        managerData={manager_data ?? EMPTY_MANAGER_DATA}
+                        prefillEmail={prefill_email}
+                        prefillProjectId={prefill_project_id}
+                    />
                 )}
                 {type === RolesEnum.ANNOTATOR && (
                     <CreateAnnotatorForm annotatorData={annotator_data ?? EMPTY_ANNOTATOR_DATA} />

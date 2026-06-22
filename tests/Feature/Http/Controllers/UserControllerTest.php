@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\RolesEnum;
 use App\Enums\StatusEnum;
+use App\Models\Project;
 use App\Models\User;
 use Database\Seeders\AnnotatorPasswordPolicySeeder;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -101,6 +102,34 @@ describe('UserController', function (): void {
     it('redirects to users index when create is accessed with an invalid type', function (): void {
         $this->actingAs($this->admin)
             ->get(route('users.create', ['type' => 'invalid-role']))
+            ->assertRedirect(route('users.index'));
+    });
+
+    it('passes email and project_id prefill props to the create-manager form', function (): void {
+        // Arrange
+        $project = Project::factory()->create();
+
+        // Act + Assert
+        $this->actingAs($this->admin)
+            ->get(route('users.create', [
+                'type' => RolesEnum::ANNOTATION_MANAGER->value,
+                'email' => 'invitee@example.com',
+                'project_id' => $project->id,
+            ]))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('users/create')
+                ->where('prefill_email', 'invitee@example.com')
+                ->where('prefill_project_id', $project->id)
+            );
+    });
+
+    it('rejects a non-existent project_id on the create-manager form', function (): void {
+        $this->actingAs($this->admin)
+            ->get(route('users.create', [
+                'type' => RolesEnum::ANNOTATION_MANAGER->value,
+                'project_id' => 999999,
+            ]))
             ->assertRedirect(route('users.index'));
     });
 

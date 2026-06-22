@@ -345,6 +345,7 @@ export default function ProjectShow({
                 {activeTab === 'managers' && (
                     <ManagersTab
                         managers={managers}
+                        projectId={project_data.id}
                         onTransferOwnership={handleTransferOwnership}
                         onAcceptOwnership={handleAcceptOwnership}
                         onRejectOwnership={handleRejectOwnership}

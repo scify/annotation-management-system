@@ -26,6 +26,10 @@ export interface CreateManagerFormData {
 interface CreateManagerFormProps {
     managerData: ManagerCreateData;
     user?: ManagerEditUser;
+    /** Pre-fills the email field when arriving from a co-manager invite */
+    prefillEmail?: string;
+    /** Pre-selects this project in the connect-projects step */
+    prefillProjectId?: number;
 }
 
 const LAST_STEP = 4;
@@ -46,7 +50,12 @@ const FIELD_TO_STEP: Record<string, number> = {
     annotator_ids: 4,
 };
 
-export function CreateManagerForm({ managerData, user }: CreateManagerFormProps) {
+export function CreateManagerForm({
+    managerData,
+    user,
+    prefillEmail,
+    prefillProjectId,
+}: CreateManagerFormProps) {
     const { t } = useTranslations();
     const [currentStep, setCurrentStep] = useState(0);
     const isEditing = user !== undefined;
@@ -54,13 +63,13 @@ export function CreateManagerForm({ managerData, user }: CreateManagerFormProps)
     const form = useForm<CreateManagerFormData>({
         name: user?.name ?? '',
         username: user?.username ?? '',
-        email: user?.email ?? '',
+        email: user?.email ?? prefillEmail ?? '',
         password: '',
         password_confirmation: '',
         status: user?.status ?? 'pending',
         annotation_task_ids: user?.annotation_task_ids ?? [],
         dataset_ids: user?.dataset_ids ?? [],
-        project_ids: user?.project_ids ?? [],
+        project_ids: user?.project_ids ?? (prefillProjectId ? [prefillProjectId] : []),
         annotator_ids: user?.annotator_ids ?? [],
     });
 
@@ -201,6 +210,7 @@ export function CreateManagerForm({ managerData, user }: CreateManagerFormProps)
                         selectedProjectIds={form.data.project_ids}
                         onSelectionChange={(ids) => handleChange({ project_ids: ids })}
                         showMineToggle={!!managerData.all_projects?.length}
+                        prefilledProjectId={prefillProjectId}
                     />
                 )}
                 {currentStep === 4 && (

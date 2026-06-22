@@ -15,7 +15,8 @@ import { SendMessageDialog } from '@/components/send-message-dialog';
 import { useTranslations } from '@/hooks/use-translations';
 import { ApiError } from '@/lib/api';
 import { cn } from '@/lib/utils';
-import { router } from '@inertiajs/react';
+import { type PageProps } from '@/types';
+import { router, usePage } from '@inertiajs/react';
 import {
     Check,
     CircleStar,
@@ -61,6 +62,8 @@ type ManagerDialogType =
 
 interface ManagersTabProps {
     managers: ProjectManagerRowData[];
+    /** Id of the project being managed; used to pre-fill the create-manager shortcut */
+    projectId: number;
     /** Proposes the given user as the project's new owner; resolves once the table has been updated */
     onTransferOwnership: (managerId: number) => Promise<void>;
     /** Accepts a pending ownership proposal addressed to the current user; resolves once the table has been updated */
@@ -226,6 +229,7 @@ function ActionsCell({
 
 export function ManagersTab({
     managers,
+    projectId,
     onTransferOwnership,
     onAcceptOwnership,
     onRejectOwnership,
@@ -238,6 +242,8 @@ export function ManagersTab({
     onInviteCoManager,
 }: ManagersTabProps) {
     const { t, trans } = useTranslations();
+    const { auth } = usePage<PageProps>().props;
+    const canCreateManagers = auth.user.can.create_managers;
     const [dialogType, setDialogType] = useState<ManagerDialogType>(null);
     const [dialogManager, setDialogManager] = useState<ProjectManagerRowData | null>(null);
     const [transferring, setTransferring] = useState(false);
@@ -667,12 +673,30 @@ export function ManagersTab({
                 onClose={() => setInviteNotFoundEmail(null)}
                 icon={<UserPlus />}
                 title={t('projects.managers_tab.invite_not_found_title')}
-                description={trans('projects.managers_tab.invite_not_found_description', {
-                    email: inviteNotFoundEmail ?? '',
-                })}
-                hideCancelButton
-                actionLabel={t('projects.managers_tab.invite_create_user')}
-                onAction={() => router.visit(route('users.index'))}
+                description={trans(
+                    canCreateManagers
+                        ? 'projects.managers_tab.invite_not_found_description'
+                        : 'projects.managers_tab.invite_not_found_description_no_permission',
+                    { email: inviteNotFoundEmail ?? '' }
+                )}
+                hideCancelButton={canCreateManagers}
+                cancelLabel={t('projects.managers_tab.invite_close')}
+                onCancel={() => setInviteNotFoundEmail(null)}
+                actionLabel={
+                    canCreateManagers ? t('projects.managers_tab.invite_create_user') : undefined
+                }
+                onAction={
+                    canCreateManagers
+                        ? () =>
+                              router.visit(
+                                  route('users.create', {
+                                      type: 'annotation-manager',
+                                      email: inviteNotFoundEmail ?? '',
+                                      project_id: projectId,
+                                  })
+                              )
+                        : undefined
+                }
                 actionStyle="highlighted"
             />
         </>

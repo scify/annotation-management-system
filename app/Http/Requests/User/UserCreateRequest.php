@@ -25,6 +25,8 @@ class UserCreateRequest extends FormRequest {
     public function rules(): array {
         return [
             'type' => ['required', Rule::enum(RolesEnum::class)],
+            'email' => ['nullable', 'email', 'max:255'],
+            'project_id' => ['nullable', 'integer', 'exists:projects,id'],
         ];
     }
 
