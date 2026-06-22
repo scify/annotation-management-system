@@ -23,7 +23,7 @@ return [
         'cannot_approve_rejected' => 'This notification has already been rejected and cannot be approved.',
         'cannot_respond_cancelled' => 'This notification has been cancelled and can no longer be responded to.',
     ],
-    'approve' => 'Approve',
+    'approve' => 'Accept',
     'reject' => 'Reject',
     'accepted' => 'Accepted',
     'rejected' => 'Rejected',

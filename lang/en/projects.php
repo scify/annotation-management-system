@@ -116,7 +116,7 @@ return [
         'dialog_ownership_transferred' => ':username transferred the Ownership of this Project to you.',
         'dialog_ownership_accept' => 'Do you accept the Ownership?',
         'dialog_ownership_reject' => 'Reject',
-        'dialog_ownership_approve' => 'Approve',
+        'dialog_ownership_approve' => 'Accept',
         'dialog_leave_title' => 'Leave Request',
         'dialog_leave_description' => 'This action will submit your Leave request for approval from the Owner',
         'dialog_leave_confirm' => 'Send Leave Request?',
