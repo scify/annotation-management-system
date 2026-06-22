@@ -117,7 +117,7 @@ describe('Notifications page', function (): void {
 
     it('shows a status line instead of buttons for a decided action thread', function (): void {
         $recipient = User::factory()->create(['password' => Hash::make('password')])
-            ->assignRole(RolesEnum::ANNOTATOR);
+            ->assignRole(RolesEnum::ANNOTATION_MANAGER);
         $sender = User::factory()->create()->assignRole(RolesEnum::ADMIN);
         $project = Project::factory()->create(['owner_user_id' => $sender->id]);
 
@@ -141,7 +141,7 @@ describe('Notifications page', function (): void {
             ->click('button:has-text("You have been invited to collaborate on Project Sentiment Analysis.")')
             ->wait(0.2)
             ->assertSee('Accepted')
-            ->assertDontSee('Accept')
+            ->assertDontSee('Reject')
             ->assertNoJavascriptErrors();
     });
 });
