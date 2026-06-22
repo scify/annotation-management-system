@@ -22,6 +22,8 @@ use App\Queries\Notification\CreateQuickLinkQuery;
 use App\Queries\Notification\CreateThreadMemberQuery;
 use App\Queries\Notification\FindNotificationThreadResponseQuery;
 use App\Queries\Notification\FindProjectMemberContextByThreadQuery;
+use App\Queries\Notification\GetNotificationThreadSenderIdQuery;
+use App\Queries\Notification\MarkThreadReadStatusQuery;
 use App\Queries\Notification\UpdateNotificationThreadResponseQuery;
 use App\Queries\Project\GetProjectBasicDataQuery;
 use App\Queries\Project\StoreProjectManagerQuery;
@@ -40,6 +42,8 @@ final class ProjectInvitationNotificationService extends AbstractNotificationSer
         private readonly StoreProjectManagerQuery $storeProjectManagerQuery,
         private readonly ProjectManagerService $projectManagerService,
         private readonly GetProjectBasicDataQuery $getProjectBasicDataQuery,
+        private readonly GetNotificationThreadSenderIdQuery $getNotificationThreadSenderIdQuery,
+        private readonly MarkThreadReadStatusQuery $markThreadReadStatusQuery,
     ) {}
 
     /**
@@ -52,7 +56,7 @@ final class ProjectInvitationNotificationService extends AbstractNotificationSer
         $this->createNotification(
             recipientUserId: $recipient->id,
             senderUserId: $sender->id,
-            body: TranslatableMessage::encode('notifications.messages.project_invitation', ['project' => $projectData['name']]),
+            body: TranslatableMessage::encode('notifications.messages.project_invitation', ['project' => $projectData['name'], 'recipient' => $recipient->username]),
             quickLink: new QuickLinkData(
                 label: $projectData['name'],
                 url: route('projects.show', $projectId),
@@ -111,6 +115,8 @@ final class ProjectInvitationNotificationService extends AbstractNotificationSer
         if ($memberContext instanceof ProjectMemberContextData) {
             $this->storeProjectManagerQuery->firstOrCreate($memberContext->projectId, $memberContext->targetUserId);
         }
+
+        $this->markSenderUnread($notificationThreadId);
     }
 
     public function reject(int $notificationThreadId): void {
@@ -131,6 +137,8 @@ final class ProjectInvitationNotificationService extends AbstractNotificationSer
         if ($memberContext instanceof ProjectMemberContextData) {
             $this->projectManagerService->removeManager($memberContext->projectId, $memberContext->targetUserId);
         }
+
+        $this->markSenderUnread($notificationThreadId);
     }
 
     protected function setResponse(NotificationThread $thread): void {
@@ -148,5 +156,13 @@ final class ProjectInvitationNotificationService extends AbstractNotificationSer
 
     protected function allowsReply(): bool {
         return false;
+    }
+
+    private function markSenderUnread(int $notificationThreadId): void {
+        $senderId = $this->getNotificationThreadSenderIdQuery->get($notificationThreadId);
+
+        if ($senderId !== null) {
+            $this->markThreadReadStatusQuery->mark($notificationThreadId, $senderId, false);
+        }
     }
 }

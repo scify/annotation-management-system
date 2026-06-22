@@ -69,20 +69,22 @@ final class InfoNotificationService extends AbstractNotificationService {
 
     public function notifyLeaveRequestAccepted(int $projectId, int $memberUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
+        $usernames = $this->getUsernamesByIdsQuery->get([$memberUserId]);
 
         $this->createNotification(
             recipientUserId: $memberUserId,
-            body: TranslatableMessage::encode('notifications.messages.leave_request_accepted.body', ['project' => $projectData['name']]),
+            body: TranslatableMessage::encode('notifications.messages.leave_request_accepted.body', ['project' => $projectData['name'], 'recipient' => $usernames[0] ?? '']),
             title: TranslatableMessage::encode('notifications.messages.leave_request_accepted.title'),
         );
     }
 
     public function notifyLeaveRequestRejected(int $projectId, int $memberUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
+        $usernames = $this->getUsernamesByIdsQuery->get([$memberUserId]);
 
         $this->createNotification(
             recipientUserId: $memberUserId,
-            body: TranslatableMessage::encode('notifications.messages.leave_request_rejected.body', ['project' => $projectData['name']]),
+            body: TranslatableMessage::encode('notifications.messages.leave_request_rejected.body', ['project' => $projectData['name'], 'recipient' => $usernames[0] ?? '']),
             title: TranslatableMessage::encode('notifications.messages.leave_request_rejected.title'),
         );
     }
@@ -117,10 +119,11 @@ final class InfoNotificationService extends AbstractNotificationService {
 
     public function notifyRemovedManager(int $projectId, int $removedUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
+        $usernames = $this->getUsernamesByIdsQuery->get([$removedUserId]);
 
         $this->createNotification(
             recipientUserId: $removedUserId,
-            body: TranslatableMessage::encode('notifications.messages.manager_removed_from_project.body', ['project' => $projectData['name']]),
+            body: TranslatableMessage::encode('notifications.messages.manager_removed_from_project.body', ['project' => $projectData['name'], 'recipient' => $usernames[0] ?? '']),
             title: TranslatableMessage::encode('notifications.messages.manager_removed_from_project.title'),
         );
     }

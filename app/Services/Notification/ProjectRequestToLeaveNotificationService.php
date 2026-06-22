@@ -20,6 +20,8 @@ use App\Queries\Notification\CreateQuickLinkQuery;
 use App\Queries\Notification\CreateThreadMemberQuery;
 use App\Queries\Notification\FindNotificationThreadResponseQuery;
 use App\Queries\Notification\FindRequestToLeaveContextByThreadQuery;
+use App\Queries\Notification\GetNotificationThreadSenderIdQuery;
+use App\Queries\Notification\MarkThreadReadStatusQuery;
 use App\Queries\Notification\UpdateNotificationThreadResponseQuery;
 use App\Queries\Project\GetProjectBasicDataQuery;
 use App\Queries\Project\RequestToLeaveQuery;
@@ -38,6 +40,8 @@ final class ProjectRequestToLeaveNotificationService extends AbstractNotificatio
         private readonly ProjectManagerService $projectManagerService,
         private readonly GetProjectBasicDataQuery $getProjectBasicDataQuery,
         private readonly RequestToLeaveQuery $requestToLeaveQuery,
+        private readonly GetNotificationThreadSenderIdQuery $getNotificationThreadSenderIdQuery,
+        private readonly MarkThreadReadStatusQuery $markThreadReadStatusQuery,
     ) {}
 
     public function notifyOwnerOfProject(int $projectId, int $senderUserId): void {
@@ -114,6 +118,8 @@ final class ProjectRequestToLeaveNotificationService extends AbstractNotificatio
         if ($memberContext instanceof ProjectMemberContextData) {
             $this->projectManagerService->acceptRequestToLeave($memberContext->projectId, $memberContext->targetUserId);
         }
+
+        $this->markSenderUnread($notificationThreadId);
     }
 
     public function reject(int $notificationThreadId): void {
@@ -145,6 +151,8 @@ final class ProjectRequestToLeaveNotificationService extends AbstractNotificatio
         if ($memberContext instanceof ProjectMemberContextData) {
             $this->projectManagerService->rejectRequestToLeave($memberContext->projectId, $memberContext->targetUserId);
         }
+
+        $this->markSenderUnread($notificationThreadId);
     }
 
     protected function setResponse(NotificationThread $thread): void {
@@ -162,5 +170,13 @@ final class ProjectRequestToLeaveNotificationService extends AbstractNotificatio
 
     protected function allowsReply(): bool {
         return false;
+    }
+
+    private function markSenderUnread(int $notificationThreadId): void {
+        $senderId = $this->getNotificationThreadSenderIdQuery->get($notificationThreadId);
+
+        if ($senderId !== null) {
+            $this->markThreadReadStatusQuery->mark($notificationThreadId, $senderId, false);
+        }
     }
 }

@@ -20,9 +20,12 @@ use App\Queries\Notification\CreateQuickLinkQuery;
 use App\Queries\Notification\CreateThreadMemberQuery;
 use App\Queries\Notification\FindNotificationThreadResponseQuery;
 use App\Queries\Notification\FindProjectMemberContextByThreadQuery;
+use App\Queries\Notification\GetNotificationThreadSenderIdQuery;
+use App\Queries\Notification\MarkThreadReadStatusQuery;
 use App\Queries\Notification\UpdateNotificationThreadResponseQuery;
 use App\Queries\Project\GetProjectBasicDataQuery;
 use App\Queries\Project\IsProposedOwnerQuery;
+use App\Queries\User\GetUsernamesByIdsQuery;
 use App\Services\Project\ProjectManagerService;
 
 final class ProjectOwnershipNotificationService extends AbstractNotificationService {
@@ -38,15 +41,19 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
         private readonly ProjectManagerService $projectManagerService,
         private readonly GetProjectBasicDataQuery $getProjectBasicDataQuery,
         private readonly IsProposedOwnerQuery $isProposedOwnerQuery,
+        private readonly GetUsernamesByIdsQuery $getUsernamesByIdsQuery,
+        private readonly GetNotificationThreadSenderIdQuery $getNotificationThreadSenderIdQuery,
+        private readonly MarkThreadReadStatusQuery $markThreadReadStatusQuery,
     ) {}
 
     public function notifyProposedOwner(int $projectId, int $senderUserId, int $recipientUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
+        $recipientUsernames = $this->getUsernamesByIdsQuery->get([$recipientUserId]);
 
         $this->createNotification(
             recipientUserId: $recipientUserId,
             senderUserId: $senderUserId,
-            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $projectData['name']]),
+            body: TranslatableMessage::encode('notifications.messages.project_ownership', ['project' => $projectData['name'], 'recipient' => $recipientUsernames[0] ?? '']),
             quickLink: new QuickLinkData(
                 label: $projectData['name'],
                 url: route('projects.show', $projectId),
@@ -114,6 +121,8 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
         if ($memberContext instanceof ProjectMemberContextData) {
             $this->projectManagerService->acceptOwnershipTransfer($memberContext->projectId, $memberContext->targetUserId);
         }
+
+        $this->markSenderUnread($notificationThreadId);
     }
 
     public function reject(int $notificationThreadId): void {
@@ -145,6 +154,8 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
         if ($memberContext instanceof ProjectMemberContextData) {
             $this->projectManagerService->rejectOwnershipTransfer($memberContext->projectId, $memberContext->targetUserId);
         }
+
+        $this->markSenderUnread($notificationThreadId);
     }
 
     protected function setResponse(NotificationThread $thread): void {
@@ -162,5 +173,13 @@ final class ProjectOwnershipNotificationService extends AbstractNotificationServ
 
     protected function allowsReply(): bool {
         return false;
+    }
+
+    private function markSenderUnread(int $notificationThreadId): void {
+        $senderId = $this->getNotificationThreadSenderIdQuery->get($notificationThreadId);
+
+        if ($senderId !== null) {
+            $this->markThreadReadStatusQuery->mark($notificationThreadId, $senderId, false);
+        }
     }
 }

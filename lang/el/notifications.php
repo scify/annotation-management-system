@@ -38,11 +38,11 @@ return [
     'messages' => [
         'profile_edited' => [
             'title' => 'Επεξεργασία προφίλ',
-            'body' => 'Ο/Η @:editor επεξεργάστηκε το προφίλ σας',
+            'body' => 'Ο/Η @:editor επεξεργάστηκε το προφίλ του/της @:recipient',
         ],
         'added_to_project' => [
             'title' => 'Νέο έργο',
-            'body' => 'Ο/Η @:editor σας πρόσθεσε στο έργο του/της',
+            'body' => 'Ο/Η @:editor πρόσθεσε τον/την @:recipient στο έργο του/της',
         ],
         'overdue_approaching' => [
             'title' => 'Πλησιάζει η προθεσμία',
@@ -53,9 +53,9 @@ return [
             'body' => 'Το υποέργο :subproject ξεπέρασε την προθεσμία σήμερα',
         ],
         'announcement' => 'Ο/Η :username έκανε μια ανακοίνωση:',
-        'project_ownership' => 'θέλει να σας μεταβιβάσει την κυριότητα του :project.',
+        'project_ownership' => 'θέλει να μεταβιβάσει την κυριότητα του :project στον/στην @:recipient.',
         'project_ownership_question' => 'Αποδέχεστε την κυριότητα;',
-        'project_invitation' => 'σας προσκάλεσε να συμμετάσχετε στο :project.',
+        'project_invitation' => 'προσκάλεσε τον/την @:recipient να συμμετάσχει στο :project.',
         'project_invitation_question' => 'Αποδέχεστε την πρόσκληση;',
         'project_request_to_leave' => 'ζήτησε να αποχωρήσει από το :project.',
         'project_request_to_leave_question' => 'Αποδέχεστε το αίτημα;',
@@ -65,7 +65,7 @@ return [
         ],
         'manager_removed_from_project' => [
             'title' => 'Εξαίρεση από Έργο',
-            'body' => 'Εξαιρεθήκατε από το :project.',
+            'body' => 'Ο/Η @:recipient εξαιρέθηκε από το :project.',
         ],
         'ownership_proposal_cancelled' => [
             'title' => 'Αναίρεση Πρότασης για Αλλαγή Ιδιοκτησίας',
@@ -77,11 +77,11 @@ return [
         ],
         'leave_request_accepted' => [
             'title' => 'Αποδεχτή η αίτηση αποχώρησης',
-            'body' => 'Η αίτηση αποχώρησης από το έργο :project έγινε αποδεκτή.',
+            'body' => 'Η αίτηση αποχώρησης του/της @:recipient από το έργο :project έγινε αποδεκτή.',
         ],
         'leave_request_rejected' => [
             'title' => 'Απόρριψη αίτησης αποχώρησης',
-            'body' => 'Η αίτηση αποχώρησης από το έργο :project απορρίφθηκε.',
+            'body' => 'Η αίτηση αποχώρησης του/της @:recipient από το έργο :project απορρίφθηκε.',
         ],
         'ownership_transfer_accepted' => [
             'title' => 'Αποδοχή Μεταβίβασης Ιδιοκτησίας',

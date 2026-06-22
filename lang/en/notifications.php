@@ -38,11 +38,11 @@ return [
     'messages' => [
         'profile_edited' => [
             'title' => 'Profile edit',
-            'body' => '@:editor just edited your profile',
+            'body' => "@:editor just edited @:recipient's profile",
         ],
         'added_to_project' => [
             'title' => 'New Project',
-            'body' => '@:editor just added you to their project',
+            'body' => '@:editor just added @:recipient to their project',
         ],
         'overdue_approaching' => [
             'title' => 'Overdue Date Approaching',
@@ -53,9 +53,9 @@ return [
             'body' => 'Subproject :subproject surpassed due date today',
         ],
         'announcement' => ':username made an announcement:',
-        'project_ownership' => 'wants to transfer the Ownership of :project to you.',
+        'project_ownership' => 'wants to transfer the Ownership of :project to @:recipient.',
         'project_ownership_question' => 'Do you accept the Ownership?',
-        'project_invitation' => 'invited you to participate to :project.',
+        'project_invitation' => 'invited @:recipient to participate to :project.',
         'project_invitation_question' => 'Do you accept the Invitation?',
         'project_request_to_leave' => 'asked to leave :project.',
         'project_request_to_leave_question' => 'Do you accept the request?',
@@ -65,7 +65,7 @@ return [
         ],
         'manager_removed_from_project' => [
             'title' => 'Removed from Project',
-            'body' => 'You have been removed from :project.',
+            'body' => '@:recipient has been removed from :project.',
         ],
         'ownership_proposal_cancelled' => [
             'title' => 'Ownership Change Proposal Withdrawn',
@@ -77,11 +77,11 @@ return [
         ],
         'leave_request_accepted' => [
             'title' => 'Leave Request Accepted',
-            'body' => 'Your leave request for :project has been accepted.',
+            'body' => "@:recipient's leave request for :project has been accepted.",
         ],
         'leave_request_rejected' => [
             'title' => 'Leave Request Rejected',
-            'body' => 'Your leave request for :project has been rejected.',
+            'body' => "@:recipient's leave request for :project has been rejected.",
         ],
         'ownership_transfer_accepted' => [
             'title' => 'Ownership Transfer Accepted',
