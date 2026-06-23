@@ -200,6 +200,11 @@ regexes = [
     '''DB_PASSWORD\s*=\s*["']?(?:db|pass|test|password)["']?''',
     '''DB_PASSWORD\s*=\s*["']?\$[A-Z_]+["']?''',  # Environment variables
     '''DB_PASSWORD=\{\{\s*[A-Z_]+\s*\}\}''',  # Jinja2 template variables
+    # GitHub Actions secret references in workflow files, e.g.
+    #   DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+    # are runtime injections, never committed secrets. The rule's captured "secret"
+    # is truncated at whitespace to "<KEY>=${{", so we allowlist that assignment shape.
+    '''=\s*\$\{\{''',
     # Allow test/dummy values
     '''(?i)test[_-]?key''',
     '''(?i)dummy[_-]?key''',

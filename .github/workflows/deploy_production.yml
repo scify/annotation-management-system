@@ -10,199 +10,199 @@
 name: Deploy annotrAIn app Production
 
 on:
-  workflow_dispatch:
+    workflow_dispatch:
 
 permissions:
-  contents: read
+    contents: read
 
 # Prevent overlapping deploys from racing on git reset / migrate against the same server.
 concurrency:
-  group: deploy-production
-  cancel-in-progress: false
+    group: deploy-production
+    cancel-in-progress: false
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  deploy:
-    name: Deploy to Production Server
-    runs-on: ubuntu-latest
-    environment: production
-    timeout-minutes: 15
+    deploy:
+        name: Deploy to Production Server
+        runs-on: ubuntu-latest
+        environment: production
+        timeout-minutes: 15
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      - name: Create .env file
-        uses: cuchi/jinja2-action@8bd801365a8d36a0b20f45ee969161685de7785a # v1.3.0
-        with:
-          template: .github/templates/.env.j2
-          output_file: .env
-          strict: true
-          variables: |
-            APP_KEY=${{ secrets.APP_KEY }}
-            APP_URL=${{ secrets.APP_URL }}
-            DB_PORT=${{ secrets.DB_PORT }}
-            DB_DATABASE=${{ secrets.DB_DATABASE }}
-            DB_USERNAME=${{ secrets.DB_USERNAME }}
-            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            MAILGUN_DOMAIN=${{ secrets.MAILGUN_DOMAIN }}
-            MAILGUN_SECRET=${{ secrets.MAILGUN_SECRET }}
-            MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
-            API_ALLOWED_IPS=${{ secrets.API_ALLOWED_IPS }}
-            SENTRY_LARAVEL_DSN=${{ secrets.SENTRY_LARAVEL_DSN }}
-            ALTCHA_HMAC_KEY=${{ secrets.ALTCHA_HMAC_KEY }}
+            - name: Create .env file
+              uses: cuchi/jinja2-action@8bd801365a8d36a0b20f45ee969161685de7785a # v1.3.0
+              with:
+                  template: .github/templates/.env.j2
+                  output_file: .env
+                  strict: true
+                  variables: |
+                      APP_KEY=${{ secrets.APP_KEY }}
+                      APP_URL=${{ secrets.APP_URL }}
+                      DB_PORT=${{ secrets.DB_PORT }}
+                      DB_DATABASE=${{ secrets.DB_DATABASE }}
+                      DB_USERNAME=${{ secrets.DB_USERNAME }}
+                      DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+                      MAILGUN_DOMAIN=${{ secrets.MAILGUN_DOMAIN }}
+                      MAILGUN_SECRET=${{ secrets.MAILGUN_SECRET }}
+                      MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
+                      API_ALLOWED_IPS=${{ secrets.API_ALLOWED_IPS }}
+                      SENTRY_LARAVEL_DSN=${{ secrets.SENTRY_LARAVEL_DSN }}
+                      ALTCHA_HMAC_KEY=${{ secrets.ALTCHA_HMAC_KEY }}
 
-      - name: Setup Node.js
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
-        with:
-          node-version-file: .nvmrc
-          cache: npm
+            - name: Setup Node.js
+              uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+              with:
+                  node-version-file: .nvmrc
+                  cache: npm
 
-      - name: Build frontend assets
-        run: |
-          npm install -g npm@11.11.0
-          npm ci
-          npm run build
+            - name: Build frontend assets
+              run: |
+                  npm install -g npm@11.11.0
+                  npm ci
+                  npm run build
 
-      - name: Verify user belongs to www-data group
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        with:
-          host: ${{ secrets.PRODUCTION_4_HOST }}
-          port: ${{ secrets.PRODUCTION_PORT }}
-          username: ${{ secrets.PROJECT_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
-            if ! getent group www-data | grep -qw "$(whoami)"; then
-              echo "❌ ERROR: User '$(whoami)' is not a member of 'www-data' group."
-              echo "   Run: sudo usermod -a -G www-data $(whoami)"
-              echo "   Then log out and back in for changes to take effect."
-              exit 1
-            fi
-            echo "✅ Verified: $(whoami) is a member of www-data group"
+            - name: Verify user belongs to www-data group
+              uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+              with:
+                  host: ${{ secrets.PRODUCTION_4_HOST }}
+                  port: ${{ secrets.PRODUCTION_PORT }}
+                  username: ${{ secrets.PROJECT_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      set -e
+                      if ! getent group www-data | grep -qw "$(whoami)"; then
+                        echo "❌ ERROR: User '$(whoami)' is not a member of 'www-data' group."
+                        echo "   Run: sudo usermod -a -G www-data $(whoami)"
+                        echo "   Then log out and back in for changes to take effect."
+                        exit 1
+                      fi
+                      echo "✅ Verified: $(whoami) is a member of www-data group"
 
-      - name: SCP .env to the production server
-        uses: easingthemes/ssh-deploy@5d8aeab1a56041e269567e67a08ce00df324a617 # v6.0.1
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.PRODUCTION_4_HOST }}
-          REMOTE_USER: ${{ secrets.PROJECT_USER }}
-          REMOTE_PORT: ${{ secrets.PRODUCTION_PORT }}
-          SOURCE: ".env"
-          TARGET: "${{ secrets.PROJECT_PATH }}"
-          SSH_CMD_ARGS: "-o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
+            - name: SCP .env to the production server
+              uses: easingthemes/ssh-deploy@5d8aeab1a56041e269567e67a08ce00df324a617 # v6.0.1
+              with:
+                  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+                  REMOTE_HOST: ${{ secrets.PRODUCTION_4_HOST }}
+                  REMOTE_USER: ${{ secrets.PROJECT_USER }}
+                  REMOTE_PORT: ${{ secrets.PRODUCTION_PORT }}
+                  SOURCE: '.env'
+                  TARGET: '${{ secrets.PROJECT_PATH }}'
+                  SSH_CMD_ARGS: '-o IdentitiesOnly=yes -o StrictHostKeyChecking=no'
 
-      - name: Deploy backend
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        with:
-          host: ${{ secrets.PRODUCTION_4_HOST }}
-          port: ${{ secrets.PRODUCTION_PORT }}
-          username: ${{ secrets.PROJECT_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
-            PROJECT_DIR="${{ secrets.PROJECT_PATH }}"
-            PHP_CMD="/usr/bin/php8.4"
+            - name: Deploy backend
+              uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+              with:
+                  host: ${{ secrets.PRODUCTION_4_HOST }}
+                  port: ${{ secrets.PRODUCTION_PORT }}
+                  username: ${{ secrets.PROJECT_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      set -e
+                      PROJECT_DIR="${{ secrets.PROJECT_PATH }}"
+                      PHP_CMD="/usr/bin/php8.4"
 
-            cd "$PROJECT_DIR"
+                      cd "$PROJECT_DIR"
 
-            mkdir -p "$PROJECT_DIR/.bin"
-            echo '#!/bin/bash' > "$PROJECT_DIR/.bin/php"
-            echo 'exec /usr/bin/php8.4 "$@"' >> "$PROJECT_DIR/.bin/php"
-            chmod +x "$PROJECT_DIR/.bin/php"
-            export PATH="$PROJECT_DIR/.bin:$PATH"
+                      mkdir -p "$PROJECT_DIR/.bin"
+                      echo '#!/bin/bash' > "$PROJECT_DIR/.bin/php"
+                      echo 'exec /usr/bin/php8.4 "$@"' >> "$PROJECT_DIR/.bin/php"
+                      chmod +x "$PROJECT_DIR/.bin/php"
+                      export PATH="$PROJECT_DIR/.bin:$PATH"
 
-            echo "PHP version being used: $(php -v | head -n 1)"
-            echo "Which php: $(which php)"
+                      echo "PHP version being used: $(php -v | head -n 1)"
+                      echo "Which php: $(which php)"
 
-            echo "Pulling latest code"
-            git fetch origin main
-            git reset --hard origin/main
+                      echo "Pulling latest code"
+                      git fetch origin main
+                      git reset --hard origin/main
 
-            echo "Ensuring storage directories exist"
-            mkdir -p storage/framework/{sessions,views,cache}
-            mkdir -p storage/logs
-            mkdir -p bootstrap/cache
+                      echo "Ensuring storage directories exist"
+                      mkdir -p storage/framework/{sessions,views,cache}
+                      mkdir -p storage/logs
+                      mkdir -p bootstrap/cache
 
-            echo "Putting application in maintenance mode"
-            $PHP_CMD artisan down
+                      echo "Putting application in maintenance mode"
+                      $PHP_CMD artisan down
 
-            echo "Verifying .env configuration..."
-            grep -E "CACHE_STORE|SESSION_DRIVER|QUEUE_CONNECTION" .env
+                      echo "Verifying .env configuration..."
+                      grep -E "CACHE_STORE|SESSION_DRIVER|QUEUE_CONNECTION" .env
 
-            echo "Installing Composer dependencies"
-            $PHP_CMD /usr/local/bin/composer install \
-              --no-interaction \
-              --prefer-dist \
-              --optimize-autoloader \
-              --no-dev
+                      echo "Installing Composer dependencies"
+                      $PHP_CMD /usr/local/bin/composer install \
+                        --no-interaction \
+                        --prefer-dist \
+                        --optimize-autoloader \
+                        --no-dev
 
-            echo "Running database migrations"
-            $PHP_CMD artisan migrate --force
+                      echo "Running database migrations"
+                      $PHP_CMD artisan migrate --force
 
-            echo "Creating storage symlink"
-            $PHP_CMD artisan storage:link --force
+                      echo "Creating storage symlink"
+                      $PHP_CMD artisan storage:link --force
 
-            echo "Clearing caches"
-            $PHP_CMD artisan route:clear
-            $PHP_CMD artisan cache:clear
-            $PHP_CMD artisan view:clear
+                      echo "Clearing caches"
+                      $PHP_CMD artisan route:clear
+                      $PHP_CMD artisan cache:clear
+                      $PHP_CMD artisan view:clear
 
-            echo "Creating new cache files"
-            $PHP_CMD artisan config:cache
-            $PHP_CMD artisan route:cache
-            $PHP_CMD artisan view:cache
+                      echo "Creating new cache files"
+                      $PHP_CMD artisan config:cache
+                      $PHP_CMD artisan route:cache
+                      $PHP_CMD artisan view:cache
 
-            echo "Backend deployment complete!"
+                      echo "Backend deployment complete!"
 
-      - name: Upload compiled frontend assets
-        uses: easingthemes/ssh-deploy@5d8aeab1a56041e269567e67a08ce00df324a617 # v6.0.1
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.PRODUCTION_4_HOST }}
-          REMOTE_USER: ${{ secrets.PROJECT_USER }}
-          REMOTE_PORT: ${{ secrets.PRODUCTION_PORT }}
-          SOURCE: "public/build/"
-          TARGET: "${{ secrets.PROJECT_PATH }}/public/build/"
-          SSH_CMD_ARGS: "-o IdentitiesOnly=yes -o StrictHostKeyChecking=no"
+            - name: Upload compiled frontend assets
+              uses: easingthemes/ssh-deploy@5d8aeab1a56041e269567e67a08ce00df324a617 # v6.0.1
+              with:
+                  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+                  REMOTE_HOST: ${{ secrets.PRODUCTION_4_HOST }}
+                  REMOTE_USER: ${{ secrets.PROJECT_USER }}
+                  REMOTE_PORT: ${{ secrets.PRODUCTION_PORT }}
+                  SOURCE: 'public/build/'
+                  TARGET: '${{ secrets.PROJECT_PATH }}/public/build/'
+                  SSH_CMD_ARGS: '-o IdentitiesOnly=yes -o StrictHostKeyChecking=no'
 
-      - name: Set Laravel file permissions
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        with:
-          host: ${{ secrets.PRODUCTION_4_HOST }}
-          port: ${{ secrets.PRODUCTION_PORT }}
-          username: ${{ secrets.PROJECT_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
-            PROJECT_DIR="${{ secrets.PROJECT_PATH }}"
-            cd "$PROJECT_DIR"
+            - name: Set Laravel file permissions
+              uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+              with:
+                  host: ${{ secrets.PRODUCTION_4_HOST }}
+                  port: ${{ secrets.PRODUCTION_PORT }}
+                  username: ${{ secrets.PROJECT_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      set -e
+                      PROJECT_DIR="${{ secrets.PROJECT_PATH }}"
+                      cd "$PROJECT_DIR"
 
-            echo "Setting file permissions..."
-            chmod +x set-laravel-permissions-ci.sh
-            ./set-laravel-permissions-ci.sh "$PROJECT_DIR"
+                      echo "Setting file permissions..."
+                      chmod +x set-laravel-permissions-ci.sh
+                      ./set-laravel-permissions-ci.sh "$PROJECT_DIR"
 
-      - name: Restart PHP-FPM
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        with:
-          host: ${{ secrets.PRODUCTION_4_HOST }}
-          port: ${{ secrets.PRODUCTION_PORT }}
-          username: ${{ secrets.PROJECT_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            set -e
-            echo "Restarting PHP-FPM to clear OPcache"
-            sudo service php8.4-fpm restart 2>/dev/null || sudo systemctl restart php8.4-fpm 2>/dev/null || echo "PHP-FPM restart skipped (configure NOPASSWD sudoers to enable)"
+            - name: Restart PHP-FPM
+              uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
+              with:
+                  host: ${{ secrets.PRODUCTION_4_HOST }}
+                  port: ${{ secrets.PRODUCTION_PORT }}
+                  username: ${{ secrets.PROJECT_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      set -e
+                      echo "Restarting PHP-FPM to clear OPcache"
+                      sudo service php8.4-fpm restart 2>/dev/null || sudo systemctl restart php8.4-fpm 2>/dev/null || echo "PHP-FPM restart skipped (configure NOPASSWD sudoers to enable)"
 
-            echo "Taking application out of maintenance mode"
-            /usr/bin/php8.4 "${{ secrets.PROJECT_PATH }}/artisan" up
+                      echo "Taking application out of maintenance mode"
+                      /usr/bin/php8.4 "${{ secrets.PROJECT_PATH }}/artisan" up
 
-      - name: Report deploy failure
-        if: failure()
-        run: |
-          echo "::error::Deploy failed. If it reached the backend step, the application has been left"
-          echo "::error::in MAINTENANCE MODE intentionally so a half-applied migration is not served."
-          echo "Investigate the failing step above, then bring the app back up manually once resolved:"
-          echo "  ssh <PROJECT_USER>@<PRODUCTION_4_HOST> 'php8.4 <PROJECT_PATH>/artisan up'"
+            - name: Report deploy failure
+              if: failure()
+              run: |
+                  echo "::error::Deploy failed. If it reached the backend step, the application has been left"
+                  echo "::error::in MAINTENANCE MODE intentionally so a half-applied migration is not served."
+                  echo "Investigate the failing step above, then bring the app back up manually once resolved:"
+                  echo "  ssh <PROJECT_USER>@<PRODUCTION_4_HOST> 'php8.4 <PROJECT_PATH>/artisan up'"
