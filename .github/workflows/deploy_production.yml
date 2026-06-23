@@ -1,4 +1,4 @@
-# This GitHub Actions workflow deploys the "volunteer-match-stg" application
+# This GitHub Actions workflow deploys the "annotation-management-system" application
 # to the production environment. It performs the following:
 # 1. Generates a .env file from a Jinja2 template using GitHub Secrets
 # 2. Builds and compiles frontend assets on the GitHub runner
@@ -15,6 +15,11 @@ on:
 permissions:
   contents: read
 
+# Prevent overlapping deploys from racing on git reset / migrate against the same server.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
@@ -23,6 +28,7 @@ jobs:
     name: Deploy to Production Server
     runs-on: ubuntu-latest
     environment: production
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repo
@@ -36,18 +42,17 @@ jobs:
           strict: true
           variables: |
             APP_KEY=${{ secrets.APP_KEY }}
+            APP_URL=${{ secrets.APP_URL }}
             DB_PORT=${{ secrets.DB_PORT }}
             DB_DATABASE=${{ secrets.DB_DATABASE }}
             DB_USERNAME=${{ secrets.DB_USERNAME }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-            APP_URL=${{ secrets.APP_URL }}
-            ALTCHA_HMAC_KEY=${{ secrets.ALTCHA_HMAC_KEY }}
-            GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
-            GOOGLE_CALLBACK_URL=${{ secrets.GOOGLE_CALLBACK_URL }}
+            MAILGUN_DOMAIN=${{ secrets.MAILGUN_DOMAIN }}
             MAILGUN_SECRET=${{ secrets.MAILGUN_SECRET }}
+            MAIL_FROM_ADDRESS=${{ secrets.MAIL_FROM_ADDRESS }}
+            API_ALLOWED_IPS=${{ secrets.API_ALLOWED_IPS }}
             SENTRY_LARAVEL_DSN=${{ secrets.SENTRY_LARAVEL_DSN }}
-            GOOGLE_ANALYTICS_ID=${{ secrets.GOOGLE_ANALYTICS_ID }}
+            ALTCHA_HMAC_KEY=${{ secrets.ALTCHA_HMAC_KEY }}
 
       - name: Setup Node.js
         uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
@@ -121,8 +126,6 @@ jobs:
             mkdir -p storage/logs
             mkdir -p bootstrap/cache
 
-            trap '$PHP_CMD artisan up || true' ERR
-
             echo "Putting application in maintenance mode"
             $PHP_CMD artisan down
 
@@ -136,20 +139,8 @@ jobs:
               --optimize-autoloader \
               --no-dev
 
-            COMPOSER_EXIT_CODE=$?
-            echo "Composer install exit code: $COMPOSER_EXIT_CODE"
-
-            if [ $COMPOSER_EXIT_CODE -ne 0 ]; then
-              echo "ERROR: Composer install failed"
-              tail -50 storage/logs/laravel.log 2>/dev/null || echo "No Laravel log found"
-              exit $COMPOSER_EXIT_CODE
-            fi
-
             echo "Running database migrations"
             $PHP_CMD artisan migrate --force
-
-            echo "Discovering packages"
-            $PHP_CMD artisan package:discover --ansi
 
             echo "Creating storage symlink"
             $PHP_CMD artisan storage:link --force
@@ -191,7 +182,6 @@ jobs:
 
             echo "Setting file permissions..."
             chmod +x set-laravel-permissions-ci.sh
-            chmod +x set-laravel-permissions.sh
             ./set-laravel-permissions-ci.sh "$PROJECT_DIR"
 
       - name: Restart PHP-FPM
@@ -209,14 +199,10 @@ jobs:
             echo "Taking application out of maintenance mode"
             /usr/bin/php8.4 "${{ secrets.PROJECT_PATH }}/artisan" up
 
-      - name: Recover from maintenance mode on failure
+      - name: Report deploy failure
         if: failure()
-        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
-        with:
-          host: ${{ secrets.PRODUCTION_4_HOST }}
-          port: ${{ secrets.PRODUCTION_PORT }}
-          username: ${{ secrets.PROJECT_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            /usr/bin/php8.4 "${{ secrets.PROJECT_PATH }}/artisan" up || true
-            echo "Recovery step complete: app taken out of maintenance mode"
+        run: |
+          echo "::error::Deploy failed. If it reached the backend step, the application has been left"
+          echo "::error::in MAINTENANCE MODE intentionally so a half-applied migration is not served."
+          echo "Investigate the failing step above, then bring the app back up manually once resolved:"
+          echo "  ssh <PROJECT_USER>@<PRODUCTION_4_HOST> 'php8.4 <PROJECT_PATH>/artisan up'"
