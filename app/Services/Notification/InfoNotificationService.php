@@ -13,6 +13,7 @@ use App\Queries\Notification\CreateThreadMemberQuery;
 use App\Queries\Project\GetManagerIdsByProjectsQuery;
 use App\Queries\Project\GetProjectBasicDataQuery;
 use App\Queries\User\GetUsernamesByIdsQuery;
+use JsonException;
 
 final class InfoNotificationService extends AbstractNotificationService {
     public function __construct(
@@ -26,6 +27,8 @@ final class InfoNotificationService extends AbstractNotificationService {
 
     /**
      * @param  array<int, int>  $annotatorIds
+     *
+     * @throws JsonException
      */
     public function notifyManagersAboutNewAnnotatorsOfProject(int $projectId, array $annotatorIds): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
@@ -47,26 +50,43 @@ final class InfoNotificationService extends AbstractNotificationService {
         }
     }
 
-    public function notifyCancelledOwnershipProposal(int $projectId, int $proposedOwnerUserId): void {
+    /**
+     * @throws JsonException
+     */
+    public function notifyCancelledOwnershipProposal(int $projectId, int $proposedOwnerUserId, int $cancellerUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
+        $cancellerUsernames = $this->getUsernamesByIdsQuery->get([$cancellerUserId]);
 
         $this->createNotification(
             recipientUserId: $proposedOwnerUserId,
-            body: TranslatableMessage::encode('notifications.messages.ownership_proposal_cancelled.body', ['project' => $projectData['name']]),
+            body: TranslatableMessage::encode('notifications.messages.ownership_proposal_cancelled.body', [
+                'project' => $projectData['name'],
+                'sender' => $cancellerUsernames[0] ?? '',
+            ]),
             title: TranslatableMessage::encode('notifications.messages.ownership_proposal_cancelled.title'),
         );
     }
 
+    /**
+     * @throws JsonException
+     */
     public function notifyCancelledLeaveRequest(int $projectId, int $senderUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
+        $senderUsernames = $this->getUsernamesByIdsQuery->get([$senderUserId]);
 
         $this->createNotification(
             recipientUserId: $projectData['owner_user_id'],
-            body: TranslatableMessage::encode('notifications.messages.leave_request_cancelled.body', ['project' => $projectData['name']]),
+            body: TranslatableMessage::encode('notifications.messages.leave_request_cancelled.body', [
+                'project' => $projectData['name'],
+                'sender' => $senderUsernames[0] ?? '',
+            ]),
             title: TranslatableMessage::encode('notifications.messages.leave_request_cancelled.title'),
         );
     }
 
+    /**
+     * @throws JsonException
+     */
     public function notifyLeaveRequestAccepted(int $projectId, int $memberUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
         $usernames = $this->getUsernamesByIdsQuery->get([$memberUserId]);
@@ -78,6 +98,9 @@ final class InfoNotificationService extends AbstractNotificationService {
         );
     }
 
+    /**
+     * @throws JsonException
+     */
     public function notifyLeaveRequestRejected(int $projectId, int $memberUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
         $usernames = $this->getUsernamesByIdsQuery->get([$memberUserId]);
@@ -89,6 +112,9 @@ final class InfoNotificationService extends AbstractNotificationService {
         );
     }
 
+    /**
+     * @throws JsonException
+     */
     public function notifyOwnerOfAcceptedOwnership(int $projectId, int $oldOwnerUserId, int $acceptingUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
         $usernames = $this->getUsernamesByIdsQuery->get([$acceptingUserId]);
@@ -103,6 +129,9 @@ final class InfoNotificationService extends AbstractNotificationService {
         );
     }
 
+    /**
+     * @throws JsonException
+     */
     public function notifyOwnerOfRejectedOwnership(int $projectId, int $rejectingUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
         $usernames = $this->getUsernamesByIdsQuery->get([$rejectingUserId]);
@@ -117,6 +146,9 @@ final class InfoNotificationService extends AbstractNotificationService {
         );
     }
 
+    /**
+     * @throws JsonException
+     */
     public function notifyRemovedManager(int $projectId, int $removedUserId): void {
         $projectData = $this->getProjectBasicDataQuery->get($projectId);
         $usernames = $this->getUsernamesByIdsQuery->get([$removedUserId]);

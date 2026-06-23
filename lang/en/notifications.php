@@ -69,11 +69,11 @@ return [
         ],
         'ownership_proposal_cancelled' => [
             'title' => 'Ownership Change Proposal Withdrawn',
-            'body' => 'The ownership change proposal for :project has been withdrawn.',
+            'body' => '@:sender has withdrawn the ownership transfer proposal for :project.',
         ],
         'leave_request_cancelled' => [
             'title' => 'Leave Request Withdrawn',
-            'body' => 'The leave request for :project has been withdrawn.',
+            'body' => '@:sender has withdrawn their leave request for :project.',
         ],
         'leave_request_accepted' => [
             'title' => 'Leave Request Accepted',

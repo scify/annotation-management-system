@@ -39,6 +39,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
+use JsonException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
@@ -139,6 +140,9 @@ class ProjectController extends Controller {
         return Inertia::render('projects/add-annotators', $data);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function attachAnnotators(AttachAnnotatorsToProjectRequest $request, int $id): RedirectResponse {
         /** @var array<int, int> $annotatorIds */
         $annotatorIds = $request->validated('annotator_ids');
@@ -187,6 +191,10 @@ class ProjectController extends Controller {
         return Inertia::render('projects/show', $data);
     }
 
+    /**
+     * @throws Throwable
+     * @throws JsonException
+     */
     public function acceptOwnership(AcceptOwnershipTransferRequest $request, int $id): JsonResponse {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
@@ -200,6 +208,9 @@ class ProjectController extends Controller {
         ]);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function rejectOwnership(RejectOwnershipTransferRequest $request, int $id): JsonResponse {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
@@ -213,6 +224,9 @@ class ProjectController extends Controller {
         ]);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function removeManager(RemoveManagerFromProjectRequest $request, int $id): JsonResponse {
         $managerId = $request->integer('manager_id');
 
@@ -261,6 +275,9 @@ class ProjectController extends Controller {
         ]);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function cancelRequestToLeave(CancelRequestToLeaveRequest $request, int $id): JsonResponse {
         $user = $request->user();
         abort_unless($user instanceof User, 401);
@@ -274,6 +291,9 @@ class ProjectController extends Controller {
         ]);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function rejectRequestToLeave(RejectRequestToLeaveRequest $request, int $id): JsonResponse {
         $memberUserId = $request->integer('user_id');
 
@@ -286,6 +306,9 @@ class ProjectController extends Controller {
         ]);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function acceptRequestToLeave(AcceptRequestToLeaveRequest $request, int $id): JsonResponse {
         $memberUserId = $request->integer('user_id');
 
@@ -298,12 +321,17 @@ class ProjectController extends Controller {
         ]);
     }
 
+    /**
+     * @throws JsonException
+     */
     public function cancelOwnership(CancelOwnershipTransferRequest $request, int $id): JsonResponse {
+        $user = $request->user();
+        abort_unless($user instanceof User, 401);
         $proposedOwnerUserId = $request->integer('user_id');
 
         $this->projectManagerService->cancelOwnershipTransfer($id, $proposedOwnerUserId);
 
-        $this->infoNotificationService->notifyCancelledOwnershipProposal($id, $proposedOwnerUserId);
+        $this->infoNotificationService->notifyCancelledOwnershipProposal($id, $proposedOwnerUserId, $user->id);
 
         return response()->json([
             'comanagers_data' => $this->projectReadService->getCoManagersData($id),

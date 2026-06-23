@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read int $id
  * @property int $notification_thread_id
  * @property NotificationThreadResponseEnum $response
+ * @property int $sender_user_id
+ * @property int $recipient_user_id
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
  * @property-read NotificationThread $thread
@@ -23,6 +25,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable([
     'notification_thread_id',
     'response',
+    'sender_user_id',
+    'recipient_user_id',
 ])]
 class NotificationThreadResponse extends Model {
     /** @use HasFactory<NotificationThreadResponseFactory> */

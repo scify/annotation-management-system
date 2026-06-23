@@ -7,6 +7,7 @@ namespace Database\Factories;
 use App\Enums\NotificationThreadResponseEnum;
 use App\Models\NotificationThread;
 use App\Models\NotificationThreadResponse;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,6 +23,8 @@ class NotificationThreadResponseFactory extends Factory {
         return [
             'notification_thread_id' => NotificationThread::factory(),
             'response' => NotificationThreadResponseEnum::UNREPLIED,
+            'sender_user_id' => User::factory(),
+            'recipient_user_id' => User::factory(),
         ];
     }
 }

@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property-read int $id
  * @property NotificationThreadTypeEnum $type
  * @property int|null $project_id
- * @property int|null $target_user_id
  * @property string|null $title
  * @property-read Carbon $created_at
  * @property-read Carbon $updated_at
@@ -30,7 +29,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 #[Fillable([
     'type',
     'project_id',
-    'target_user_id',
     'title',
 ])]
 class NotificationThread extends Model {

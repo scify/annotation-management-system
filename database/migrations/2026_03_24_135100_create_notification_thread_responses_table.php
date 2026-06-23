@@ -15,6 +15,8 @@ return new class() extends Migration {
             $table->id();
             $table->foreignId('notification_thread_id')->constrained('notification_threads')->cascadeOnDelete();
             $table->string('response')->default('unreplied');
+            $table->foreignId('sender_user_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('recipient_user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

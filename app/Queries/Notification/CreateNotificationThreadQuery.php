@@ -12,14 +12,12 @@ final readonly class CreateNotificationThreadQuery {
         NotificationThreadTypeEnum $type,
         ?string $title = null,
         ?int $projectId = null,
-        ?int $targetUserId = null,
     ): NotificationThread {
         /** @var NotificationThread */
         return NotificationThread::query()->create([
             'type' => $type,
             'title' => $title,
             'project_id' => $projectId,
-            'target_user_id' => $targetUserId,
         ]);
     }
 }
