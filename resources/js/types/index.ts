@@ -149,15 +149,22 @@ export interface Project {
 export interface AnnotatorSubProject {
     id: number;
     name: string;
+    project_name: string;
     /** Browsing mode: true = flexible, false = strict. */
     flexible: boolean;
-    annotation_task_title: string | null;
+    /** When true, annotations submit automatically — there is no pending state. */
+    auto_submission: boolean;
     scheduled_at: string | null;
     deadline_at: string | null;
     started_at: string | null;
     completed_at: string | null;
-    first_instance_index: number;
-    last_instance_index: number;
+    submitted_count: number;
+    not_annotated_count: number;
+    submitted_pct: number;
+    /** Present only when auto_submission === false. */
+    pending_count?: number;
+    /** Present only when auto_submission === false. */
+    submitted_and_pending_pct?: number;
 }
 
 /**

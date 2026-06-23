@@ -45,14 +45,4 @@ return [
     'next' => 'Next',
     'hide_shortcuts' => 'Hide Shortcuts',
     'show_shortcuts' => 'Show Shortcuts',
-
-    // Resume mode dialog
-    'mode_dialog' => [
-        'title' => 'Choose annotation mode',
-        'description' => 'This is a preview. Pick which mocked annotation layout you want to view.',
-        'strict' => 'Strict order',
-        'strict_hint' => 'Annotate instances sequentially.',
-        'flexible' => 'Flexible order',
-        'flexible_hint' => 'Navigate freely between instances.',
-    ],
 ];

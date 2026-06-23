@@ -17,6 +17,7 @@ return [
         'title' => 'My Tasks',
         'resume' => 'Resume',
         'submitted_progress' => 'Submitted Progress',
+        'progress' => 'Progress',
         'legend_submitted' => 'SUBMITTED',
         'legend_pending' => 'PENDING',
         'legend_not_annotated' => 'NOT ANNOTATED',

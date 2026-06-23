@@ -17,6 +17,7 @@ return [
         'title' => 'Οι Εργασίες μου',
         'resume' => 'Συνέχεια',
         'submitted_progress' => 'Υποβληθείσα Πρόοδος',
+        'progress' => 'Πρόοδος',
         'legend_submitted' => 'ΥΠΟΒΛΗΘΗΚΑΝ',
         'legend_pending' => 'ΣΕ ΕΚΚΡΕΜΟΤΗΤΑ',
         'legend_not_annotated' => 'ΜΗ ΕΠΙΣΗΜΕΙΩΜΕΝΑ',
