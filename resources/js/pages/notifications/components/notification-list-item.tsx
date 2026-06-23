@@ -58,7 +58,7 @@ export function NotificationListItem({ thread, className, ...props }: Notificati
         <button
             type="button"
             className={cn(
-                'focus-visible:ring-brand-blue-700/50 flex w-full cursor-pointer items-start gap-3 rounded-lg border-y border-r border-l-8 border-transparent bg-white p-4 text-left transition-colors outline-none hover:bg-slate-50 focus-visible:ring-[3px]',
+                'focus-visible:ring-brand-blue-700/50 flex w-full cursor-pointer items-start gap-2 rounded-lg border-y border-r border-l-8 border-transparent bg-white p-3 text-left transition-colors outline-none hover:bg-slate-50 focus-visible:ring-[3px]',
                 isUnread ? UNREAD_BORDER_STYLES[thread.type] : READ_BORDER_STYLES[thread.type],
                 className
             )}
@@ -83,8 +83,8 @@ export function NotificationListItem({ thread, className, ...props }: Notificati
                 )}
             </span>
             <span className="flex min-w-0 flex-1 flex-col gap-2">
-                <span className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
-                    <span className="flex min-w-0 items-center gap-3">
+                <span className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+                    <span className="flex min-w-0 items-center gap-2">
                         <span
                             className={cn(
                                 'truncate text-base font-semibold',
@@ -97,7 +97,7 @@ export function NotificationListItem({ thread, className, ...props }: Notificati
                             <SenderRoleTag role={firstMessage.sender_role} />
                         )}
                     </span>
-                    <span className="flex shrink-0 items-center gap-4">
+                    <span className="flex shrink-0 items-center gap-2">
                         {thread.top_right && (
                             <SubjectTag type={thread.type} label={thread.top_right} />
                         )}

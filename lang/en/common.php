@@ -31,5 +31,7 @@ return [
         'send' => 'Send',
         'cancel' => 'Cancel',
         'placeholder' => 'Write your announcement…',
+        'success' => 'Announcement sent to all annotators of :name.',
+        'error' => 'The announcement could not be sent. Please try again.',
     ],
 ];

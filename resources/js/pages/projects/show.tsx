@@ -367,6 +367,7 @@ export default function ProjectShow({
                 open={announcementOpen}
                 onClose={() => setAnnouncementOpen(false)}
                 targetName={project_data.name}
+                projectId={project_data.id}
             />
         </AppLayout>
     );

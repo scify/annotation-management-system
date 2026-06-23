@@ -749,6 +749,8 @@ export default function EditSubproject({
                 open={announcementOpen}
                 onClose={() => setAnnouncementOpen(false)}
                 targetName={data.name}
+                projectId={subproject_data.project_id}
+                subProjectId={subproject_data.id}
             />
         </AppLayout>
     );
