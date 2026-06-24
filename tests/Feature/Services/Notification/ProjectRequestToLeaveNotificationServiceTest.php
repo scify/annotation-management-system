@@ -52,7 +52,6 @@ describe('ProjectRequestToLeaveNotificationService', function (): void {
             body: 'Please let me leave',
             quickLink: new QuickLinkData('Open project', '/projects/1'),
             projectId: $project->id,
-            targetUserId: $sender->id,
         );
 
         $this->assertDatabaseHas('notification_threads', [

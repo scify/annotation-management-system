@@ -11,7 +11,6 @@ use App\Models\QuickLink;
 use App\Queries\Notification\ExistsUnreadNotificationsQuery;
 use App\Queries\Notification\FindNotificationThreadQuery;
 use App\Queries\Notification\GetMyNotificationsQuery;
-use App\Queries\Notification\GetThreadRecipientsQuery;
 use App\Queries\Notification\MarkAllThreadsReadStatusQuery;
 use App\Queries\Notification\MarkThreadReadStatusQuery;
 use Carbon\Carbon;
@@ -31,7 +30,6 @@ readonly class NotificationsService {
         private MarkThreadReadStatusQuery $markThreadReadStatusQuery,
         private MarkAllThreadsReadStatusQuery $markAllThreadsReadStatusQuery,
         private GetMyNotificationsQuery $getMyNotificationsQuery,
-        private GetThreadRecipientsQuery $getThreadRecipientsQuery,
         private ExistsUnreadNotificationsQuery $existsUnreadNotificationsQuery,
         private FindNotificationThreadQuery $findNotificationThreadQuery,
     ) {}
@@ -116,7 +114,14 @@ readonly class NotificationsService {
             $this->resolveService($thread->type)->augmentNotification($thread, $userId);
 
             $senderUserId = $thread->notifications->first()?->sender_user_id;
-            $thread->setAttribute('recipients', $this->getThreadRecipientsQuery->get($thread->id, $senderUserId));
+            $thread->setAttribute('recipients', $thread->members
+                ->when($senderUserId !== null, fn ($c) => $c->filter(fn ($m): bool => $m->user_id !== $senderUserId))
+                ->map(fn ($m) => $m->user->username)
+                ->filter()
+                ->unique()
+                ->values()
+                ->all()
+            );
             $thread->unsetRelation('members');
 
             $thread->notifications->transform(fn (Notification $notification): Notification => $this->presentNotification($notification));

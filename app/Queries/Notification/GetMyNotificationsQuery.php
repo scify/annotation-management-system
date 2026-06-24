@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Queries\Notification;
 
 use App\Models\NotificationThread;
+use App\Models\ThreadMember;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -18,7 +19,7 @@ final readonly class GetMyNotificationsQuery {
     public function get(int $userId): Collection {
         return NotificationThread::query()
             ->select(['id', 'type', 'title'])
-            ->whereHas('members', fn ($q) => $q->where('user_id', $userId))
+            ->whereIn('id', ThreadMember::query()->select('notification_thread_id')->where('user_id', $userId))
             ->with([
                 'notifications' => fn ($q) => $q
                     ->select(['id', 'notification_thread_id', 'sender_user_id', 'body', 'created_at'])

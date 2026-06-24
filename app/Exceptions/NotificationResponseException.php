@@ -7,6 +7,8 @@ namespace App\Exceptions;
 use RuntimeException;
 
 class NotificationResponseException extends RuntimeException implements PresentableError {
+    private ?string $errorCode = null;
+
     public static function responseNotFound(): self {
         return new self((string) __('notifications.errors.response_not_found'));
     }
@@ -20,10 +22,17 @@ class NotificationResponseException extends RuntimeException implements Presenta
     }
 
     public static function cannotRespondCancelled(): self {
-        return new self((string) __('notifications.errors.cannot_respond_cancelled'));
+        $exception = new self((string) __('notifications.errors.cannot_respond_cancelled'));
+        $exception->errorCode = 'cannot_respond_cancelled';
+
+        return $exception;
     }
 
     public function getUserMessage(): string {
         return $this->getMessage();
+    }
+
+    public function errorCode(): ?string {
+        return $this->errorCode;
     }
 }

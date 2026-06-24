@@ -7,6 +7,7 @@ namespace App\Services\Project;
 use App\Exceptions\ProjectOwnershipException;
 use App\Models\User;
 use App\Queries\Manager\FindManagerByEmailQuery;
+use App\Queries\Notification\UpdateNotificationThreadResponseQuery;
 use App\Queries\Project\AcceptOwnershipTransferQuery;
 use App\Queries\Project\ProposeOwnershipTransferQuery;
 use App\Queries\Project\RemoveProjectManagerQuery;
@@ -18,11 +19,12 @@ use Throwable;
 readonly class ProjectManagerService {
     public function __construct(
         private AcceptOwnershipTransferQuery $acceptOwnershipTransferQuery,
+        private FindManagerByEmailQuery $findManagerByEmailQuery,
         private ProposeOwnershipTransferQuery $proposeOwnershipTransferQuery,
         private RemoveProjectManagerQuery $removeProjectManagerQuery,
         private RequestToLeaveQuery $requestToLeaveQuery,
-        private FindManagerByEmailQuery $findManagerByEmailQuery,
         private StoreProjectManagerQuery $storeProjectManagerQuery,
+        private UpdateNotificationThreadResponseQuery $updateNotificationThreadResponseQuery,
     ) {}
 
     /** Finds an eligible co-manager (ADMIN or ANNOTATION_MANAGER role) by email, or null. */
@@ -62,6 +64,7 @@ readonly class ProjectManagerService {
 
     public function cancelOwnershipTransfer(int $projectId, int $userId): void {
         $this->acceptOwnershipTransferQuery->clearProposal($projectId, $userId);
+        $this->updateNotificationThreadResponseQuery->cancelForOwnershipTransfer($projectId, $userId);
     }
 
     public function removeManager(int $projectId, int $userId): void {
@@ -74,6 +77,7 @@ readonly class ProjectManagerService {
 
     public function cancelRequestToLeave(int $projectId, int $userId): void {
         $this->requestToLeaveQuery->clear($projectId, $userId);
+        $this->updateNotificationThreadResponseQuery->cancelForRequestToLeave($projectId, $userId);
     }
 
     public function rejectRequestToLeave(int $projectId, int $userId): void {

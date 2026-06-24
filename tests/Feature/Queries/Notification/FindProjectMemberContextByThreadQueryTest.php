@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 use App\Enums\NotificationThreadTypeEnum;
 use App\Models\NotificationThread;
+use App\Models\NotificationThreadResponse;
 use App\Models\Project;
 use App\Models\User;
 use App\Queries\Notification\FindProjectMemberContextByThreadQuery;
 
 describe('FindProjectMemberContextByThreadQuery', function (): void {
     it('returns the project and target user stored on the thread', function (): void {
-        // Arrange
+        // Arrange — target user is the recipient on the thread response.
         $project = Project::factory()->create();
         $target = User::factory()->create();
         $thread = NotificationThread::factory()->create([
             'type' => NotificationThreadTypeEnum::PROJECT_INVITATION,
             'project_id' => $project->id,
-            'target_user_id' => $target->id,
+        ]);
+        NotificationThreadResponse::factory()->create([
+            'notification_thread_id' => $thread->id,
+            'recipient_user_id' => $target->id,
         ]);
 
         // Act
@@ -37,7 +41,10 @@ describe('FindProjectMemberContextByThreadQuery', function (): void {
         $thread = NotificationThread::factory()->create([
             'type' => NotificationThreadTypeEnum::PROJECT_INVITATION,
             'project_id' => $projectB->id,
-            'target_user_id' => $target->id,
+        ]);
+        NotificationThreadResponse::factory()->create([
+            'notification_thread_id' => $thread->id,
+            'recipient_user_id' => $target->id,
         ]);
 
         // Act
@@ -52,18 +59,21 @@ describe('FindProjectMemberContextByThreadQuery', function (): void {
         $thread = NotificationThread::factory()->create([
             'type' => NotificationThreadTypeEnum::GENERIC,
             'project_id' => null,
-            'target_user_id' => null,
         ]);
 
         expect(new FindProjectMemberContextByThreadQuery()->find($thread->id))->toBeNull();
     });
 
     it('returns null when only the target user is set but the project is missing', function (): void {
+        // Arrange — response has a recipient but thread has no project.
         $target = User::factory()->create();
         $thread = NotificationThread::factory()->create([
             'type' => NotificationThreadTypeEnum::PROJECT_INVITATION,
             'project_id' => null,
-            'target_user_id' => $target->id,
+        ]);
+        NotificationThreadResponse::factory()->create([
+            'notification_thread_id' => $thread->id,
+            'recipient_user_id' => $target->id,
         ]);
 
         expect(new FindProjectMemberContextByThreadQuery()->find($thread->id))->toBeNull();

@@ -4,19 +4,23 @@ declare(strict_types=1);
 
 use App\Enums\NotificationThreadTypeEnum;
 use App\Models\NotificationThread;
+use App\Models\NotificationThreadResponse;
 use App\Models\Project;
 use App\Models\User;
 use App\Queries\Notification\FindRequestToLeaveContextByThreadQuery;
 
 describe('FindRequestToLeaveContextByThreadQuery', function (): void {
     it('returns the project and target user (the leaver) stored on the thread', function (): void {
-        // Arrange — for request-to-leave the target is the leaving member (the sender).
+        // Arrange — for request-to-leave the leaver is the sender on the thread response.
         $project = Project::factory()->create();
         $leaver = User::factory()->create();
         $thread = NotificationThread::factory()->create([
             'type' => NotificationThreadTypeEnum::PROJECT_REQUEST_TO_LEAVE,
             'project_id' => $project->id,
-            'target_user_id' => $leaver->id,
+        ]);
+        NotificationThreadResponse::factory()->create([
+            'notification_thread_id' => $thread->id,
+            'sender_user_id' => $leaver->id,
         ]);
 
         // Act
@@ -36,7 +40,10 @@ describe('FindRequestToLeaveContextByThreadQuery', function (): void {
         $thread = NotificationThread::factory()->create([
             'type' => NotificationThreadTypeEnum::PROJECT_REQUEST_TO_LEAVE,
             'project_id' => $projectB->id,
-            'target_user_id' => $leaver->id,
+        ]);
+        NotificationThreadResponse::factory()->create([
+            'notification_thread_id' => $thread->id,
+            'sender_user_id' => $leaver->id,
         ]);
 
         // Act
@@ -51,7 +58,6 @@ describe('FindRequestToLeaveContextByThreadQuery', function (): void {
         $thread = NotificationThread::factory()->create([
             'type' => NotificationThreadTypeEnum::GENERIC,
             'project_id' => null,
-            'target_user_id' => null,
         ]);
 
         expect(new FindRequestToLeaveContextByThreadQuery()->find($thread->id))->toBeNull();

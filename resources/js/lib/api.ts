@@ -3,11 +3,14 @@ import { type FlashPayload, showFlashToasts } from '@/lib/flash';
 /**
  * Typed error thrown by apiFetch when the server returns a non-2xx status.
  * The message comes from the API's `{ error: '...' }` response body.
+ * The optional code is a machine-readable slug from `{ code: '...' }` for
+ * callers that need to branch on specific failure reasons.
  */
 export class ApiError extends Error {
     constructor(
         readonly status: number,
-        message: string
+        message: string,
+        readonly code?: string
     ) {
         super(message);
         this.name = 'ApiError';
@@ -23,7 +26,7 @@ function xsrfToken(): string {
     return match ? decodeURIComponent(match[1]) : '';
 }
 
-type ErrorBody = { error?: string };
+type ErrorBody = { error?: string; code?: string };
 
 /**
  * Thin fetch wrapper for the internal REST API (`/api/v1/*`).
@@ -57,7 +60,7 @@ export async function apiFetch<T = unknown>(path: string, options: RequestInit =
 
     if (!response.ok) {
         const body = (await response.json().catch((): ErrorBody => ({}))) as ErrorBody;
-        throw new ApiError(response.status, body.error ?? response.statusText);
+        throw new ApiError(response.status, body.error ?? response.statusText, body.code);
     }
 
     return response.json() as Promise<T>;

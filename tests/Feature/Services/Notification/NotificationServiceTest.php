@@ -153,7 +153,6 @@ describe('NotificationsService', function (): void {
             body: 'Ownership offer',
             quickLink: new QuickLinkData('Decide', '/decide'),
             projectId: $project->id,
-            targetUserId: $recipient->id,
         );
 
         $this->assertDatabaseHas('notification_threads', [
@@ -180,7 +179,6 @@ describe('NotificationsService', function (): void {
             body: 'Join the project',
             quickLink: new QuickLinkData('Accept', '/accept'),
             projectId: $project->id,
-            targetUserId: $recipient->id,
         );
 
         $this->assertDatabaseHas('notification_threads', [

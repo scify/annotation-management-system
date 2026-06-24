@@ -66,11 +66,14 @@ describe('ProjectInvitationNotificationService', function (): void {
     });
 
     it('adds the target user to the project on the thread when approved', function (): void {
-        // Arrange — thread carries explicit project + target context.
+        // Arrange — thread carries project context; the invitee is the response recipient.
         $project = Project::factory()->create();
         $invitee = User::factory()->create();
         $thread = makeInvitationThread(NotificationThreadResponseEnum::UNREPLIED);
-        $thread->update(['project_id' => $project->id, 'target_user_id' => $invitee->id]);
+        $thread->update(['project_id' => $project->id]);
+        NotificationThreadResponse::query()
+            ->where('notification_thread_id', $thread->id)
+            ->update(['recipient_user_id' => $invitee->id]);
 
         // Act
         $this->service->approve($thread->id);

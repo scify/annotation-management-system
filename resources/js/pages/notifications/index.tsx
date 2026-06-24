@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ToggleSwitch } from '@/components/ui/toggle-switch';
 import { useTranslations } from '@/hooks/use-translations';
 import AppLayout from '@/layouts/app-layout';
-import { apiFetchWithFlash } from '@/lib/api';
+import { ApiError, apiFetchWithFlash } from '@/lib/api';
 import { type PageProps } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
@@ -124,11 +124,17 @@ export default function NotificationsIndex({ threads: initialThreads }: Props) {
         }));
         // The decision can be rejected server-side (e.g. the thread was canceled
         // meanwhile), returning 422 — apiFetchWithFlash toasts the error message and
-        // rejects, so we roll the optimistic state back.
+        // rejects, so we update the UI to reflect the actual server state.
         apiFetchWithFlash(
             route(isAccepted ? 'notifications.approve' : 'notifications.reject', threadId),
             { method: 'POST' }
-        ).catch(() => updateThread(threadId, (thread) => ({ ...thread, response: 'unreplied' })));
+        ).catch((error: unknown) => {
+            const response =
+                error instanceof ApiError && error.code === 'cannot_respond_cancelled'
+                    ? 'canceled'
+                    : 'unreplied';
+            updateThread(threadId, (thread) => ({ ...thread, response }));
+        });
     };
 
     return (

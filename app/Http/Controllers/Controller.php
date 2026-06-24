@@ -36,8 +36,15 @@ abstract class Controller {
     /**
      * Error JSON for AJAX mutations. The message is shown as an error toast and stays
      * inspectable in devtools (unlike a 302 redirect with an empty body).
+     * An optional machine-readable $code is included so the frontend can branch on
+     * specific failure reasons without parsing translated strings.
      */
-    protected function jsonError(string $message, int $status = 422): JsonResponse {
-        return response()->json(['error' => $message], $status);
+    protected function jsonError(string $message, int $status = 422, ?string $code = null): JsonResponse {
+        $body = ['error' => $message];
+        if ($code !== null) {
+            $body['code'] = $code;
+        }
+
+        return response()->json($body, $status);
     }
 }

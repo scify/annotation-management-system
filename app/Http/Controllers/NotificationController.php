@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\NotificationResponseException;
 use App\Exceptions\PresentableError;
 use App\Http\Requests\Notification\ReplyNotificationRequest;
 use App\Http\Requests\Notification\SendAnnouncementRequest;
@@ -15,7 +16,7 @@ use App\Services\Notification\NotificationsService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
-use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response;
 
 class NotificationController extends Controller {
     public function __construct(
@@ -54,6 +55,8 @@ class NotificationController extends Controller {
     public function approve(int $notificationThreadId): JsonResponse {
         try {
             $this->notificationService->approve($notificationThreadId);
+        } catch (NotificationResponseException $e) {
+            return $this->jsonError($e->getUserMessage(), code: $e->errorCode());
         } catch (PresentableError $presentableError) {
             return $this->jsonError($presentableError->getUserMessage());
         }
@@ -64,6 +67,8 @@ class NotificationController extends Controller {
     public function reject(int $notificationThreadId): JsonResponse {
         try {
             $this->notificationService->reject($notificationThreadId);
+        } catch (NotificationResponseException $e) {
+            return $this->jsonError($e->getUserMessage(), code: $e->errorCode());
         } catch (PresentableError $presentableError) {
             return $this->jsonError($presentableError->getUserMessage());
         }
@@ -124,6 +129,9 @@ class NotificationController extends Controller {
 
         $this->dumpDebugJson($data, 'notifications-index-data.json');
 
-        return Inertia::render('notifications/index', $data);
+        $response = Inertia::render('notifications/index', $data)->toResponse(request());
+        $response->headers->set('Cache-Control', 'no-store');
+
+        return $response;
     }
 }
