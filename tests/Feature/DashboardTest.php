@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
+use App\Models\AnnotationAssignment;
 use App\Models\SubProject;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -55,8 +56,9 @@ describe('DashboardController', function (): void {
     it('lists in-progress subprojects (but not other statuses) on the annotator dashboard', function (): void {
         // Arrange
         $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
-        SubProject::factory()->create(['status' => ProjectStatusEnum::IN_PROGRESS, 'name' => 'Active batch']);
+        $activeSubProject = SubProject::factory()->create(['status' => ProjectStatusEnum::IN_PROGRESS, 'name' => 'Active batch']);
         SubProject::factory()->create(['status' => ProjectStatusEnum::COMPLETED, 'name' => 'Done batch']);
+        AnnotationAssignment::factory()->create(['user_id' => $user->id, 'sub_project_id' => $activeSubProject->id]);
 
         // Act & Assert
         $this->actingAs($user)

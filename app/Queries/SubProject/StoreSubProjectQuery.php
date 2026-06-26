@@ -95,7 +95,6 @@ final readonly class StoreSubProjectQuery {
                         'annotator_instance_index' => $firstIndex + $annotatorPos,
                         'annotations' => null,
                         'pending' => false,
-                        'is_flagged' => false,
                         'confidence' => null,
                         'last_edited_by' => null,
                         'created_at' => $now,

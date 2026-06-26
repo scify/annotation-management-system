@@ -17,12 +17,23 @@ return new class() extends Migration {
             $table->string('title')->nullable()->default(null);
             $table->timestamps();
         });
+
+        Schema::table('annotations', function (Blueprint $table): void {
+            $table->foreign('flag_notification_thread_id')
+                ->references('id')
+                ->on('notification_threads')
+                ->nullOnDelete();
+        });
     }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void {
+        Schema::table('annotations', function (Blueprint $table): void {
+            $table->dropForeign(['flag_notification_thread_id']);
+        });
+
         Schema::dropIfExists('notification_threads');
     }
 };

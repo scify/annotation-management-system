@@ -23,7 +23,7 @@ return new class() extends Migration {
             $table->unique(['annotation_assignment_id', 'dataset_instance_id']);
             $table->json('annotations')->nullable()->default(null);
             $table->boolean('pending')->default(false);
-            $table->boolean('is_flagged')->default(false);
+            $table->unsignedBigInteger('flag_notification_thread_id')->nullable()->default(null);
             $table->string('confidence')->nullable();
             $table->foreignId('last_edited_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();

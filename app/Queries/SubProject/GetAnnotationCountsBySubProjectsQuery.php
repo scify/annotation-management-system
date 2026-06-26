@@ -9,12 +9,13 @@ use App\Models\Annotation;
 final readonly class GetAnnotationCountsBySubProjectsQuery {
     /**
      * Returns pending, submitted, and not-annotated row counts per sub-project.
+     * When $userId is provided, counts are scoped to that annotator only.
      *
      * @param  array<int, int>  $subProjectIds
      *
      * @return array<int, array{pending_count: int, submitted_count: int, not_annotated_count: int}>
      */
-    public function get(array $subProjectIds): array {
+    public function get(array $subProjectIds, ?int $userId = null): array {
         if ($subProjectIds === []) {
             return [];
         }
@@ -23,6 +24,7 @@ final readonly class GetAnnotationCountsBySubProjectsQuery {
         $rows = Annotation::query()
             ->join('annotation_assignments', 'annotation_assignments.id', '=', 'annotations.annotation_assignment_id')
             ->whereIn('annotation_assignments.sub_project_id', $subProjectIds)
+            ->when($userId !== null, fn ($q) => $q->where('annotation_assignments.user_id', $userId))
             ->selectRaw('
                 annotation_assignments.sub_project_id,
                 SUM(CASE WHEN annotations.pending = 1 THEN 1 ELSE 0 END) as pending_count,

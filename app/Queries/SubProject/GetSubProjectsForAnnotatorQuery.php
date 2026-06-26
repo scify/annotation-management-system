@@ -19,10 +19,10 @@ final readonly class GetSubProjectsForAnnotatorQuery {
     public function get(User $user): Collection {
         Log::debug('Getting subprojects for annotator dashboard', ['user_id' => $user->id]);
 
-        // TODO @akosmo: currently returns ALL in-progress subprojects.
         /** @var Collection<int, SubProject> */
         return SubProject::query()
             ->where('status', ProjectStatusEnum::IN_PROGRESS)
+            ->whereHas('annotationAssignments', fn ($q) => $q->where('user_id', $user->id))
             ->with('project.annotationTask')
             ->get();
     }

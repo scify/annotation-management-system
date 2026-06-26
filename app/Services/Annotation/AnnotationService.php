@@ -4,17 +4,52 @@ declare(strict_types=1);
 
 namespace App\Services\Annotation;
 
+use App\Data\AnnotationProgressStats;
 use App\Enums\AgreementEnum;
 use App\Enums\AnnotationTaskTypeEnum;
 use App\Enums\ConfidenceEnum;
+use App\Models\AnnotationSession;
+use App\Queries\Annotation\CreateAnnotationSessionQuery;
+use App\Queries\Annotation\GetAnnotationByIdQuery;
+use App\Queries\Annotation\GetAnnotationSessionByIdQuery;
+use App\Queries\Annotation\GetFlaggedAnnotationCountsQuery;
+use App\Queries\SubProject\GetAnnotationCountsBySubProjectsQuery;
 use App\Queries\SubProject\GetAnnotationsBySubProjectQuery;
 use App\Services\AnnotationTask\AnnotationTaskServiceFactory;
 
 readonly class AnnotationService {
     public function __construct(
+        private GetAnnotationCountsBySubProjectsQuery $annotationCountsBySubProjectsQuery,
         private GetAnnotationsBySubProjectQuery $annotationsBySubProjectQuery,
+        private GetAnnotationSessionByIdQuery $annotationSessionByIdQuery,
+        private CreateAnnotationSessionQuery $createAnnotationSessionQuery,
+        private GetAnnotationByIdQuery $annotationByIdQuery,
+        private GetFlaggedAnnotationCountsQuery $flaggedAnnotationCountsQuery,
         private AnnotationTaskServiceFactory $taskServiceFactory,
     ) {}
+
+    public function startSession(int $annotationAssignmentId, int $nextAnnotationId): int {
+        return $this->createAnnotationSessionQuery->create($annotationAssignmentId, $nextAnnotationId);
+    }
+
+    /** @return array<string, mixed> */
+    public function getInitialViewData(int $subProjectId, string $mode, int $userId): array {
+        return [
+            'subProjectId' => $subProjectId,
+            'mode' => $mode,
+            'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $mode, $userId, null),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public function getDataForShowAnnotation(int $subProjectId, string $mode, int $userId, int $annotationSessionId, int $nextAnnotationId): array {
+        return [
+            'subProjectId' => $subProjectId,
+            'mode' => $mode,
+            'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $mode, $userId, $annotationSessionId),
+            'annotationTaskData' => $this->getAnnotationTaskData($nextAnnotationId),
+        ];
+    }
 
     /**
      * Returns per-dataset-instance annotation data for a sub-project.
@@ -51,5 +86,41 @@ readonly class AnnotationService {
         }
 
         return $result;
+    }
+
+    /** @return array<string, mixed> */
+    private function getAnnotationProgressData(int $subProjectId, string $mode, int $userId, ?int $annotationSessionId): array {
+        $counts = $this->annotationCountsBySubProjectsQuery->get([$subProjectId], $userId);
+        $stats = AnnotationProgressStats::fromCounts(
+            $counts[$subProjectId] ?? ['pending_count' => 0, 'submitted_count' => 0, 'not_annotated_count' => 0],
+        );
+
+        $session = $annotationSessionId !== null ? $this->annotationSessionByIdQuery->get($annotationSessionId) : null;
+        $flagCounts = $this->flaggedAnnotationCountsQuery->get($subProjectId, $userId);
+
+        $data = [
+            'submitted_count' => $stats->submittedCount,
+            'not_annotated_count' => $stats->notAnnotatedCount,
+            'submitted_pct' => $stats->submittedPct,
+            'session_annotations_count' => $session instanceof AnnotationSession ? $session->session_annotations_count : 0,
+            'number_of_flagged_instances' => $flagCounts['flagged_count'],
+            'number_of_replied_flagged_instances' => $flagCounts['replied_flagged_count'],
+        ];
+
+        if ($mode === 'flexible') {
+            $data['pending_count'] = $stats->pendingCount;
+            $data['submitted_and_pending_pct'] = $stats->submittedAndPendingPct;
+        }
+
+        return $data;
+    }
+
+    /** @return array<string, mixed> */
+    private function getAnnotationTaskData(int $nextAnnotationId): array {
+        $annotation = $this->annotationByIdQuery->get($nextAnnotationId);
+
+        return [
+            'annotator_instance_index' => $annotation?->annotator_instance_index,
+        ];
     }
 }

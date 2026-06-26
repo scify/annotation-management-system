@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Database\Seeders;
 
 use App\Enums\ConfidenceEnum;
+use App\Enums\NotificationThreadTypeEnum;
 use App\Enums\ProjectStatusEnum;
 use App\Enums\SubProjectPriorityEnum;
 use App\Models\Annotation;
@@ -14,6 +15,7 @@ use App\Models\AnnotatorOfManager;
 use App\Models\Dataset;
 use App\Models\DatasetInstance;
 use App\Models\InstanceShuffleMapper;
+use App\Models\NotificationThread;
 use App\Models\Project;
 use App\Models\ProjectManager;
 use App\Models\SubProject;
@@ -90,6 +92,22 @@ class DummyProjectSeeder extends Seeder {
                         'scheduled_at' => '2026-05-01',
                         'deadline_at' => '2026-06-30',
                         'annotators' => ['annotator.frank@example.com', 'annotator.henry@example.com'],
+                    ],
+                    [
+                        'name' => 'Batch 3',
+                        'status' => ProjectStatusEnum::IN_PROGRESS,
+                        'priority' => SubProjectPriorityEnum::HIGH,
+                        'flexible' => false,
+                        'auto_submission' => false,
+                        'minimum_annotators' => 1,
+                        'first_instance_index' => 1,
+                        'last_instance_index' => 10,
+                        'scheduled_at' => '2026-03-01',
+                        'started_at' => '2026-04-01 09:00:00',
+                        'deadline_at' => '2026-06-30',
+                        'submitted_count' => 2,
+                        'pending_count' => 3,
+                        'annotators' => ['annotator.eva@example.com'],
                     ],
                 ],
             ],
@@ -272,7 +290,9 @@ class DummyProjectSeeder extends Seeder {
             foreach ($entry['subprojects'] as $spData) {
                 $annotatorEmails = $spData['annotators'];
                 $shuffle = $spData['shuffle'] ?? false;
-                unset($spData['annotators'], $spData['shuffle']);
+                $forcedSubmittedCount = $spData['submitted_count'] ?? null;
+                $forcedPendingCount = $spData['pending_count'] ?? null;
+                unset($spData['annotators'], $spData['shuffle'], $spData['submitted_count'], $spData['pending_count']);
 
                 $subProject = SubProject::query()->updateOrCreate(
                     ['project_id' => $project->getKey(), 'name' => $spData['name']],
@@ -298,7 +318,7 @@ class DummyProjectSeeder extends Seeder {
 
                 $now = now();
 
-                $canBePending = $subProject->requiresSubmission();
+                $canBePending = ! $subProject->auto_submission;
 
                 foreach ($annotatorEmails as $email) {
                     $annotator = User::query()->where('email', $email)->firstOrFail();
@@ -318,43 +338,76 @@ class DummyProjectSeeder extends Seeder {
 
                     $rows = [];
                     $isFirst = true;
-                    $cutoff = $subProject->status === ProjectStatusEnum::IN_PROGRESS
-                        ? random_int(0, $instanceCount)
-                        : 0;
 
-                    foreach ($orderedProjectPositions as $annotatorPos => $projectPos) {
-                        $annotatorIndex = $annotatorPos + 1;
-                        $isDone = $annotatorIndex <= $cutoff;
-                        $isFlagged = ! $isDone && $flaggedCount < 2 && $isFirst;
-                        $isFirst = false;
-                        if ($isFlagged) {
-                            $flaggedCount++;
+                    if ($forcedSubmittedCount !== null && $forcedPendingCount !== null) {
+                        Annotation::query()->where('annotation_assignment_id', $assignment->getKey())->delete();
+                        $totalDone = $forcedSubmittedCount + $forcedPendingCount;
+
+                        foreach ($orderedProjectPositions as $annotatorPos => $projectPos) {
+                            $annotatorIndex = $annotatorPos + 1;
+                            $isSubmitted = $annotatorIndex <= $forcedSubmittedCount;
+                            $isPending = ! $isSubmitted && $annotatorIndex <= $totalDone;
+                            $isDone = $isSubmitted || $isPending;
+
+                            $rows[] = [
+                                'annotation_assignment_id' => $assignment->getKey(),
+                                'dataset_instance_id' => $instanceByProjectPos[$projectPos],
+                                'project_instance_index' => $projectPos,
+                                'annotator_instance_index' => $annotatorIndex,
+                                'annotations' => $isDone ? '{}' : null,
+                                'pending' => $isPending,
+                                'confidence' => $expectsConfidence && $isSubmitted
+                                    ? $confidenceCases[random_int(0, count($confidenceCases) - 1)]->value
+                                    : null,
+                                'last_edited_by' => $annotator->getKey(),
+                                'created_at' => $now,
+                                'updated_at' => $now,
+                            ];
+                        }
+                    } else {
+                        $cutoff = $subProject->status === ProjectStatusEnum::IN_PROGRESS
+                            ? random_int(0, $instanceCount)
+                            : 0;
+
+                        foreach ($orderedProjectPositions as $annotatorPos => $projectPos) {
+                            $annotatorIndex = $annotatorPos + 1;
+                            $isDone = $annotatorIndex <= $cutoff;
+                            $isFlagged = ! $isDone && $flaggedCount < 2 && $isFirst;
+                            $isFirst = false;
+
+                            $flagNotificationThreadId = null;
+                            if ($isFlagged) {
+                                $flaggedCount++;
+                                $flagNotificationThreadId = NotificationThread::query()->create([
+                                    'type' => NotificationThreadTypeEnum::FLAG_NOTIFICATION,
+                                ])->getKey();
+                            }
+
+                            $rows[] = [
+                                'annotation_assignment_id' => $assignment->getKey(),
+                                'dataset_instance_id' => $instanceByProjectPos[$projectPos],
+                                'project_instance_index' => $projectPos,
+                                'annotator_instance_index' => $annotatorIndex,
+                                'annotations' => $isDone ? '{}' : null,
+                                'pending' => false,
+                                'flag_notification_thread_id' => $flagNotificationThreadId,
+                                'confidence' => $expectsConfidence && $isDone
+                                    ? $confidenceCases[random_int(0, count($confidenceCases) - 1)]->value
+                                    : null,
+                                'last_edited_by' => $annotator->getKey(),
+                                'created_at' => $now,
+                                'updated_at' => $now,
+                            ];
                         }
 
-                        $rows[] = [
-                            'annotation_assignment_id' => $assignment->getKey(),
-                            'dataset_instance_id' => $instanceByProjectPos[$projectPos],
-                            'project_instance_index' => $projectPos,
-                            'annotator_instance_index' => $annotatorIndex,
-                            'annotations' => $isDone ? '{}' : null,
-                            'pending' => false,
-                            'is_flagged' => $isFlagged,
-                            'confidence' => $expectsConfidence && $isDone
-                                ? $confidenceCases[random_int(0, count($confidenceCases) - 1)]->value
-                                : null,
-                            'last_edited_by' => $annotator->getKey(),
-                            'created_at' => $now,
-                            'updated_at' => $now,
-                        ];
-                    }
+                        // Force the last annotated row for this annotator to pending.
+                        if ($canBePending) {
+                            for ($i = count($rows) - 1; $i >= 0; $i--) {
+                                if ($rows[$i]['annotations'] !== null) {
+                                    $rows[$i]['pending'] = true;
 
-                    // Force the last annotated row for this annotator to pending.
-                    if ($canBePending) {
-                        for ($i = count($rows) - 1; $i >= 0; $i--) {
-                            if ($rows[$i]['annotations'] !== null) {
-                                $rows[$i]['pending'] = true;
-
-                                break;
+                                    break;
+                                }
                             }
                         }
                     }

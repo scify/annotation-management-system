@@ -19,10 +19,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $annotator_instance_index index as ordered for this annotator (equals project_instance_index unless per-annotator shuffle is active)
  * @property array<string, mixed>|null $annotations
  * @property bool $pending
- * @property bool $is_flagged
+ * @property int|null $flag_notification_thread_id
  * @property ConfidenceEnum|null $confidence
  * @property int|null $last_edited_by
  * @property-read User|null $lastEditedBy
+ * @property-read NotificationThread|null $flagNotificationThread
  */
 #[Fillable([
     'annotation_assignment_id',
@@ -31,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'annotator_instance_index',
     'annotations',
     'pending',
-    'is_flagged',
+    'flag_notification_thread_id',
     'confidence',
     'last_edited_by',
 ])]
@@ -42,17 +43,23 @@ class Annotation extends Model {
     protected $casts = [
         'annotations' => 'array',
         'pending' => 'boolean',
-        'is_flagged' => 'boolean',
         'confidence' => ConfidenceEnum::class,
     ];
+
+    public function isFlagged(): bool {
+        return $this->flag_notification_thread_id !== null && $this->annotations === null;
+    }
 
     public function isAnnotated(): bool {
         return $this->annotations !== null && ! $this->pending;
     }
 
-    /**
-     * @return BelongsTo<User, $this>
-     */
+    /** @return BelongsTo<NotificationThread, $this> */
+    public function flagNotificationThread(): BelongsTo {
+        return $this->belongsTo(NotificationThread::class, 'flag_notification_thread_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
     public function lastEditedBy(): BelongsTo {
         return $this->belongsTo(User::class, 'last_edited_by');
     }

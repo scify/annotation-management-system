@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace App\Services\Dashboard;
 
+use App\Data\AnnotationProgressStats;
 use App\Enums\ProjectStatusEnum;
 use App\Enums\RolesEnum;
 use App\Models\SubProject;
 use App\Models\User;
+use App\Queries\Annotation\GetNextAnnotationIdQuery;
 use App\Queries\Annotator\GetAnnotatorIdsByProjectsQuery;
 use App\Queries\Dashboard\GetPlatformStatsQuery;
 use App\Queries\Project\GetProjectIdsManagedByUserQuery;
 use App\Queries\Project\GetProjectsQuery;
 use App\Queries\Project\GetSubProjectIdsQuery;
 use App\Queries\SubProject\GetAnnotationCountsBySubProjectsQuery;
+use App\Queries\SubProject\GetAssignmentsBySubProjectsAndAnnotatorsQuery;
 use App\Queries\SubProject\GetSubProjectsForAnnotatorQuery;
 use App\Services\Annotation\AnnotatorService;
 use App\Services\Project\ProjectReadService;
@@ -25,6 +28,8 @@ readonly class DashboardService {
         private AnnotatorService $annotatorService,
         private GetAnnotationCountsBySubProjectsQuery $annotationCountsBySubProjectsQuery,
         private GetAnnotatorIdsByProjectsQuery $annotatorIdsByProjectsQuery,
+        private GetAssignmentsBySubProjectsAndAnnotatorsQuery $assignmentsBySubProjectsAndAnnotatorsQuery,
+        private GetNextAnnotationIdQuery $nextAnnotationIdQuery,
         private GetPlatformStatsQuery $platformStatsQuery,
         private GetProjectIdsManagedByUserQuery $projectIdsManagedByUserQuery,
         private GetProjectsQuery $projectsQuery,
@@ -42,12 +47,23 @@ readonly class DashboardService {
 
         /** @var array<int, int> $subProjectIds */
         $subProjectIds = $subprojectModels->pluck('id')->all();
-        $counts = $this->annotationCountsBySubProjectsQuery->get($subProjectIds);
+        $counts = $this->annotationCountsBySubProjectsQuery->get($subProjectIds, $user->id);
+
+        // Build sub_project_id → assignment_id map for this annotator.
+        $assignments = $this->assignmentsBySubProjectsAndAnnotatorsQuery->get($subProjectIds, [$user->id]);
+        /** @var array<int, int> $assignmentIdBySubProject */
+        $assignmentIdBySubProject = $assignments->keyBy('sub_project_id')->map(fn ($a) => $a->id)->all();
 
         $subprojects = $subprojectModels
-            ->map(function (SubProject $subProject) use ($counts): array {
-                $c = $counts[$subProject->id] ?? ['pending_count' => 0, 'submitted_count' => 0, 'not_annotated_count' => 0];
-                $total = $c['not_annotated_count'] + $c['pending_count'] + $c['submitted_count'];
+            ->map(function (SubProject $subProject) use ($counts, $assignmentIdBySubProject): array {
+                $stats = AnnotationProgressStats::fromCounts(
+                    $counts[$subProject->id] ?? ['pending_count' => 0, 'submitted_count' => 0, 'not_annotated_count' => 0],
+                );
+
+                $annotationAssignmentId = $assignmentIdBySubProject[$subProject->id] ?? null;
+                $nextAnnotationId = $annotationAssignmentId !== null
+                    ? $this->nextAnnotationIdQuery->get($annotationAssignmentId)
+                    : null;
 
                 $entry = [
                     'id' => $subProject->id,
@@ -59,14 +75,16 @@ readonly class DashboardService {
                     'deadline_at' => $subProject->deadline_at,
                     'started_at' => $subProject->started_at,
                     'completed_at' => $subProject->completed_at,
-                    'submitted_count' => $c['submitted_count'],
-                    'not_annotated_count' => $c['not_annotated_count'],
-                    'submitted_pct' => $total > 0 ? round($c['submitted_count'] / $total * 100, 2) : 0.0,
+                    'submitted_count' => $stats->submittedCount,
+                    'not_annotated_count' => $stats->notAnnotatedCount,
+                    'submitted_pct' => $stats->submittedPct,
+                    'annotation_assignment_id' => $annotationAssignmentId,
+                    'next_annotation_id' => $nextAnnotationId,
                 ];
 
                 if (! $subProject->auto_submission) {
-                    $entry['pending_count'] = $c['pending_count'];
-                    $entry['submitted_and_pending_pct'] = $total > 0 ? round(($c['submitted_count'] + $c['pending_count']) / $total * 100, 2) : 0.0;
+                    $entry['pending_count'] = $stats->pendingCount;
+                    $entry['submitted_and_pending_pct'] = $stats->submittedAndPendingPct;
                 }
 
                 return $entry;

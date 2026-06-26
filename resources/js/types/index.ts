@@ -158,6 +158,8 @@ export interface AnnotatorSubProject {
     deadline_at: string | null;
     started_at: string | null;
     completed_at: string | null;
+    annotation_assignment_id: number;
+    next_annotation_id: number | null;
     submitted_count: number;
     not_annotated_count: number;
     submitted_pct: number;
