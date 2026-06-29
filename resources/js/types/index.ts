@@ -256,8 +256,13 @@ export interface AnnotationShowProps {
     mode: AnnotationTaskMode;
     projectName: string;
     subProjectName: string;
+    /** Resolved server-side; null when the annotator has no assignment for this sub-project. */
+    annotationAssignmentId: number | null;
+    /** The next instance to annotate; null when nothing is left. */
+    nextAnnotationId: number | null;
     annotationProgressData: AnnotationProgressData;
-    annotationTaskData: AnnotationTaskItemData;
+    /** Absent when there is no instance to annotate (`nextAnnotationId === null`). */
+    annotationTaskData?: AnnotationTaskItemData;
 }
 
 export interface PlatformStats {

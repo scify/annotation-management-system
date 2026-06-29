@@ -33,6 +33,7 @@ return [
     'filter_all' => 'Όλα',
 
     // Main panel
+    'no_instances' => 'Δεν υπάρχουν άλλα στιγμιότυπα προς επισημείωση.',
     'instance' => 'Στιγμιότυπο: :index',
     'flag' => 'Επισήμανση',
     'flag_and_continue' => 'Επισήμανση & Συνέχεια',

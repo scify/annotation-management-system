@@ -33,6 +33,7 @@ return [
     'filter_all' => 'All',
 
     // Main panel
+    'no_instances' => 'No instances left to annotate.',
     'instance' => 'Instance: :index',
     'flag' => 'Flag',
     'flag_and_continue' => 'Flag & Continue',
