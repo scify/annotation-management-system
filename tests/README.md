@@ -106,6 +106,14 @@ Browser tests use **Pest v4 Browser** (Playwright-based) and run real Chromium a
 - Database state (`RefreshDatabase`) is shared between test code and server requests, so factory-created users are immediately visible to the browser
 - Session state persists across browser requests within the same test (array session driver, shared in-process)
 
+**First-time setup:**
+
+Run the following once to install Playwright and its dependencies:
+
+```shell
+npm install playwright --save-dev && npx playwright install
+```
+
 **Before running browser tests** — compile frontend assets and ensure no dev server is running:
 
 ```shell

@@ -50,3 +50,6 @@ tests/Browser/Screenshots
 
 # Graphify
 graphify-out/cache
+
+# Datasets subdirectories and files
+datasets/*
