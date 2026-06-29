@@ -172,9 +172,8 @@ export interface AnnotatorSubProject {
 /**
  * Annotation-task page (the annotation tool the "Resume" button opens).
  *
- * The question schema mirrors the shape the backend will emit from the
- * annotation-task settings, so the mocked frontend payload drops in unchanged
- * once the API is ready.
+ * The backend (`AnnotationController@show`) sends one instance per page load via
+ * `AnnotationShowProps`; the page adapts that payload into the view types below.
  */
 export type AnnotationTaskMode = 'strict' | 'flexible';
 
@@ -211,16 +210,54 @@ export interface AnnotationTaskProgress {
     submittedPct: number;
 }
 
-/** Full mocked payload the annotation-task page consumes. */
+/** Layout/sidebar payload for the annotation-task page (project chrome + progress). */
 export interface AnnotationTaskData {
     projectName: string;
     subProjectName: string;
     /** Sidebar "Description" body (supports newlines). */
     description: string;
-    questions: AnnotationTaskQuestion[];
-    instances: AnnotationTaskInstance[];
     progress: AnnotationTaskProgress;
     flagged: { total: number; replied: number };
+}
+
+/** Aggregate progress counts for the current annotator + sub-project (backend payload). */
+export interface AnnotationProgressData {
+    submitted_count: number;
+    not_annotated_count: number;
+    submitted_pct: number;
+    session_annotations_count: number;
+    number_of_flagged_instances: number;
+    number_of_replied_flagged_instances: number;
+    /** Flexible mode only. */
+    pending_count?: number;
+    /** Flexible mode only. */
+    submitted_and_pending_pct?: number;
+}
+
+/**
+ * The current instance under annotation (backend payload). Task-content fields are
+ * optional because the initial-view payload can carry only `annotator_instance_index`.
+ */
+export interface AnnotationTaskItemData {
+    annotator_instance_index: number;
+    word?: string;
+    senses?: string[];
+    /** Corpus sentence with the focus word wrapped in `<b>…</b>`. */
+    first_corpus_sentence?: string;
+    /** Corpus sentence with the focus word wrapped in `<b>…</b>`. */
+    second_corpus_sentence?: string;
+    allow_confidence?: boolean;
+    allow_cannot_decide?: boolean;
+}
+
+/** Props the annotation-task page receives from `AnnotationController@show`. */
+export interface AnnotationShowProps {
+    subProjectId: number;
+    mode: AnnotationTaskMode;
+    projectName: string;
+    subProjectName: string;
+    annotationProgressData: AnnotationProgressData;
+    annotationTaskData: AnnotationTaskItemData;
 }
 
 export interface PlatformStats {

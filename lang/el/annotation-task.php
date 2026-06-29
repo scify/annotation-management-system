@@ -9,6 +9,7 @@ return [
 
     // Sidebar
     'description' => 'Περιγραφή',
+    'meanings_of_word' => 'Σημασίες της λέξης :word:',
     'annotation_progress' => 'Πρόοδος Επισημείωσης',
     'instances_count' => ':done / :total Στιγμιότυπα',
     'submitted' => 'ΥΠΟΒΛΗΘΗΚΑΝ',
@@ -36,6 +37,10 @@ return [
     'flag' => 'Επισήμανση',
     'flag_and_continue' => 'Επισήμανση & Συνέχεια',
     'select_an_option' => 'Επιλέξτε μια Επιλογή',
+    'same_meaning_question' => 'Έχει η λέξη :word την ίδια σημασία;',
+    'answer_yes' => 'Ναι',
+    'answer_no' => 'Όχι',
+    'answer_cannot_decide' => 'Δεν μπορώ να αποφασίσω',
     'your_confidence' => 'Η Βεβαιότητά σας:',
     'confidence_high' => 'Υψηλή',
     'confidence_medium' => 'Μέτρια',
