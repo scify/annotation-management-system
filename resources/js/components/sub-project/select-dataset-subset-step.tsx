@@ -30,7 +30,7 @@ export function SelectDatasetSubsetStep({
     onShuffleChange,
 }: SelectDatasetSubsetStepProps) {
     const { t, trans } = useTranslations();
-    const instanceCount = Math.max(0, toInstance - fromInstance);
+    const instanceCount = Math.max(0, toInstance - fromInstance + 1);
 
     return (
         <section aria-labelledby="step-heading" className="flex flex-col gap-5">

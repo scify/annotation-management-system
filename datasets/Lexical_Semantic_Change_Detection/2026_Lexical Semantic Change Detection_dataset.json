@@ -189,10 +189,7 @@
     },
     {
         "word": "actor",
-        "senses": [
-            "a theatrical performer",
-            "a person who acts and gets things done"
-        ],
+        "senses": ["a theatrical performer", "a person who acts and gets things done"],
         "corpus1_sentences": [
             "He is not an <b>actor</b>; he does not wear either the purple or diadem of the theatre; he lives for two hours enery day in the life of the person whom he represents.",
             "He is not an <b>actor</b>; he does not wear either the purple or diadem of the theatre; he lives for two hours enery day in the life of the person whom he represents.",
@@ -820,9 +817,7 @@
     },
     {
         "word": "apartment",
-        "senses": [
-            "a suite of rooms usually on one floor of an apartment house"
-        ],
+        "senses": ["a suite of rooms usually on one floor of an apartment house"],
         "corpus1_sentences": [
             "She was overcome with exertion, and in the very revival of her hope, her strength was exhausted; but she had sunk into a sweet sleep ere her uncle left the <b>apartment</b>.",
             "She was overcome with exertion, and in the very revival of her hope, her strength was exhausted; but she had sunk into a sweet sleep ere her uncle left the <b>apartment</b>.",
@@ -1137,9 +1132,7 @@
     },
     {
         "word": "artist",
-        "senses": [
-            "a person whose creative work shows sensitivity and imagination"
-        ],
+        "senses": ["a person whose creative work shows sensitivity and imagination"],
         "corpus1_sentences": [
             "The <b>artist</b> must catch this higher truth, must put",
             "The <b>artist</b> must catch this higher truth, must put",
@@ -1647,10 +1640,7 @@
     },
     {
         "word": "avenue",
-        "senses": [
-            "a line of approach",
-            "a wide street or thoroughfare"
-        ],
+        "senses": ["a line of approach", "a wide street or thoroughfare"],
         "corpus1_sentences": [
             "He is coming up the <b>avenue</b>; and I would be there to see the meeting.",
             "He is coming up the <b>avenue</b>; and I would be there to see the meeting.",
@@ -2129,9 +2119,7 @@
     },
     {
         "word": "beach",
-        "senses": [
-            "an area of sand sloping down to the water of a sea or lake"
-        ],
+        "senses": ["an area of sand sloping down to the water of a sea or lake"],
         "corpus1_sentences": [
             "More are drowned; hundreds are prisoners, or shot on the <b>beach</b>.",
             "More are drowned; hundreds are prisoners, or shot on the <b>beach</b>.",
@@ -4174,10 +4162,7 @@
     },
     {
         "word": "century",
-        "senses": [
-            "a period of 100 years",
-            "ten 10s"
-        ],
+        "senses": ["a period of 100 years", "ten 10s"],
         "corpus1_sentences": [
             "worth seeing, I am told, -- the Century Ball especially.",
             "worth seeing, I am told, -- the Century Ball especially.",
@@ -7909,9 +7894,7 @@
     },
     {
         "word": "dozen",
-        "senses": [
-            "the cardinal number that is the sum of eleven and one"
-        ],
+        "senses": ["the cardinal number that is the sum of eleven and one"],
         "corpus1_sentences": [
             "Most of them went home, therefore, and shortly returned with money enough to buy one or two <b>dozen</b> sticks.",
             "Most of them went home, therefore, and shortly returned with money enough to buy one or two <b>dozen</b> sticks.",
@@ -9447,9 +9430,7 @@
     },
     {
         "word": "farm",
-        "senses": [
-            "workplace consisting of farm buildings and cultivated land as a unit"
-        ],
+        "senses": ["workplace consisting of farm buildings and cultivated land as a unit"],
         "corpus1_sentences": [
             "Veterinary Schools ................. ..... Reform Farm Scbooli, ........., ....",
             "Veterinary Schools ................. ..... Reform Farm Scbooli, ........., ....",
@@ -9635,9 +9616,7 @@
     },
     {
         "word": "feed",
-        "senses": [
-            "food for domestic livestock"
-        ],
+        "senses": ["food for domestic livestock"],
         "corpus1_sentences": [
             "I'll thump him, Minty, I will -- <b>feed</b> me on hay, if I do n't. \"",
             "I'll thump him, Minty, I will -- <b>feed</b> me on hay, if I do n't. \"",
@@ -11641,9 +11620,7 @@
     },
     {
         "word": "hotel",
-        "senses": [
-            "a building where travelers can pay for lodging and meals and other services"
-        ],
+        "senses": ["a building where travelers can pay for lodging and meals and other services"],
         "corpus1_sentences": [
             "however, he carne to see her at her <b>hotel</b>.",
             "however, he carne to see her at her <b>hotel</b>.",
@@ -11893,9 +11870,7 @@
     },
     {
         "word": "income",
-        "senses": [
-            "the financial gain (earned or unearned) accruing over a given period of time"
-        ],
+        "senses": ["the financial gain (earned or unearned) accruing over a given period of time"],
         "corpus1_sentences": [
             "100 of property, or to an <b>income</b> tax of 13* per cent.",
             "100 of property, or to an <b>income</b> tax of 13* per cent.",
@@ -12586,9 +12561,7 @@
     },
     {
         "word": "kitchen",
-        "senses": [
-            "a room equipped for preparing meals"
-        ],
+        "senses": ["a room equipped for preparing meals"],
         "corpus1_sentences": [
             "He speedily dressed himself, and opening the <b>kitchen</b> door, we seated ourselves before the fire.",
             "He speedily dressed himself, and opening the <b>kitchen</b> door, we seated ourselves before the fire.",
@@ -12646,9 +12619,7 @@
     },
     {
         "word": "lack",
-        "senses": [
-            "the state of needing something that is absent or unavailable"
-        ],
+        "senses": ["the state of needing something that is absent or unavailable"],
         "corpus1_sentences": [
             "But it is not true where these are <b>lacking</b>.",
             "But it is not true where these are <b>lacking</b>.",
@@ -12889,9 +12860,7 @@
     },
     {
         "word": "leather",
-        "senses": [
-            "an animal skin made smooth and flexible by removing the hair and then tanning"
-        ],
+        "senses": ["an animal skin made smooth and flexible by removing the hair and then tanning"],
         "corpus1_sentences": [
             "He tells books by the smell of the <b>leather</b>.",
             "He tells books by the smell of the <b>leather</b>.",
@@ -13488,10 +13457,7 @@
     },
     {
         "word": "management",
-        "senses": [
-            "the act of managing something",
-            "those in charge of running a business"
-        ],
+        "senses": ["the act of managing something", "those in charge of running a business"],
         "corpus1_sentences": [
             "The <b>management</b> of the vessel, the descriptions of her",
             "The <b>management</b> of the vessel, the descriptions of her",
@@ -16790,9 +16756,7 @@
     },
     {
         "word": "police",
-        "senses": [
-            "the force of policemen and officers"
-        ],
+        "senses": ["the force of policemen and officers"],
         "corpus1_sentences": [
             "POLICE, ( Imported from Tartarus) , Messrs.",
             "POLICE, ( Imported from Tartarus) , Messrs.",
@@ -17504,9 +17468,7 @@
     },
     {
         "word": "professor",
-        "senses": [
-            "someone who is a member of the faculty at a college or university"
-        ],
+        "senses": ["someone who is a member of the faculty at a college or university"],
         "corpus1_sentences": [
             "In several respects, it is extremely well suited to elementary instruction, and approves the selection made by the <b>professor</b>.",
             "In several respects, it is extremely well suited to elementary instruction, and approves the selection made by the <b>professor</b>.",
@@ -17564,10 +17526,7 @@
     },
     {
         "word": "project",
-        "senses": [
-            "any piece of work that is undertaken or attempted",
-            "a planned undertaking"
-        ],
+        "senses": ["any piece of work that is undertaken or attempted", "a planned undertaking"],
         "corpus1_sentences": [
             "The hurrying clouds like mustering troops collect, When they some sudden desperate deed <b>project</b>.",
             "The hurrying clouds like mustering troops collect, When they some sudden desperate deed <b>project</b>.",
@@ -18464,10 +18423,7 @@
     },
     {
         "word": "research",
-        "senses": [
-            "systematic investigation to establish facts",
-            "a search for knowledge"
-        ],
+        "senses": ["systematic investigation to establish facts", "a search for knowledge"],
         "corpus1_sentences": [
             "explosive gas, so much talked of, has, by the way, never yet been detected by the <b>researches</b> of science.",
             "explosive gas, so much talked of, has, by the way, never yet been detected by the <b>researches</b> of science.",
@@ -20302,9 +20258,7 @@
     },
     {
         "word": "shirt",
-        "senses": [
-            "a garment worn on the upper half of the body"
-        ],
+        "senses": ["a garment worn on the upper half of the body"],
         "corpus1_sentences": [
             "You know you promised, if I washed your <b>shirt</b>, you would. \"",
             "You know you promised, if I washed your <b>shirt</b>, you would. \"",
@@ -20362,10 +20316,7 @@
     },
     {
         "word": "shoot",
-        "senses": [
-            "a new branch",
-            "the act of shooting at targets"
-        ],
+        "senses": ["a new branch", "the act of shooting at targets"],
         "corpus1_sentences": [
             "I know not what followed, until you <b>shot</b> him. \"",
             "I know not what followed, until you <b>shot</b> him. \"",
@@ -20689,9 +20640,7 @@
     },
     {
         "word": "shrink",
-        "senses": [
-            "a physician who specializes in psychiatry"
-        ],
+        "senses": ["a physician who specializes in psychiatry"],
         "corpus1_sentences": [
             "I scorn to stand so long <b>shrinking</b> on the brink, since I",
             "I scorn to stand so long <b>shrinking</b> on the brink, since I",
@@ -21869,9 +21818,7 @@
     },
     {
         "word": "stare",
-        "senses": [
-            "a fixed look with eyes open wide"
-        ],
+        "senses": ["a fixed look with eyes open wide"],
         "corpus1_sentences": [
             "She had never been in such a place before, and it made her cheeks very hot to have those rude girls <b>stare</b> at her so.",
             "She had never been in such a place before, and it made her cheeks very hot to have those rude girls <b>stare</b> at her so.",
@@ -22126,9 +22073,7 @@
     },
     {
         "word": "steam",
-        "senses": [
-            "water at boiling temperature diffused in the atmosphere"
-        ],
+        "senses": ["water at boiling temperature diffused in the atmosphere"],
         "corpus1_sentences": [
             "Only a <b>steam</b> man, \" said one. \"",
             "Only a <b>steam</b> man, \" said one. \"",
@@ -23428,9 +23373,7 @@
     },
     {
         "word": "swim",
-        "senses": [
-            "the act of swimming; :"
-        ],
+        "senses": ["the act of swimming; :"],
         "corpus1_sentences": [
             "See then, reader, \" how we apples <b>swim</b>! \"",
             "See then, reader, \" how we apples <b>swim</b>! \"",
@@ -23945,10 +23888,7 @@
     },
     {
         "word": "thanks",
-        "senses": [
-            "an acknowledgment of appreciation",
-            "with the help of or owing to"
-        ],
+        "senses": ["an acknowledgment of appreciation", "with the help of or owing to"],
         "corpus1_sentences": [
             "I was tempted to do it, but <b>thanks</b> be to Him that kept me from it.",
             "I was tempted to do it, but <b>thanks</b> be to Him that kept me from it.",
@@ -25361,10 +25301,7 @@
     },
     {
         "word": "vice",
-        "senses": [
-            "moral weakness",
-            "a specific form of evildoing"
-        ],
+        "senses": ["moral weakness", "a specific form of evildoing"],
         "corpus1_sentences": [
             "Yet is it not true, that even here <b>vice</b>",
             "Yet is it not true, that even here <b>vice</b>",
@@ -25422,9 +25359,7 @@
     },
     {
         "word": "victory",
-        "senses": [
-            "a successful ending of a struggle or contest"
-        ],
+        "senses": ["a successful ending of a struggle or contest"],
         "corpus1_sentences": [
             "The prize was for us, but the <b>victory</b> thine.",
             "The prize was for us, but the <b>victory</b> thine.",
@@ -25544,9 +25479,7 @@
     },
     {
         "word": "visitor",
-        "senses": [
-            "someone who visits"
-        ],
+        "senses": ["someone who visits"],
         "corpus1_sentences": [
             "But these are trifles, \" remarked the <b>visitor</b>. \"",
             "But these are trifles, \" remarked the <b>visitor</b>. \"",
@@ -26438,10 +26371,7 @@
     },
     {
         "word": "yesterday",
-        "senses": [
-            "the day immediately before today",
-            "the recent past"
-        ],
+        "senses": ["the day immediately before today", "the recent past"],
         "corpus1_sentences": [
             "He must be where he was; to morrow must type <b>yesterday</b>.",
             "He must be where he was; to morrow must type <b>yesterday</b>.",

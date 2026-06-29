@@ -102,7 +102,6 @@ describe('Notifications page', function (): void {
             'You have been assigned as owner of Project NER.',
             new QuickLinkData('Project NER', 'projects/1'),
             $project->id,
-            $recipient->id,
         );
 
         loginViaForm($recipient->username)
@@ -127,7 +126,6 @@ describe('Notifications page', function (): void {
             'You have been invited to collaborate on Project Sentiment Analysis.',
             new QuickLinkData('Project Sentiment Analysis', 'projects/2'),
             $project->id,
-            $recipient->id,
         );
 
         // Mark the invitation as accepted so the detail pane shows the status line.
