@@ -25,7 +25,7 @@
         "@eslint/js": "^9.39.4",
         "@tailwindcss/postcss": "^4.3.1",
         "@tailwindcss/vite": "^4.3.1",
-        "@types/node": "^25.9.3",
+        "@types/node": "^25.9.4",
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
         "@typescript-eslint/eslint-plugin": "^8.61.0",
@@ -44,7 +44,7 @@
         "stylelint-config-tailwindcss": "^1.0.1",
         "stylelint-prettier": "^5.0",
         "typescript": "^6.0.3",
-        "typescript-eslint": "^8.61.0",
+        "typescript-eslint": "^8.61.1",
         "vite": "^8.0"
     },
     "dependencies": {
@@ -63,11 +63,11 @@
         "dotenv": "^17.4.2",
         "globals": "^17.6.0",
         "laravel-vite-plugin": "^3.1",
-        "lucide-react": "^1.18.0",
+        "lucide-react": "^1.21.0",
         "next-themes": "^0.4.6",
-        "playwright": "^1.60.0",
+        "playwright": "^1.61.0",
         "react": "^19.2.7",
-        "react-aria-components": "^1.18.0",
+        "react-aria-components": "^1.19.0",
         "react-dom": "^19.2.7",
         "sonner": "^2.0.7",
         "tailwind-merge": "^3.6.0",
@@ -76,7 +76,7 @@
         "use-debounce": "^10.1.1"
     },
     "optionalDependencies": {
-        "@rollup/rollup-linux-x64-gnu": "4.62.0",
+        "@rollup/rollup-linux-x64-gnu": "4.62.2",
         "@tailwindcss/oxide-linux-x64-gnu": "^4.3.1",
         "lightningcss-linux-x64-gnu": "^1.32.0"
     },
