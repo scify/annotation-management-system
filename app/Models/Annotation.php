@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $flag_notification_thread_id
  * @property ConfidenceEnum|null $confidence
  * @property int|null $last_edited_by
+ * @property-read DatasetInstance $datasetInstance
  * @property-read User|null $lastEditedBy
  * @property-read NotificationThread|null $flagNotificationThread
  */
@@ -52,6 +53,11 @@ class Annotation extends Model {
 
     public function isAnnotated(): bool {
         return $this->annotations !== null && ! $this->pending;
+    }
+
+    /** @return BelongsTo<DatasetInstance, $this> */
+    public function datasetInstance(): BelongsTo {
+        return $this->belongsTo(DatasetInstance::class);
     }
 
     /** @return BelongsTo<NotificationThread, $this> */

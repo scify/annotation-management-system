@@ -16,4 +16,9 @@ final readonly class GetSubProjectByIdQuery {
         /** @var SubProject */
         return SubProject::query()->with('project')->findOrFail($id);
     }
+
+    public function getWithProjectAndAnnotationTask(int $id): SubProject {
+        /** @var SubProject */
+        return SubProject::query()->with('project.annotationTask')->findOrFail($id);
+    }
 }

@@ -14,6 +14,9 @@ use Illuminate\Database\Eloquent\Model;
     'dataset_id',
     'content',
 ])]
+/**
+ * @property array<string, mixed> $content
+ */
 class DatasetInstance extends Model {
     /** @use HasFactory<DatasetInstanceFactory> */
     use HasFactory;

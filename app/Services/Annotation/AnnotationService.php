@@ -15,7 +15,9 @@ use App\Queries\Annotation\GetAnnotationSessionByIdQuery;
 use App\Queries\Annotation\GetFlaggedAnnotationCountsQuery;
 use App\Queries\SubProject\GetAnnotationCountsBySubProjectsQuery;
 use App\Queries\SubProject\GetAnnotationsBySubProjectQuery;
+use App\Queries\SubProject\GetSubProjectByIdQuery;
 use App\Services\AnnotationTask\AnnotationTaskServiceFactory;
+use RuntimeException;
 
 readonly class AnnotationService {
     public function __construct(
@@ -26,6 +28,7 @@ readonly class AnnotationService {
         private GetAnnotationByIdQuery $annotationByIdQuery,
         private GetFlaggedAnnotationCountsQuery $flaggedAnnotationCountsQuery,
         private AnnotationTaskServiceFactory $taskServiceFactory,
+        private GetSubProjectByIdQuery $subProjectByIdQuery,
     ) {}
 
     public function startSession(int $annotationAssignmentId, int $nextAnnotationId): int {
@@ -38,6 +41,7 @@ readonly class AnnotationService {
             'subProjectId' => $subProjectId,
             'mode' => $mode,
             'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $mode, $userId, null),
+            ...$this->getSubProjectNames($subProjectId),
         ];
     }
 
@@ -47,7 +51,8 @@ readonly class AnnotationService {
             'subProjectId' => $subProjectId,
             'mode' => $mode,
             'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $mode, $userId, $annotationSessionId),
-            'annotationTaskData' => $this->getAnnotationTaskData($nextAnnotationId),
+            'annotationTaskData' => $this->getAnnotationTaskData($nextAnnotationId, $subProjectId),
+            ...$this->getSubProjectNames($subProjectId),
         ];
     }
 
@@ -88,6 +93,25 @@ readonly class AnnotationService {
         return $result;
     }
 
+    private function resolveTaskType(int $subProjectId): AnnotationTaskTypeEnum {
+        $subProject = $this->subProjectByIdQuery->getWithProjectAndAnnotationTask($subProjectId);
+        $project = $subProject->project ?? throw new RuntimeException(sprintf('SubProject %d has no parent project.', $subProjectId));
+        $annotationTask = $project->annotationTask ?? throw new RuntimeException(sprintf('Project %d has no annotation task.', $project->id));
+
+        return $annotationTask->task_type;
+    }
+
+    /** @return array{projectName: string, subProjectName: string} */
+    private function getSubProjectNames(int $subProjectId): array {
+        $subProject = $this->subProjectByIdQuery->getWithProject($subProjectId);
+        $project = $subProject->project ?? throw new RuntimeException(sprintf('SubProject %d has no parent project.', $subProjectId));
+
+        return [
+            'projectName' => $project->name,
+            'subProjectName' => $subProject->name,
+        ];
+    }
+
     /** @return array<string, mixed> */
     private function getAnnotationProgressData(int $subProjectId, string $mode, int $userId, ?int $annotationSessionId): array {
         $counts = $this->annotationCountsBySubProjectsQuery->get([$subProjectId], $userId);
@@ -116,11 +140,14 @@ readonly class AnnotationService {
     }
 
     /** @return array<string, mixed> */
-    private function getAnnotationTaskData(int $nextAnnotationId): array {
+    private function getAnnotationTaskData(int $nextAnnotationId, int $subProjectId): array {
         $annotation = $this->annotationByIdQuery->get($nextAnnotationId);
+        $taskType = $this->resolveTaskType($subProjectId);
+        $taskService = $this->taskServiceFactory->make($taskType);
 
         return [
-            'annotator_instance_index' => $annotation?->annotator_instance_index,
+            'annotator_instance_index' => $annotation->annotator_instance_index,
+            ...$taskService->getTaskRelatedData($annotation->dataset_instance_id, $subProjectId),
         ];
     }
 }

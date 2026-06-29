@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use App\Models\Dataset;
 use App\Services\Dataset\DatasetService;
-use Database\Seeders\DummyDataSeeder;
+use Database\Seeders\Dummy\DummyDataSeeder;
 
 describe('DatasetService::generateShuffledIndexArray', function (): void {
     beforeEach(function (): void {

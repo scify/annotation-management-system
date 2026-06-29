@@ -8,6 +8,11 @@ use App\Enums\AgreementEnum;
 use Random\RandomException;
 
 final class DummyAnnotationTaskService extends AnnotationTaskService {
+    /** @return array<string, mixed> */
+    public function getTaskRelatedData(int $datasetInstanceId, int $subProjectId): array {
+        return [];
+    }
+
     /**
      * @param  array<int, array{annotations: array<string, mixed>|null, pending: bool}>  $annotationsValues
      */

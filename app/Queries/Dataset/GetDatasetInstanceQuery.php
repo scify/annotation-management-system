@@ -13,4 +13,9 @@ final readonly class GetDatasetInstanceQuery {
             ->where('index', $index)
             ->first();
     }
+
+    public function getById(int $id): DatasetInstance {
+        /** @var DatasetInstance */
+        return DatasetInstance::query()->findOrFail($id);
+    }
 }

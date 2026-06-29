@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Database\Seeders\Dummy;
 
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Database\Seeder;
 
 class DummyDataSeeder extends Seeder {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Database\Seeders\Dummy;
 
 use App\Enums\ConfidenceEnum;
 use App\Enums\NotificationThreadTypeEnum;

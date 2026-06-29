@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Database\Seeders;
+namespace Database\Seeders\Dummy;
 
 use App\Enums\RolesEnum;
 use App\Enums\StatusEnum;
