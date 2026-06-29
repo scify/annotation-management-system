@@ -14,6 +14,7 @@ use App\Queries\Annotation\GetAnnotationAssignmentIdBySubProjectAndUserQuery;
 use App\Queries\Annotation\GetAnnotationByIdQuery;
 use App\Queries\Annotation\GetAnnotationSessionByIdQuery;
 use App\Queries\Annotation\GetFlaggedAnnotationCountsQuery;
+use App\Queries\Annotation\GetNextAnnotationIdQuery;
 use App\Queries\Annotation\SubmitPendingAnnotationsQuery;
 use App\Queries\SubProject\GetAnnotationCountsBySubProjectsQuery;
 use App\Queries\SubProject\GetAnnotationsBySubProjectQuery;
@@ -33,6 +34,7 @@ readonly class AnnotationService {
         private GetSubProjectByIdQuery $subProjectByIdQuery,
         private GetAnnotationAssignmentIdBySubProjectAndUserQuery $annotationAssignmentIdQuery,
         private SubmitPendingAnnotationsQuery $submitPendingAnnotationsQuery,
+        private GetNextAnnotationIdQuery $nextAnnotationIdQuery,
     ) {}
 
     public function submitPending(int $subProjectId, int $userId): void {
@@ -51,7 +53,24 @@ readonly class AnnotationService {
 
     /** @return array<string, mixed> */
     public function getInitialViewData(int $subProjectId, string $mode, int $userId): array {
+        $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
+        $nextAnnotationId = $annotationAssignmentId !== null
+            ? $this->nextAnnotationIdQuery->get($annotationAssignmentId)
+            : null;
+
+        if ($annotationAssignmentId !== null && $nextAnnotationId !== null) {
+            $annotationSessionId = $this->startSession($annotationAssignmentId, $nextAnnotationId);
+
+            return [
+                'annotationAssignmentId' => $annotationAssignmentId,
+                'nextAnnotationId' => $nextAnnotationId,
+                ...$this->getDataForShowAnnotation($subProjectId, $mode, $userId, $annotationSessionId, $nextAnnotationId),
+            ];
+        }
+
         return [
+            'annotationAssignmentId' => $annotationAssignmentId,
+            'nextAnnotationId' => $nextAnnotationId,
             'subProjectId' => $subProjectId,
             'mode' => $mode,
             'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $mode, $userId, null),

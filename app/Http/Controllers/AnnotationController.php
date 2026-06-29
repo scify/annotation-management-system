@@ -30,18 +30,10 @@ class AnnotationController extends Controller {
             $mode = 'strict';
         }
 
-        $annotationAssignmentId = $request->integer('annotation_assignment_id');
-        $nextAnnotationId = $request->integer('next_annotation_id') ?: null;
-
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        if ($nextAnnotationId === null) {
-            $data = $this->annotationService->getInitialViewData($subProject, $mode, $user->id);
-        } else {
-            $annotationSessionId = $this->annotationService->startSession($annotationAssignmentId, $nextAnnotationId);
-            $data = $this->annotationService->getDataForShowAnnotation($subProject, $mode, $user->id, $annotationSessionId, $nextAnnotationId);
-        }
+        $data = $this->annotationService->getInitialViewData($subProject, $mode, $user->id);
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 
