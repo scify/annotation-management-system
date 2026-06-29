@@ -9,6 +9,7 @@ return [
 
     // Sidebar
     'description' => 'Description',
+    'meanings_of_word' => 'Meanings of word :word:',
     'annotation_progress' => 'Annotation Progress',
     'instances_count' => ':done / :total Instances',
     'submitted' => 'SUBMITTED',
@@ -36,6 +37,10 @@ return [
     'flag' => 'Flag',
     'flag_and_continue' => 'Flag & Continue',
     'select_an_option' => 'Select an Option',
+    'same_meaning_question' => 'Does the word :word have the same meaning?',
+    'answer_yes' => 'Yes',
+    'answer_no' => 'No',
+    'answer_cannot_decide' => 'Cannot decide',
     'your_confidence' => 'Your Confidence:',
     'confidence_high' => 'High',
     'confidence_medium' => 'Medium',

@@ -10,8 +10,8 @@ import {
 import { useTranslations } from '@/hooks/use-translations';
 import AnnotationTaskLayout from '@/layouts/annotation-task-layout';
 import { cn } from '@/lib/utils';
-import { getMockAnnotationTask } from '@/pages/annotation-task/mock-data';
-import type { AnnotationTaskMode } from '@/types';
+import { toInstance, toLayoutData } from '@/pages/annotation-task/map-annotation-data';
+import type { AnnotationShowProps, AnnotationTaskQuestion as Question } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import {
     CheckIcon,
@@ -23,69 +23,97 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-interface Props {
-    subProjectId: number;
-    mode: AnnotationTaskMode;
-}
-
 interface QuestionAnswer {
     answer: string | null;
     parameter: string | null;
 }
 
-type AnswersByInstance = Record<number, Record<number, QuestionAnswer>>;
-
 const EMPTY_ANSWER: QuestionAnswer = { answer: null, parameter: null };
 
-export default function AnnotationTaskPage({ mode }: Props) {
-    const { t, trans } = useTranslations();
-    const data = useMemo(() => getMockAnnotationTask(mode), [mode]);
+/** Confidence levels offered when the task allows a confidence rating (matches the component). */
+const CONFIDENCE_PARAMETERS = ['low', 'medium', 'high'];
 
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [answers, setAnswers] = useState<AnswersByInstance>({});
-    const [flaggedById, setFlaggedById] = useState<Record<number, boolean>>({});
+/** The lexical-semantic task renders a single question; its id is fixed. */
+const SAME_MEANING_QUESTION_ID = 0;
+
+export default function AnnotationTaskPage({
+    subProjectId,
+    mode,
+    projectName,
+    subProjectName,
+    annotationProgressData,
+    annotationTaskData,
+}: AnnotationShowProps) {
+    const { t, trans } = useTranslations();
+
+    const instance = useMemo(() => toInstance(annotationTaskData), [annotationTaskData]);
+
+    // Sidebar description: "Meanings of word X:" followed by the numbered senses.
+    // Computed inline (cheap) rather than memoised — `trans` is a fresh closure each
+    // render, so memoising on it would never hit. The page only re-renders when the
+    // backend swaps the instance anyway.
+    const senses = annotationTaskData.senses ?? [];
+    const description =
+        senses.length === 0
+            ? ''
+            : [
+                  trans('annotation-task.meanings_of_word', {
+                      word: annotationTaskData.word ?? '',
+                  }),
+                  ...senses.map((sense, i) => `${i + 1}. ${sense}`),
+              ].join('\n');
+
+    // The lexical-semantic task asks a single fixed question; the backend only
+    // toggles whether confidence / "cannot decide" are offered.
+    const questions: Question[] = [];
+    if (annotationTaskData.word) {
+        const answers = [t('annotation-task.answer_yes'), t('annotation-task.answer_no')];
+        if (annotationTaskData.allow_cannot_decide) {
+            answers.push(t('annotation-task.answer_cannot_decide'));
+        }
+        questions.push({
+            id: SAME_MEANING_QUESTION_ID,
+            question: trans('annotation-task.same_meaning_question', {
+                word: annotationTaskData.word,
+            }),
+            answers,
+            parameters: annotationTaskData.allow_confidence ? CONFIDENCE_PARAMETERS : [],
+        });
+    }
+    const hasQuestion = questions.length > 0;
+
+    const layoutData = useMemo(
+        () => toLayoutData(annotationProgressData, projectName, subProjectName, description),
+        [annotationProgressData, projectName, subProjectName, description]
+    );
+
+    const [answers, setAnswers] = useState<Record<number, QuestionAnswer>>({});
+    const [isFlagged, setIsFlagged] = useState(instance.flagged);
     const [showShortcuts, setShowShortcuts] = useState(true);
     const [instanceFilter, setInstanceFilter] = useState('not_annotated');
 
-    const instance = data.instances[currentIndex];
-    const isFlagged = flaggedById[instance.id] ?? instance.flagged;
+    const getAnswer = (questionId: number): QuestionAnswer => answers[questionId] ?? EMPTY_ANSWER;
 
-    const goPrev = useCallback(() => setCurrentIndex((i) => Math.max(i - 1, 0)), []);
-    const goNext = useCallback(
-        () => setCurrentIndex((i) => Math.min(i + 1, data.instances.length - 1)),
-        [data.instances.length]
+    const updateAnswer = useCallback((questionId: number, patch: Partial<QuestionAnswer>) => {
+        setAnswers((prev) => {
+            const current = prev[questionId] ?? EMPTY_ANSWER;
+            return { ...prev, [questionId]: { ...current, ...patch } };
+        });
+    }, []);
+
+    // Submit / Next / Previous all round-trip to the server, which owns which
+    // instance loads next (and, in a follow-up, persisting the current answer).
+    const goToServer = useCallback(
+        () => router.visit(route('annotation-tasks.show', { subProject: subProjectId, mode })),
+        [subProjectId, mode]
     );
 
-    const getAnswer = (questionId: number): QuestionAnswer =>
-        answers[instance.id]?.[questionId] ?? EMPTY_ANSWER;
-
-    const updateAnswer = (questionId: number, patch: Partial<QuestionAnswer>) => {
-        setAnswers((prev) => {
-            const forInstance = prev[instance.id] ?? {};
-            const current = forInstance[questionId] ?? EMPTY_ANSWER;
-            return {
-                ...prev,
-                [instance.id]: { ...forInstance, [questionId]: { ...current, ...patch } },
-            };
-        });
-    };
-
-    const toggleFlag = useCallback(() => {
-        setFlaggedById((prev) => ({
-            ...prev,
-            [instance.id]: !(prev[instance.id] ?? instance.flagged),
-        }));
-    }, [instance.id, instance.flagged]);
-
-    const submit = useCallback(() => {
-        // Mock: nothing persists; Submit advances to the next instance.
-        goNext();
-    }, [goNext]);
+    const toggleFlag = useCallback(() => setIsFlagged((flagged) => !flagged), []);
 
     const flagAction = useCallback(() => {
         toggleFlag();
-        if (mode === 'strict') goNext(); // "Flag & Continue"
-    }, [toggleFlag, mode, goNext]);
+        if (mode === 'strict') goToServer(); // "Flag & Continue"
+    }, [toggleFlag, mode, goToServer]);
 
     const exit = useCallback(() => router.visit(route('dashboard')), []);
 
@@ -99,9 +127,9 @@ export default function AnnotationTaskPage({ mode }: Props) {
             if (event.ctrlKey) {
                 const level =
                     key === 'h' ? 'high' : key === 'm' ? 'medium' : key === 'l' ? 'low' : null;
-                if (level && data.questions.length > 0) {
+                if (level && hasQuestion) {
                     event.preventDefault();
-                    updateAnswer(data.questions[0].id, { parameter: level });
+                    updateAnswer(SAME_MEANING_QUESTION_ID, { parameter: level });
                 }
                 return;
             }
@@ -109,7 +137,7 @@ export default function AnnotationTaskPage({ mode }: Props) {
             switch (key) {
                 case 'enter':
                     event.preventDefault();
-                    submit();
+                    goToServer();
                     break;
                 case 'f':
                     flagAction();
@@ -118,10 +146,10 @@ export default function AnnotationTaskPage({ mode }: Props) {
                     exit();
                     break;
                 case 'n':
-                    if (mode === 'flexible') goNext();
+                    if (mode === 'flexible') goToServer();
                     break;
                 case 'u':
-                    if (mode === 'flexible') goPrev();
+                    if (mode === 'flexible') goToServer();
                     break;
                 default:
                     break;
@@ -130,8 +158,7 @@ export default function AnnotationTaskPage({ mode }: Props) {
 
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [submit, flagAction, exit, goNext, goPrev, mode, data.questions]);
+    }, [goToServer, flagAction, exit, mode, hasQuestion, updateAnswer]);
 
     const headerRight = (
         <>
@@ -188,7 +215,7 @@ export default function AnnotationTaskPage({ mode }: Props) {
     );
 
     return (
-        <AnnotationTaskLayout mode={mode} data={data} headerRight={headerRight}>
+        <AnnotationTaskLayout mode={mode} data={layoutData} headerRight={headerRight}>
             <Head title={t('annotation-task.title')} />
 
             <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
@@ -222,19 +249,22 @@ export default function AnnotationTaskPage({ mode }: Props) {
                     </span>
                 </div>
 
-                {/* Context (two columns) */}
+                {/* Context (two columns). The corpus sentences arrive with the focus word
+                    wrapped in <b>…</b>; the backend must emit only safe markup here. */}
                 <div className="grid gap-4 md:grid-cols-2">
-                    <p className="rounded-xl bg-white p-5 text-sm leading-6 text-slate-600">
-                        {instance.leftContext}
-                    </p>
-                    <p className="rounded-xl bg-white p-5 text-sm leading-6 text-slate-600">
-                        {instance.rightContext}
-                    </p>
+                    <p
+                        className="rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
+                        dangerouslySetInnerHTML={{ __html: instance.leftContext }}
+                    />
+                    <p
+                        className="rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
+                        dangerouslySetInnerHTML={{ __html: instance.rightContext }}
+                    />
                 </div>
 
                 {/* Questions (schema-driven) */}
                 <div className="flex flex-col gap-6">
-                    {data.questions.map((question) => {
+                    {questions.map((question) => {
                         const state = getAnswer(question.id);
                         return (
                             <AnnotationTaskQuestion
@@ -261,9 +291,8 @@ export default function AnnotationTaskPage({ mode }: Props) {
                             <div className="flex flex-col items-center gap-1">
                                 <button
                                     type="button"
-                                    onClick={goPrev}
-                                    disabled={currentIndex === 0}
-                                    className="focus-visible:outline-brand-blue-700 flex h-11 touch-manipulation items-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-base font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    onClick={goToServer}
+                                    className="focus-visible:outline-brand-blue-700 flex h-11 touch-manipulation items-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-base font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                                 >
                                     <ChevronLeftIcon className="size-4" aria-hidden="true" />
                                     {t('annotation-task.previous')}
@@ -275,7 +304,7 @@ export default function AnnotationTaskPage({ mode }: Props) {
                         <div className="flex flex-col items-center gap-1">
                             <button
                                 type="button"
-                                onClick={submit}
+                                onClick={goToServer}
                                 className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 flex h-11 min-w-[160px] touch-manipulation items-center justify-center gap-1.5 rounded-full px-6 text-base font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                             >
                                 {t('annotation-task.submit')}
@@ -288,9 +317,8 @@ export default function AnnotationTaskPage({ mode }: Props) {
                             <div className="flex flex-col items-center gap-1">
                                 <button
                                     type="button"
-                                    onClick={goNext}
-                                    disabled={currentIndex === data.instances.length - 1}
-                                    className="focus-visible:outline-brand-blue-700 flex h-11 touch-manipulation items-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-base font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                    onClick={goToServer}
+                                    className="focus-visible:outline-brand-blue-700 flex h-11 touch-manipulation items-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-base font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                                 >
                                     {t('annotation-task.next')}
                                     <ChevronRightIcon className="size-4" aria-hidden="true" />
