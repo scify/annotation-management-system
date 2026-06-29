@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Services\AnnotationTask;
 
 use App\Enums\AgreementEnum;
+use App\Enums\ConfidenceEnum;
+use App\Queries\Annotation\UpdateAnnotationQuery;
 use App\Queries\Dataset\GetDatasetInstanceQuery;
 use App\Queries\SubProject\GetSubProjectByIdQuery;
 use RuntimeException;
@@ -13,8 +15,14 @@ final class LexicalSemanticChangeDetectionAnnotationTaskService extends Annotati
     public function __construct(
         GetDatasetInstanceQuery $datasetInstanceQuery,
         private readonly GetSubProjectByIdQuery $subProjectByIdQuery,
+        private readonly UpdateAnnotationQuery $updateAnnotationQuery,
     ) {
         parent::__construct($datasetInstanceQuery);
+    }
+
+    /** @param array<string, mixed> $annotations */
+    public function save(int $annotationId, array $annotations, bool $pending, ?ConfidenceEnum $confidence): void {
+        $this->updateAnnotationQuery->update($annotationId, $annotations, $pending, $confidence);
     }
 
     /** @return array<string, mixed> */

@@ -10,9 +10,11 @@ use App\Enums\AnnotationTaskTypeEnum;
 use App\Enums\ConfidenceEnum;
 use App\Models\AnnotationSession;
 use App\Queries\Annotation\CreateAnnotationSessionQuery;
+use App\Queries\Annotation\GetAnnotationAssignmentIdBySubProjectAndUserQuery;
 use App\Queries\Annotation\GetAnnotationByIdQuery;
 use App\Queries\Annotation\GetAnnotationSessionByIdQuery;
 use App\Queries\Annotation\GetFlaggedAnnotationCountsQuery;
+use App\Queries\Annotation\SubmitPendingAnnotationsQuery;
 use App\Queries\SubProject\GetAnnotationCountsBySubProjectsQuery;
 use App\Queries\SubProject\GetAnnotationsBySubProjectQuery;
 use App\Queries\SubProject\GetSubProjectByIdQuery;
@@ -29,7 +31,19 @@ readonly class AnnotationService {
         private GetFlaggedAnnotationCountsQuery $flaggedAnnotationCountsQuery,
         private AnnotationTaskServiceFactory $taskServiceFactory,
         private GetSubProjectByIdQuery $subProjectByIdQuery,
+        private GetAnnotationAssignmentIdBySubProjectAndUserQuery $annotationAssignmentIdQuery,
+        private SubmitPendingAnnotationsQuery $submitPendingAnnotationsQuery,
     ) {}
+
+    public function submitPending(int $subProjectId, int $userId): void {
+        $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
+
+        if ($annotationAssignmentId === null) {
+            return;
+        }
+
+        $this->submitPendingAnnotationsQuery->submit($annotationAssignmentId, $userId);
+    }
 
     public function startSession(int $annotationAssignmentId, int $nextAnnotationId): int {
         return $this->createAnnotationSessionQuery->create($annotationAssignmentId, $nextAnnotationId);
