@@ -78,7 +78,7 @@ export interface AppData {
 export type TranslationRecord = Record<string, string | Record<string, string>>;
 
 export interface TranslationMap {
-    'annotation-task': TranslationRecord;
+    annotation: TranslationRecord;
     auth: TranslationRecord;
     'client-applications': TranslationRecord;
     common: TranslationRecord;
@@ -170,15 +170,15 @@ export interface AnnotatorSubProject {
 }
 
 /**
- * Annotation-task page (the annotation tool the "Resume" button opens).
+ * Annotation page (the annotation tool the "Resume" button opens).
  *
  * The backend (`AnnotationController@show`) sends one instance per page load via
  * `AnnotationShowProps`; the page adapts that payload into the view types below.
  */
-export type AnnotationTaskMode = 'strict' | 'flexible';
+export type AnnotationMode = 'strict' | 'flexible';
 
 /** One configurable question, as defined in the annotation-task settings. */
-export interface AnnotationTaskQuestion {
+export interface AnnotationQuestion {
     id: number;
     /** Prompt, e.g. "Does the word ability have the same meaning?" */
     question: string;
@@ -189,7 +189,7 @@ export interface AnnotationTaskQuestion {
 }
 
 /** The item under annotation (Figma sample = word-in-context task). */
-export interface AnnotationTaskInstance {
+export interface AnnotationInstance {
     id: number;
     /** Shown as "Instance: 23". */
     index: number;
@@ -199,7 +199,7 @@ export interface AnnotationTaskInstance {
     flagged: boolean;
 }
 
-export interface AnnotationTaskProgress {
+export interface AnnotationProgress {
     submitted: number;
     /** Strict mode rows. */
     thisSession: number;
@@ -210,13 +210,13 @@ export interface AnnotationTaskProgress {
     submittedPct: number;
 }
 
-/** Layout/sidebar payload for the annotation-task page (project chrome + progress). */
-export interface AnnotationTaskData {
+/** Layout/sidebar payload for the annotation page (project chrome + progress). */
+export interface AnnotationData {
     projectName: string;
     subProjectName: string;
     /** Sidebar "Description" body (supports newlines). */
     description: string;
-    progress: AnnotationTaskProgress;
+    progress: AnnotationProgress;
     flagged: { total: number; replied: number };
 }
 
@@ -238,7 +238,7 @@ export interface AnnotationProgressData {
  * The current instance under annotation (backend payload). Task-content fields are
  * optional because the initial-view payload can carry only `annotator_instance_index`.
  */
-export interface AnnotationTaskItemData {
+export interface AnnotationItemData {
     annotator_instance_index: number;
     word?: string;
     senses?: string[];
@@ -250,10 +250,10 @@ export interface AnnotationTaskItemData {
     allow_cannot_decide?: boolean;
 }
 
-/** Props the annotation-task page receives from `AnnotationController@show`. */
+/** Props the annotation page receives from `AnnotationController@show`. */
 export interface AnnotationShowProps {
     subProjectId: number;
-    mode: AnnotationTaskMode;
+    mode: AnnotationMode;
     projectName: string;
     subProjectName: string;
     /** Resolved server-side; null when the annotator has no assignment for this sub-project. */
@@ -262,7 +262,7 @@ export interface AnnotationShowProps {
     nextAnnotationId: number | null;
     annotationProgressData: AnnotationProgressData;
     /** Absent when there is no instance to annotate (`nextAnnotationId === null`). */
-    annotationTaskData?: AnnotationTaskItemData;
+    annotationTaskData?: AnnotationItemData;
 }
 
 export interface PlatformStats {

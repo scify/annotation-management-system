@@ -1,10 +1,10 @@
 import { useTranslations } from '@/hooks/use-translations';
-import type { AnnotationTaskData, AnnotationTaskMode } from '@/types';
+import type { AnnotationData, AnnotationMode } from '@/types';
 import { FlagIcon, InfoIcon } from 'lucide-react';
 
-interface AnnotationTaskSidebarProps {
-    mode: AnnotationTaskMode;
-    data: AnnotationTaskData;
+interface AnnotationSidebarProps {
+    mode: AnnotationMode;
+    data: AnnotationData;
     /** Inert in the mock — submits all pending annotations (flexible mode only). */
     onSubmitAllPending?: () => void;
 }
@@ -15,17 +15,13 @@ interface AnnotationTaskSidebarProps {
  * Annotation Progress (stats + multi-segment bar), and Flagged Instances; the
  * flexible mode adds a "Submit All Pending" action.
  */
-export function AnnotationTaskSidebar({
-    mode,
-    data,
-    onSubmitAllPending,
-}: AnnotationTaskSidebarProps) {
+export function AnnotationSidebar({ mode, data, onSubmitAllPending }: AnnotationSidebarProps) {
     const { t, trans } = useTranslations();
     const { progress, flagged } = data;
 
     const secondary = mode === 'flexible' ? progress.pending : progress.thisSession;
     const secondaryLabel =
-        mode === 'flexible' ? t('annotation-task.pending') : t('annotation-task.this_session');
+        mode === 'flexible' ? t('annotation.pending') : t('annotation.this_session');
 
     const submittedWidth = (progress.submitted / progress.totalInstances) * 100;
     const submittedAndSecondaryWidth = Math.min(
@@ -38,7 +34,7 @@ export function AnnotationTaskSidebar({
             {/* Description */}
             <section className="border-brand-blue-500 flex flex-col gap-2 rounded-xl border px-3 py-6">
                 <h2 className="text-base font-semibold text-white">
-                    {t('annotation-task.description')}
+                    {t('annotation.description')}
                 </h2>
                 <p className="text-sm whitespace-pre-line text-white/90">{data.description}</p>
             </section>
@@ -47,19 +43,19 @@ export function AnnotationTaskSidebar({
             <section className="flex flex-col gap-4">
                 <div className="bg-brand-blue-100 flex items-center justify-center rounded-2xl p-[10px]">
                     <span className="text-base font-semibold text-slate-800">
-                        {t('annotation-task.annotation_progress')}
+                        {t('annotation.annotation_progress')}
                     </span>
                 </div>
 
                 <p className="text-sm font-medium text-white">
-                    {trans('annotation-task.instances_count', {
+                    {trans('annotation.instances_count', {
                         done: progress.submitted,
                         total: progress.totalInstances.toLocaleString(),
                     })}
                 </p>
 
                 <div className="flex flex-col gap-3">
-                    <StatRow label={t('annotation-task.submitted')} value={progress.submitted} />
+                    <StatRow label={t('annotation.submitted')} value={progress.submitted} />
                     <StatRow label={secondaryLabel} value={secondary} />
                 </div>
 
@@ -68,8 +64,8 @@ export function AnnotationTaskSidebar({
                     <span className="text-sm font-medium text-white">
                         {trans(
                             mode === 'flexible'
-                                ? 'annotation-task.submitted_progress'
-                                : 'annotation-task.progress',
+                                ? 'annotation.submitted_progress'
+                                : 'annotation.progress',
                             { pct: progress.submittedPct }
                         )}
                     </span>
@@ -86,7 +82,7 @@ export function AnnotationTaskSidebar({
                             aria-valuenow={progress.submittedPct}
                             aria-valuemin={0}
                             aria-valuemax={100}
-                            aria-label={t('annotation-task.annotation_progress')}
+                            aria-label={t('annotation.annotation_progress')}
                         />
                     </div>
                     {/* Legend */}
@@ -97,7 +93,7 @@ export function AnnotationTaskSidebar({
                         />
                         <LegendEntry
                             color="bg-brand-blue-400"
-                            label={`${t('annotation-task.not_annotated')} (${progress.notAnnotated.toLocaleString()})`}
+                            label={`${t('annotation.not_annotated')} (${progress.notAnnotated.toLocaleString()})`}
                         />
                     </div>
                 </div>
@@ -108,7 +104,7 @@ export function AnnotationTaskSidebar({
                         onClick={onSubmitAllPending}
                         className="bg-brand-yellow-400 focus-visible:outline-brand-yellow-400 flex h-10 w-full touch-manipulation items-center justify-center rounded-lg text-sm font-semibold text-slate-800 transition-colors hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                     >
-                        {t('annotation-task.submit_all_pending')}
+                        {t('annotation.submit_all_pending')}
                     </button>
                 )}
             </section>
@@ -117,11 +113,11 @@ export function AnnotationTaskSidebar({
             <section className="mt-auto flex flex-col gap-3">
                 <h2 className="flex items-center justify-center gap-1.5 text-sm font-bold text-white">
                     <FlagIcon className="size-4 shrink-0" aria-hidden="true" />
-                    {t('annotation-task.flagged_instances')}
+                    {t('annotation.flagged_instances')}
                 </h2>
                 <div className="bg-brand-blue-100/20 flex items-center justify-center rounded-full px-3 py-1.5">
                     <span className="text-sm font-semibold text-white">
-                        {trans('annotation-task.total_replied', {
+                        {trans('annotation.total_replied', {
                             total: flagged.total,
                             replied: flagged.replied,
                         })}

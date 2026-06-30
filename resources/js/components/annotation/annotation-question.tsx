@@ -1,4 +1,4 @@
-import { ShortcutHint } from '@/components/annotation-task/shortcut-hint';
+import { ShortcutHint } from '@/components/annotation/shortcut-hint';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import {
     Select,
@@ -9,13 +9,13 @@ import {
 } from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
 import { cn } from '@/lib/utils';
-import type { AnnotationTaskQuestion as Question } from '@/types';
+import type { AnnotationQuestion as Question } from '@/types';
 
 /** Confidence levels, in Figma display order (High → Low). */
 const CONFIDENCE_ORDER = ['high', 'medium', 'low'] as const;
 const CONFIDENCE_SET = new Set<string>(CONFIDENCE_ORDER);
 
-interface AnnotationTaskQuestionProps {
+interface AnnotationQuestionProps {
     question: Question;
     /** Selected answer from `question.answers`, or null. */
     answer: string | null;
@@ -34,14 +34,14 @@ interface AnnotationTaskQuestionProps {
  * other parameter set falls back to plain toggle chips. This is the piece that
  * makes the page consume a dynamic schema rather than hard-coded controls.
  */
-export function AnnotationTaskQuestion({
+export function AnnotationQuestion({
     question,
     answer,
     parameter,
     onAnswerChange,
     onParameterChange,
     showShortcuts = true,
-}: AnnotationTaskQuestionProps) {
+}: AnnotationQuestionProps) {
     const { t } = useTranslations();
 
     const isConfidence =
@@ -53,7 +53,7 @@ export function AnnotationTaskQuestion({
     );
 
     const confidenceLabel = (level: string): string =>
-        t(`annotation-task.confidence_${level.toLowerCase()}`);
+        t(`annotation.confidence_${level.toLowerCase()}`);
 
     const toggleParameter = (value: string) => {
         onParameterChange(parameter === value ? null : value);
@@ -73,7 +73,7 @@ export function AnnotationTaskQuestion({
                     aria-label={question.question}
                 >
                     <SelectTrigger className="h-11 w-[280px] rounded-lg bg-white text-base">
-                        <SelectValue placeholder={t('annotation-task.select_an_option')} />
+                        <SelectValue placeholder={t('annotation.select_an_option')} />
                     </SelectTrigger>
                     <SelectContent>
                         {question.answers.map((option) => (
@@ -90,13 +90,13 @@ export function AnnotationTaskQuestion({
             {isConfidence && (
                 <div className="bg-brand-blue-100 flex flex-wrap items-center justify-center gap-x-8 gap-y-3 rounded-full px-6 py-4">
                     <span className="text-sm font-semibold text-slate-800">
-                        {t('annotation-task.your_confidence')}
+                        {t('annotation.your_confidence')}
                     </span>
                     <RadioGroup
                         value={parameter}
                         onValueChange={onParameterChange}
                         orientation="horizontal"
-                        aria-label={t('annotation-task.your_confidence')}
+                        aria-label={t('annotation.your_confidence')}
                         className="flex-wrap gap-x-8 gap-y-2"
                     >
                         {confidenceLevels.map((level) => (
