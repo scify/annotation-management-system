@@ -37,6 +37,6 @@ class AnnotationController extends Controller {
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 
-        return Inertia::render('annotation-task/index', $data);
+        return Inertia::render('annotation/index', $data);
     }
 }

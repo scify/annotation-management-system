@@ -91,8 +91,8 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('send-announcement', 'sendAnnouncement')->name('send-announcement');
     });
 
-    // ----- Annotation tasks -----
-    Route::get('subprojects/{subProject}/annotation-task', [AnnotationController::class, 'show'])->name('annotation-tasks.show');
+    // ----- Annotation -----
+    Route::get('subprojects/{subProject}/annotation', [AnnotationController::class, 'show'])->name('annotation.show');
 });
 
 // NOSONAR - this comes from Laravel

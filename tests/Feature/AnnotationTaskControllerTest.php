@@ -13,7 +13,7 @@ describe('AnnotationTaskController', function (): void {
     });
 
     it('redirects guests to the login page', function (): void {
-        $this->get(route('annotation-tasks.show', ['subProject' => 1]))
+        $this->get(route('annotation.show', ['subProject' => 1]))
             ->assertRedirect('/login');
     });
 
@@ -24,14 +24,14 @@ describe('AnnotationTaskController', function (): void {
 
         // Act & Assert
         $this->actingAs($user)
-            ->get(route('annotation-tasks.show', [
+            ->get(route('annotation.show', [
                 'subProject' => $assignment->sub_project_id,
                 'mode' => 'flexible',
                 'annotation_assignment_id' => $assignment->id,
             ]))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('annotation-task/index')
+                ->component('annotation/index')
                 ->where('subProjectId', $assignment->sub_project_id)
                 ->where('mode', 'flexible'));
     });
@@ -43,7 +43,7 @@ describe('AnnotationTaskController', function (): void {
 
         // Act & Assert
         $this->actingAs($user)
-            ->get(route('annotation-tasks.show', [
+            ->get(route('annotation.show', [
                 'subProject' => $assignment->sub_project_id,
                 'annotation_assignment_id' => $assignment->id,
             ]))
@@ -58,7 +58,7 @@ describe('AnnotationTaskController', function (): void {
 
         // Act & Assert
         $this->actingAs($user)
-            ->get(route('annotation-tasks.show', [
+            ->get(route('annotation.show', [
                 'subProject' => $assignment->sub_project_id,
                 'mode' => 'bogus',
                 'annotation_assignment_id' => $assignment->id,

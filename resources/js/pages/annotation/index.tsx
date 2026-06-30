@@ -10,7 +10,7 @@ import {
 import { useTranslations } from '@/hooks/use-translations';
 import AnnotationTaskLayout from '@/layouts/annotation-task-layout';
 import { cn } from '@/lib/utils';
-import { toInstance, toLayoutData } from '@/pages/annotation-task/map-annotation-data';
+import { toInstance, toLayoutData } from '@/pages/annotation/map-annotation-data';
 import type { AnnotationShowProps, AnnotationTaskQuestion as Question } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import {
@@ -108,7 +108,7 @@ export default function AnnotationTaskPage({
     // Submit / Next / Previous all round-trip to the server, which owns which
     // instance loads next (and, in a follow-up, persisting the current answer).
     const goToServer = useCallback(
-        () => router.visit(route('annotation-tasks.show', { subProject: subProjectId, mode })),
+        () => router.visit(route('annotation.show', { subProject: subProjectId, mode })),
         [subProjectId, mode]
     );
 

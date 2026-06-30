@@ -121,7 +121,7 @@ export function AnnotatorSubProjectCard({ subProject }: { subProject: AnnotatorS
 
             {/* Resume button */}
             <Link
-                href={route('annotation-tasks.show', {
+                href={route('annotation.show', {
                     subProject: subProject.id,
                 })}
                 className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 flex h-10 w-full touch-manipulation items-center justify-center rounded-lg text-base font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
