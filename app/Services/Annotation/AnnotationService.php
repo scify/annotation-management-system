@@ -284,7 +284,19 @@ readonly class AnnotationService {
 
         return [
             'annotator_instance_index' => $annotation->annotator_instance_index,
+            'annotationData' => $this->getAnnotationData($nextAnnotationId),
             ...$taskService->getTaskRelatedData($annotation->dataset_instance_id, $subProjectId),
+        ];
+    }
+
+    /** @return array{is_flagged: bool, annotations: array<string, mixed>|null, confidence: string|null} */
+    private function getAnnotationData(int $annotationId): array {
+        $annotation = $this->annotationByIdQuery->getAnnotationData($annotationId);
+
+        return [
+            'is_flagged' => $annotation->isFlagged(),
+            'annotations' => $annotation->annotations,
+            'confidence' => $annotation->confidence?->value,
         ];
     }
 }
