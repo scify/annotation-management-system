@@ -1,5 +1,5 @@
-import { AnnotationTaskQuestion } from '@/components/annotation-task/annotation-task-question';
-import { ShortcutHint } from '@/components/annotation-task/shortcut-hint';
+import { AnnotationQuestion } from '@/components/annotation/annotation-question';
+import { ShortcutHint } from '@/components/annotation/shortcut-hint';
 import {
     Select,
     SelectContent,
@@ -8,10 +8,10 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { useTranslations } from '@/hooks/use-translations';
-import AnnotationTaskLayout from '@/layouts/annotation-task-layout';
+import AnnotationLayout from '@/layouts/annotation-layout';
 import { cn } from '@/lib/utils';
 import { toInstance, toLayoutData } from '@/pages/annotation/map-annotation-data';
-import type { AnnotationShowProps, AnnotationTaskQuestion as Question } from '@/types';
+import type { AnnotationShowProps, AnnotationQuestion as Question } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import {
     CheckIcon,
@@ -36,11 +36,12 @@ const CONFIDENCE_PARAMETERS = ['low', 'medium', 'high'];
 /** The lexical-semantic task renders a single question; its id is fixed. */
 const SAME_MEANING_QUESTION_ID = 0;
 
-export default function AnnotationTaskPage({
+export default function AnnotationPage({
     subProjectId,
     mode,
     projectName,
     subProjectName,
+    can_flag,
     annotationProgressData,
     annotationTaskData,
 }: AnnotationShowProps) {
@@ -61,7 +62,7 @@ export default function AnnotationTaskPage({
         senses.length === 0
             ? ''
             : [
-                  trans('annotation-task.meanings_of_word', {
+                  trans('annotation.meanings_of_word', {
                       word: annotationTaskData?.word ?? '',
                   }),
                   ...senses.map((sense, i) => `${i + 1}. ${sense}`),
@@ -71,13 +72,13 @@ export default function AnnotationTaskPage({
     // toggles whether confidence / "cannot decide" are offered.
     const questions: Question[] = [];
     if (annotationTaskData?.word) {
-        const answers = [t('annotation-task.answer_yes'), t('annotation-task.answer_no')];
+        const answers = [t('annotation.answer_yes'), t('annotation.answer_no')];
         if (annotationTaskData.allow_cannot_decide) {
-            answers.push(t('annotation-task.answer_cannot_decide'));
+            answers.push(t('annotation.answer_cannot_decide'));
         }
         questions.push({
             id: SAME_MEANING_QUESTION_ID,
-            question: trans('annotation-task.same_meaning_question', {
+            question: trans('annotation.same_meaning_question', {
                 word: annotationTaskData.word,
             }),
             answers,
@@ -144,7 +145,7 @@ export default function AnnotationTaskPage({
                     goToServer();
                     break;
                 case 'f':
-                    flagAction();
+                    if (can_flag) flagAction();
                     break;
                 case 'e':
                     exit();
@@ -162,34 +163,34 @@ export default function AnnotationTaskPage({
 
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [goToServer, flagAction, exit, mode, hasQuestion, updateAnswer]);
+    }, [goToServer, flagAction, exit, mode, hasQuestion, updateAnswer, can_flag]);
 
     const headerRight = (
         <>
             {mode === 'flexible' && (
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-slate-600">
-                        {t('annotation-task.show_instances')}
+                        {t('annotation.show_instances')}
                     </span>
                     <Select
                         value={instanceFilter}
                         onValueChange={setInstanceFilter}
-                        aria-label={t('annotation-task.show_instances')}
+                        aria-label={t('annotation.show_instances')}
                     >
                         <SelectTrigger className="h-9 w-[160px] rounded-lg bg-white text-sm">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="not_annotated">
-                                {t('annotation-task.filter_not_annotated')}
+                                {t('annotation.filter_not_annotated')}
                             </SelectItem>
                             <SelectItem value="pending">
-                                {t('annotation-task.filter_pending')}
+                                {t('annotation.filter_pending')}
                             </SelectItem>
                             <SelectItem value="submitted">
-                                {t('annotation-task.filter_submitted')}
+                                {t('annotation.filter_submitted')}
                             </SelectItem>
-                            <SelectItem value="all">{t('annotation-task.filter_all')}</SelectItem>
+                            <SelectItem value="all">{t('annotation.filter_all')}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -200,7 +201,7 @@ export default function AnnotationTaskPage({
                     className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 flex h-9 touch-manipulation items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                     <UserCogIcon className="size-4" aria-hidden="true" />
-                    {t('annotation-task.to_manager')}
+                    {t('annotation.to_manager')}
                 </button>
                 <ShortcutHint show={showShortcuts} keys="M" />
             </div>
@@ -211,7 +212,7 @@ export default function AnnotationTaskPage({
                     className="focus-visible:outline-brand-blue-700 flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                     <LogOutIcon className="size-4" aria-hidden="true" />
-                    {t('annotation-task.exit_annotation')}
+                    {t('annotation.exit_annotation')}
                 </button>
                 <ShortcutHint show={showShortcuts} keys="E" />
             </div>
@@ -219,8 +220,8 @@ export default function AnnotationTaskPage({
     );
 
     return (
-        <AnnotationTaskLayout mode={mode} data={layoutData} headerRight={headerRight}>
-            <Head title={t('annotation-task.title')} />
+        <AnnotationLayout mode={mode} data={layoutData} headerRight={headerRight}>
+            <Head title={t('annotation.title')} />
 
             {instance ? (
                 <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
@@ -230,9 +231,10 @@ export default function AnnotationTaskPage({
                             <button
                                 type="button"
                                 onClick={flagAction}
+                                disabled={!can_flag}
                                 aria-pressed={isFlagged}
                                 className={cn(
-                                    'flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500',
+                                    'flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white',
                                     isFlagged
                                         ? 'border-red-500 bg-red-50 text-red-700'
                                         : 'border-red-200 bg-white text-red-600 hover:bg-red-50'
@@ -240,14 +242,14 @@ export default function AnnotationTaskPage({
                             >
                                 <FlagIcon className="size-4" aria-hidden="true" />
                                 {mode === 'strict'
-                                    ? t('annotation-task.flag_and_continue')
-                                    : t('annotation-task.flag')}
+                                    ? t('annotation.flag_and_continue')
+                                    : t('annotation.flag')}
                             </button>
-                            <ShortcutHint show={showShortcuts} keys="F" />
+                            <ShortcutHint show={showShortcuts && can_flag} keys="F" />
                         </div>
 
                         <p className="text-base font-medium text-slate-800">
-                            {trans('annotation-task.instance', { index: instance.index })}
+                            {trans('annotation.instance', { index: instance.index })}
                         </p>
                         <span className="bg-brand-yellow-400 rounded-full px-6 py-2 text-2xl font-bold text-slate-800">
                             {instance.focusWord}
@@ -272,7 +274,7 @@ export default function AnnotationTaskPage({
                         {questions.map((question) => {
                             const state = getAnswer(question.id);
                             return (
-                                <AnnotationTaskQuestion
+                                <AnnotationQuestion
                                     key={question.id}
                                     question={question}
                                     answer={state.answer}
@@ -300,7 +302,7 @@ export default function AnnotationTaskPage({
                                         className="focus-visible:outline-brand-blue-700 flex h-11 touch-manipulation items-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-base font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                                     >
                                         <ChevronLeftIcon className="size-4" aria-hidden="true" />
-                                        {t('annotation-task.previous')}
+                                        {t('annotation.previous')}
                                     </button>
                                     <ShortcutHint show={showShortcuts} keys="U" />
                                 </div>
@@ -312,7 +314,7 @@ export default function AnnotationTaskPage({
                                     onClick={goToServer}
                                     className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 flex h-11 min-w-[160px] touch-manipulation items-center justify-center gap-1.5 rounded-full px-6 text-base font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                                 >
-                                    {t('annotation-task.submit')}
+                                    {t('annotation.submit')}
                                     <CheckIcon className="size-4" aria-hidden="true" />
                                 </button>
                                 <ShortcutHint show={showShortcuts} keys="Enter" />
@@ -325,7 +327,7 @@ export default function AnnotationTaskPage({
                                         onClick={goToServer}
                                         className="focus-visible:outline-brand-blue-700 flex h-11 touch-manipulation items-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-base font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                                     >
-                                        {t('annotation-task.next')}
+                                        {t('annotation.next')}
                                         <ChevronRightIcon className="size-4" aria-hidden="true" />
                                     </button>
                                     <ShortcutHint show={showShortcuts} keys="N" />
@@ -339,18 +341,18 @@ export default function AnnotationTaskPage({
                             className="focus-visible:outline-brand-blue-700 mx-auto rounded-lg px-2 py-1 text-sm font-medium text-slate-500 transition-colors hover:text-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                         >
                             {showShortcuts
-                                ? t('annotation-task.hide_shortcuts')
-                                : t('annotation-task.show_shortcuts')}
+                                ? t('annotation.hide_shortcuts')
+                                : t('annotation.show_shortcuts')}
                         </button>
                     </div>
                 </div>
             ) : (
                 <div className="flex min-h-[50vh] w-full items-center justify-center">
                     <p className="text-base font-medium text-slate-500">
-                        {t('annotation-task.no_instances')}
+                        {t('annotation.no_instances')}
                     </p>
                 </div>
             )}
-        </AnnotationTaskLayout>
+        </AnnotationLayout>
     );
 }

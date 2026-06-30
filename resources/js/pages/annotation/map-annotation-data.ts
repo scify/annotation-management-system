@@ -1,13 +1,13 @@
 import type {
     AnnotationProgressData,
-    AnnotationTaskData,
-    AnnotationTaskInstance,
-    AnnotationTaskItemData,
+    AnnotationData,
+    AnnotationInstance,
+    AnnotationItemData,
 } from '@/types';
 
 /**
  * Adapts the backend `AnnotationController@show` payload into the view types the
- * annotation-task page renders. Translation-dependent bits (the sidebar
+ * annotation page renders. Translation-dependent bits (the sidebar
  * description, the question text/answers) are built in the page where the
  * `useTranslations` hook is available — these helpers stay pure.
  */
@@ -18,7 +18,7 @@ export function totalInstances(progress: AnnotationProgressData): number {
 }
 
 /** Map the single backend instance payload into the view shape the page renders. */
-export function toInstance(task: AnnotationTaskItemData): AnnotationTaskInstance {
+export function toInstance(task: AnnotationItemData): AnnotationInstance {
     return {
         id: task.annotator_instance_index,
         index: task.annotator_instance_index,
@@ -36,7 +36,7 @@ export function toLayoutData(
     projectName: string,
     subProjectName: string,
     description: string
-): AnnotationTaskData {
+): AnnotationData {
     return {
         projectName,
         subProjectName,

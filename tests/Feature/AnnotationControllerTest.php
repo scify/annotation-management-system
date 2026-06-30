@@ -7,7 +7,7 @@ use App\Models\AnnotationAssignment;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
-describe('AnnotationTaskController', function (): void {
+describe('AnnotationController', function (): void {
     beforeEach(function (): void {
         $this->seed(RolesAndPermissionsSeeder::class);
     });
@@ -17,7 +17,7 @@ describe('AnnotationTaskController', function (): void {
             ->assertRedirect('/login');
     });
 
-    it('renders the annotation-task page with the subproject id and requested mode', function (): void {
+    it('renders the annotation page with the subproject id and requested mode', function (): void {
         // Arrange
         $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
         $assignment = AnnotationAssignment::factory()->create(['user_id' => $user->id]);
@@ -31,7 +31,7 @@ describe('AnnotationTaskController', function (): void {
             ]))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('annotation/index')
+                ->component('annotation/show')
                 ->where('subProjectId', $assignment->sub_project_id)
                 ->where('mode', 'flexible'));
     });
