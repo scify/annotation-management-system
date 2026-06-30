@@ -8,6 +8,7 @@ use App\Data\AnnotationProgressStats;
 use App\Enums\AgreementEnum;
 use App\Enums\AnnotationTaskTypeEnum;
 use App\Enums\ConfidenceEnum;
+use App\Http\Requests\Annotation\SubmitAnnotationRequest;
 use App\Models\AnnotationSession;
 use App\Queries\Annotation\CreateAnnotationSessionQuery;
 use App\Queries\Annotation\GetAnnotationAssignmentIdBySubProjectAndUserQuery;
@@ -36,6 +37,47 @@ readonly class AnnotationService {
         private SubmitPendingAnnotationsQuery $submitPendingAnnotationsQuery,
         private GetNextAnnotationIdQuery $nextAnnotationIdQuery,
     ) {}
+
+    /** @return array<string, mixed> */
+    public function submitAnnotation(
+        SubmitAnnotationRequest $request,
+        int $subProjectId,
+        int $userId,
+    ): array {
+        $mode = $request->string('mode')->toString();
+
+        if (! in_array($mode, ['strict', 'flexible'], true)) {
+            $mode = 'strict';
+        }
+
+        $annotationId = $request->integer('annotation_id');
+        /** @var array<string, mixed> $annotations */
+        $annotations = $request->array('annotations');
+        $pending = $request->boolean('pending');
+        $rawConfidence = $request->string('confidence')->toString();
+        $confidence = $rawConfidence !== '' ? ConfidenceEnum::from($rawConfidence) : null;
+
+        $taskType = $this->resolveTaskType($subProjectId);
+        $this->taskServiceFactory->make($taskType)->save($annotationId, $annotations, $pending, $confidence);
+
+        $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
+
+        if ($mode === 'flexible') {
+            $nextAnnotationId = $annotationId;
+        } else {
+            $nextAnnotationId = $annotationAssignmentId !== null
+                ? $this->nextAnnotationIdQuery->get($annotationAssignmentId)
+                : null;
+        }
+
+        if ($annotationAssignmentId === null || $nextAnnotationId === null) {
+            return $this->getInitialViewData($subProjectId, $mode, $userId);
+        }
+
+        $annotationSessionId = $this->startSession($annotationAssignmentId, $nextAnnotationId);
+
+        return $this->getDataForShowAnnotation($subProjectId, $mode, $userId, $annotationSessionId, $nextAnnotationId);
+    }
 
     public function submitPending(int $subProjectId, int $userId): void {
         $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
