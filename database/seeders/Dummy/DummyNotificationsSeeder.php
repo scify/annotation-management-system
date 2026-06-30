@@ -8,6 +8,7 @@ use App\Data\QuickLinkData;
 use App\Data\TranslatableMessage;
 use App\Enums\NotificationThreadResponseEnum;
 use App\Models\Annotation;
+use App\Models\AnnotationAssignment;
 use App\Models\Project;
 use App\Models\SubProject;
 use App\Models\User;
@@ -41,8 +42,13 @@ class DummyNotificationsSeeder extends Seeder {
             ->join('annotation_assignments', 'annotation_assignments.id', '=', 'annotations.annotation_assignment_id')
             ->where('annotation_assignments.sub_project_id', $batch1->id)
             ->orderBy('annotations.id')
-            ->select('annotations.id', 'annotations.annotation_assignment_id')
+            ->select('annotations.id', 'annotations.annotation_assignment_id', 'annotations.annotator_instance_index')
             ->first();
+
+        /** @var int|null $batch1AnnotatorUserId */
+        $batch1AnnotatorUserId = $batch1Annotation !== null
+            ? AnnotationAssignment::query()->where('id', $batch1Annotation->annotation_assignment_id)->value('user_id')
+            : null;
 
         $genericService = resolve(GenericNotificationService::class);
         $warningService = resolve(WarningNotificationService::class);
@@ -75,13 +81,18 @@ class DummyNotificationsSeeder extends Seeder {
             senderUserId: $carol->id,
         );
 
+        $batch1AnnotationUrl = 'subprojects/' . $batch1->id . '/annotation'
+            . ($batch1Annotation !== null && $batch1AnnotatorUserId !== null
+                ? '?user_id=' . $batch1AnnotatorUserId . '&annotator_instance_index=' . $batch1Annotation->annotator_instance_index
+                : '');
+
         $flagService->createNotification(
             recipientUserIds: [$carol->id],
             body: 'An instance in Subproject Batch 1 has been flagged for review.',
             senderUserId: $alice->id,
             firstQuickLink: new QuickLinkData(
                 label: 'Flagged Instance#',
-                url: 'subprojects/' . $batch1->id . '/annotation',
+                url: $batch1AnnotationUrl,
                 annotationId: $batch1Annotation?->id,
             ),
             secondQuickLink: new QuickLinkData(
@@ -96,7 +107,7 @@ class DummyNotificationsSeeder extends Seeder {
             senderUserId: $alice->id,
             firstQuickLink: new QuickLinkData(
                 label: 'Instance#',
-                url: 'subprojects/' . $batch1->id . '/annotation',
+                url: $batch1AnnotationUrl,
                 annotationId: $batch1Annotation?->id,
             ),
             secondQuickLink: new QuickLinkData(
