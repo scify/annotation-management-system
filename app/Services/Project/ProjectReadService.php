@@ -370,6 +370,10 @@ readonly class ProjectReadService {
             'dataset_name' => $project->dataset->name,
             'project_progress' => $progress,
             'status' => $project->status->value,
+            'scheduled_at' => $project->scheduled_at?->toDateString(),
+            'deadline_at' => $project->deadline_at?->toDateString(),
+            'started_at' => $project->started_at?->toDateTimeString(),
+            'completed_at' => $project->completed_at?->toDateTimeString(),
         ];
     }
 
