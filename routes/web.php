@@ -93,6 +93,7 @@ Route::middleware(['auth'])->group(function (): void {
 
     // ----- Annotation -----
     Route::get('subprojects/{subProject}/annotation', [AnnotationController::class, 'show'])->name('annotation.show');
+    Route::post('subprojects/{subProject}/annotation/submit-pending', [AnnotationController::class, 'submitPending'])->name('annotation.submit-pending');
 });
 
 // NOSONAR - this comes from Laravel

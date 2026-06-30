@@ -16,6 +16,25 @@ class AnnotationController extends Controller {
         private readonly AnnotationService $annotationService,
     ) {}
 
+    public function submitPending(Request $request, int $subProject): Response {
+        $mode = $request->string('mode')->toString();
+
+        if (! in_array($mode, ['strict', 'flexible'], true)) {
+            $mode = 'strict';
+        }
+
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+
+        $this->annotationService->submitPending($subProject, $user->id);
+
+        $data = $this->annotationService->getInitialViewData($subProject, $mode, $user->id);
+
+        $this->dumpDebugJson($data, 'annotation-show-data.json');
+
+        return Inertia::render('annotation/index', $data);
+    }
+
     /**
      * Render the annotation tool for a subproject.
      *
