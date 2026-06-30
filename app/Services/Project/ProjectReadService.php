@@ -374,6 +374,8 @@ readonly class ProjectReadService {
             'deadline_at' => $project->deadline_at?->toDateString(),
             'started_at' => $project->started_at?->toDateTimeString(),
             'completed_at' => $project->completed_at?->toDateTimeString(),
+            'is_delayed_to_start' => $project->isDelayedToStart(),
+            'is_delayed_to_end' => $project->isDelayedToEnd(),
         ];
     }
 

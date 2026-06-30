@@ -16,9 +16,9 @@ import { type ProjectAnnotatorRowData } from '@/components/annotator/annotators-
 import { MakeAnnouncementDialog } from '@/components/make-announcement-dialog';
 import { apiFetch } from '@/lib/api';
 import { type BreadcrumbItem } from '@/types';
-import { formatDate } from '@/utils/format';
+import { formatDate, formatDateDMY, formatDateDMYShort } from '@/utils/format';
 import { Head, router } from '@inertiajs/react';
-import { Megaphone } from 'lucide-react';
+import { CircleAlert, Megaphone } from 'lucide-react';
 import { useState } from 'react';
 
 interface BackendProjectData {
@@ -28,6 +28,12 @@ interface BackendProjectData {
     dataset_name: string;
     project_progress: number;
     status: 'pending' | 'in_progress' | 'completed';
+    scheduled_at: string | null;
+    deadline_at: string | null;
+    started_at: string | null;
+    completed_at: string | null;
+    is_delayed_to_start: boolean;
+    is_delayed_to_end: boolean;
 }
 
 interface BackendSubprojectData {
@@ -227,6 +233,7 @@ export default function ProjectShow({
     }));
 
     const progress = Math.round(project_data.project_progress * 100);
+    const isPending = project_data.status === 'pending';
 
     const tabs: { key: TabKey; label: string; count?: number }[] = [
         {
@@ -266,6 +273,45 @@ export default function ProjectShow({
                         {t('projects.show.make_announcement')}
                     </Button>
                 </div>
+
+                {/* Date range */}
+                {isPending ? (
+                    <span className="text-sm text-slate-500">
+                        {t('projects.card.not_started_yet')}
+                    </span>
+                ) : (
+                    <div className="flex items-center gap-1 text-sm">
+                        <span className="text-slate-800">
+                            {project_data.started_at
+                                ? formatDateDMY(project_data.started_at)
+                                : t('projects.card.open')}
+                        </span>
+                        {project_data.is_delayed_to_start && (
+                            <CircleAlert
+                                className="size-[15px] shrink-0 text-red-500"
+                                aria-label="Delayed"
+                            />
+                        )}
+                        <span className="text-slate-500">–</span>
+                        <span className="text-slate-800">
+                            {project_data.completed_at
+                                ? formatDateDMY(project_data.completed_at)
+                                : t('projects.card.ongoing')}
+                        </span>
+                        {project_data.is_delayed_to_end && (
+                            <CircleAlert
+                                className="size-[15px] shrink-0 text-red-500"
+                                aria-label="Overdue"
+                            />
+                        )}
+                        {(project_data.scheduled_at || project_data.deadline_at) && (
+                            <span className="ml-2 text-xs text-slate-400 tabular-nums">
+                                ({formatDateDMYShort(project_data.scheduled_at)}–
+                                {formatDateDMYShort(project_data.deadline_at)})
+                            </span>
+                        )}
+                    </div>
+                )}
 
                 {/* Tags */}
                 <div className="flex flex-wrap gap-3">
