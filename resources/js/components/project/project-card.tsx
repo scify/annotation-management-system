@@ -42,6 +42,7 @@ export function ProjectCard({ project }: { project: Project }) {
     const { t } = useTranslations();
 
     const progress = Math.round(project.project_progress * 100);
+    const isPending = project.status === 'pending';
     const ownerInitials = toInitials(project.owner_name ?? '?');
     const ownerUsername = project.owner_name ? `${project.owner_name}` : '—';
     const coManagers = project.co_managers ?? [];
@@ -70,37 +71,43 @@ export function ProjectCard({ project }: { project: Project }) {
                         <p className="text-xl leading-9 font-medium text-slate-800">
                             {project.name}
                         </p>
-                        <div className="flex items-center gap-1 text-sm">
-                            <span className="text-slate-800">
-                                {project.started_at
-                                    ? formatDateDMY(project.started_at)
-                                    : t('projects.card.open')}
+                        {isPending ? (
+                            <span className="text-sm text-slate-500">
+                                {t('projects.card.not_started_yet')}
                             </span>
-                            {project.is_delayed_to_start && (
-                                <CircleAlert
-                                    className="size-[15px] shrink-0 text-red-500"
-                                    aria-label="Delayed"
-                                />
-                            )}
-                            <span className="text-slate-500">–</span>
-                            <span className="text-slate-800">
-                                {project.completed_at
-                                    ? formatDateDMY(project.completed_at)
-                                    : t('projects.card.ongoing')}
-                            </span>
-                            {project.is_delayed_to_end && (
-                                <CircleAlert
-                                    className="size-[15px] shrink-0 text-red-500"
-                                    aria-label="Overdue"
-                                />
-                            )}
-                            {(project.scheduled_at || project.deadline_at) && (
-                                <span className="ml-auto text-xs text-slate-400 tabular-nums">
-                                    ({formatDateDMYShort(project.scheduled_at)}–
-                                    {formatDateDMYShort(project.deadline_at)})
+                        ) : (
+                            <div className="flex items-center gap-1 text-sm">
+                                <span className="text-slate-800">
+                                    {project.started_at
+                                        ? formatDateDMY(project.started_at)
+                                        : t('projects.card.open')}
                                 </span>
-                            )}
-                        </div>
+                                {project.is_delayed_to_start && (
+                                    <CircleAlert
+                                        className="size-[15px] shrink-0 text-red-500"
+                                        aria-label="Delayed"
+                                    />
+                                )}
+                                <span className="text-slate-500">–</span>
+                                <span className="text-slate-800">
+                                    {project.completed_at
+                                        ? formatDateDMY(project.completed_at)
+                                        : t('projects.card.ongoing')}
+                                </span>
+                                {project.is_delayed_to_end && (
+                                    <CircleAlert
+                                        className="size-[15px] shrink-0 text-red-500"
+                                        aria-label="Overdue"
+                                    />
+                                )}
+                                {(project.scheduled_at || project.deadline_at) && (
+                                    <span className="ml-auto text-xs text-slate-400 tabular-nums">
+                                        ({formatDateDMYShort(project.scheduled_at)}–
+                                        {formatDateDMYShort(project.deadline_at)})
+                                    </span>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 

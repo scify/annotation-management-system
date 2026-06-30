@@ -37,6 +37,7 @@ return [
         'overall_progress' => 'Συνολική Πρόοδος',
         'ongoing' => 'Σε εξέλιξη',
         'open' => 'Ανοιχτό',
+        'not_started_yet' => 'Δεν έχει ξεκινήσει ακόμη',
         'owner' => 'Ιδιοκτήτης:',
         'co_managers' => 'Συνυπεύθυνοι:',
         'view_project' => 'Προβολή Έργου',
