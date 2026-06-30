@@ -37,6 +37,7 @@ return [
         'overall_progress' => 'Overall Progress',
         'ongoing' => 'In Progress',
         'open' => 'Open',
+        'not_started_yet' => 'Not started yet',
         'owner' => 'Owner:',
         'co_managers' => 'Co-managers:',
         'view_project' => 'View Project',
