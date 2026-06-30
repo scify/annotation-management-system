@@ -8,6 +8,7 @@ use App\Enums\NotificationThreadTypeEnum;
 use App\Models\Notification;
 use App\Models\NotificationThread;
 use App\Models\QuickLink;
+use App\Models\User;
 use App\Queries\Notification\ExistsUnreadNotificationsQuery;
 use App\Queries\Notification\FindNotificationThreadQuery;
 use App\Queries\Notification\GetMyNotificationsQuery;
@@ -94,9 +95,14 @@ readonly class NotificationsService {
      *
      * @return Collection<int, NotificationThread>
      */
-    public function getMyNotifications(int $userId): Collection {
-        return $this->getMyNotificationsQuery->get($userId)->map(function (NotificationThread $thread) use ($userId): NotificationThread {
-            $thread->quickLinks->each(fn (QuickLink $link) => $link->makeHidden(['id', 'notification_thread_id', 'created_at', 'updated_at']));
+    public function getMyNotifications(User $user): Collection {
+        $userId = $user->id;
+
+        return $this->getMyNotificationsQuery->get($userId)->map(function (NotificationThread $thread) use ($user, $userId): NotificationThread {
+            $thread->quickLinks->each(function (QuickLink $link) use ($user): void {
+                $link->setAttribute('label', $link->getLabel($user));
+                $link->makeHidden(['id', 'notification_thread_id', 'annotation_id', 'created_at', 'updated_at']);
+            });
 
             /** @var Carbon|null $latestAt */
             $latestAt = $thread->notifications->max('created_at');

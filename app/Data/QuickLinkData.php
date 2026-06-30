@@ -8,5 +8,6 @@ final readonly class QuickLinkData {
     public function __construct(
         public string $label,
         public string $url,
+        public ?int $annotationId = null,
     ) {}
 }

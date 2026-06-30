@@ -125,7 +125,7 @@ class NotificationController extends Controller {
         /** @var User $user */
         $user = Auth::user();
 
-        $data = ['threads' => $this->notificationService->getMyNotifications($user->id)];
+        $data = ['threads' => $this->notificationService->getMyNotifications($user)];
 
         $this->dumpDebugJson($data, 'notifications-index-data.json');
 

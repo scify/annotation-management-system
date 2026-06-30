@@ -7,7 +7,9 @@ namespace Database\Seeders\Dummy;
 use App\Data\QuickLinkData;
 use App\Data\TranslatableMessage;
 use App\Enums\NotificationThreadResponseEnum;
+use App\Models\Annotation;
 use App\Models\Project;
+use App\Models\SubProject;
 use App\Models\User;
 use App\Services\Notification\AnnouncementNotificationService;
 use App\Services\Notification\FlagNotificationService;
@@ -33,6 +35,14 @@ class DummyNotificationsSeeder extends Seeder {
 
         $nerProject = Project::query()->where('name', 'NER – English News')->firstOrFail();
         $sentimentProject = Project::query()->where('name', 'Sentiment – Product Reviews')->firstOrFail();
+
+        $batch1 = SubProject::query()->where('name', 'Batch 1')->firstOrFail();
+        $batch1Annotation = Annotation::query()
+            ->join('annotation_assignments', 'annotation_assignments.id', '=', 'annotations.annotation_assignment_id')
+            ->where('annotation_assignments.sub_project_id', $batch1->id)
+            ->orderBy('annotations.id')
+            ->select('annotations.id', 'annotations.annotation_assignment_id')
+            ->first();
 
         $genericService = resolve(GenericNotificationService::class);
         $warningService = resolve(WarningNotificationService::class);
@@ -67,11 +77,12 @@ class DummyNotificationsSeeder extends Seeder {
 
         $flagService->createNotification(
             recipientUserIds: [$carol->id],
-            body: 'Instance #2 in Subproject Batch 1 has been flagged for review.',
+            body: 'An instance in Subproject Batch 1 has been flagged for review.',
             senderUserId: $alice->id,
             firstQuickLink: new QuickLinkData(
-                label: 'Flagged Instance#2',
-                url: 'projects/1/subprojects/1/edit',
+                label: 'Flagged Instance#',
+                url: 'subprojects/' . $batch1->id . '/annotation',
+                annotationId: $batch1Annotation?->id,
             ),
             secondQuickLink: new QuickLinkData(
                 label: 'Subproject Batch 1',
@@ -81,11 +92,12 @@ class DummyNotificationsSeeder extends Seeder {
 
         $instanceRelatedService->createNotification(
             recipientUserIds: [$carol->id],
-            body: 'Instance #2 in Subproject Batch 1 has been updated.',
+            body: 'An instance in Subproject Batch 1 has been updated.',
             senderUserId: $alice->id,
             firstQuickLink: new QuickLinkData(
-                label: 'Instance#2',
-                url: 'projects/1/subprojects/1/edit',
+                label: 'Instance#',
+                url: 'subprojects/' . $batch1->id . '/annotation',
+                annotationId: $batch1Annotation?->id,
             ),
             secondQuickLink: new QuickLinkData(
                 label: 'Subproject Batch 1',

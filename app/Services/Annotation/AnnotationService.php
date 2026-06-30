@@ -110,11 +110,14 @@ readonly class AnnotationService {
 
             $recipientIds = $this->getManagerIdsByProjectsQuery->getAccepted([$project->id], $userId);
 
+            $annotatorInstanceIndex = $request->integer('annotator_instance_index');
+            $annotationId = $this->annotationByIdQuery->getIdByAssignmentAndIndex($annotationAssignmentId, $annotatorInstanceIndex);
+
             $notification = $this->instanceRelatedNotificationService->createNotification(
                 recipientUserIds: $recipientIds,
                 body: $request->string('message')->toString(),
                 senderUserId: $userId,
-                firstQuickLink: new QuickLinkData('Annotation', route('annotation.show', ['subProject' => $subProjectId])),
+                firstQuickLink: new QuickLinkData('Instance#', route('annotation.show', ['subProject' => $subProjectId]), $annotationId),
                 secondQuickLink: new QuickLinkData('Project', route('projects.show', ['id' => $project->id])),
             );
 
@@ -153,11 +156,14 @@ readonly class AnnotationService {
 
             $recipientIds = $this->getManagerIdsByProjectsQuery->get([$project->id], $userId);
 
+            $annotatorInstanceIndex = $request->integer('annotator_instance_index');
+            $annotationId = $this->annotationByIdQuery->getIdByAssignmentAndIndex($annotationAssignmentId, $annotatorInstanceIndex);
+
             $notification = $this->flagNotificationService->createNotification(
                 recipientUserIds: $recipientIds,
                 body: $request->string('flag_message')->toString(),
                 senderUserId: $userId,
-                firstQuickLink: new QuickLinkData('Annotation', route('annotation.show', ['subProject' => $subProjectId])),
+                firstQuickLink: new QuickLinkData('Flagged Instance#', route('annotation.show', ['subProject' => $subProjectId]), $annotationId),
                 secondQuickLink: new QuickLinkData('Project', route('projects.show', ['id' => $project->id])),
             );
 

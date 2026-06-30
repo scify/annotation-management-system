@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Model;
     'content',
 ])]
 /**
+ * @property int $index
  * @property array<string, mixed> $content
  */
 class DatasetInstance extends Model {

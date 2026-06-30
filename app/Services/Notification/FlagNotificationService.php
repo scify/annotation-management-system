@@ -44,7 +44,7 @@ final class FlagNotificationService extends AbstractNotificationService {
         $this->createThreadMemberQuery->create($thread->id, $senderUserId, true);
         $this->createThreadMemberQuery->createBatch($thread->id, $recipientUserIds);
 
-        $this->createQuickLinkQuery->create($thread->id, $firstQuickLink->label, $firstQuickLink->url);
+        $this->createQuickLinkQuery->create($thread->id, $firstQuickLink->label, $firstQuickLink->url, $firstQuickLink->annotationId);
         $this->createQuickLinkQuery->create($thread->id, $secondQuickLink->label, $secondQuickLink->url);
 
         return $notification;
