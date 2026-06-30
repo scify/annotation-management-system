@@ -41,6 +41,7 @@ export default function AnnotationPage({
     mode,
     projectName,
     subProjectName,
+    can_flag,
     annotationProgressData,
     annotationTaskData,
 }: AnnotationShowProps) {
@@ -144,7 +145,7 @@ export default function AnnotationPage({
                     goToServer();
                     break;
                 case 'f':
-                    flagAction();
+                    if (can_flag) flagAction();
                     break;
                 case 'e':
                     exit();
@@ -162,7 +163,7 @@ export default function AnnotationPage({
 
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [goToServer, flagAction, exit, mode, hasQuestion, updateAnswer]);
+    }, [goToServer, flagAction, exit, mode, hasQuestion, updateAnswer, can_flag]);
 
     const headerRight = (
         <>
@@ -230,9 +231,10 @@ export default function AnnotationPage({
                             <button
                                 type="button"
                                 onClick={flagAction}
+                                disabled={!can_flag}
                                 aria-pressed={isFlagged}
                                 className={cn(
-                                    'flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500',
+                                    'flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white',
                                     isFlagged
                                         ? 'border-red-500 bg-red-50 text-red-700'
                                         : 'border-red-200 bg-white text-red-600 hover:bg-red-50'
@@ -243,7 +245,7 @@ export default function AnnotationPage({
                                     ? t('annotation.flag_and_continue')
                                     : t('annotation.flag')}
                             </button>
-                            <ShortcutHint show={showShortcuts} keys="F" />
+                            <ShortcutHint show={showShortcuts && can_flag} keys="F" />
                         </div>
 
                         <p className="text-base font-medium text-slate-800">

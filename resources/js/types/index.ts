@@ -260,6 +260,8 @@ export interface AnnotationShowProps {
     annotationAssignmentId: number | null;
     /** The next instance to annotate; null when nothing is left. */
     nextAnnotationId: number | null;
+    /** Whether this annotator may flag instances (per-project capability). */
+    can_flag: boolean;
     annotationProgressData: AnnotationProgressData;
     /** Absent when there is no instance to annotate (`nextAnnotationId === null`). */
     annotationTaskData?: AnnotationItemData;
