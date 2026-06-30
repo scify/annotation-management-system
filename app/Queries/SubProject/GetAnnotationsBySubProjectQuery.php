@@ -17,7 +17,7 @@ final readonly class GetAnnotationsBySubProjectQuery {
      *     annotated: int,
      *     planned_annotations: int,
      *     annotations_values: array<int, array{annotations: array<string, mixed>|null, pending: bool}>,
-     *     annotations: array<int, array{id: int, annotator_data: array{user_id: int, username: string, role: string|null}, last_edited_by_data: array{user_id: int, username: string|null, role: string|null}|null, updated_at: string|null, confidence: ConfidenceEnum|null, status: string}>
+     *     annotations: array<int, array{id: int, annotator_data: array{user_id: int, username: string, role: string|null}, last_edited_by_data: array{user_id: int, username: string|null, role: string|null}|null, updated_at: string|null, confidence: ConfidenceEnum|null, status: string, message_to_managers: int|null}>
      * }>
      */
     public function get(int $subProjectId): array {
@@ -44,6 +44,7 @@ final readonly class GetAnnotationsBySubProjectQuery {
                 'annotations.updated_at',
                 'annotations.confidence',
                 'annotations.last_edited_by',
+                'annotations.message_to_managers_notification_thread_id',
                 'annotation_assignments.user_id',
                 'users.username',
                 'roles.name as role',
@@ -100,6 +101,7 @@ final readonly class GetAnnotationsBySubProjectQuery {
                 ] : null,
                 'updated_at' => $hasEditor ? $row->updated_at?->toDateTimeString() : null,
                 'confidence' => $row->confidence,
+                'message_to_managers' => $row->message_to_managers_notification_thread_id,
                 'status' => match (true) {
                     $row->pending => AnnotationStatusEnum::PENDING->value,
                     $row->annotations === null => AnnotationStatusEnum::NOT_ANNOTATED->value,

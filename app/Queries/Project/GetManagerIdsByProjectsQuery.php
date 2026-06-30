@@ -30,6 +30,29 @@ final readonly class GetManagerIdsByProjectsQuery {
     }
 
     /**
+     * Returns unique user IDs of accepted project managers for the given project IDs, excluding one user.
+     *
+     * @param  array<int, int>  $projectIds
+     *
+     * @return array<int, int>
+     */
+    public function getAccepted(array $projectIds, int $excludeUserId): array {
+        if ($projectIds === []) {
+            return [];
+        }
+
+        /** @var array<int, int> */
+        return ProjectManager::query()
+            ->whereIn('project_id', $projectIds)
+            ->where('accepted', true)
+            ->pluck('user_id')
+            ->unique()
+            ->reject(fn (mixed $id): bool => is_numeric($id) && (int) $id === $excludeUserId)
+            ->values()
+            ->all();
+    }
+
+    /**
      * Returns unique user IDs of all project managers for the given project IDs.
      *
      * @param  array<int, int>  $projectIds
