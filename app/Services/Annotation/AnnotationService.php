@@ -74,7 +74,7 @@ readonly class AnnotationService {
             return $this->getInitialViewData($subProjectId, $mode, $userId);
         }
 
-        $annotationSessionId = $this->startSession($annotationAssignmentId, $nextAnnotationId);
+        $annotationSessionId = $request->integer('annotation_session_id');
 
         return $this->getDataForShowAnnotation($subProjectId, $mode, $userId, $annotationSessionId, $nextAnnotationId);
     }
@@ -125,6 +125,7 @@ readonly class AnnotationService {
         return [
             'subProjectId' => $subProjectId,
             'mode' => $mode,
+            'annotationSessionId' => $annotationSessionId,
             'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $mode, $userId, $annotationSessionId),
             'annotationTaskData' => $this->getAnnotationTaskData($nextAnnotationId, $subProjectId),
             ...$this->getSubProjectNames($subProjectId),
