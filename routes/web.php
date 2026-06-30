@@ -94,6 +94,8 @@ Route::middleware(['auth'])->group(function (): void {
     // ----- Annotation -----
     Route::get('subprojects/{subProject}/annotation', [AnnotationController::class, 'show'])->name('annotation.show');
     Route::post('subprojects/{subProject}/annotation/submit-pending', [AnnotationController::class, 'submitPending'])->name('annotation.submit-pending');
+    Route::post('subprojects/{subProject}/annotation/submit-annotation', [AnnotationController::class, 'submitAnnotation'])->name('annotation.submit-annotation');
+    Route::post('subprojects/{subProject}/annotation/flag-instance', [AnnotationController::class, 'flagInstance'])->name('annotation.flag-instance');
 });
 
 // NOSONAR - this comes from Laravel

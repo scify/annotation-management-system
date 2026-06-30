@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Annotation\FlagAnnotationRequest;
 use App\Http\Requests\Annotation\ShowAnnotationRequest;
 use App\Http\Requests\Annotation\SubmitAnnotationRequest;
 use App\Http\Requests\Annotation\SubmitPendingAnnotationRequest;
@@ -17,6 +18,17 @@ class AnnotationController extends Controller {
     public function __construct(
         private readonly AnnotationService $annotationService,
     ) {}
+
+    public function flagInstance(FlagAnnotationRequest $request, int $subProject): Response {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+
+        $data = $this->annotationService->flagInstance($request, $subProject, $user->id);
+
+        $this->dumpDebugJson($data, 'annotation-show-data.json');
+
+        return Inertia::render('annotation/index', $data);
+    }
 
     public function submitAnnotation(SubmitAnnotationRequest $request, int $subProject): Response {
         $user = Auth::user();

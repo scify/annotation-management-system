@@ -24,7 +24,7 @@ return [
         'projects.managers.remove', 'projects.request-to-leave', 'projects.cancel-leave-request',
         'projects.reject-leave-request', 'projects.accept-leave-request',
         'notifications.index', 'notifications.read', 'notifications.unread', 'notifications.read-all',
-        'annotation.show', 'annotation.submit-pending', 'notifications.reply', 'notifications.approve', 'notifications.reject',
+        'annotation.show', 'annotation.submit-pending', 'annotation.submit-annotation', 'annotation.flag-instance', 'notifications.reply', 'notifications.approve', 'notifications.reject',
         'notifications.send', 'projects.invite-manager', 'notifications.send-announcement',
     ],
 ];
