@@ -91,7 +91,7 @@ Route::middleware(['auth'])->group(function (): void {
         Route::post('send-announcement', 'sendAnnouncement')->name('send-announcement');
     });
 
-    // ----- Annotation -----
+    // ----- Annotations -----
     Route::get('subprojects/{subProject}/annotation', [AnnotationController::class, 'show'])->name('annotation.show');
     Route::post('subprojects/{subProject}/annotation/submit-pending', [AnnotationController::class, 'submitPending'])->name('annotation.submit-pending');
     Route::post('subprojects/{subProject}/annotation/submit-annotation', [AnnotationController::class, 'submitAnnotation'])->name('annotation.submit-annotation');

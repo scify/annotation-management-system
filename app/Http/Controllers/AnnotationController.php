@@ -28,7 +28,7 @@ class AnnotationController extends Controller {
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 
-        return Inertia::render('annotation/index', $data);
+        return Inertia::render('annotation/show', $data);
     }
 
     public function flagInstance(FlagAnnotationRequest $request, int $subProject): Response {
@@ -39,7 +39,7 @@ class AnnotationController extends Controller {
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 
-        return Inertia::render('annotation/index', $data);
+        return Inertia::render('annotation/show', $data);
     }
 
     public function submitAnnotation(SubmitAnnotationRequest $request, int $subProject): Response {
@@ -50,7 +50,7 @@ class AnnotationController extends Controller {
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 
-        return Inertia::render('annotation/index', $data);
+        return Inertia::render('annotation/show', $data);
     }
 
     public function submitPending(SubmitPendingAnnotationRequest $request, int $subProject): Response {
@@ -69,7 +69,7 @@ class AnnotationController extends Controller {
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 
-        return Inertia::render('annotation/index', $data);
+        return Inertia::render('annotation/show', $data);
     }
 
     /**
@@ -93,6 +93,6 @@ class AnnotationController extends Controller {
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 
-        return Inertia::render('annotation/index', $data);
+        return Inertia::render('annotation/show', $data);
     }
 }

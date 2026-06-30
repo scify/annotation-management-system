@@ -31,7 +31,7 @@ describe('AnnotationController', function (): void {
             ]))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('annotation/index')
+                ->component('annotation/show')
                 ->where('subProjectId', $assignment->sub_project_id)
                 ->where('mode', 'flexible'));
     });
