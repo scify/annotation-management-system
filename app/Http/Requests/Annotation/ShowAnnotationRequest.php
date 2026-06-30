@@ -13,8 +13,6 @@ class ShowAnnotationRequest extends FormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {
-        return [
-            'mode' => ['nullable', 'string'],
-        ];
+        return [];
     }
 }

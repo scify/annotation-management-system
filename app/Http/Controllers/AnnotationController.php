@@ -54,42 +54,23 @@ class AnnotationController extends Controller {
     }
 
     public function submitPending(SubmitPendingAnnotationRequest $request, int $subProject): Response {
-        $mode = $request->string('mode')->toString();
-
-        if (! in_array($mode, ['strict', 'flexible'], true)) {
-            $mode = 'strict';
-        }
-
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
         $this->annotationService->submitPending($subProject, $user->id);
 
-        $data = $this->annotationService->getInitialViewData($subProject, $mode, $user->id);
+        $data = $this->annotationService->getInitialViewData($subProject, $user->id);
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 
         return Inertia::render('annotation/show', $data);
     }
 
-    /**
-     * Render the annotation tool for a subproject.
-     *
-     * The annotation payload is mocked on the frontend for now, so this only
-     * passes through the subproject id and the requested browsing mode. The
-     * mode is validated against the supported set and falls back to strict.
-     */
     public function show(ShowAnnotationRequest $request, int $subProject): Response {
-        $mode = $request->string('mode')->toString();
-
-        if (! in_array($mode, ['strict', 'flexible'], true)) {
-            $mode = 'strict';
-        }
-
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data = $this->annotationService->getInitialViewData($subProject, $mode, $user->id);
+        $data = $this->annotationService->getInitialViewData($subProject, $user->id);
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 

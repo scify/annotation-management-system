@@ -14,7 +14,6 @@ class FlagAnnotationRequest extends FormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'mode' => ['nullable', 'string'],
             'flag_message' => ['required', 'string'],
             'annotator_instance_index' => ['required', 'integer'],
             'annotation_session_id' => ['required', 'integer'],

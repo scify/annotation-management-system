@@ -263,7 +263,7 @@ describe('NotificationsService', function (): void {
     it('returns an empty collection for a user with no notifications', function (): void {
         $user = User::factory()->create();
 
-        expect($this->service->getMyNotifications($user->id))->toHaveCount(0);
+        expect($this->service->getMyNotifications($user))->toHaveCount(0);
     });
 
     it('exposes a generic thread as repliable and titles it by the sender', function (): void {
@@ -276,7 +276,7 @@ describe('NotificationsService', function (): void {
         ]);
         ThreadMember::factory()->create(['notification_thread_id' => $thread->id, 'user_id' => $user->id, 'is_read' => false]);
 
-        $found = $this->service->getMyNotifications($user->id)->firstWhere('id', $thread->id);
+        $found = $this->service->getMyNotifications($user)->firstWhere('id', $thread->id);
 
         expect($found->allowed_to_reply)->toBeTrue()
             ->and($found->top_right)->toBeNull()
@@ -293,7 +293,7 @@ describe('NotificationsService', function (): void {
         ThreadMember::factory()->create(['notification_thread_id' => $thread->id, 'user_id' => $user->id]);
         QuickLink::factory()->create(['notification_thread_id' => $thread->id, 'label' => 'Go to instance']);
 
-        $found = $this->service->getMyNotifications($user->id)->firstWhere('id', $thread->id);
+        $found = $this->service->getMyNotifications($user)->firstWhere('id', $thread->id);
 
         expect($found->allowed_to_reply)->toBeTrue()
             ->and($found->top_right)->toBe('Go to instance');
@@ -307,7 +307,7 @@ describe('NotificationsService', function (): void {
         ThreadMember::factory()->create(['notification_thread_id' => $thread->id, 'user_id' => $user->id]);
         QuickLink::factory()->create(['notification_thread_id' => $thread->id, 'label' => 'Announcement link']);
 
-        $found = $this->service->getMyNotifications($user->id)->firstWhere('id', $thread->id);
+        $found = $this->service->getMyNotifications($user)->firstWhere('id', $thread->id);
 
         expect($found->allowed_to_reply)->toBeFalse()
             ->and($found->top_right)->toBe('Announcement link')
@@ -325,7 +325,7 @@ describe('NotificationsService', function (): void {
             'response' => NotificationThreadResponseEnum::UNREPLIED,
         ]);
 
-        $found = $this->service->getMyNotifications($user->id)->firstWhere('id', $thread->id);
+        $found = $this->service->getMyNotifications($user)->firstWhere('id', $thread->id);
 
         expect($found->top_right)->toBe('Ownership')
             ->and($found->response)->toBe(NotificationThreadResponseEnum::UNREPLIED->value);
@@ -342,7 +342,7 @@ describe('NotificationsService', function (): void {
             'response' => NotificationThreadResponseEnum::ACCEPTED,
         ]);
 
-        $found = $this->service->getMyNotifications($user->id)->firstWhere('id', $thread->id);
+        $found = $this->service->getMyNotifications($user)->firstWhere('id', $thread->id);
 
         expect($found->top_right)->toBe('Invitation to Project')
             ->and($found->response)->toBe(NotificationThreadResponseEnum::ACCEPTED->value);
@@ -357,7 +357,7 @@ describe('NotificationsService', function (): void {
         Notification::factory()->create(['notification_thread_id' => $thread->id]);
         ThreadMember::factory()->create(['notification_thread_id' => $thread->id, 'user_id' => $user->id]);
 
-        $found = $this->service->getMyNotifications($user->id)->firstWhere('id', $thread->id);
+        $found = $this->service->getMyNotifications($user)->firstWhere('id', $thread->id);
 
         expect($found->allowed_to_reply)->toBeFalse()
             ->and($found->top_right)->toBeNull()
@@ -370,7 +370,7 @@ describe('NotificationsService', function (): void {
         Notification::factory()->create(['notification_thread_id' => $thread->id]);
         ThreadMember::factory()->create(['notification_thread_id' => $thread->id, 'user_id' => $user->id, 'is_read' => true]);
 
-        $found = $this->service->getMyNotifications($user->id)->firstWhere('id', $thread->id);
+        $found = $this->service->getMyNotifications($user)->firstWhere('id', $thread->id);
 
         expect($found->is_read)->toBeTrue();
     });
@@ -392,7 +392,7 @@ describe('NotificationsService', function (): void {
         ]);
         ThreadMember::factory()->create(['notification_thread_id' => $thread->id, 'user_id' => $user->id]);
 
-        $found = $this->service->getMyNotifications($user->id)->firstWhere('id', $thread->id);
+        $found = $this->service->getMyNotifications($user)->firstWhere('id', $thread->id);
 
         expect($found->replied_by)->toBe($sender->username);
         $transformed = $found->notifications->firstWhere('id', $latest->id);
@@ -412,7 +412,7 @@ describe('NotificationsService', function (): void {
         Notification::factory()->create(['notification_thread_id' => $newer->id, 'created_at' => now()]);
         ThreadMember::factory()->create(['notification_thread_id' => $newer->id, 'user_id' => $user->id]);
 
-        $result = $this->service->getMyNotifications($user->id);
+        $result = $this->service->getMyNotifications($user);
 
         expect($result->first()->id)->toBe($newer->id)
             ->and($result->last()->id)->toBe($older->id);

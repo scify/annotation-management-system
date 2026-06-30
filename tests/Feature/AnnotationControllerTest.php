@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Enums\RolesEnum;
 use App\Models\AnnotationAssignment;
+use App\Models\SubProject;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
@@ -17,53 +18,42 @@ describe('AnnotationController', function (): void {
             ->assertRedirect('/login');
     });
 
-    it('renders the annotation page with the subproject id and requested mode', function (): void {
+    it('returns can_navigate=false and can_submit_all_pending=false for a strict, auto-submitting subproject', function (): void {
         // Arrange
         $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
-        $assignment = AnnotationAssignment::factory()->create(['user_id' => $user->id]);
+        $subProject = SubProject::factory()->create(['flexible' => false, 'auto_submission' => true]);
+        $assignment = AnnotationAssignment::factory()->create([
+            'user_id' => $user->id,
+            'sub_project_id' => $subProject->id,
+        ]);
 
         // Act & Assert
         $this->actingAs($user)
-            ->get(route('annotation.show', [
-                'subProject' => $assignment->sub_project_id,
-                'mode' => 'flexible',
-                'annotation_assignment_id' => $assignment->id,
-            ]))
+            ->get(route('annotation.show', ['subProject' => $subProject->id]))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('annotation/show')
-                ->where('subProjectId', $assignment->sub_project_id)
-                ->where('mode', 'flexible'));
+                ->where('subProjectId', $subProject->id)
+                ->where('can_navigate', false)
+                ->where('can_submit_all_pending', false));
     });
 
-    it('defaults to strict mode when no mode is provided', function (): void {
+    it('returns can_navigate=true and can_submit_all_pending=true for a flexible, non-auto subproject', function (): void {
         // Arrange
         $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
-        $assignment = AnnotationAssignment::factory()->create(['user_id' => $user->id]);
+        $subProject = SubProject::factory()->create(['flexible' => true, 'auto_submission' => false]);
+        $assignment = AnnotationAssignment::factory()->create([
+            'user_id' => $user->id,
+            'sub_project_id' => $subProject->id,
+        ]);
 
         // Act & Assert
         $this->actingAs($user)
-            ->get(route('annotation.show', [
-                'subProject' => $assignment->sub_project_id,
-                'annotation_assignment_id' => $assignment->id,
-            ]))
+            ->get(route('annotation.show', ['subProject' => $subProject->id]))
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->where('mode', 'strict'));
-    });
-
-    it('falls back to strict mode when an invalid mode is provided', function (): void {
-        // Arrange
-        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
-        $assignment = AnnotationAssignment::factory()->create(['user_id' => $user->id]);
-
-        // Act & Assert
-        $this->actingAs($user)
-            ->get(route('annotation.show', [
-                'subProject' => $assignment->sub_project_id,
-                'mode' => 'bogus',
-                'annotation_assignment_id' => $assignment->id,
-            ]))
-            ->assertOk()
-            ->assertInertia(fn ($page) => $page->where('mode', 'strict'));
+            ->assertInertia(fn ($page) => $page
+                ->component('annotation/show')
+                ->where('can_navigate', true)
+                ->where('can_submit_all_pending', true));
     });
 });

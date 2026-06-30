@@ -16,7 +16,6 @@ class SubmitAnnotationRequest extends FormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'mode' => ['nullable', 'string'],
             'annotation_id' => ['required', 'integer'],
             'annotation_session_id' => ['required', 'integer'],
             'annotations' => ['required', 'array'],

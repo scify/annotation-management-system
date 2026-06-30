@@ -23,6 +23,7 @@ use App\Queries\Annotation\GetNextAnnotationIdQuery;
 use App\Queries\Annotation\MarkMessageToManagersQuery;
 use App\Queries\Annotation\SubmitPendingAnnotationsQuery;
 use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
+use App\Queries\Notification\GetFlagThreadStatusQuery;
 use App\Queries\Project\GetManagerIdsByProjectsQuery;
 use App\Queries\SubProject\GetAnnotationCountsBySubProjectsQuery;
 use App\Queries\SubProject\GetAnnotationsBySubProjectQuery;
@@ -51,6 +52,7 @@ readonly class AnnotationService {
         private GetAnnotatorProjectLinksByProjectQuery $annotatorProjectLinksQuery,
         private InstanceRelatedNotificationService $instanceRelatedNotificationService,
         private MarkMessageToManagersQuery $markMessageToManagersQuery,
+        private GetFlagThreadStatusQuery $flagThreadStatusQuery,
     ) {}
 
     /** @return array<string, mixed> */
@@ -59,12 +61,6 @@ readonly class AnnotationService {
         int $subProjectId,
         int $userId,
     ): array {
-        $mode = $request->string('mode')->toString();
-
-        if (! in_array($mode, ['strict', 'flexible'], true)) {
-            $mode = 'strict';
-        }
-
         $annotationId = $request->integer('annotation_id');
         /** @var array<string, mixed> $annotations */
         $annotations = $request->array('annotations');
@@ -75,9 +71,10 @@ readonly class AnnotationService {
         $taskType = $this->resolveTaskType($subProjectId);
         $this->taskServiceFactory->make($taskType)->save($annotationId, $annotations, $pending, $confidence);
 
+        $subProject = $this->subProjectByIdQuery->get($subProjectId);
         $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
 
-        if ($mode === 'flexible') {
+        if ($subProject->flexible) {
             $nextAnnotationId = $annotationId;
         } else {
             $nextAnnotationId = $annotationAssignmentId !== null
@@ -86,46 +83,48 @@ readonly class AnnotationService {
         }
 
         if ($annotationAssignmentId === null || $nextAnnotationId === null) {
-            return $this->getInitialViewData($subProjectId, $mode, $userId);
+            return $this->getInitialViewData($subProjectId, $userId);
         }
 
         $annotationSessionId = $request->integer('annotation_session_id');
 
-        return $this->getDataForShowAnnotation($subProjectId, $mode, $userId, $annotationSessionId, $nextAnnotationId);
+        return $this->getDataForShowAnnotation($subProjectId, $userId, $annotationSessionId, $nextAnnotationId);
     }
 
     /** @return array<string, mixed> */
     public function sendToManager(SendToManagerAnnotationRequest $request, int $subProjectId, int $userId): array {
-        $mode = $request->string('mode')->toString();
-
-        if (! in_array($mode, ['strict', 'flexible'], true)) {
-            $mode = 'strict';
-        }
-
         $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
 
         if ($annotationAssignmentId !== null) {
-            $subProject = $this->subProjectByIdQuery->getWithProject($subProjectId);
-            $project = $subProject->project ?? throw new RuntimeException(sprintf('SubProject %d has no parent project.', $subProjectId));
-
-            $recipientIds = $this->getManagerIdsByProjectsQuery->getAccepted([$project->id], $userId);
-
             $annotatorInstanceIndex = $request->integer('annotator_instance_index');
             $annotationId = $this->annotationByIdQuery->getIdByAssignmentAndIndex($annotationAssignmentId, $annotatorInstanceIndex);
+            $message = $request->string('message')->toString();
 
-            $notification = $this->instanceRelatedNotificationService->createNotification(
-                recipientUserIds: $recipientIds,
-                body: $request->string('message')->toString(),
-                senderUserId: $userId,
-                firstQuickLink: new QuickLinkData('Instance#', route('annotation.show', ['subProject' => $subProjectId]), $annotationId),
-                secondQuickLink: new QuickLinkData('Project', route('projects.show', ['id' => $project->id])),
-            );
+            $flagThreadId = $annotationId !== null
+                ? $this->annotationByIdQuery->getAnnotationData($annotationId)->flag_notification_thread_id
+                : null;
 
-            $this->markMessageToManagersQuery->mark(
-                $annotationAssignmentId,
-                $request->integer('annotator_instance_index'),
-                $notification->notification_thread_id,
-            );
+            if ($flagThreadId !== null) {
+                $this->instanceRelatedNotificationService->reply(
+                    notificationThreadId: $flagThreadId,
+                    senderUserId: $userId,
+                    body: $message,
+                );
+                $this->markMessageToManagersQuery->mark($annotationAssignmentId, $annotatorInstanceIndex, $flagThreadId);
+            } else {
+                $subProject = $this->subProjectByIdQuery->getWithProject($subProjectId);
+                $project = $subProject->project ?? throw new RuntimeException(sprintf('SubProject %d has no parent project.', $subProjectId));
+                $recipientIds = $this->getManagerIdsByProjectsQuery->getAccepted([$project->id], $userId);
+
+                $notification = $this->instanceRelatedNotificationService->createNotification(
+                    recipientUserIds: $recipientIds,
+                    body: $message,
+                    senderUserId: $userId,
+                    firstQuickLink: new QuickLinkData('Instance#', route('annotation.show', ['subProject' => $subProjectId]), $annotationId),
+                    secondQuickLink: new QuickLinkData('Project', route('projects.show', ['id' => $project->id])),
+                );
+                $this->markMessageToManagersQuery->mark($annotationAssignmentId, $annotatorInstanceIndex, $notification->notification_thread_id);
+            }
         }
 
         $annotationSessionId = $request->integer('annotation_session_id');
@@ -134,20 +133,14 @@ readonly class AnnotationService {
             : null;
 
         if ($annotationAssignmentId === null || $nextAnnotationId === null) {
-            return $this->getInitialViewData($subProjectId, $mode, $userId);
+            return $this->getInitialViewData($subProjectId, $userId);
         }
 
-        return $this->getDataForShowAnnotation($subProjectId, $mode, $userId, $annotationSessionId, $nextAnnotationId);
+        return $this->getDataForShowAnnotation($subProjectId, $userId, $annotationSessionId, $nextAnnotationId);
     }
 
     /** @return array<string, mixed> */
     public function flagInstance(FlagAnnotationRequest $request, int $subProjectId, int $userId): array {
-        $mode = $request->string('mode')->toString();
-
-        if (! in_array($mode, ['strict', 'flexible'], true)) {
-            $mode = 'strict';
-        }
-
         $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
 
         if ($annotationAssignmentId !== null) {
@@ -180,10 +173,10 @@ readonly class AnnotationService {
             : null;
 
         if ($annotationAssignmentId === null || $nextAnnotationId === null) {
-            return $this->getInitialViewData($subProjectId, $mode, $userId);
+            return $this->getInitialViewData($subProjectId, $userId);
         }
 
-        return $this->getDataForShowAnnotation($subProjectId, $mode, $userId, $annotationSessionId, $nextAnnotationId);
+        return $this->getDataForShowAnnotation($subProjectId, $userId, $annotationSessionId, $nextAnnotationId);
     }
 
     public function submitPending(int $subProjectId, int $userId): void {
@@ -201,7 +194,8 @@ readonly class AnnotationService {
     }
 
     /** @return array<string, mixed> */
-    public function getInitialViewData(int $subProjectId, string $mode, int $userId): array {
+    public function getInitialViewData(int $subProjectId, int $userId): array {
+        $flags = $this->getSubProjectSettings($subProjectId);
         $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
         $nextAnnotationId = $annotationAssignmentId !== null
             ? $this->nextAnnotationIdQuery->get($annotationAssignmentId)
@@ -213,7 +207,7 @@ readonly class AnnotationService {
             return [
                 'annotationAssignmentId' => $annotationAssignmentId,
                 'nextAnnotationId' => $nextAnnotationId,
-                ...$this->getDataForShowAnnotation($subProjectId, $mode, $userId, $annotationSessionId, $nextAnnotationId),
+                ...$this->getDataForShowAnnotation($subProjectId, $userId, $annotationSessionId, $nextAnnotationId),
             ];
         }
 
@@ -221,21 +215,25 @@ readonly class AnnotationService {
             'annotationAssignmentId' => $annotationAssignmentId,
             'nextAnnotationId' => $nextAnnotationId,
             'subProjectId' => $subProjectId,
-            'mode' => $mode,
-            'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $mode, $userId, null),
+            'can_navigate' => $flags['can_navigate'],
+            'can_submit_all_pending' => $flags['can_submit_all_pending'],
+            'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $flags['can_navigate'], $userId, null),
             ...$this->getSubProjectNames($subProjectId),
         ];
     }
 
     /** @return array<string, mixed> */
-    public function getDataForShowAnnotation(int $subProjectId, string $mode, int $userId, int $annotationSessionId, int $nextAnnotationId): array {
+    public function getDataForShowAnnotation(int $subProjectId, int $userId, int $annotationSessionId, int $nextAnnotationId): array {
+        $flags = $this->getSubProjectSettings($subProjectId);
+
         return [
             'subProjectId' => $subProjectId,
-            'mode' => $mode,
+            'can_navigate' => $flags['can_navigate'],
+            'can_submit_all_pending' => $flags['can_submit_all_pending'],
             'annotationSessionId' => $annotationSessionId,
             'can_flag' => $this->getCanFlag($subProjectId, $userId),
-            'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $mode, $userId, $annotationSessionId),
-            'annotationTaskData' => $this->getAnnotationTaskData($nextAnnotationId, $subProjectId),
+            'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $flags['can_navigate'], $userId, $annotationSessionId),
+            'annotationTaskData' => $this->getAnnotationTaskData($nextAnnotationId, $subProjectId, $userId),
             ...$this->getSubProjectNames($subProjectId),
         ];
     }
@@ -304,8 +302,18 @@ readonly class AnnotationService {
         ];
     }
 
+    /** @return array{can_navigate: bool, can_submit_all_pending: bool} */
+    private function getSubProjectSettings(int $subProjectId): array {
+        $subProject = $this->subProjectByIdQuery->get($subProjectId);
+
+        return [
+            'can_navigate' => $subProject->flexible,
+            'can_submit_all_pending' => ! $subProject->auto_submission,
+        ];
+    }
+
     /** @return array<string, mixed> */
-    private function getAnnotationProgressData(int $subProjectId, string $mode, int $userId, ?int $annotationSessionId): array {
+    private function getAnnotationProgressData(int $subProjectId, bool $canNavigate, int $userId, ?int $annotationSessionId): array {
         $counts = $this->annotationCountsBySubProjectsQuery->get([$subProjectId], $userId);
         $stats = AnnotationProgressStats::fromCounts(
             $counts[$subProjectId] ?? ['pending_count' => 0, 'submitted_count' => 0, 'not_annotated_count' => 0],
@@ -323,7 +331,7 @@ readonly class AnnotationService {
             'number_of_replied_flagged_instances' => $flagCounts['replied_flagged_count'],
         ];
 
-        if ($mode === 'flexible') {
+        if ($canNavigate) {
             $data['pending_count'] = $stats->pendingCount;
             $data['submitted_and_pending_pct'] = $stats->submittedAndPendingPct;
         }
@@ -332,24 +340,37 @@ readonly class AnnotationService {
     }
 
     /** @return array<string, mixed> */
-    private function getAnnotationTaskData(int $nextAnnotationId, int $subProjectId): array {
+    private function getAnnotationTaskData(int $nextAnnotationId, int $subProjectId, int $userId): array {
         $annotation = $this->annotationByIdQuery->get($nextAnnotationId);
         $taskType = $this->resolveTaskType($subProjectId);
         $taskService = $this->taskServiceFactory->make($taskType);
 
         return [
             'annotator_instance_index' => $annotation->annotator_instance_index,
-            'annotationData' => $this->getAnnotationData($nextAnnotationId),
+            'annotationData' => $this->getAnnotationData($nextAnnotationId, $userId),
             ...$taskService->getTaskRelatedData($annotation->dataset_instance_id, $subProjectId),
         ];
     }
 
-    /** @return array{is_flagged: bool, annotations: array<string, mixed>|null, confidence: string|null} */
-    private function getAnnotationData(int $annotationId): array {
+    /** @return array{is_flagged: bool, flag_notification_thread_id: int|null, is_replied: bool|null, is_reply_read: bool|null, annotations: array<string, mixed>|null, confidence: string|null} */
+    private function getAnnotationData(int $annotationId, int $userId): array {
         $annotation = $this->annotationByIdQuery->getAnnotationData($annotationId);
+
+        $flagThreadId = $annotation->flag_notification_thread_id;
+        $isReplied = null;
+        $isReplyRead = null;
+
+        if ($flagThreadId !== null) {
+            $status = $this->flagThreadStatusQuery->get($flagThreadId, $userId);
+            $isReplied = $status['is_replied'];
+            $isReplyRead = $status['is_reply_read'];
+        }
 
         return [
             'is_flagged' => $annotation->isFlagged(),
+            'flag_notification_thread_id' => $flagThreadId,
+            'is_replied' => $isReplied,
+            'is_reply_read' => $isReplyRead,
             'annotations' => $annotation->annotations,
             'confidence' => $annotation->confidence?->value,
         ];

@@ -16,6 +16,7 @@ return new class() extends Migration {
             $table->foreignId('notification_thread_id')->constrained('notification_threads')->cascadeOnDelete();
             $table->string('label');
             $table->string('url');
+            $table->foreignId('annotation_id')->nullable()->default(null)->constrained('annotations')->nullOnDelete();
             $table->timestamps();
         });
     }
