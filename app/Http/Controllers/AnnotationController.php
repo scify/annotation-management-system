@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Annotation\FlagAnnotationRequest;
+use App\Http\Requests\Annotation\SendToManagerAnnotationRequest;
+use App\Http\Requests\Annotation\ShowAnnotationRequest;
+use App\Http\Requests\Annotation\SubmitAnnotationRequest;
+use App\Http\Requests\Annotation\SubmitPendingAnnotationRequest;
 use App\Models\User;
 use App\Services\Annotation\AnnotationService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,7 +20,40 @@ class AnnotationController extends Controller {
         private readonly AnnotationService $annotationService,
     ) {}
 
-    public function submitPending(Request $request, int $subProject): Response {
+    public function sendToManager(SendToManagerAnnotationRequest $request, int $subProject): Response {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+
+        $data = $this->annotationService->sendToManager($request, $subProject, $user->id);
+
+        $this->dumpDebugJson($data, 'annotation-show-data.json');
+
+        return Inertia::render('annotation/index', $data);
+    }
+
+    public function flagInstance(FlagAnnotationRequest $request, int $subProject): Response {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+
+        $data = $this->annotationService->flagInstance($request, $subProject, $user->id);
+
+        $this->dumpDebugJson($data, 'annotation-show-data.json');
+
+        return Inertia::render('annotation/index', $data);
+    }
+
+    public function submitAnnotation(SubmitAnnotationRequest $request, int $subProject): Response {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+
+        $data = $this->annotationService->submitAnnotation($request, $subProject, $user->id);
+
+        $this->dumpDebugJson($data, 'annotation-show-data.json');
+
+        return Inertia::render('annotation/index', $data);
+    }
+
+    public function submitPending(SubmitPendingAnnotationRequest $request, int $subProject): Response {
         $mode = $request->string('mode')->toString();
 
         if (! in_array($mode, ['strict', 'flexible'], true)) {
@@ -42,7 +79,7 @@ class AnnotationController extends Controller {
      * passes through the subproject id and the requested browsing mode. The
      * mode is validated against the supported set and falls back to strict.
      */
-    public function show(Request $request, int $subProject): Response {
+    public function show(ShowAnnotationRequest $request, int $subProject): Response {
         $mode = $request->string('mode')->toString();
 
         if (! in_array($mode, ['strict', 'flexible'], true)) {

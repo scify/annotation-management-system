@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<string, mixed>|null $annotations
  * @property bool $pending
  * @property int|null $flag_notification_thread_id
+ * @property int|null $message_to_managers_notification_thread_id
  * @property ConfidenceEnum|null $confidence
  * @property int|null $last_edited_by
  * @property-read DatasetInstance $datasetInstance
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
     'annotations',
     'pending',
     'flag_notification_thread_id',
+    'message_to_managers_notification_thread_id',
     'confidence',
     'last_edited_by',
 ])]

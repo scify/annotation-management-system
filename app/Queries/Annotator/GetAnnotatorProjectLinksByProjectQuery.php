@@ -44,6 +44,13 @@ final readonly class GetAnnotatorProjectLinksByProjectQuery {
             ->all();
     }
 
+    public function canFlag(int $annotatorId, int $projectId): bool {
+        return (bool) AnnotatorOfProject::query()
+            ->where('user_id', $annotatorId)
+            ->where('project_id', $projectId)
+            ->value('can_flag');
+    }
+
     public function getByAnnotatorAndProject(int $annotatorId, int $projectId): AnnotatorOfProject {
         /** @var AnnotatorOfProject */
         return AnnotatorOfProject::query()
