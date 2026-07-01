@@ -56,4 +56,16 @@ return [
     'next' => 'Next',
     'hide_shortcuts' => 'Hide Shortcuts',
     'show_shortcuts' => 'Show Shortcuts',
+
+    // Send to Manager dialog
+    'send_to_manager' => [
+        'title' => 'To Manager',
+        'instance' => 'Instance #:index',
+        'description' => 'Send a message to the Manager(s) referring to this instance. This will not interfere with your workflow',
+        'label' => 'Message to Manager:',
+        'placeholder' => 'Type your message…',
+        'send' => 'Send',
+        'cancel' => 'Cancel',
+        'success' => 'Your message was sent to the manager(s).',
+    ],
 ];

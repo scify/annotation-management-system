@@ -11,6 +11,7 @@ use App\Http\Requests\Annotation\SubmitAnnotationRequest;
 use App\Http\Requests\Annotation\SubmitPendingAnnotationRequest;
 use App\Models\User;
 use App\Services\Annotation\AnnotationService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,15 +21,13 @@ class AnnotationController extends Controller {
         private readonly AnnotationService $annotationService,
     ) {}
 
-    public function sendToManager(SendToManagerAnnotationRequest $request, int $subProject): Response {
+    public function sendToManager(SendToManagerAnnotationRequest $request, int $subProject): JsonResponse {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data = $this->annotationService->sendToManager($request, $subProject, $user->id);
+        $this->annotationService->sendToManager($request, $subProject, $user->id);
 
-        $this->dumpDebugJson($data, 'annotation-show-data.json');
-
-        return Inertia::render('annotation/show', $data);
+        return $this->jsonSuccess(__('annotation.send_to_manager.success'));
     }
 
     public function flagInstance(FlagAnnotationRequest $request, int $subProject): Response {

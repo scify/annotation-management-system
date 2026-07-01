@@ -45,7 +45,7 @@ export default function AnnotationLayout({
 
             <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
                 {/* Top bar */}
-                <header className="flex flex-wrap items-center justify-between gap-4 px-6 py-4">
+                <header className="flex flex-wrap items-center justify-between gap-4 px-6 py-8">
                     <div className="flex flex-col gap-1">
                         <span className="text-sm font-medium text-slate-500">
                             {t('annotation.project')}: {data.projectName}

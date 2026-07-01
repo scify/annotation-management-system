@@ -1,4 +1,5 @@
 import { AnnotationQuestion } from '@/components/annotation/annotation-question';
+import { SendToManagerDialog } from '@/components/annotation/send-to-manager-dialog';
 import { ShortcutHint } from '@/components/annotation/shortcut-hint';
 import {
     Select,
@@ -43,6 +44,7 @@ export default function AnnotationPage({
     projectName,
     subProjectName,
     can_flag,
+    annotationSessionId,
     annotationProgressData,
     annotationTaskData,
 }: AnnotationShowProps) {
@@ -97,6 +99,11 @@ export default function AnnotationPage({
     const [isFlagged, setIsFlagged] = useState(instance?.flagged ?? false);
     const [showShortcuts, setShowShortcuts] = useState(true);
     const [instanceFilter, setInstanceFilter] = useState('not_annotated');
+    const [managerDialogOpen, setManagerDialogOpen] = useState(false);
+
+    // The "To Manager" dialog is instance-specific: it needs both a loaded
+    // instance and the active session id to post.
+    const canSendToManager = instance !== null && annotationSessionId != null;
 
     const getAnswer = (questionId: number): QuestionAnswer => answers[questionId] ?? EMPTY_ANSWER;
 
@@ -157,6 +164,9 @@ export default function AnnotationPage({
                 case 'u':
                     if (can_navigate) goToServer();
                     break;
+                case 'm':
+                    if (canSendToManager) setManagerDialogOpen(true);
+                    break;
                 default:
                     break;
             }
@@ -164,7 +174,16 @@ export default function AnnotationPage({
 
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [goToServer, flagAction, exit, can_navigate, hasQuestion, updateAnswer, can_flag]);
+    }, [
+        goToServer,
+        flagAction,
+        exit,
+        can_navigate,
+        hasQuestion,
+        updateAnswer,
+        can_flag,
+        canSendToManager,
+    ]);
 
     // Right-aligned "Show Instances" filter, shown in the content's instance row
     // (matches Figma: it sits below the To Manager / Exit header controls).
@@ -198,7 +217,9 @@ export default function AnnotationPage({
             <div className="flex flex-col items-center gap-1">
                 <button
                     type="button"
-                    className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 flex h-9 touch-manipulation items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    onClick={() => setManagerDialogOpen(true)}
+                    disabled={!canSendToManager}
+                    className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 flex h-9 cursor-pointer touch-manipulation items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                     <UserCogIcon className="size-4" aria-hidden="true" />
                     {t('annotation.to_manager')}
@@ -227,6 +248,17 @@ export default function AnnotationPage({
             headerRight={headerRight}
         >
             <Head title={t('annotation.title')} />
+
+            {instance && (
+                <SendToManagerDialog
+                    open={managerDialogOpen}
+                    onClose={() => setManagerDialogOpen(false)}
+                    subProjectId={subProjectId}
+                    subProjectName={subProjectName}
+                    instanceIndex={instance.index}
+                    annotationSessionId={annotationSessionId}
+                />
+            )}
 
             {instance ? (
                 <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">

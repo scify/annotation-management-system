@@ -286,6 +286,8 @@ export interface AnnotationShowProps {
     nextAnnotationId: number | null;
     /** Whether this annotator may flag instances (per-project capability). */
     can_flag: boolean;
+    /** The active annotation session; present once an instance is loaded, absent on the initial-view fallback. */
+    annotationSessionId?: number;
     annotationProgressData: AnnotationProgressData;
     /** Absent when there is no instance to annotate (`nextAnnotationId === null`). */
     annotationTaskData?: AnnotationItemData;
