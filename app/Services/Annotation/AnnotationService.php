@@ -352,7 +352,7 @@ readonly class AnnotationService {
         ];
     }
 
-    /** @return array{is_flagged: bool, flag_notification_thread_id: int|null, is_replied: bool|null, is_reply_read: bool|null, annotations: array<string, mixed>|null, confidence: string|null} */
+    /** @return array{is_flagged: bool, flag_notification_thread_id: int|null, is_replied: bool|null, is_reply_read: bool|null, is_submitted: bool, annotations: array<string, mixed>|null, confidence: string|null} */
     private function getAnnotationData(int $annotationId, int $userId): array {
         $annotation = $this->annotationByIdQuery->getAnnotationData($annotationId);
 
@@ -371,6 +371,7 @@ readonly class AnnotationService {
             'flag_notification_thread_id' => $flagThreadId,
             'is_replied' => $isReplied,
             'is_reply_read' => $isReplyRead,
+            'is_submitted' => $annotation->isAnnotated(),
             'annotations' => $annotation->annotations,
             'confidence' => $annotation->confidence?->value,
         ];
