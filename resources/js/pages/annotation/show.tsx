@@ -166,36 +166,35 @@ export default function AnnotationPage({
         return () => window.removeEventListener('keydown', handler);
     }, [goToServer, flagAction, exit, can_navigate, hasQuestion, updateAnswer, can_flag]);
 
+    // Right-aligned "Show Instances" filter, shown in the content's instance row
+    // (matches Figma: it sits below the To Manager / Exit header controls).
+    const instanceFilterControl = can_navigate && (
+        <div className="flex flex-col items-end gap-1">
+            <span className="text-sm font-medium text-slate-600">
+                {t('annotation.show_instances')}
+            </span>
+            <Select
+                value={instanceFilter}
+                onValueChange={setInstanceFilter}
+                aria-label={t('annotation.show_instances')}
+            >
+                <SelectTrigger className="h-9 w-[200px] rounded-lg bg-white text-sm">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="not_annotated">
+                        {t('annotation.filter_not_annotated')}
+                    </SelectItem>
+                    <SelectItem value="pending">{t('annotation.filter_pending')}</SelectItem>
+                    <SelectItem value="submitted">{t('annotation.filter_submitted')}</SelectItem>
+                    <SelectItem value="all">{t('annotation.filter_all')}</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+    );
+
     const headerRight = (
         <>
-            {can_navigate && (
-                <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-600">
-                        {t('annotation.show_instances')}
-                    </span>
-                    <Select
-                        value={instanceFilter}
-                        onValueChange={setInstanceFilter}
-                        aria-label={t('annotation.show_instances')}
-                    >
-                        <SelectTrigger className="h-9 w-[160px] rounded-lg bg-white text-sm">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="not_annotated">
-                                {t('annotation.filter_not_annotated')}
-                            </SelectItem>
-                            <SelectItem value="pending">
-                                {t('annotation.filter_pending')}
-                            </SelectItem>
-                            <SelectItem value="submitted">
-                                {t('annotation.filter_submitted')}
-                            </SelectItem>
-                            <SelectItem value="all">{t('annotation.filter_all')}</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            )}
             <div className="flex flex-col items-center gap-1">
                 <button
                     type="button"
@@ -292,6 +291,10 @@ export default function AnnotationPage({
                             </div>
                         </div>
 
+                        {instanceFilterControl && (
+                            <div className="absolute top-0 right-0">{instanceFilterControl}</div>
+                        )}
+
                         <p className="text-base font-medium text-slate-800">
                             {trans('annotation.instance', { index: instance.index })}
                         </p>
@@ -304,11 +307,11 @@ export default function AnnotationPage({
                     wrapped in <b>…</b>; the backend must emit only safe markup here. */}
                     <div className="mb-8 grid gap-4 md:grid-cols-2">
                         <p
-                            className="rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
+                            className="h-[40vh] overflow-y-auto rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
                             dangerouslySetInnerHTML={{ __html: instance.leftContext }}
                         />
                         <p
-                            className="rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
+                            className="h-[40vh] overflow-y-auto rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
                             dangerouslySetInnerHTML={{ __html: instance.rightContext }}
                         />
                     </div>
