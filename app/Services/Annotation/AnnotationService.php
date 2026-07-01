@@ -56,12 +56,11 @@ readonly class AnnotationService {
         private GetFlagThreadStatusQuery $flagThreadStatusQuery,
     ) {}
 
-    /** @return array<string, mixed> */
-    public function submitAnnotation(
-        SubmitAnnotationRequest $request,
-        int $subProjectId,
-        int $userId,
-    ): array {
+    /**
+     * Persists the submitted annotation. The view is rebuilt by the subsequent
+     * redirect to GET `annotation.show`, so this method only performs the write.
+     */
+    public function submitAnnotation(SubmitAnnotationRequest $request, int $subProjectId): void {
         $annotationId = $request->integer('annotation_id');
         /** @var array<string, mixed> $annotations */
         $annotations = $request->array('annotations');
@@ -71,25 +70,6 @@ readonly class AnnotationService {
 
         $taskType = $this->resolveTaskContext($subProjectId)['taskType'];
         $this->taskServiceFactory->make($taskType)->save($annotationId, $annotations, $pending, $confidence);
-
-        $subProject = $this->subProjectByIdQuery->get($subProjectId);
-        $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
-
-        if ($subProject->flexible) {
-            $nextAnnotationId = $annotationId;
-        } else {
-            $nextAnnotationId = $annotationAssignmentId !== null
-                ? $this->nextAnnotationIdQuery->get($annotationAssignmentId)
-                : null;
-        }
-
-        if ($annotationAssignmentId === null || $nextAnnotationId === null) {
-            return $this->getInitialViewData($subProjectId, $userId);
-        }
-
-        $annotationSessionId = $request->integer('annotation_session_id');
-
-        return $this->getDataForShowAnnotation($subProjectId, $userId, $annotationSessionId, $nextAnnotationId);
     }
 
     /** @return array<string, mixed> */

@@ -176,13 +176,19 @@ export interface AnnotatorSubProject {
  * `AnnotationShowProps`; the page adapts that payload into the view types below.
  */
 
+/** One selectable answer: a stable backend `key` plus its translated display `label`. */
+export interface AnnotationAnswerOption {
+    key: string;
+    label: string;
+}
+
 /** One configurable question, as defined in the annotation-task settings. */
 export interface AnnotationQuestion {
     id: number;
     /** Prompt, e.g. "Does the word ability have the same meaning?" */
     question: string;
     /** Selectable options rendered as the "Select an Option" dropdown. */
-    answers: string[];
+    answers: AnnotationAnswerOption[];
     /** Secondary controls — confidence chips (low/medium/high) or extra options ("Not sure"). */
     parameters: string[];
 }
@@ -241,13 +247,16 @@ export interface AnnotationProgressData {
     submitted_and_pending_pct?: number;
 }
 
+/** Schema of selectable answers keyed by stable id (e.g. `yes`/`no`/`cannot_decide`). */
+export type AnnotationSelectionMap = Record<string, { is_selected: boolean }>;
+
 /** Per-instance annotation state + flag-thread status (backend `annotationData`). */
 export interface AnnotationInstanceData {
     is_flagged: boolean;
     flag_notification_thread_id: number | null;
     is_replied: boolean | null;
     is_reply_read: boolean | null;
-    annotations: Record<string, unknown> | null;
+    annotations: AnnotationSelectionMap | null;
     confidence: string | null;
     /** Whether the annotator has already submitted this instance. Optional until the backend emits it. */
     is_submitted?: boolean;

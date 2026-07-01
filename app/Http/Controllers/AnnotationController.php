@@ -12,6 +12,7 @@ use App\Http\Requests\Annotation\SubmitPendingAnnotationRequest;
 use App\Models\User;
 use App\Services\Annotation\AnnotationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -41,15 +42,13 @@ class AnnotationController extends Controller {
         return Inertia::render('annotation/show', $data);
     }
 
-    public function submitAnnotation(SubmitAnnotationRequest $request, int $subProject): Response {
+    public function submitAnnotation(SubmitAnnotationRequest $request, int $subProject): RedirectResponse {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data = $this->annotationService->submitAnnotation($request, $subProject, $user->id);
+        $this->annotationService->submitAnnotation($request, $subProject);
 
-        $this->dumpDebugJson($data, 'annotation-show-data.json');
-
-        return Inertia::render('annotation/show', $data);
+        return to_route('annotation.show', ['subProject' => $subProject]);
     }
 
     public function submitPending(SubmitPendingAnnotationRequest $request, int $subProject): Response {

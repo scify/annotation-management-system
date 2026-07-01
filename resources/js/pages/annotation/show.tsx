@@ -12,7 +12,11 @@ import { useTranslations } from '@/hooks/use-translations';
 import AnnotationLayout from '@/layouts/annotation-layout';
 import { cn } from '@/lib/utils';
 import { toInstance, toLayoutData } from '@/pages/annotation/map-annotation-data';
-import type { AnnotationShowProps, AnnotationQuestion as Question } from '@/types';
+import type {
+    AnnotationItemData,
+    AnnotationShowProps,
+    AnnotationQuestion as Question,
+} from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import {
     CheckIcon,
@@ -37,6 +41,23 @@ const CONFIDENCE_PARAMETERS = ['low', 'medium', 'high'];
 /** The lexical-semantic task renders a single question; its id is fixed. */
 const SAME_MEANING_QUESTION_ID = 0;
 
+/**
+ * Initial answer state for the current instance, derived from the backend
+ * `annotations` schema: the selected answer is whichever key is `is_selected`,
+ * and the confidence parameter comes from `annotationData.confidence`.
+ */
+function initialAnswers(task?: AnnotationItemData): Record<number, QuestionAnswer> {
+    const map = task?.annotationData?.annotations;
+    if (!map) return {};
+    const selectedKey = Object.keys(map).find((key) => map[key].is_selected) ?? null;
+    return {
+        [SAME_MEANING_QUESTION_ID]: {
+            answer: selectedKey,
+            parameter: task?.annotationData?.confidence ?? null,
+        },
+    };
+}
+
 export default function AnnotationPage({
     subProjectId,
     can_navigate,
@@ -44,6 +65,7 @@ export default function AnnotationPage({
     projectName,
     subProjectName,
     can_flag,
+    nextAnnotationId,
     annotationSessionId,
     annotationProgressData,
     annotationTaskData,
@@ -71,20 +93,22 @@ export default function AnnotationPage({
                   ...senses.map((sense, i) => `${i + 1}. ${sense}`),
               ].join('\n');
 
-    // The lexical-semantic task asks a single fixed question; the backend only
-    // toggles whether confidence / "cannot decide" are offered.
+    // The lexical-semantic task asks a single fixed question. The answer options
+    // are driven by the backend `annotations` schema: one option per key, labelled
+    // via `annotation.answer_<key>`. Key presence (e.g. `cannot_decide`) is what
+    // decides whether an option is offered.
+    const annotationsMap = annotationTaskData?.annotationData?.annotations ?? null;
     const questions: Question[] = [];
-    if (annotationTaskData?.word) {
-        const answers = [t('annotation.answer_yes'), t('annotation.answer_no')];
-        if (annotationTaskData.allow_cannot_decide) {
-            answers.push(t('annotation.answer_cannot_decide'));
-        }
+    if (annotationTaskData?.word && annotationsMap) {
         questions.push({
             id: SAME_MEANING_QUESTION_ID,
             question: trans('annotation.same_meaning_question', {
                 word: annotationTaskData.word,
             }),
-            answers,
+            answers: Object.keys(annotationsMap).map((key) => ({
+                key,
+                label: t(`annotation.answer_${key}`),
+            })),
             parameters: annotationTaskData.allow_confidence ? CONFIDENCE_PARAMETERS : [],
         });
     }
@@ -95,17 +119,30 @@ export default function AnnotationPage({
         [annotationProgressData, projectName, subProjectName, description]
     );
 
-    const [answers, setAnswers] = useState<Record<number, QuestionAnswer>>({});
+    const [answers, setAnswers] = useState<Record<number, QuestionAnswer>>(() =>
+        initialAnswers(annotationTaskData)
+    );
     const [isFlagged, setIsFlagged] = useState(instance?.flagged ?? false);
     const [showShortcuts, setShowShortcuts] = useState(true);
     const [instanceFilter, setInstanceFilter] = useState('not_annotated');
     const [managerDialogOpen, setManagerDialogOpen] = useState(false);
+
+    // Submitting advances to the next instance via an Inertia re-render of this
+    // same component, so local answer/flag state would otherwise persist across
+    // instances. Re-sync from the incoming backend data whenever it swaps.
+    useEffect(() => {
+        setAnswers(initialAnswers(annotationTaskData));
+        setIsFlagged(instance?.flagged ?? false);
+    }, [annotationTaskData, instance]);
 
     // The "To Manager" dialog is instance-specific: it needs both a loaded
     // instance and the active session id to post.
     const canSendToManager = instance !== null && annotationSessionId != null;
 
     const getAnswer = (questionId: number): QuestionAnswer => answers[questionId] ?? EMPTY_ANSWER;
+
+    // Submitting requires a selected answer; gates the Submit button and Enter shortcut.
+    const hasAnswer = getAnswer(SAME_MEANING_QUESTION_ID).answer != null;
 
     const updateAnswer = useCallback((questionId: number, patch: Partial<QuestionAnswer>) => {
         setAnswers((prev) => {
@@ -120,6 +157,34 @@ export default function AnnotationPage({
         () => router.visit(route('annotation.show', { subProject: subProjectId })),
         [subProjectId]
     );
+
+    // Persist the current answer + confidence, then let the server hand back the
+    // next instance. Builds the `annotations` payload from the schema keys, marking
+    // the selected key `is_selected: true`.
+    const submitAnnotation = useCallback(() => {
+        if (nextAnnotationId == null || annotationSessionId == null || !annotationsMap) return;
+        const { answer: selectedKey, parameter: confidence } =
+            answers[SAME_MEANING_QUESTION_ID] ?? EMPTY_ANSWER;
+        if (selectedKey == null) return; // an answer must be selected to submit
+        const annotations = Object.keys(annotationsMap).map((key) => ({
+            key,
+            is_selected: key === selectedKey,
+        }));
+        router.post(route('annotation.submit-annotation', { subProject: subProjectId }), {
+            annotation_id: nextAnnotationId,
+            annotation_session_id: annotationSessionId,
+            annotations,
+            pending: can_submit_all_pending,
+            confidence,
+        });
+    }, [
+        nextAnnotationId,
+        annotationSessionId,
+        annotationsMap,
+        subProjectId,
+        answers,
+        can_submit_all_pending,
+    ]);
 
     const toggleFlag = useCallback(() => setIsFlagged((flagged) => !flagged), []);
 
@@ -150,7 +215,7 @@ export default function AnnotationPage({
             switch (key) {
                 case 'enter':
                     event.preventDefault();
-                    goToServer();
+                    submitAnnotation();
                     break;
                 case 'f':
                     if (can_flag) flagAction();
@@ -176,6 +241,7 @@ export default function AnnotationPage({
         return () => window.removeEventListener('keydown', handler);
     }, [
         goToServer,
+        submitAnnotation,
         flagAction,
         exit,
         can_navigate,
@@ -400,15 +466,16 @@ export default function AnnotationPage({
                                 ) : (
                                     <button
                                         type="button"
-                                        onClick={goToServer}
-                                        className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 flex h-11 min-w-[160px] touch-manipulation items-center justify-center gap-1.5 rounded-full px-6 text-base font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                                        onClick={submitAnnotation}
+                                        disabled={!hasAnswer}
+                                        className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 disabled:hover:bg-brand-blue-700 flex h-11 min-w-[160px] touch-manipulation items-center justify-center gap-1.5 rounded-full px-6 text-base font-semibold text-white transition-colors hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {t('annotation.submit')}
                                         <CheckIcon className="size-4" aria-hidden="true" />
                                     </button>
                                 )}
                                 <ShortcutHint
-                                    show={showShortcuts && !instance.submitted}
+                                    show={showShortcuts && !instance.submitted && hasAnswer}
                                     keys="Enter"
                                 />
                             </div>
