@@ -71,4 +71,15 @@ return [
         'cancel' => 'Cancel',
         'success' => 'Your message was sent to the manager(s).',
     ],
+
+    // Flag & Continue dialog
+    'flag_and_continue_dialog' => [
+        'title' => 'Flag & Continue',
+        'instance' => 'Instance #:index',
+        'description' => 'By sending this message to the manager you mark this instance as “Flagged”. This means that you came across an issue and you need feedback to continue. You will automatically continue with the next instance. You can come back to this one later.',
+        'label' => 'Message to Manager:',
+        'placeholder' => 'Type your message…',
+        'send' => 'Send',
+        'cancel' => 'Cancel',
+    ],
 ];
