@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Enums\AnnotationInstanceFilterEnum;
 use App\Http\Requests\Annotation\FlagAnnotationRequest;
 use App\Http\Requests\Annotation\SendToManagerAnnotationRequest;
 use App\Http\Requests\Annotation\ShowAnnotationRequest;
@@ -59,7 +60,7 @@ class AnnotationController extends Controller {
 
         $this->annotationService->submitPending($subProject, $user->id);
 
-        $data = $this->annotationService->getInitialViewData($subProject, $user->id);
+        $data = $this->annotationService->getAnnotationViewData($subProject, $user->id, AnnotationInstanceFilterEnum::All);
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 
@@ -70,7 +71,7 @@ class AnnotationController extends Controller {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data = $this->annotationService->getInitialViewData($subProject, $user->id);
+        $data = $this->annotationService->getAnnotationViewData($subProject, $user->id, AnnotationInstanceFilterEnum::All);
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 

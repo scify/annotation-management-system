@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Annotation;
 
+use App\Enums\AnnotationInstanceFilterEnum;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class FlagAnnotationRequest extends FormRequest {
     public function authorize(): bool {
@@ -17,6 +19,13 @@ class FlagAnnotationRequest extends FormRequest {
             'flag_message' => ['required', 'string'],
             'annotator_instance_index' => ['required', 'integer'],
             'annotation_session_id' => ['required', 'integer'],
+            'active_filter' => ['nullable', 'string', Rule::enum(AnnotationInstanceFilterEnum::class)],
         ];
+    }
+
+    public function activeFilter(): AnnotationInstanceFilterEnum {
+        $value = $this->string('active_filter')->toString();
+
+        return $value !== '' ? AnnotationInstanceFilterEnum::from($value) : AnnotationInstanceFilterEnum::All;
     }
 }
