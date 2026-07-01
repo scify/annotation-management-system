@@ -8,13 +8,12 @@ use App\Enums\AgreementEnum;
 use App\Enums\ConfidenceEnum;
 use App\Queries\Annotation\UpdateAnnotationQuery;
 use App\Queries\Dataset\GetDatasetInstanceQuery;
-use App\Queries\SubProject\GetSubProjectByIdQuery;
-use RuntimeException;
+use App\Queries\Project\GetProjectByIdQuery;
 
 final class LexicalSemanticChangeDetectionAnnotationTaskService extends AnnotationTaskService {
     public function __construct(
         GetDatasetInstanceQuery $datasetInstanceQuery,
-        private readonly GetSubProjectByIdQuery $subProjectByIdQuery,
+        private readonly GetProjectByIdQuery $projectByIdQuery,
         private readonly UpdateAnnotationQuery $updateAnnotationQuery,
     ) {
         parent::__construct($datasetInstanceQuery);
@@ -25,12 +24,34 @@ final class LexicalSemanticChangeDetectionAnnotationTaskService extends Annotati
         $this->updateAnnotationQuery->update($annotationId, $annotations, $pending, $confidence);
     }
 
+    /** @return array{yes: array{is_selected: bool}, no: array{is_selected: bool}, cannot_decide?: array{is_selected: bool}} */
+    public function getAnnotationSchema(int $projectId): array {
+        $config = $this->projectByIdQuery->get($projectId)->annotation_task_configuration ?? [];
+
+        $configById = [];
+        foreach ($config as $item) {
+            $configById[$item['id']] = $item['answer'];
+        }
+
+        $allowCannotDecide = ($configById[1] ?? 'No') === 'Yes';
+
+        $schema = [
+            'yes' => ['is_selected' => false],
+            'no' => ['is_selected' => false],
+        ];
+
+        if ($allowCannotDecide) {
+            $schema['cannot_decide'] = ['is_selected' => false];
+        }
+
+        return $schema;
+    }
+
     /** @return array<string, mixed> */
-    public function getTaskRelatedData(int $datasetInstanceId, int $subProjectId): array {
+    public function getTaskRelatedData(int $datasetInstanceId, int $projectId): array {
         $content = $this->getContent($datasetInstanceId);
 
-        $subProject = $this->subProjectByIdQuery->getWithProjectAndAnnotationTask($subProjectId);
-        $project = $subProject->project ?? throw new RuntimeException(sprintf('SubProject %d has no parent project.', $subProjectId));
+        $project = $this->projectByIdQuery->get($projectId);
         $config = $project->annotation_task_configuration ?? [];
 
         $configById = [];
@@ -44,7 +65,6 @@ final class LexicalSemanticChangeDetectionAnnotationTaskService extends Annotati
             'first_corpus_sentence' => $content['first_corpus_sentence'],
             'second_corpus_sentence' => $content['second_corpus_sentence'],
             'allow_confidence' => ($configById[0] ?? 'No') === 'Yes',
-            'allow_cannot_decide' => ($configById[1] ?? 'No') === 'Yes',
         ];
     }
 

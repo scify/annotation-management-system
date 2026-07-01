@@ -17,7 +17,10 @@ abstract class AnnotationTaskService {
     abstract public function save(int $annotationId, array $annotations, bool $pending, ?ConfidenceEnum $confidence): void;
 
     /** @return array<string, mixed> */
-    abstract public function getTaskRelatedData(int $datasetInstanceId, int $subProjectId): array;
+    abstract public function getAnnotationSchema(int $projectId): array;
+
+    /** @return array<string, mixed> */
+    abstract public function getTaskRelatedData(int $datasetInstanceId, int $projectId): array;
 
     /**
      * @param  array<int, array{annotations: array<string, mixed>|null, pending: bool}>  $annotationsValues
