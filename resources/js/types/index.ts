@@ -175,7 +175,6 @@ export interface AnnotatorSubProject {
  * The backend (`AnnotationController@show`) sends one instance per page load via
  * `AnnotationShowProps`; the page adapts that payload into the view types below.
  */
-export type AnnotationMode = 'strict' | 'flexible';
 
 /** One configurable question, as defined in the annotation-task settings. */
 export interface AnnotationQuestion {
@@ -197,6 +196,12 @@ export interface AnnotationInstance {
     leftContext: string;
     rightContext: string;
     flagged: boolean;
+    /** Notification thread opened when this instance was flagged; null when not flagged. */
+    flagThreadId: number | null;
+    /** Whether a manager has replied to the flag thread; null when not flagged. */
+    isReplied: boolean | null;
+    /** Whether the annotator has read the latest manager reply; null when not flagged. */
+    isReplyRead: boolean | null;
 }
 
 export interface AnnotationProgress {
@@ -234,6 +239,16 @@ export interface AnnotationProgressData {
     submitted_and_pending_pct?: number;
 }
 
+/** Per-instance annotation state + flag-thread status (backend `annotationData`). */
+export interface AnnotationInstanceData {
+    is_flagged: boolean;
+    flag_notification_thread_id: number | null;
+    is_replied: boolean | null;
+    is_reply_read: boolean | null;
+    annotations: Record<string, unknown> | null;
+    confidence: string | null;
+}
+
 /**
  * The current instance under annotation (backend payload). Task-content fields are
  * optional because the initial-view payload can carry only `annotator_instance_index`.
@@ -248,12 +263,17 @@ export interface AnnotationItemData {
     second_corpus_sentence?: string;
     allow_confidence?: boolean;
     allow_cannot_decide?: boolean;
+    /** Absent on the initial-view payload; present once an instance is loaded. */
+    annotationData?: AnnotationInstanceData;
 }
 
 /** Props the annotation page receives from `AnnotationController@show`. */
 export interface AnnotationShowProps {
     subProjectId: number;
-    mode: AnnotationMode;
+    /** Free navigation (Previous/Next, instance filter) — was `mode === 'flexible'`. */
+    can_navigate: boolean;
+    /** Whether the "Submit All Pending" action is offered (manual submission). */
+    can_submit_all_pending: boolean;
     projectName: string;
     subProjectName: string;
     /** Resolved server-side; null when the annotator has no assignment for this sub-project. */

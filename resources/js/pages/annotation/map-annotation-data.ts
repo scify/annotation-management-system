@@ -25,8 +25,10 @@ export function toInstance(task: AnnotationItemData): AnnotationInstance {
         focusWord: task.word ?? '',
         leftContext: task.first_corpus_sentence ?? '',
         rightContext: task.second_corpus_sentence ?? '',
-        // TODO(backend): annotationTaskData carries no per-instance flagged flag yet — defaults to false.
-        flagged: false,
+        flagged: task.annotationData?.is_flagged ?? false,
+        flagThreadId: task.annotationData?.flag_notification_thread_id ?? null,
+        isReplied: task.annotationData?.is_replied ?? null,
+        isReplyRead: task.annotationData?.is_reply_read ?? null,
     };
 }
 

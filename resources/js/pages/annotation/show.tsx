@@ -12,7 +12,7 @@ import AnnotationLayout from '@/layouts/annotation-layout';
 import { cn } from '@/lib/utils';
 import { toInstance, toLayoutData } from '@/pages/annotation/map-annotation-data';
 import type { AnnotationShowProps, AnnotationQuestion as Question } from '@/types';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     CheckIcon,
     ChevronLeftIcon,
@@ -38,7 +38,8 @@ const SAME_MEANING_QUESTION_ID = 0;
 
 export default function AnnotationPage({
     subProjectId,
-    mode,
+    can_navigate,
+    can_submit_all_pending,
     projectName,
     subProjectName,
     can_flag,
@@ -109,16 +110,16 @@ export default function AnnotationPage({
     // Submit / Next / Previous all round-trip to the server, which owns which
     // instance loads next (and, in a follow-up, persisting the current answer).
     const goToServer = useCallback(
-        () => router.visit(route('annotation.show', { subProject: subProjectId, mode })),
-        [subProjectId, mode]
+        () => router.visit(route('annotation.show', { subProject: subProjectId })),
+        [subProjectId]
     );
 
     const toggleFlag = useCallback(() => setIsFlagged((flagged) => !flagged), []);
 
     const flagAction = useCallback(() => {
         toggleFlag();
-        if (mode === 'strict') goToServer(); // "Flag & Continue"
-    }, [toggleFlag, mode, goToServer]);
+        if (!can_navigate) goToServer(); // "Flag & Continue"
+    }, [toggleFlag, can_navigate, goToServer]);
 
     const exit = useCallback(() => router.visit(route('dashboard')), []);
 
@@ -151,10 +152,10 @@ export default function AnnotationPage({
                     exit();
                     break;
                 case 'n':
-                    if (mode === 'flexible') goToServer();
+                    if (can_navigate) goToServer();
                     break;
                 case 'u':
-                    if (mode === 'flexible') goToServer();
+                    if (can_navigate) goToServer();
                     break;
                 default:
                     break;
@@ -163,11 +164,11 @@ export default function AnnotationPage({
 
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
-    }, [goToServer, flagAction, exit, mode, hasQuestion, updateAnswer, can_flag]);
+    }, [goToServer, flagAction, exit, can_navigate, hasQuestion, updateAnswer, can_flag]);
 
     const headerRight = (
         <>
-            {mode === 'flexible' && (
+            {can_navigate && (
                 <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-slate-600">
                         {t('annotation.show_instances')}
@@ -220,32 +221,73 @@ export default function AnnotationPage({
     );
 
     return (
-        <AnnotationLayout mode={mode} data={layoutData} headerRight={headerRight}>
+        <AnnotationLayout
+            canNavigate={can_navigate}
+            canSubmitAllPending={can_submit_all_pending}
+            data={layoutData}
+            headerRight={headerRight}
+        >
             <Head title={t('annotation.title')} />
 
             {instance ? (
-                <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+                <div className="mx-auto flex w-full max-w-7xl flex-col gap-6">
                     {/* Instance number + focus word, with the flag action floated left */}
                     <div className="relative flex flex-col items-center gap-2">
-                        <div className="absolute top-0 left-0 flex flex-col items-start gap-1">
-                            <button
-                                type="button"
-                                onClick={flagAction}
-                                disabled={!can_flag}
-                                aria-pressed={isFlagged}
-                                className={cn(
-                                    'flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white',
-                                    isFlagged
-                                        ? 'border-red-500 bg-red-50 text-red-700'
-                                        : 'border-red-200 bg-white text-red-600 hover:bg-red-50'
-                                )}
-                            >
-                                <FlagIcon className="size-4" aria-hidden="true" />
-                                {mode === 'strict'
-                                    ? t('annotation.flag_and_continue')
-                                    : t('annotation.flag')}
-                            </button>
-                            <ShortcutHint show={showShortcuts && can_flag} keys="F" />
+                        <div className="absolute top-0 left-0 flex flex-col items-start gap-2">
+                            {isFlagged && (
+                                <div className="flex items-center gap-2">
+                                    <span className="rounded border border-rose-400 bg-rose-100 px-2 py-px text-xs font-semibold text-rose-600">
+                                        {t('annotation.flagged')}
+                                    </span>
+                                    {instance.isReplied ? (
+                                        <span className="flex items-center gap-1.5 text-xs">
+                                            <span className="font-bold text-slate-800">
+                                                {t('annotation.replied')}
+                                            </span>
+                                            {instance.isReplyRead === false && (
+                                                <span
+                                                    className="size-2 rounded-full bg-rose-500"
+                                                    aria-hidden="true"
+                                                />
+                                            )}
+                                            {instance.flagThreadId !== null && (
+                                                <Link
+                                                    href={route('notifications.index', {
+                                                        thread: instance.flagThreadId,
+                                                    })}
+                                                    className="focus-visible:outline-brand-blue-700 font-medium text-slate-800 underline hover:text-slate-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                                                >
+                                                    {t('annotation.see_reply')}
+                                                </Link>
+                                            )}
+                                        </span>
+                                    ) : (
+                                        <span className="text-xs text-slate-500 italic">
+                                            {t('annotation.waiting_for_reply')}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                            <div className="flex flex-col items-start gap-1">
+                                <button
+                                    type="button"
+                                    onClick={flagAction}
+                                    disabled={!can_flag || isFlagged}
+                                    aria-pressed={isFlagged}
+                                    className={cn(
+                                        'flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white',
+                                        isFlagged
+                                            ? 'border-red-500 bg-red-50 text-red-700'
+                                            : 'border-red-200 bg-white text-red-600 hover:bg-red-50'
+                                    )}
+                                >
+                                    <FlagIcon className="size-4" aria-hidden="true" />
+                                    {!can_navigate
+                                        ? t('annotation.flag_and_continue')
+                                        : t('annotation.flag')}
+                                </button>
+                                <ShortcutHint show={showShortcuts && can_flag} keys="F" />
+                            </div>
                         </div>
 
                         <p className="text-base font-medium text-slate-800">
@@ -258,7 +300,7 @@ export default function AnnotationPage({
 
                     {/* Context (two columns). The corpus sentences arrive with the focus word
                     wrapped in <b>…</b>; the backend must emit only safe markup here. */}
-                    <div className="grid gap-4 md:grid-cols-2">
+                    <div className="mb-8 grid gap-4 md:grid-cols-2">
                         <p
                             className="rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
                             dangerouslySetInnerHTML={{ __html: instance.leftContext }}
@@ -294,7 +336,7 @@ export default function AnnotationPage({
                     {/* Footer navigation */}
                     <div className="flex flex-col gap-3">
                         <div className="flex items-start justify-center gap-3">
-                            {mode === 'flexible' && (
+                            {can_navigate && (
                                 <div className="flex flex-col items-center gap-1">
                                     <button
                                         type="button"
@@ -320,7 +362,7 @@ export default function AnnotationPage({
                                 <ShortcutHint show={showShortcuts} keys="Enter" />
                             </div>
 
-                            {mode === 'flexible' && (
+                            {can_navigate && (
                                 <div className="flex flex-col items-center gap-1">
                                     <button
                                         type="button"

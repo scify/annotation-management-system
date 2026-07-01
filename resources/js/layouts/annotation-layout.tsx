@@ -2,13 +2,16 @@ import { AnnotationSidebar } from '@/components/annotation/annotation-sidebar';
 import { Toaster } from '@/components/ui/sonner';
 import { useFlashMessages } from '@/hooks/use-flash-messages';
 import { useTranslations } from '@/hooks/use-translations';
-import type { AnnotationData, AnnotationMode } from '@/types';
+import type { AnnotationData } from '@/types';
 import type { ReactNode } from 'react';
 
 interface AnnotationLayoutProps {
-    mode: AnnotationMode;
+    /** Free navigation enabled (drives sidebar counters/labels). */
+    canNavigate: boolean;
+    /** Whether the "Submit All Pending" action is offered. */
+    canSubmitAllPending: boolean;
     data: AnnotationData;
-    /** Mode-specific top-bar controls (To Manager, Exit, Show Instances …). */
+    /** Top-bar controls (To Manager, Exit, Show Instances …). */
     headerRight?: ReactNode;
     onSubmitAllPending?: () => void;
     children: ReactNode;
@@ -17,11 +20,12 @@ interface AnnotationLayoutProps {
 /**
  * Standalone layout for the annotation tool. Unlike AppLayout, it renders the
  * custom annotation sidebar (no collapse toggle) instead of AppSidebar, and a
- * minimal top bar with the project/subproject context plus mode-specific
+ * minimal top bar with the project/subproject context plus the annotation
  * controls. Flash messages stay wired for parity with AppLayout.
  */
 export default function AnnotationLayout({
-    mode,
+    canNavigate,
+    canSubmitAllPending,
     data,
     headerRight,
     onSubmitAllPending,
@@ -32,7 +36,12 @@ export default function AnnotationLayout({
 
     return (
         <div className="bg-brand-blue-50 flex h-screen w-full overflow-hidden">
-            <AnnotationSidebar mode={mode} data={data} onSubmitAllPending={onSubmitAllPending} />
+            <AnnotationSidebar
+                canNavigate={canNavigate}
+                canSubmitAllPending={canSubmitAllPending}
+                data={data}
+                onSubmitAllPending={onSubmitAllPending}
+            />
 
             <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
                 {/* Top bar */}
