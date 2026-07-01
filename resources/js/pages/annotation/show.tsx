@@ -434,13 +434,13 @@ export default function AnnotationPage({
 
                     {/* Context (two columns). The corpus sentences arrive with the focus word
                     wrapped in <b>…</b>; the backend must emit only safe markup here. */}
-                    <div className="mb-8 grid gap-4 md:grid-cols-2">
+                    <div className="mb-12 grid gap-4 md:grid-cols-2">
                         <p
-                            className="h-[40vh] overflow-y-auto rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
+                            className="h-[30vh] overflow-y-auto rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
                             dangerouslySetInnerHTML={{ __html: instance.leftContext }}
                         />
                         <p
-                            className="h-[40vh] overflow-y-auto rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
+                            className="h-[30vh] overflow-y-auto rounded-xl bg-white p-5 text-sm leading-6 text-slate-600"
                             dangerouslySetInnerHTML={{ __html: instance.rightContext }}
                         />
                     </div>
