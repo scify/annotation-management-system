@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Annotation\ExitAnnotationRequest;
 use App\Http\Requests\Annotation\FlagAnnotationRequest;
 use App\Http\Requests\Annotation\NextAnnotationRequest;
 use App\Http\Requests\Annotation\PreviousAnnotationRequest;
@@ -47,9 +48,9 @@ class AnnotationController extends Controller {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $this->annotationService->submitAnnotation($request, $subProject);
+        $this->annotationService->submitAnnotation($request, $subProject, $user->id);
 
-        return to_route('annotation.show', ['subProject' => $subProject, 'active_filter' => $request->activeFilter()->value])
+        return to_route('annotation.show', ['subProject' => $subProject, 'active_filter' => $request->activeFilter()->value, 'annotation_session_id' => $request->integer('annotation_session_id')])
             ->with('success', __('annotation.submit_success'));
     }
 
@@ -77,11 +78,20 @@ class AnnotationController extends Controller {
             ->with('success', __('annotation.submit_success'));
     }
 
+    public function exitAnnotation(ExitAnnotationRequest $request, int $subProject): RedirectResponse {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+
+        $this->annotationService->stopSession($request->annotationSessionId());
+
+        return to_route('dashboard');
+    }
+
     public function show(ShowAnnotationRequest $request, int $subProject): Response {
         $user = Auth::user();
         abort_unless($user instanceof User, 401);
 
-        $data = $this->annotationService->getAnnotationViewData($subProject, $user->id, $request->activeFilter());
+        $data = $this->annotationService->getAnnotationViewData($subProject, $user->id, $request->activeFilter(), $request->annotationSessionId());
 
         $this->dumpDebugJson($data, 'annotation-show-data.json');
 

@@ -100,7 +100,7 @@ describe('AnnotationController', function (): void {
         );
 
         // Assert
-        $response->assertRedirect(route('annotation.show', ['subProject' => $subProject->id, 'active_filter' => 'all']));
+        $response->assertRedirect(route('annotation.show', ['subProject' => $subProject->id, 'active_filter' => 'all', 'annotation_session_id' => 1]));
         $response->assertSessionHas('success', __('annotation.submit_success'));
 
         $annotation->refresh();

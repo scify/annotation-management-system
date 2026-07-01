@@ -9,11 +9,12 @@ use App\Models\Annotation;
 
 final readonly class UpdateAnnotationQuery {
     /** @param array<string, mixed> $annotations */
-    public function update(int $annotationId, array $annotations, bool $pending, ?ConfidenceEnum $confidence): void {
+    public function update(int $annotationId, array $annotations, bool $pending, ?ConfidenceEnum $confidence, int $userId): void {
         Annotation::query()->where('id', $annotationId)->update([
             'annotations' => $annotations,
             'pending' => $pending,
             'confidence' => $confidence,
+            'last_edited_by' => $userId,
         ]);
     }
 }

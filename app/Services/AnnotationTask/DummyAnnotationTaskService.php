@@ -10,7 +10,7 @@ use Random\RandomException;
 
 final class DummyAnnotationTaskService extends AnnotationTaskService {
     /** @param array<string, mixed> $annotations */
-    public function save(int $annotationId, array $annotations, bool $pending, ?ConfidenceEnum $confidence): void {}
+    public function save(int $annotationId, array $annotations, bool $pending, ?ConfidenceEnum $confidence, int $userId): void {}
 
     /** @return array<string, mixed> */
     public function getAnnotationSchema(int $projectId): array {

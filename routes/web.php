@@ -99,6 +99,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('subprojects/{subProject}/annotation/next', [AnnotationController::class, 'next'])->name('annotation.next');
     Route::post('subprojects/{subProject}/annotation/flag-instance', [AnnotationController::class, 'flagInstance'])->name('annotation.flag-instance');
     Route::post('subprojects/{subProject}/annotation/send-to-manager', [AnnotationController::class, 'sendToManager'])->name('annotation.send-to-manager');
+    Route::post('subprojects/{subProject}/annotation/exit', [AnnotationController::class, 'exitAnnotation'])->name('annotation.exit');
 });
 
 // NOSONAR - this comes from Laravel

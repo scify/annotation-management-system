@@ -20,8 +20,8 @@ final class LexicalSemanticChangeDetectionAnnotationTaskService extends Annotati
     }
 
     /** @param array<string, mixed> $annotations */
-    public function save(int $annotationId, array $annotations, bool $pending, ?ConfidenceEnum $confidence): void {
-        $this->updateAnnotationQuery->update($annotationId, $annotations, $pending, $confidence);
+    public function save(int $annotationId, array $annotations, bool $pending, ?ConfidenceEnum $confidence, int $userId): void {
+        $this->updateAnnotationQuery->update($annotationId, $annotations, $pending, $confidence, $userId);
     }
 
     /** @return array{yes: array{is_selected: bool}, no: array{is_selected: bool}, cannot_decide?: array{is_selected: bool}} */

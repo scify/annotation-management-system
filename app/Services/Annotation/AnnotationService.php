@@ -21,8 +21,11 @@ use App\Queries\Annotation\GetAnnotationByIdQuery;
 use App\Queries\Annotation\GetAnnotationSessionByIdQuery;
 use App\Queries\Annotation\GetFlaggedAnnotationCountsQuery;
 use App\Queries\Annotation\GetNextAnnotationIdQuery;
+use App\Queries\Annotation\IncrementAnnotationSessionCountQuery;
 use App\Queries\Annotation\MarkMessageToManagersQuery;
+use App\Queries\Annotation\StopAnnotationSessionQuery;
 use App\Queries\Annotation\SubmitPendingAnnotationsQuery;
+use App\Queries\Annotation\UpdateAnnotationSessionNextAnnotationQuery;
 use App\Queries\Annotator\GetAnnotatorProjectLinksByProjectQuery;
 use App\Queries\Notification\GetFlagThreadStatusQuery;
 use App\Queries\Project\GetManagerIdsByProjectsQuery;
@@ -43,6 +46,7 @@ readonly class AnnotationService {
         private CreateAnnotationSessionQuery $createAnnotationSessionQuery,
         private GetAnnotationByIdQuery $annotationByIdQuery,
         private GetFlaggedAnnotationCountsQuery $flaggedAnnotationCountsQuery,
+        private IncrementAnnotationSessionCountQuery $incrementAnnotationSessionCountQuery,
         private AnnotationTaskServiceFactory $taskServiceFactory,
         private GetSubProjectByIdQuery $subProjectByIdQuery,
         private GetAnnotationAssignmentIdBySubProjectAndUserQuery $annotationAssignmentIdQuery,
@@ -55,13 +59,15 @@ readonly class AnnotationService {
         private InstanceRelatedNotificationService $instanceRelatedNotificationService,
         private MarkMessageToManagersQuery $markMessageToManagersQuery,
         private GetFlagThreadStatusQuery $flagThreadStatusQuery,
+        private StopAnnotationSessionQuery $stopAnnotationSessionQuery,
+        private UpdateAnnotationSessionNextAnnotationQuery $updateAnnotationSessionNextAnnotationQuery,
     ) {}
 
     /**
      * Persists the submitted annotation. The view is rebuilt by the subsequent
      * redirect to GET `annotation.show`, so this method only performs the write.
      */
-    public function submitAnnotation(SubmitAnnotationRequest $request, int $subProjectId): void {
+    public function submitAnnotation(SubmitAnnotationRequest $request, int $subProjectId, int $userId): void {
         $annotationId = $request->integer('annotation_id');
         /** @var array<string, mixed> $annotations */
         $annotations = $request->array('annotations');
@@ -70,7 +76,8 @@ readonly class AnnotationService {
         $confidence = $rawConfidence !== '' ? ConfidenceEnum::from($rawConfidence) : null;
 
         $taskType = $this->resolveTaskContext($subProjectId)['taskType'];
-        $this->taskServiceFactory->make($taskType)->save($annotationId, $annotations, $pending, $confidence);
+        $this->taskServiceFactory->make($taskType)->save($annotationId, $annotations, $pending, $confidence, $userId);
+        $this->incrementAnnotationSessionCountQuery->increment($request->integer('annotation_session_id'));
     }
 
     public function sendToManager(SendToManagerAnnotationRequest $request, int $subProjectId, int $userId): void {
@@ -151,8 +158,12 @@ readonly class AnnotationService {
         return $this->createAnnotationSessionQuery->create($annotationAssignmentId, $nextAnnotationId);
     }
 
+    public function stopSession(int $annotationSessionId): void {
+        $this->stopAnnotationSessionQuery->stop($annotationSessionId);
+    }
+
     /** @return array<string, mixed> */
-    public function getAnnotationViewData(int $subProjectId, int $userId, AnnotationInstanceFilterEnum $activeFilter): array {
+    public function getAnnotationViewData(int $subProjectId, int $userId, AnnotationInstanceFilterEnum $activeFilter, ?int $existingSessionId = null): array {
         $flags = $this->getSubProjectSettings($subProjectId);
         $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
         $nextAnnotationId = $annotationAssignmentId !== null
@@ -160,7 +171,10 @@ readonly class AnnotationService {
             : null;
 
         if ($annotationAssignmentId !== null && $nextAnnotationId !== null) {
-            $annotationSessionId = $this->startSession($annotationAssignmentId, $nextAnnotationId);
+            $annotationSessionId = $existingSessionId ?? $this->startSession($annotationAssignmentId, $nextAnnotationId);
+            if ($existingSessionId !== null) {
+                $this->updateAnnotationSessionNextAnnotationQuery->update($annotationSessionId, $nextAnnotationId);
+            }
 
             return [
                 'annotationAssignmentId' => $annotationAssignmentId,

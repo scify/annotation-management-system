@@ -17,6 +17,7 @@ class ShowAnnotationRequest extends FormRequest {
     public function rules(): array {
         return [
             'active_filter' => ['nullable', 'string', Rule::enum(AnnotationInstanceFilterEnum::class)],
+            'annotation_session_id' => ['nullable', 'integer'],
         ];
     }
 
@@ -24,5 +25,11 @@ class ShowAnnotationRequest extends FormRequest {
         $value = $this->string('active_filter')->toString();
 
         return $value !== '' ? AnnotationInstanceFilterEnum::from($value) : AnnotationInstanceFilterEnum::All;
+    }
+
+    public function annotationSessionId(): ?int {
+        $value = $this->integer('annotation_session_id');
+
+        return $value > 0 ? $value : null;
     }
 }
