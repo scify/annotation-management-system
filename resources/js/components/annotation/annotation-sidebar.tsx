@@ -1,27 +1,34 @@
 import { useTranslations } from '@/hooks/use-translations';
-import type { AnnotationData, AnnotationMode } from '@/types';
+import type { AnnotationData } from '@/types';
 import { FlagIcon, InfoIcon } from 'lucide-react';
 
 interface AnnotationSidebarProps {
-    mode: AnnotationMode;
+    /** Free navigation enabled — was `mode === 'flexible'`. */
+    canNavigate: boolean;
     data: AnnotationData;
-    /** Inert in the mock — submits all pending annotations (flexible mode only). */
+    /** Whether the "Submit All Pending" action is offered (manual submission). */
+    canSubmitAllPending: boolean;
+    /** Inert in the mock — submits all pending annotations. */
     onSubmitAllPending?: () => void;
 }
 
 /**
  * The annotation-tool sidebar from the Figma mockups. Replaces the standard
  * AppSidebar on this page (and has no collapse toggle). Sections: Description,
- * Annotation Progress (stats + multi-segment bar), and Flagged Instances; the
- * flexible mode adds a "Submit All Pending" action.
+ * Annotation Progress (stats + multi-segment bar), and Flagged Instances; a
+ * "Submit All Pending" action is added when manual submission is enabled.
  */
-export function AnnotationSidebar({ mode, data, onSubmitAllPending }: AnnotationSidebarProps) {
+export function AnnotationSidebar({
+    canNavigate,
+    data,
+    canSubmitAllPending,
+    onSubmitAllPending,
+}: AnnotationSidebarProps) {
     const { t, trans } = useTranslations();
     const { progress, flagged } = data;
 
-    const secondary = mode === 'flexible' ? progress.pending : progress.thisSession;
-    const secondaryLabel =
-        mode === 'flexible' ? t('annotation.pending') : t('annotation.this_session');
+    const secondary = canNavigate ? progress.pending : progress.thisSession;
+    const secondaryLabel = canNavigate ? t('annotation.pending') : t('annotation.this_session');
 
     const submittedWidth = (progress.submitted / progress.totalInstances) * 100;
     const submittedAndSecondaryWidth = Math.min(
@@ -63,9 +70,7 @@ export function AnnotationSidebar({ mode, data, onSubmitAllPending }: Annotation
                 <div className="flex flex-col gap-2">
                     <span className="text-sm font-medium text-white">
                         {trans(
-                            mode === 'flexible'
-                                ? 'annotation.submitted_progress'
-                                : 'annotation.progress',
+                            canNavigate ? 'annotation.submitted_progress' : 'annotation.progress',
                             { pct: progress.submittedPct }
                         )}
                     </span>
@@ -98,7 +103,7 @@ export function AnnotationSidebar({ mode, data, onSubmitAllPending }: Annotation
                     </div>
                 </div>
 
-                {mode === 'flexible' && (
+                {canSubmitAllPending && (
                     <button
                         type="button"
                         onClick={onSubmitAllPending}

@@ -5,7 +5,7 @@ import AppLayout from '@/layouts/app-layout';
 import { ApiError, apiFetchWithFlash } from '@/lib/api';
 import { type PageProps } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NotificationListItem } from './components/notification-list-item';
 import { ThreadDetail } from './components/thread-detail';
 import { isThreadUnread, type NotificationMessage, type NotificationThread } from './types';
@@ -21,9 +21,38 @@ interface Props {
 export default function NotificationsIndex({ threads: initialThreads }: Props) {
     const { t } = useTranslations();
     const { auth } = usePage<PageProps>().props;
+    const pageUrl = usePage().url;
     const [threads, setThreads] = useState<NotificationThread[]>(initialThreads);
-    const [selectedThreadId, setSelectedThreadId] = useState<number | null>(null);
+    // A `?thread=<id>` param (e.g. the annotation page's "See Reply" link) deep-links
+    // to a thread. Resolved once, and only if it exists in the initial list.
+    const [initialThreadId] = useState<number | null>(() => {
+        const query = pageUrl.split('?')[1];
+        const raw = query ? new URLSearchParams(query).get('thread') : null;
+        const id = raw ? Number(raw) : NaN;
+        if (!Number.isInteger(id)) return null;
+        return initialThreads.some((thread) => thread.id === id) ? id : null;
+    });
+    const [selectedThreadId, setSelectedThreadId] = useState<number | null>(initialThreadId);
     const [showUnreadOnly, setShowUnreadOnly] = useState(false);
+
+    // Mark the deep-linked thread read on mount (mirrors handleSelect's server call).
+    // setThreads is a stable dispatcher, so this runs once for a given initialThreadId.
+    useEffect(() => {
+        if (initialThreadId === null) return;
+        setThreads((current) =>
+            current.map((thread) =>
+                thread.id === initialThreadId ? { ...thread, is_read: true } : thread
+            )
+        );
+        apiFetchWithFlash(route('notifications.read', initialThreadId), { method: 'POST' }).catch(
+            () =>
+                setThreads((current) =>
+                    current.map((thread) =>
+                        thread.id === initialThreadId ? { ...thread, is_read: false } : thread
+                    )
+                )
+        );
+    }, [initialThreadId]);
 
     const selectedThread = threads.find((thread) => thread.id === selectedThreadId) ?? null;
     // Keep the selected thread visible while the unread filter is on, even
