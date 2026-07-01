@@ -507,7 +507,9 @@ export default function AnnotationPage({
                                         disabled={!canSubmit}
                                         className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 disabled:hover:bg-brand-blue-700 flex h-11 min-w-[160px] touch-manipulation items-center justify-center gap-1.5 rounded-full px-6 text-base font-semibold text-white transition-colors hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
-                                        {t('annotation.submit')}
+                                        {can_submit_all_pending
+                                            ? t('annotation.save')
+                                            : t('annotation.submit')}
                                         <CheckIcon className="size-4" aria-hidden="true" />
                                     </button>
                                 )}

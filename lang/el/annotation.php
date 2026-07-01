@@ -51,6 +51,7 @@ return [
     'confidence_medium' => 'Μέτρια',
     'confidence_low' => 'Χαμηλή',
     'submit' => 'Υποβολή',
+    'save' => 'Αποθήκευση',
     'submit_success' => 'Η επισημείωση υποβλήθηκε.',
     'flag_success' => 'Το στιγμιότυπο επισημάνθηκε.',
     'submitted_button' => 'Υποβλήθηκε',
