@@ -13,7 +13,12 @@ final class DummyAnnotationTaskService extends AnnotationTaskService {
     public function save(int $annotationId, array $annotations, bool $pending, ?ConfidenceEnum $confidence): void {}
 
     /** @return array<string, mixed> */
-    public function getTaskRelatedData(int $datasetInstanceId, int $subProjectId): array {
+    public function getAnnotationSchema(int $projectId): array {
+        return [];
+    }
+
+    /** @return array<string, mixed> */
+    public function getTaskRelatedData(int $datasetInstanceId, int $projectId): array {
         return [];
     }
 

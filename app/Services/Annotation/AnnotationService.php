@@ -28,6 +28,7 @@ use App\Queries\Project\GetManagerIdsByProjectsQuery;
 use App\Queries\SubProject\GetAnnotationCountsBySubProjectsQuery;
 use App\Queries\SubProject\GetAnnotationsBySubProjectQuery;
 use App\Queries\SubProject\GetSubProjectByIdQuery;
+use App\Services\AnnotationTask\AnnotationTaskService;
 use App\Services\AnnotationTask\AnnotationTaskServiceFactory;
 use App\Services\Notification\FlagNotificationService;
 use App\Services\Notification\InstanceRelatedNotificationService;
@@ -68,7 +69,7 @@ readonly class AnnotationService {
         $rawConfidence = $request->string('confidence')->toString();
         $confidence = $rawConfidence !== '' ? ConfidenceEnum::from($rawConfidence) : null;
 
-        $taskType = $this->resolveTaskType($subProjectId);
+        $taskType = $this->resolveTaskContext($subProjectId)['taskType'];
         $this->taskServiceFactory->make($taskType)->save($annotationId, $annotations, $pending, $confidence);
 
         $subProject = $this->subProjectByIdQuery->get($subProjectId);
@@ -276,12 +277,13 @@ readonly class AnnotationService {
         return $result;
     }
 
-    private function resolveTaskType(int $subProjectId): AnnotationTaskTypeEnum {
+    /** @return array{taskType: AnnotationTaskTypeEnum, projectId: int} */
+    private function resolveTaskContext(int $subProjectId): array {
         $subProject = $this->subProjectByIdQuery->getWithProjectAndAnnotationTask($subProjectId);
         $project = $subProject->project ?? throw new RuntimeException(sprintf('SubProject %d has no parent project.', $subProjectId));
         $annotationTask = $project->annotationTask ?? throw new RuntimeException(sprintf('Project %d has no annotation task.', $project->id));
 
-        return $annotationTask->task_type;
+        return ['taskType' => $annotationTask->task_type, 'projectId' => $project->id];
     }
 
     private function getCanFlag(int $subProjectId, int $userId): bool {
@@ -342,18 +344,18 @@ readonly class AnnotationService {
     /** @return array<string, mixed> */
     private function getAnnotationTaskData(int $nextAnnotationId, int $subProjectId, int $userId): array {
         $annotation = $this->annotationByIdQuery->get($nextAnnotationId);
-        $taskType = $this->resolveTaskType($subProjectId);
-        $taskService = $this->taskServiceFactory->make($taskType);
+        $taskContext = $this->resolveTaskContext($subProjectId);
+        $taskService = $this->taskServiceFactory->make($taskContext['taskType']);
 
         return [
             'annotator_instance_index' => $annotation->annotator_instance_index,
-            'annotationData' => $this->getAnnotationData($nextAnnotationId, $userId),
-            ...$taskService->getTaskRelatedData($annotation->dataset_instance_id, $subProjectId),
+            'annotationData' => $this->getAnnotationData($nextAnnotationId, $userId, $taskService, $taskContext['projectId']),
+            ...$taskService->getTaskRelatedData($annotation->dataset_instance_id, $taskContext['projectId']),
         ];
     }
 
-    /** @return array{is_flagged: bool, flag_notification_thread_id: int|null, is_replied: bool|null, is_reply_read: bool|null, is_submitted: bool, annotations: array<string, mixed>|null, confidence: string|null} */
-    private function getAnnotationData(int $annotationId, int $userId): array {
+    /** @return array{is_flagged: bool, flag_notification_thread_id: int|null, is_replied: bool|null, is_reply_read: bool|null, is_submitted: bool, annotations: array<string, mixed>, confidence: string|null} */
+    private function getAnnotationData(int $annotationId, int $userId, AnnotationTaskService $taskService, int $projectId): array {
         $annotation = $this->annotationByIdQuery->getAnnotationData($annotationId);
 
         $flagThreadId = $annotation->flag_notification_thread_id;
@@ -366,13 +368,15 @@ readonly class AnnotationService {
             $isReplyRead = $status['is_reply_read'];
         }
 
+        $annotations = $annotation->annotations ?? $taskService->getAnnotationSchema($projectId);
+
         return [
             'is_flagged' => $annotation->isFlagged(),
             'flag_notification_thread_id' => $flagThreadId,
             'is_replied' => $isReplied,
             'is_reply_read' => $isReplyRead,
             'is_submitted' => $annotation->isAnnotated(),
-            'annotations' => $annotation->annotations,
+            'annotations' => $annotations,
             'confidence' => $annotation->confidence?->value,
         ];
     }
