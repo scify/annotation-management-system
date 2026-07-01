@@ -7,6 +7,7 @@ namespace App\Services\Annotation;
 use App\Data\AnnotationProgressStats;
 use App\Data\QuickLinkData;
 use App\Enums\AgreementEnum;
+use App\Enums\AnnotationInstanceFilterEnum;
 use App\Enums\AnnotationTaskTypeEnum;
 use App\Enums\ConfidenceEnum;
 use App\Http\Requests\Annotation\FlagAnnotationRequest;
@@ -72,8 +73,7 @@ readonly class AnnotationService {
         $this->taskServiceFactory->make($taskType)->save($annotationId, $annotations, $pending, $confidence);
     }
 
-    /** @return array<string, mixed> */
-    public function sendToManager(SendToManagerAnnotationRequest $request, int $subProjectId, int $userId): array {
+    public function sendToManager(SendToManagerAnnotationRequest $request, int $subProjectId, int $userId): void {
         $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
 
         if ($annotationAssignmentId !== null) {
@@ -107,21 +107,9 @@ readonly class AnnotationService {
                 $this->markMessageToManagersQuery->mark($annotationAssignmentId, $annotatorInstanceIndex, $notification->notification_thread_id);
             }
         }
-
-        $annotationSessionId = $request->integer('annotation_session_id');
-        $nextAnnotationId = $annotationAssignmentId !== null
-            ? $this->nextAnnotationIdQuery->get($annotationAssignmentId)
-            : null;
-
-        if ($annotationAssignmentId === null || $nextAnnotationId === null) {
-            return $this->getInitialViewData($subProjectId, $userId);
-        }
-
-        return $this->getDataForShowAnnotation($subProjectId, $userId, $annotationSessionId, $nextAnnotationId);
     }
 
-    /** @return array<string, mixed> */
-    public function flagInstance(FlagAnnotationRequest $request, int $subProjectId, int $userId): array {
+    public function flagInstance(FlagAnnotationRequest $request, int $subProjectId, int $userId): void {
         $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
 
         if ($annotationAssignmentId !== null) {
@@ -147,17 +135,6 @@ readonly class AnnotationService {
                 $notification->notification_thread_id,
             );
         }
-
-        $annotationSessionId = $request->integer('annotation_session_id');
-        $nextAnnotationId = $annotationAssignmentId !== null
-            ? $this->nextAnnotationIdQuery->get($annotationAssignmentId)
-            : null;
-
-        if ($annotationAssignmentId === null || $nextAnnotationId === null) {
-            return $this->getInitialViewData($subProjectId, $userId);
-        }
-
-        return $this->getDataForShowAnnotation($subProjectId, $userId, $annotationSessionId, $nextAnnotationId);
     }
 
     public function submitPending(int $subProjectId, int $userId): void {
@@ -175,7 +152,7 @@ readonly class AnnotationService {
     }
 
     /** @return array<string, mixed> */
-    public function getInitialViewData(int $subProjectId, int $userId): array {
+    public function getAnnotationViewData(int $subProjectId, int $userId, AnnotationInstanceFilterEnum $activeFilter): array {
         $flags = $this->getSubProjectSettings($subProjectId);
         $annotationAssignmentId = $this->annotationAssignmentIdQuery->get($subProjectId, $userId);
         $nextAnnotationId = $annotationAssignmentId !== null
@@ -188,35 +165,52 @@ readonly class AnnotationService {
             return [
                 'annotationAssignmentId' => $annotationAssignmentId,
                 'nextAnnotationId' => $nextAnnotationId,
-                ...$this->getDataForShowAnnotation($subProjectId, $userId, $annotationSessionId, $nextAnnotationId),
+                ...$this->getDataForShowAnnotation($subProjectId, $userId, $annotationSessionId, $nextAnnotationId, $activeFilter),
             ];
         }
 
-        return [
+        $stats = $this->fetchAnnotationStats($subProjectId, $userId);
+        $activeFilter = $this->resolveActiveFilter($activeFilter, $flags['can_submit_all_pending'], $stats);
+
+        $data = [
             'annotationAssignmentId' => $annotationAssignmentId,
             'nextAnnotationId' => $nextAnnotationId,
             'subProjectId' => $subProjectId,
             'can_navigate' => $flags['can_navigate'],
             'can_submit_all_pending' => $flags['can_submit_all_pending'],
-            'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $flags['can_navigate'], $userId, null),
+            'annotationProgressData' => $this->getAnnotationProgressData($stats, $flags['can_navigate'], $subProjectId, $userId, null),
             ...$this->getSubProjectNames($subProjectId),
         ];
+
+        if ($flags['can_navigate']) {
+            $data['instance_filters'] = $this->buildInstanceFilters($flags['can_submit_all_pending'], $activeFilter, $stats);
+        }
+
+        return $data;
     }
 
     /** @return array<string, mixed> */
-    public function getDataForShowAnnotation(int $subProjectId, int $userId, int $annotationSessionId, int $nextAnnotationId): array {
+    public function getDataForShowAnnotation(int $subProjectId, int $userId, int $annotationSessionId, int $nextAnnotationId, AnnotationInstanceFilterEnum $activeFilter): array {
         $flags = $this->getSubProjectSettings($subProjectId);
+        $stats = $this->fetchAnnotationStats($subProjectId, $userId);
+        $activeFilter = $this->resolveActiveFilter($activeFilter, $flags['can_submit_all_pending'], $stats);
 
-        return [
+        $data = [
             'subProjectId' => $subProjectId,
             'can_navigate' => $flags['can_navigate'],
             'can_submit_all_pending' => $flags['can_submit_all_pending'],
             'annotationSessionId' => $annotationSessionId,
             'can_flag' => $this->getCanFlag($subProjectId, $userId),
-            'annotationProgressData' => $this->getAnnotationProgressData($subProjectId, $flags['can_navigate'], $userId, $annotationSessionId),
+            'annotationProgressData' => $this->getAnnotationProgressData($stats, $flags['can_navigate'], $subProjectId, $userId, $annotationSessionId),
             'annotationTaskData' => $this->getAnnotationTaskData($nextAnnotationId, $subProjectId, $userId),
             ...$this->getSubProjectNames($subProjectId),
         ];
+
+        if ($flags['can_navigate']) {
+            $data['instance_filters'] = $this->buildInstanceFilters($flags['can_submit_all_pending'], $activeFilter, $stats);
+        }
+
+        return $data;
     }
 
     /**
@@ -284,6 +278,43 @@ readonly class AnnotationService {
         ];
     }
 
+    private function resolveActiveFilter(AnnotationInstanceFilterEnum $activeFilter, bool $canSubmitAllPending, AnnotationProgressStats $stats): AnnotationInstanceFilterEnum {
+        $canBeSelected = match ($activeFilter) {
+            AnnotationInstanceFilterEnum::All => true,
+            AnnotationInstanceFilterEnum::NotAnnotated => $stats->notAnnotatedCount > 0,
+            AnnotationInstanceFilterEnum::Pending => $canSubmitAllPending && $stats->pendingCount > 0,
+            AnnotationInstanceFilterEnum::Submitted => $stats->submittedCount > 0,
+        };
+
+        return $canBeSelected ? $activeFilter : AnnotationInstanceFilterEnum::All;
+    }
+
+    /**
+     * @return array<string, array{is_selected: bool, can_be_selected: bool}>
+     */
+    private function buildInstanceFilters(bool $canSubmitAllPending, AnnotationInstanceFilterEnum $activeFilter, AnnotationProgressStats $stats): array {
+        $filterKeys = $canSubmitAllPending
+            ? [AnnotationInstanceFilterEnum::All, AnnotationInstanceFilterEnum::NotAnnotated, AnnotationInstanceFilterEnum::Pending, AnnotationInstanceFilterEnum::Submitted]
+            : [AnnotationInstanceFilterEnum::All, AnnotationInstanceFilterEnum::NotAnnotated, AnnotationInstanceFilterEnum::Submitted];
+
+        $filters = [];
+        foreach ($filterKeys as $filter) {
+            $canBeSelected = match ($filter) {
+                AnnotationInstanceFilterEnum::All => true,
+                AnnotationInstanceFilterEnum::NotAnnotated => $stats->notAnnotatedCount > 0,
+                AnnotationInstanceFilterEnum::Pending => $canSubmitAllPending && $stats->pendingCount > 0,
+                AnnotationInstanceFilterEnum::Submitted => $stats->submittedCount > 0,
+            };
+
+            $filters[$filter->value] = [
+                'is_selected' => $filter === $activeFilter,
+                'can_be_selected' => $canBeSelected,
+            ];
+        }
+
+        return $filters;
+    }
+
     /** @return array{can_navigate: bool, can_submit_all_pending: bool} */
     private function getSubProjectSettings(int $subProjectId): array {
         $subProject = $this->subProjectByIdQuery->get($subProjectId);
@@ -294,12 +325,16 @@ readonly class AnnotationService {
         ];
     }
 
-    /** @return array<string, mixed> */
-    private function getAnnotationProgressData(int $subProjectId, bool $canNavigate, int $userId, ?int $annotationSessionId): array {
+    private function fetchAnnotationStats(int $subProjectId, int $userId): AnnotationProgressStats {
         $counts = $this->annotationCountsBySubProjectsQuery->get([$subProjectId], $userId);
-        $stats = AnnotationProgressStats::fromCounts(
+
+        return AnnotationProgressStats::fromCounts(
             $counts[$subProjectId] ?? ['pending_count' => 0, 'submitted_count' => 0, 'not_annotated_count' => 0],
         );
+    }
+
+    /** @return array<string, mixed> */
+    private function getAnnotationProgressData(AnnotationProgressStats $stats, bool $canNavigate, int $subProjectId, int $userId, ?int $annotationSessionId): array {
 
         $session = $annotationSessionId !== null ? $this->annotationSessionByIdQuery->get($annotationSessionId) : null;
         $flagCounts = $this->flaggedAnnotationCountsQuery->get($subProjectId, $userId);

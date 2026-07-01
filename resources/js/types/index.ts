@@ -280,6 +280,12 @@ export interface AnnotationItemData {
     annotationData?: AnnotationInstanceData;
 }
 
+/** "Show Instances" options (backend-driven); key is an AnnotationInstanceFilterEnum value. */
+export type AnnotationInstanceFilterMap = Record<
+    string,
+    { is_selected: boolean; can_be_selected: boolean }
+>;
+
 /** Props the annotation page receives from `AnnotationController@show`. */
 export interface AnnotationShowProps {
     subProjectId: number;
@@ -300,6 +306,8 @@ export interface AnnotationShowProps {
     annotationProgressData: AnnotationProgressData;
     /** Absent when there is no instance to annotate (`nextAnnotationId === null`). */
     annotationTaskData?: AnnotationItemData;
+    /** "Show Instances" filter options; present only when `can_navigate` is true. */
+    instance_filters?: AnnotationInstanceFilterMap;
 }
 
 export interface PlatformStats {

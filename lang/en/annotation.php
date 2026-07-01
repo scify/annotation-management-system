@@ -51,6 +51,8 @@ return [
     'confidence_medium' => 'Medium',
     'confidence_low' => 'Low',
     'submit' => 'Submit',
+    'submit_success' => 'Annotation submitted.',
+    'flag_success' => 'Instance flagged.',
     'submitted_button' => 'Submitted',
     'previous' => 'Previous',
     'next' => 'Next',

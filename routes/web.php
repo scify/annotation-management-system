@@ -95,6 +95,8 @@ Route::middleware(['auth'])->group(function (): void {
     Route::get('subprojects/{subProject}/annotation', [AnnotationController::class, 'show'])->name('annotation.show');
     Route::post('subprojects/{subProject}/annotation/submit-pending', [AnnotationController::class, 'submitPending'])->name('annotation.submit-pending');
     Route::post('subprojects/{subProject}/annotation/submit-annotation', [AnnotationController::class, 'submitAnnotation'])->name('annotation.submit-annotation');
+    Route::post('subprojects/{subProject}/annotation/previous', [AnnotationController::class, 'previous'])->name('annotation.previous');
+    Route::post('subprojects/{subProject}/annotation/next', [AnnotationController::class, 'next'])->name('annotation.next');
     Route::post('subprojects/{subProject}/annotation/flag-instance', [AnnotationController::class, 'flagInstance'])->name('annotation.flag-instance');
     Route::post('subprojects/{subProject}/annotation/send-to-manager', [AnnotationController::class, 'sendToManager'])->name('annotation.send-to-manager');
 });

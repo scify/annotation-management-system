@@ -69,6 +69,7 @@ export default function AnnotationPage({
     annotationSessionId,
     annotationProgressData,
     annotationTaskData,
+    instance_filters,
 }: AnnotationShowProps) {
     const { t, trans } = useTranslations();
 
@@ -124,8 +125,14 @@ export default function AnnotationPage({
     );
     const [isFlagged, setIsFlagged] = useState(instance?.flagged ?? false);
     const [showShortcuts, setShowShortcuts] = useState(true);
-    const [instanceFilter, setInstanceFilter] = useState('not_annotated');
     const [managerDialogOpen, setManagerDialogOpen] = useState(false);
+
+    // The active "Show Instances" filter is owned by the backend: it's whichever
+    // key is `is_selected` in the emitted `instance_filters` map (default: 'all').
+    const activeFilter =
+        (instance_filters &&
+            Object.keys(instance_filters).find((k) => instance_filters[k].is_selected)) ??
+        'all';
 
     // Submitting advances to the next instance via an Inertia re-render of this
     // same component, so local answer/flag state would otherwise persist across
@@ -151,11 +158,28 @@ export default function AnnotationPage({
         });
     }, []);
 
-    // Submit / Next / Previous all round-trip to the server, which owns which
-    // instance loads next (and, in a follow-up, persisting the current answer).
+    // Flag & Continue round-trips to the server, which owns which instance loads next.
     const goToServer = useCallback(
         () => router.visit(route('annotation.show', { subProject: subProjectId })),
         [subProjectId]
+    );
+
+    // Previous / Next navigation. The server owns the instance cursor; we pass the
+    // active instance filter so it can honour it. Redirects back to the annotation page.
+    const goToPrevious = useCallback(
+        () =>
+            router.post(route('annotation.previous', { subProject: subProjectId }), {
+                active_filter: activeFilter,
+            }),
+        [subProjectId, activeFilter]
+    );
+
+    const goToNext = useCallback(
+        () =>
+            router.post(route('annotation.next', { subProject: subProjectId }), {
+                active_filter: activeFilter,
+            }),
+        [subProjectId, activeFilter]
     );
 
     // Persist the current answer + confidence, then let the server hand back the
@@ -176,6 +200,7 @@ export default function AnnotationPage({
             annotations,
             pending: can_submit_all_pending,
             confidence,
+            active_filter: activeFilter,
         });
     }, [
         nextAnnotationId,
@@ -184,6 +209,7 @@ export default function AnnotationPage({
         subProjectId,
         answers,
         can_submit_all_pending,
+        activeFilter,
     ]);
 
     const toggleFlag = useCallback(() => setIsFlagged((flagged) => !flagged), []);
@@ -224,10 +250,10 @@ export default function AnnotationPage({
                     exit();
                     break;
                 case 'n':
-                    if (can_navigate) goToServer();
+                    if (can_navigate) goToNext();
                     break;
                 case 'u':
-                    if (can_navigate) goToServer();
+                    if (can_navigate) goToPrevious();
                     break;
                 case 'm':
                     if (canSendToManager) setManagerDialogOpen(true);
@@ -241,6 +267,8 @@ export default function AnnotationPage({
         return () => window.removeEventListener('keydown', handler);
     }, [
         goToServer,
+        goToPrevious,
+        goToNext,
         submitAnnotation,
         flagAction,
         exit,
@@ -259,20 +287,23 @@ export default function AnnotationPage({
                 {t('annotation.show_instances')}
             </span>
             <Select
-                value={instanceFilter}
-                onValueChange={setInstanceFilter}
+                value={activeFilter}
+                onValueChange={(value) =>
+                    router.get(route('annotation.show', { subProject: subProjectId }), {
+                        active_filter: value,
+                    })
+                }
                 aria-label={t('annotation.show_instances')}
             >
                 <SelectTrigger className="h-9 w-[200px] rounded-lg bg-white text-sm">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="not_annotated">
-                        {t('annotation.filter_not_annotated')}
-                    </SelectItem>
-                    <SelectItem value="pending">{t('annotation.filter_pending')}</SelectItem>
-                    <SelectItem value="submitted">{t('annotation.filter_submitted')}</SelectItem>
-                    <SelectItem value="all">{t('annotation.filter_all')}</SelectItem>
+                    {Object.entries(instance_filters ?? {}).map(([key, filter]) => (
+                        <SelectItem key={key} value={key} isDisabled={!filter.can_be_selected}>
+                            {t(`annotation.filter_${key}`)}
+                        </SelectItem>
+                    ))}
                 </SelectContent>
             </Select>
         </div>
@@ -443,8 +474,8 @@ export default function AnnotationPage({
                                 <div className="flex flex-col items-center gap-1">
                                     <button
                                         type="button"
-                                        onClick={goToServer}
-                                        className="focus-visible:outline-brand-blue-700 flex h-11 touch-manipulation items-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-base font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                                        onClick={goToPrevious}
+                                        className="focus-visible:outline-brand-blue-700 flex h-11 touch-manipulation items-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-base font-semibold text-slate-600 transition-colors hover:cursor-pointer hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                                     >
                                         <ChevronLeftIcon className="size-4" aria-hidden="true" />
                                         {t('annotation.previous')}
@@ -484,8 +515,8 @@ export default function AnnotationPage({
                                 <div className="flex flex-col items-center gap-1">
                                     <button
                                         type="button"
-                                        onClick={goToServer}
-                                        className="focus-visible:outline-brand-blue-700 flex h-11 touch-manipulation items-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-base font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                                        onClick={goToNext}
+                                        className="focus-visible:outline-brand-blue-700 flex h-11 touch-manipulation items-center gap-1.5 rounded-full border border-slate-300 bg-white px-5 text-base font-semibold text-slate-600 transition-colors hover:cursor-pointer hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                                     >
                                         {t('annotation.next')}
                                         <ChevronRightIcon className="size-4" aria-hidden="true" />

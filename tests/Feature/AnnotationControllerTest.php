@@ -95,11 +95,13 @@ describe('AnnotationController', function (): void {
                 ],
                 'pending' => true,
                 'confidence' => ConfidenceEnum::HIGH->value,
+                'active_filter' => 'all',
             ],
         );
 
         // Assert
-        $response->assertRedirect(route('annotation.show', ['subProject' => $subProject->id]));
+        $response->assertRedirect(route('annotation.show', ['subProject' => $subProject->id, 'active_filter' => 'all']));
+        $response->assertSessionHas('success', __('annotation.submit_success'));
 
         $annotation->refresh();
         expect($annotation->annotations)->toBe([
@@ -108,5 +110,52 @@ describe('AnnotationController', function (): void {
         ]);
         expect($annotation->pending)->toBeTrue();
         expect($annotation->confidence)->toBe(ConfidenceEnum::HIGH);
+    });
+
+    it('redirects to the show page on previous navigation', function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
+        $subProject = SubProject::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->post(
+            route('annotation.previous', ['subProject' => $subProject->id]),
+            ['active_filter' => 'pending'],
+        );
+
+        // Assert
+        $response->assertRedirect(route('annotation.show', ['subProject' => $subProject->id, 'active_filter' => 'pending']));
+    });
+
+    it('redirects to the show page on next navigation', function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
+        $subProject = SubProject::factory()->create();
+
+        // Act
+        $response = $this->actingAs($user)->post(
+            route('annotation.next', ['subProject' => $subProject->id]),
+        );
+
+        // Assert — no filter posted, so it defaults to 'all'
+        $response->assertRedirect(route('annotation.show', ['subProject' => $subProject->id, 'active_filter' => 'all']));
+    });
+
+    it('renders the show page for a given active filter', function (): void {
+        // Arrange
+        $user = User::factory()->create()->assignRole(RolesEnum::ANNOTATOR->value);
+        $subProject = SubProject::factory()->create(['flexible' => true, 'auto_submission' => false]);
+        AnnotationAssignment::factory()->create([
+            'user_id' => $user->id,
+            'sub_project_id' => $subProject->id,
+        ]);
+
+        // Act & Assert
+        $this->actingAs($user)
+            ->get(route('annotation.show', ['subProject' => $subProject->id, 'active_filter' => 'all']))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('annotation/show')
+                ->where('subProjectId', $subProject->id));
     });
 });

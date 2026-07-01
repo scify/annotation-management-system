@@ -8,7 +8,7 @@ use App\Enums\AnnotationInstanceFilterEnum;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class ShowAnnotationRequest extends FormRequest {
+class NextAnnotationRequest extends FormRequest {
     public function authorize(): bool {
         return true;
     }

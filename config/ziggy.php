@@ -27,5 +27,6 @@ return [
         'annotation.show', 'annotation.submit-pending', 'annotation.submit-annotation', 'annotation.flag-instance',
         'annotation.send-to-manager', 'notifications.reply', 'notifications.approve', 'notifications.reject',
         'notifications.send', 'projects.invite-manager', 'notifications.send-announcement',
+        'annotation.next', 'annotation.previous',
     ],
 ];
