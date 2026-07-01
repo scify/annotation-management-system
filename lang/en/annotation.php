@@ -51,6 +51,7 @@ return [
     'confidence_medium' => 'Medium',
     'confidence_low' => 'Low',
     'submit' => 'Submit',
+    'submitted_button' => 'Submitted',
     'previous' => 'Previous',
     'next' => 'Next',
     'hide_shortcuts' => 'Hide Shortcuts',

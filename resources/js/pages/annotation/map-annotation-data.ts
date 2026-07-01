@@ -29,6 +29,7 @@ export function toInstance(task: AnnotationItemData): AnnotationInstance {
         flagThreadId: task.annotationData?.flag_notification_thread_id ?? null,
         isReplied: task.annotationData?.is_replied ?? null,
         isReplyRead: task.annotationData?.is_reply_read ?? null,
+        submitted: task.annotationData?.is_submitted ?? false,
     };
 }
 

@@ -202,6 +202,8 @@ export interface AnnotationInstance {
     isReplied: boolean | null;
     /** Whether the annotator has read the latest manager reply; null when not flagged. */
     isReplyRead: boolean | null;
+    /** Whether this instance has already been submitted. */
+    submitted: boolean;
 }
 
 export interface AnnotationProgress {
@@ -247,6 +249,8 @@ export interface AnnotationInstanceData {
     is_reply_read: boolean | null;
     annotations: Record<string, unknown> | null;
     confidence: string | null;
+    /** Whether the annotator has already submitted this instance. Optional until the backend emits it. */
+    is_submitted?: boolean;
 }
 
 /**

@@ -241,14 +241,16 @@ export default function AnnotationPage({
                                     </span>
                                     {instance.isReplied ? (
                                         <span className="flex items-center gap-1.5 text-xs">
-                                            <span className="font-bold text-slate-800">
-                                                {t('annotation.replied')}
-                                            </span>
                                             {instance.isReplyRead === false && (
-                                                <span
-                                                    className="size-2 rounded-full bg-rose-500"
-                                                    aria-hidden="true"
-                                                />
+                                                <>
+                                                    <span className="font-bold text-slate-800">
+                                                        {t('annotation.replied')}
+                                                    </span>
+                                                    <span
+                                                        className="size-2 rounded-full bg-rose-500"
+                                                        aria-hidden="true"
+                                                    />
+                                                </>
                                             )}
                                             {instance.flagThreadId !== null && (
                                                 <Link
@@ -272,7 +274,7 @@ export default function AnnotationPage({
                                 <button
                                     type="button"
                                     onClick={flagAction}
-                                    disabled={!can_flag || isFlagged}
+                                    disabled={!can_flag || isFlagged || instance.flagged}
                                     aria-pressed={isFlagged}
                                     className={cn(
                                         'flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white',
@@ -351,15 +353,29 @@ export default function AnnotationPage({
                             )}
 
                             <div className="flex flex-col items-center gap-1">
-                                <button
-                                    type="button"
-                                    onClick={goToServer}
-                                    className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 flex h-11 min-w-[160px] touch-manipulation items-center justify-center gap-1.5 rounded-full px-6 text-base font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
-                                >
-                                    {t('annotation.submit')}
-                                    <CheckIcon className="size-4" aria-hidden="true" />
-                                </button>
-                                <ShortcutHint show={showShortcuts} keys="Enter" />
+                                {instance.submitted ? (
+                                    <button
+                                        type="button"
+                                        disabled
+                                        className="flex h-11 min-w-[160px] cursor-not-allowed touch-manipulation items-center justify-center gap-1.5 rounded-full bg-green-600 px-6 text-base font-semibold text-white"
+                                    >
+                                        {t('annotation.submitted_button')}
+                                        <CheckIcon className="size-4" aria-hidden="true" />
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={goToServer}
+                                        className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 flex h-11 min-w-[160px] touch-manipulation items-center justify-center gap-1.5 rounded-full px-6 text-base font-semibold text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                                    >
+                                        {t('annotation.submit')}
+                                        <CheckIcon className="size-4" aria-hidden="true" />
+                                    </button>
+                                )}
+                                <ShortcutHint
+                                    show={showShortcuts && !instance.submitted}
+                                    keys="Enter"
+                                />
                             </div>
 
                             {can_navigate && (

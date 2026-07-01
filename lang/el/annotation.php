@@ -51,6 +51,7 @@ return [
     'confidence_medium' => 'Μέτρια',
     'confidence_low' => 'Χαμηλή',
     'submit' => 'Υποβολή',
+    'submitted_button' => 'Υποβλήθηκε',
     'previous' => 'Προηγούμενο',
     'next' => 'Επόμενο',
     'hide_shortcuts' => 'Απόκρυψη Συντομεύσεων',
