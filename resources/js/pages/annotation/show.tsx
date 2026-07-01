@@ -1,4 +1,5 @@
 import { AnnotationQuestion } from '@/components/annotation/annotation-question';
+import { FlagAndContinueDialog } from '@/components/annotation/flag-and-continue-dialog';
 import { SendToManagerDialog } from '@/components/annotation/send-to-manager-dialog';
 import { ShortcutHint } from '@/components/annotation/shortcut-hint';
 import {
@@ -126,6 +127,7 @@ export default function AnnotationPage({
     const [isFlagged, setIsFlagged] = useState(instance?.flagged ?? false);
     const [showShortcuts, setShowShortcuts] = useState(true);
     const [managerDialogOpen, setManagerDialogOpen] = useState(false);
+    const [flagDialogOpen, setFlagDialogOpen] = useState(false);
 
     // The active "Show Instances" filter is owned by the backend: it's whichever
     // key is `is_selected` in the emitted `instance_filters` map (default: 'all').
@@ -161,12 +163,6 @@ export default function AnnotationPage({
             return { ...prev, [questionId]: { ...current, ...patch } };
         });
     }, []);
-
-    // Flag & Continue round-trips to the server, which owns which instance loads next.
-    const goToServer = useCallback(
-        () => router.visit(route('annotation.show', { subProject: subProjectId })),
-        [subProjectId]
-    );
 
     // Previous / Next navigation. The server owns the instance cursor; we pass the
     // active instance filter so it can honour it. Redirects back to the annotation page.
@@ -218,13 +214,6 @@ export default function AnnotationPage({
         confidenceRequired,
     ]);
 
-    const toggleFlag = useCallback(() => setIsFlagged((flagged) => !flagged), []);
-
-    const flagAction = useCallback(() => {
-        toggleFlag();
-        if (!can_navigate) goToServer(); // "Flag & Continue"
-    }, [toggleFlag, can_navigate, goToServer]);
-
     const exit = useCallback(() => router.visit(route('dashboard')), []);
 
     // Keyboard shortcuts (mirrors the hints shown in the panel).
@@ -250,7 +239,7 @@ export default function AnnotationPage({
                     submitAnnotation();
                     break;
                 case 'f':
-                    if (can_flag) flagAction();
+                    if (can_flag) setFlagDialogOpen(true);
                     break;
                 case 'e':
                     exit();
@@ -272,11 +261,9 @@ export default function AnnotationPage({
         window.addEventListener('keydown', handler);
         return () => window.removeEventListener('keydown', handler);
     }, [
-        goToServer,
         goToPrevious,
         goToNext,
         submitAnnotation,
-        flagAction,
         exit,
         can_navigate,
         hasQuestion,
@@ -301,12 +288,17 @@ export default function AnnotationPage({
                 }
                 aria-label={t('annotation.show_instances')}
             >
-                <SelectTrigger className="h-9 w-[200px] rounded-lg bg-white text-sm">
+                <SelectTrigger className="h-9 w-[200px] rounded-lg bg-white text-sm hover:cursor-pointer">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                     {Object.entries(instance_filters ?? {}).map(([key, filter]) => (
-                        <SelectItem key={key} value={key} isDisabled={!filter.can_be_selected}>
+                        <SelectItem
+                            key={key}
+                            value={key}
+                            isDisabled={!filter.can_be_selected}
+                            className="hover:cursor-pointer"
+                        >
                             {t(`annotation.filter_${key}`)}
                         </SelectItem>
                     ))}
@@ -333,7 +325,7 @@ export default function AnnotationPage({
                 <button
                     type="button"
                     onClick={exit}
-                    className="focus-visible:outline-brand-blue-700 flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="focus-visible:outline-brand-blue-700 flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-600 transition-colors hover:cursor-pointer hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                     <LogOutIcon className="size-4" aria-hidden="true" />
                     {t('annotation.exit_annotation')}
@@ -360,6 +352,18 @@ export default function AnnotationPage({
                     subProjectName={subProjectName}
                     instanceIndex={instance.index}
                     annotationSessionId={annotationSessionId}
+                />
+            )}
+
+            {instance && (
+                <FlagAndContinueDialog
+                    open={flagDialogOpen}
+                    onClose={() => setFlagDialogOpen(false)}
+                    subProjectId={subProjectId}
+                    subProjectName={subProjectName}
+                    instanceIndex={instance.index}
+                    annotationSessionId={annotationSessionId}
+                    activeFilter={activeFilter}
                 />
             )}
 
@@ -407,20 +411,18 @@ export default function AnnotationPage({
                             <div className="flex flex-col items-start gap-1">
                                 <button
                                     type="button"
-                                    onClick={flagAction}
+                                    onClick={() => setFlagDialogOpen(true)}
                                     disabled={!can_flag || isFlagged || instance.flagged}
                                     aria-pressed={isFlagged}
                                     className={cn(
-                                        'flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white',
+                                        'flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border px-3 text-sm font-semibold transition-colors hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white',
                                         isFlagged
                                             ? 'border-red-500 bg-red-50 text-red-700'
                                             : 'border-red-200 bg-white text-red-600 hover:bg-red-50'
                                     )}
                                 >
                                     <FlagIcon className="size-4" aria-hidden="true" />
-                                    {!can_navigate
-                                        ? t('annotation.flag_and_continue')
-                                        : t('annotation.flag')}
+                                    {t('annotation.flag_and_continue')}
                                 </button>
                                 <ShortcutHint show={showShortcuts && can_flag} keys="F" />
                             </div>

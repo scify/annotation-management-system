@@ -40,8 +40,8 @@ class AnnotationController extends Controller {
 
         $this->annotationService->flagInstance($request, $subProject, $user->id);
 
-        return to_route('annotation.show', ['subProject' => $subProject])
-            ->with('success', __('annotation.'));
+        return to_route('annotation.show', ['subProject' => $subProject, 'active_filter' => $request->activeFilter()->value])
+            ->with('success', __('annotation.flag_success'));
     }
 
     public function submitAnnotation(SubmitAnnotationRequest $request, int $subProject): RedirectResponse {
