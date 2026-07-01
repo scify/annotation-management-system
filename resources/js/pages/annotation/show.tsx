@@ -148,8 +148,12 @@ export default function AnnotationPage({
 
     const getAnswer = (questionId: number): QuestionAnswer => answers[questionId] ?? EMPTY_ANSWER;
 
-    // Submitting requires a selected answer; gates the Submit button and Enter shortcut.
-    const hasAnswer = getAnswer(SAME_MEANING_QUESTION_ID).answer != null;
+    // Submitting requires a selected answer — and, when the task offers a confidence
+    // rating, a selected confidence too. Gates the Submit button and Enter shortcut.
+    const confidenceRequired = annotationTaskData?.allow_confidence ?? false;
+    const currentAnswer = getAnswer(SAME_MEANING_QUESTION_ID);
+    const canSubmit =
+        currentAnswer.answer != null && (!confidenceRequired || currentAnswer.parameter != null);
 
     const updateAnswer = useCallback((questionId: number, patch: Partial<QuestionAnswer>) => {
         setAnswers((prev) => {
@@ -190,6 +194,7 @@ export default function AnnotationPage({
         const { answer: selectedKey, parameter: confidence } =
             answers[SAME_MEANING_QUESTION_ID] ?? EMPTY_ANSWER;
         if (selectedKey == null) return; // an answer must be selected to submit
+        if (confidenceRequired && confidence == null) return; // confidence is required when offered
         const annotations = Object.keys(annotationsMap).map((key) => ({
             key,
             is_selected: key === selectedKey,
@@ -210,6 +215,7 @@ export default function AnnotationPage({
         answers,
         can_submit_all_pending,
         activeFilter,
+        confidenceRequired,
     ]);
 
     const toggleFlag = useCallback(() => setIsFlagged((flagged) => !flagged), []);
@@ -498,7 +504,7 @@ export default function AnnotationPage({
                                     <button
                                         type="button"
                                         onClick={submitAnnotation}
-                                        disabled={!hasAnswer}
+                                        disabled={!canSubmit}
                                         className="bg-brand-blue-700 hover:bg-brand-blue-600 focus-visible:outline-brand-blue-700 disabled:hover:bg-brand-blue-700 flex h-11 min-w-[160px] touch-manipulation items-center justify-center gap-1.5 rounded-full px-6 text-base font-semibold text-white transition-colors hover:cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {t('annotation.submit')}
@@ -506,7 +512,7 @@ export default function AnnotationPage({
                                     </button>
                                 )}
                                 <ShortcutHint
-                                    show={showShortcuts && !instance.submitted && hasAnswer}
+                                    show={showShortcuts && !instance.submitted && canSubmit}
                                     keys="Enter"
                                 />
                             </div>
