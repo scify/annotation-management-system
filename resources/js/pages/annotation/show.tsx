@@ -301,12 +301,17 @@ export default function AnnotationPage({
                 }
                 aria-label={t('annotation.show_instances')}
             >
-                <SelectTrigger className="h-9 w-[200px] rounded-lg bg-white text-sm">
+                <SelectTrigger className="h-9 w-[200px] rounded-lg bg-white text-sm hover:cursor-pointer">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                     {Object.entries(instance_filters ?? {}).map(([key, filter]) => (
-                        <SelectItem key={key} value={key} isDisabled={!filter.can_be_selected}>
+                        <SelectItem
+                            key={key}
+                            value={key}
+                            isDisabled={!filter.can_be_selected}
+                            className="hover:cursor-pointer"
+                        >
                             {t(`annotation.filter_${key}`)}
                         </SelectItem>
                     ))}
@@ -333,7 +338,7 @@ export default function AnnotationPage({
                 <button
                     type="button"
                     onClick={exit}
-                    className="focus-visible:outline-brand-blue-700 flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                    className="focus-visible:outline-brand-blue-700 flex h-9 touch-manipulation items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-600 transition-colors hover:cursor-pointer hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
                     <LogOutIcon className="size-4" aria-hidden="true" />
                     {t('annotation.exit_annotation')}

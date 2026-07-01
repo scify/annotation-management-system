@@ -75,13 +75,13 @@ export function AnnotationSidebar({
                         )}
                     </span>
                     <div className="relative h-2 w-full" role="presentation">
-                        <div className="bg-brand-blue-400 absolute inset-0 rounded-full" />
+                        <div className="absolute inset-0 rounded-full bg-white" />
                         <div
                             className="bg-brand-yellow-400 absolute inset-y-0 left-0 rounded-full"
                             style={{ width: `${submittedAndSecondaryWidth}%` }}
                         />
                         <div
-                            className="bg-brand-blue-800 absolute inset-y-0 left-0 rounded-full"
+                            className="bg-brand-blue-400 absolute inset-y-0 left-0 rounded-full"
                             style={{ width: `${submittedWidth}%` }}
                             role="progressbar"
                             aria-valuenow={progress.submittedPct}
@@ -93,11 +93,11 @@ export function AnnotationSidebar({
                     {/* Legend */}
                     <div className="mt-1 flex flex-col gap-1 text-xs font-medium text-white">
                         <LegendEntry
-                            color="bg-brand-blue-800"
+                            color="bg-brand-yellow-400"
                             label={`${secondaryLabel} (${secondary})`}
                         />
                         <LegendEntry
-                            color="bg-brand-blue-400"
+                            color="bg-white"
                             label={`${t('annotation.not_annotated')} (${progress.notAnnotated.toLocaleString()})`}
                         />
                     </div>
