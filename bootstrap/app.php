@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Support\Env;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
+use Sentry\Laravel\Integration;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -91,6 +92,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        Integration::handles($exceptions);
+
         $exceptions->render(function (NotFoundHttpException $notFoundHttpException, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
