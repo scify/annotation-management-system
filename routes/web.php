@@ -20,11 +20,10 @@ Route::get('/', fn () => redirect()->to(route('dashboard'))->withHeaders([
     'Expires' => '0',
 ]))->name('home');
 
+Route::get('/debug-glitchtip', function (): void {
+    throw new Exception('Test GlitchTip error!!');
+});
 Route::middleware(['auth'])->group(function (): void {
-
-    Route::get('/debug-glitchtip', function (): void {
-        throw new Exception('Test GlitchTip error!!');
-    });
 
     // ----- Dashboard -----
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
