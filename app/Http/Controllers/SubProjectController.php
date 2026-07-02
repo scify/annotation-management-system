@@ -13,13 +13,11 @@ use App\Http\Requests\SubProject\SubProjectStoreRequest;
 use App\Http\Requests\SubProject\SubProjectUpdateRequest;
 use App\Models\Project;
 use App\Models\SubProject;
-use App\Models\User;
 use App\Services\SubProject\SubProjectReadService;
 use App\Services\SubProject\SubProjectWriteService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 use Throwable;
@@ -89,8 +87,7 @@ class SubProjectController extends Controller {
 
         $data = $this->subProjectReadService->getDataForAddAnnotators($projectId, $subprojectId);
 
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
         $this->dumpDebugJson($data, 'subproject-add-annotators-data-' . $user->role . '.json');
 
         return Inertia::render('sub-projects/add-annotators', $data);

@@ -4,10 +4,24 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 abstract class Controller {
+    /**
+     * The authenticated user, narrowed to the concrete User model.
+     * Routes are behind `auth` middleware, so this is a type-narrowing guard;
+     * the 401 is a defensive fallback that should not trigger in practice.
+     */
+    protected function authUser(): User {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 401);
+
+        return $user;
+    }
+
     protected function dumpDebugJson(mixed $data, string $filename): void {
         if (! config('app.debug')) {
             return;

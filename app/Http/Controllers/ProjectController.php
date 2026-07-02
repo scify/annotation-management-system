@@ -35,7 +35,6 @@ use App\Services\Project\ProjectWriteService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -60,8 +59,7 @@ class ProjectController extends Controller {
     public function index(): Response {
         $this->authorize('viewAny', Project::class);
 
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $data = $this->projectReadService->getDataForProjectsPage($user);
 
@@ -73,8 +71,7 @@ class ProjectController extends Controller {
     public function create(): Response {
         $this->authorize('create', Project::class);
 
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $data = $this->projectReadService->getDataForCreateProject($user);
 
@@ -87,8 +84,7 @@ class ProjectController extends Controller {
      * @throws Throwable
      */
     public function store(ProjectStoreRequest $request): RedirectResponse {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $project = $this->projectService->storeProject($user, $request->validated());
 
@@ -130,8 +126,7 @@ class ProjectController extends Controller {
     public function showAddAnnotators(int $id): Response {
         $this->authorize('viewAny', Project::class);
 
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $data = $this->projectReadService->getDataForAddAnnotators($id, $user);
 
@@ -184,8 +179,7 @@ class ProjectController extends Controller {
 
         $data = $this->projectReadService->getDataForShowProject($id);
 
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
         $this->dumpDebugJson($data, 'project-show-data-' . $user->role . '.json');
 
         return Inertia::render('projects/show', $data);
@@ -196,8 +190,7 @@ class ProjectController extends Controller {
      * @throws JsonException
      */
     public function acceptOwnership(AcceptOwnershipTransferRequest $request, int $id): JsonResponse {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $oldOwnerUserId = $this->projectManagerService->acceptOwnershipTransfer($id, $user->id);
 
@@ -212,8 +205,7 @@ class ProjectController extends Controller {
      * @throws JsonException
      */
     public function rejectOwnership(RejectOwnershipTransferRequest $request, int $id): JsonResponse {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $this->projectManagerService->rejectOwnershipTransfer($id, $user->id);
 
@@ -240,8 +232,7 @@ class ProjectController extends Controller {
     }
 
     public function inviteManager(InviteManagerByEmailRequest $request, int $id): JsonResponse {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $email = $request->string('email')->toString();
         $invitee = $this->projectManagerService->findInvitableManagerByEmail($email);
@@ -260,8 +251,7 @@ class ProjectController extends Controller {
     }
 
     public function requestToLeave(RequestToLeaveRequest $request, int $id): JsonResponse {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $this->projectManagerService->requestToLeave($id, $user->id);
 
@@ -279,8 +269,7 @@ class ProjectController extends Controller {
      * @throws JsonException
      */
     public function cancelRequestToLeave(CancelRequestToLeaveRequest $request, int $id): JsonResponse {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $this->projectManagerService->cancelRequestToLeave($id, $user->id);
 
@@ -325,8 +314,7 @@ class ProjectController extends Controller {
      * @throws JsonException
      */
     public function cancelOwnership(CancelOwnershipTransferRequest $request, int $id): JsonResponse {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
         $proposedOwnerUserId = $request->integer('user_id');
 
         $this->projectManagerService->cancelOwnershipTransfer($id, $proposedOwnerUserId);
@@ -339,8 +327,7 @@ class ProjectController extends Controller {
     }
 
     public function proposeOwnership(ProposeOwnershipTransferRequest $request, int $id): JsonResponse {
-        $user = $request->user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         try {
             $this->projectManagerService->proposeOwnershipTransfer($id, $request->integer('user_id'));

@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Services\Monitor\MonitorAnnotatorHistoryTabService;
 use App\Services\Monitor\MonitorAnnotatorProgressTabService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,8 +21,7 @@ class MonitorController extends Controller {
     }
 
     public function annotatorProgress(): Response {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $data = $this->annotatorProgressTabService->getData($user);
 
@@ -34,8 +31,7 @@ class MonitorController extends Controller {
     }
 
     public function annotatorHistory(): Response {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $data = $this->annotatorHistoryTabService->getData($user);
 

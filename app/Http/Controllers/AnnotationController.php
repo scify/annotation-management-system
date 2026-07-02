@@ -12,11 +12,9 @@ use App\Http\Requests\Annotation\SendToManagerAnnotationRequest;
 use App\Http\Requests\Annotation\ShowAnnotationRequest;
 use App\Http\Requests\Annotation\SubmitAnnotationRequest;
 use App\Http\Requests\Annotation\SubmitPendingAnnotationRequest;
-use App\Models\User;
 use App\Services\Annotation\AnnotationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,8 +24,7 @@ class AnnotationController extends Controller {
     ) {}
 
     public function sendToManager(SendToManagerAnnotationRequest $request, int $subProject): JsonResponse {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $this->annotationService->sendToManager($request, $subProject, $user->id);
 
@@ -35,8 +32,7 @@ class AnnotationController extends Controller {
     }
 
     public function flagInstance(FlagAnnotationRequest $request, int $subProject): RedirectResponse {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $this->annotationService->flagInstance($request, $subProject, $user->id);
 
@@ -45,8 +41,7 @@ class AnnotationController extends Controller {
     }
 
     public function submitAnnotation(SubmitAnnotationRequest $request, int $subProject): RedirectResponse {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $this->annotationService->submitAnnotation($request, $subProject, $user->id);
 
@@ -55,22 +50,19 @@ class AnnotationController extends Controller {
     }
 
     public function previous(PreviousAnnotationRequest $request, int $subProject): RedirectResponse {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $this->authUser();
 
         return to_route('annotation.show', ['subProject' => $subProject, 'active_filter' => $request->activeFilter()->value]);
     }
 
     public function next(NextAnnotationRequest $request, int $subProject): RedirectResponse {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $this->authUser();
 
         return to_route('annotation.show', ['subProject' => $subProject, 'active_filter' => $request->activeFilter()->value]);
     }
 
     public function submitPending(SubmitPendingAnnotationRequest $request, int $subProject): RedirectResponse {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $this->annotationService->submitPending($subProject, $user->id);
 
@@ -79,8 +71,7 @@ class AnnotationController extends Controller {
     }
 
     public function exitAnnotation(ExitAnnotationRequest $request, int $subProject): RedirectResponse {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $this->authUser();
 
         $this->annotationService->stopSession($request->annotationSessionId());
 
@@ -89,8 +80,7 @@ class AnnotationController extends Controller {
     }
 
     public function show(ShowAnnotationRequest $request, int $subProject): Response {
-        $user = Auth::user();
-        abort_unless($user instanceof User, 401);
+        $user = $this->authUser();
 
         $data = $this->annotationService->getAnnotationViewData($subProject, $user->id, $request->activeFilter(), $request->annotationSessionId());
 
