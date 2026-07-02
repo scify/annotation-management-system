@@ -45,10 +45,9 @@ class DummyNotificationsSeeder extends Seeder {
             ->select('annotations.id', 'annotations.annotation_assignment_id', 'annotations.annotator_instance_index')
             ->first();
 
-        /** @var int|null $batch1AnnotatorUserId */
-        $batch1AnnotatorUserId = $batch1Annotation !== null
-            ? AnnotationAssignment::query()->where('id', $batch1Annotation->annotation_assignment_id)->value('user_id')
-            : null;
+        if ($batch1Annotation !== null) {
+            AnnotationAssignment::query()->where('id', $batch1Annotation->annotation_assignment_id)->value('user_id');
+        }
 
         $genericService = resolve(GenericNotificationService::class);
         $warningService = resolve(WarningNotificationService::class);
@@ -81,10 +80,9 @@ class DummyNotificationsSeeder extends Seeder {
             senderUserId: $carol->id,
         );
 
-        $batch1AnnotationUrl = 'subprojects/' . $batch1->id . '/annotation'
-            . ($batch1Annotation !== null && $batch1AnnotatorUserId !== null
-                ? '?user_id=' . $batch1AnnotatorUserId . '&annotator_instance_index=' . $batch1Annotation->annotator_instance_index
-                : '');
+        $batch1AnnotationUrl = $batch1Annotation !== null
+            ? 'subprojects/' . $batch1->id . '/annotation/' . $batch1Annotation->id
+            : 'subprojects/' . $batch1->id . '/annotation';
 
         $flagService->createNotification(
             recipientUserIds: [$carol->id],
