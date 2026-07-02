@@ -108,7 +108,7 @@ readonly class AnnotationService {
                     recipientUserIds: $recipientIds,
                     body: $message,
                     senderUserId: $userId,
-                    firstQuickLink: new QuickLinkData('Instance#', route('annotation.show', ['subProject' => $subProjectId, 'user_id' => $userId, 'annotator_instance_index' => $annotatorInstanceIndex]), $annotationId),
+                    firstQuickLink: new QuickLinkData('Instance#', $annotationId !== null ? route('annotation.instance.show', ['subProject' => $subProjectId, 'annotationId' => $annotationId]) : route('annotation.show', ['subProject' => $subProjectId]), $annotationId),
                     secondQuickLink: new QuickLinkData('Project', route('projects.show', ['id' => $project->id])),
                 );
                 $this->markMessageToManagersQuery->mark($annotationAssignmentId, $annotatorInstanceIndex, $notification->notification_thread_id);
@@ -132,7 +132,7 @@ readonly class AnnotationService {
                 recipientUserIds: $recipientIds,
                 body: $request->string('flag_message')->toString(),
                 senderUserId: $userId,
-                firstQuickLink: new QuickLinkData('Flagged Instance#', route('annotation.show', ['subProject' => $subProjectId, 'user_id' => $userId, 'annotator_instance_index' => $annotatorInstanceIndex]), $annotationId),
+                firstQuickLink: new QuickLinkData('Flagged Instance#', $annotationId !== null ? route('annotation.instance.show', ['subProject' => $subProjectId, 'annotationId' => $annotationId]) : route('annotation.show', ['subProject' => $subProjectId]), $annotationId),
                 secondQuickLink: new QuickLinkData('Project', route('projects.show', ['id' => $project->id])),
             );
 
@@ -263,6 +263,22 @@ readonly class AnnotationService {
         }
 
         return $result;
+    }
+
+    /** @return array<string, mixed> */
+    public function getAnnotationInstanceViewData(int $subProjectId, int $annotationId): array {
+        $annotation = $this->annotationByIdQuery->get($annotationId);
+        $taskContext = $this->resolveTaskContext($subProjectId);
+        $taskService = $this->taskServiceFactory->make($taskContext['taskType']);
+
+        return [
+            'subProjectId' => $subProjectId,
+            'annotationTaskData' => [
+                'annotator_instance_index' => $annotation->annotator_instance_index,
+                ...$taskService->getTaskRelatedData($annotation->dataset_instance_id, $taskContext['projectId']),
+            ],
+            ...$this->getSubProjectNames($subProjectId),
+        ];
     }
 
     /** @return array{taskType: AnnotationTaskTypeEnum, projectId: int} */
