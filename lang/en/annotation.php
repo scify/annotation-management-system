@@ -83,4 +83,12 @@ return [
         'send' => 'Send',
         'cancel' => 'Cancel',
     ],
+
+    // Submit All Pending dialog
+    'submit_all_pending_dialog' => [
+        'title' => 'Submit All Pending',
+        'description' => 'This will finalize all of your pending annotations for this subproject at once. Once submitted, they can no longer be edited.',
+        'confirm' => 'Submit All',
+        'cancel' => 'Cancel',
+    ],
 ];

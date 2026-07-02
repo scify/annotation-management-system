@@ -2,6 +2,7 @@ import { AnnotationQuestion } from '@/components/annotation/annotation-question'
 import { FlagAndContinueDialog } from '@/components/annotation/flag-and-continue-dialog';
 import { SendToManagerDialog } from '@/components/annotation/send-to-manager-dialog';
 import { ShortcutHint } from '@/components/annotation/shortcut-hint';
+import { SubmitPendingDialog } from '@/components/annotation/submit-pending-dialog';
 import {
     Select,
     SelectContent,
@@ -128,6 +129,7 @@ export default function AnnotationPage({
     const [showShortcuts, setShowShortcuts] = useState(true);
     const [managerDialogOpen, setManagerDialogOpen] = useState(false);
     const [flagDialogOpen, setFlagDialogOpen] = useState(false);
+    const [submitPendingDialogOpen, setSubmitPendingDialogOpen] = useState(false);
 
     // The active "Show Instances" filter is owned by the backend: it's whichever
     // key is `is_selected` in the emitted `instance_filters` map (default: 'all').
@@ -352,8 +354,16 @@ export default function AnnotationPage({
             canSubmitAllPending={can_submit_all_pending}
             data={layoutData}
             headerRight={headerRight}
+            onSubmitAllPending={() => setSubmitPendingDialogOpen(true)}
         >
             <Head title={t('annotation.title')} />
+
+            <SubmitPendingDialog
+                open={submitPendingDialogOpen}
+                onClose={() => setSubmitPendingDialogOpen(false)}
+                subProjectId={subProjectId}
+                subProjectName={subProjectName}
+            />
 
             {instance && (
                 <SendToManagerDialog

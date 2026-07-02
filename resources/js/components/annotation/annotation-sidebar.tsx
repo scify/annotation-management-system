@@ -111,7 +111,7 @@ export function AnnotationSidebar({
                     <button
                         type="button"
                         onClick={onSubmitAllPending}
-                        className="bg-brand-yellow-400 focus-visible:outline-brand-yellow-400 flex h-10 w-full touch-manipulation items-center justify-center rounded-lg text-sm font-semibold text-slate-800 transition-colors hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
+                        className="focus-visible:outline-brand-yellow-400 flex h-10 w-full touch-manipulation items-center justify-center rounded-lg text-sm font-semibold text-slate-800 transition-colors hover:cursor-pointer hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2"
                     >
                         {t('annotation.submit_all_pending')}
                     </button>
