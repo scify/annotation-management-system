@@ -31,6 +31,28 @@ find "$LARAVEL_ROOT/storage" "$LARAVEL_ROOT/bootstrap/cache" -type d -exec chmod
 find "$LARAVEL_ROOT/storage" "$LARAVEL_ROOT/bootstrap/cache" -type f -exec chmod 664 {} \;
 sudo chown -R "$OWNER:$GROUP" "$LARAVEL_ROOT/storage" "$LARAVEL_ROOT/bootstrap/cache"
 
+# --- Drift-proofing (so this script only needs to run once) ---
+# php-fpm/queue:work run as $GROUP and create new cache/session/view files
+# continuously; $OWNER runs artisan. Both must keep write access to everything
+# created later, without re-running this script.
+
+# setgid: new files/dirs under these trees inherit $GROUP instead of the
+# creating user's primary group (fixes the ownership half of the drift).
+echo "🧬 Applying setgid so new files inherit the group..."
+sudo find "$LARAVEL_ROOT/storage" "$LARAVEL_ROOT/bootstrap/cache" -type d -exec chmod g+s {} \;
+
+# Default ACLs: force group-write (and $OWNER-write) on everything created
+# later, regardless of the creating process's umask. This is what actually
+# stops the drift — standard umask-based perms cannot.
+if command -v setfacl >/dev/null 2>&1; then
+  echo "🔐 Applying default ACLs (drift-proof group-write)..."
+  sudo setfacl -R    -m g:"$GROUP":rwX -m u:"$OWNER":rwX "$LARAVEL_ROOT/storage" "$LARAVEL_ROOT/bootstrap/cache"
+  sudo setfacl -R -d -m g:"$GROUP":rwX -m u:"$OWNER":rwX "$LARAVEL_ROOT/storage" "$LARAVEL_ROOT/bootstrap/cache"
+else
+  echo "⚠️  setfacl not found — install the 'acl' package (e.g. apt install acl) and re-run."
+  echo "    Without default ACLs, permissions WILL drift and you'll have to re-run this script."
+fi
+
 # Make executable project-level tools
 echo "🔧 Making specific scripts executable..."
 
