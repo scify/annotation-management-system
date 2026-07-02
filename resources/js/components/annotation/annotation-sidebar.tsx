@@ -93,6 +93,10 @@ export function AnnotationSidebar({
                     {/* Legend */}
                     <div className="mt-1 flex flex-col gap-1 text-xs font-medium text-white">
                         <LegendEntry
+                            color="bg-brand-blue-400"
+                            label={`${t('annotation.submitted')} (${progress.submitted.toLocaleString()})`}
+                        />
+                        <LegendEntry
                             color="bg-brand-yellow-400"
                             label={`${secondaryLabel} (${secondary})`}
                         />
