@@ -28,6 +28,6 @@ return [
         'annotation.send-to-manager', 'notifications.reply', 'notifications.approve', 'notifications.reject',
         'notifications.send', 'projects.invite-manager', 'notifications.send-announcement',
         'annotation.next', 'annotation.previous', 'annotation.exit',
-        'annotation.instance.show', 'annotations.show',
+        'annotation.instance.show', 'annotation.show-for-manager',
     ],
 ];

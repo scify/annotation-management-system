@@ -392,10 +392,13 @@ export function AnnotationsTab({ annotations, subProjectId }: AnnotationsTabProp
                                                         </span>
                                                         <span className="flex w-1/6 shrink-0 justify-center px-2">
                                                             <Link
-                                                                href={route('annotations.show', {
-                                                                    subProject: subProjectId,
-                                                                    annotationId: entry.id,
-                                                                })}
+                                                                href={route(
+                                                                    'annotation.show-for-manager',
+                                                                    {
+                                                                        subProject: subProjectId,
+                                                                        annotationId: entry.id,
+                                                                    }
+                                                                )}
                                                                 className="text-sm font-semibold text-slate-800 underline underline-offset-2"
                                                             >
                                                                 {t(

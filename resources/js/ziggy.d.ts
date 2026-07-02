@@ -47,7 +47,7 @@ declare module 'ziggy-js' {
         { "name": "subProject", "required": true },
         { "name": "annotationId", "required": true }
     ],
-    "annotations.show": [
+    "annotation.show-for-manager": [
         { "name": "subProject", "required": true },
         { "name": "annotationId", "required": true }
     ]
