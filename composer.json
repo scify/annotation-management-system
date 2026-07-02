@@ -18,7 +18,7 @@
         "laravel/socialite": "^5.19",
         "laravel/tinker": "^3.0",
         "scify/laravel-cookie-guard": "^4.1",
-        "sentry/sentry-laravel": "^4.13",
+        "sentry/sentry-laravel": "^4.26",
         "spatie/laravel-permission": "^6.16",
         "symfony/http-client": "^8.1",
         "symfony/mailgun-mailer": "^8.1",
