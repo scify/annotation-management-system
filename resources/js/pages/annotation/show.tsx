@@ -214,7 +214,18 @@ export default function AnnotationPage({
         confidenceRequired,
     ]);
 
-    const exit = useCallback(() => router.visit(route('dashboard')), []);
+    // Exit stops the active annotation session server-side, then the backend
+    // redirects to the dashboard with a success flash. Without a session there's
+    // nothing to stop (the endpoint requires the id), so navigate client-side.
+    const exit = useCallback(() => {
+        if (annotationSessionId == null) {
+            router.visit(route('dashboard'));
+            return;
+        }
+        router.post(route('annotation.exit', { subProject: subProjectId }), {
+            annotation_session_id: annotationSessionId,
+        });
+    }, [annotationSessionId, subProjectId]);
 
     // Keyboard shortcuts (mirrors the hints shown in the panel).
     useEffect(() => {

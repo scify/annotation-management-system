@@ -23,6 +23,7 @@ return [
     'total_replied' => ':total Σύνολο / :replied Απαντήθηκαν',
     'submit_all_pending' => 'Υποβολή Όλων των Εκκρεμών',
     'exit_annotation' => 'Έξοδος από την Επισημείωση',
+    'exit_annotation_success' => 'Κάνατε έξοδο από την Επισημείωση',
     'to_manager' => 'Προς Διαχειριστή',
 
     // Top bar

@@ -84,7 +84,8 @@ class AnnotationController extends Controller {
 
         $this->annotationService->stopSession($request->annotationSessionId());
 
-        return to_route('dashboard');
+        return to_route('dashboard')
+            ->with('success', __('annotation.exit_annotation_success'));
     }
 
     public function show(ShowAnnotationRequest $request, int $subProject): Response {

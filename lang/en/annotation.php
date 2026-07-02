@@ -23,6 +23,7 @@ return [
     'total_replied' => ':total Total / :replied Replied',
     'submit_all_pending' => 'Submit All Pending',
     'exit_annotation' => 'Exit Annotation',
+    'exit_annotation_success' => 'Exited Annotation',
     'to_manager' => 'To Manager',
 
     // Top bar
