@@ -740,7 +740,10 @@ export default function EditSubproject({
                         role="tabpanel"
                         aria-labelledby="tab-annotations"
                     >
-                        <AnnotationsTab annotations={displayAnnotationRows} />
+                        <AnnotationsTab
+                            annotations={displayAnnotationRows}
+                            subProjectId={subproject_data.id}
+                        />
                     </section>
                 )}
             </div>

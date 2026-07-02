@@ -266,6 +266,20 @@ readonly class AnnotationService {
     }
 
     /** @return array<string, mixed> */
+    public function getAnnotationShowData(int $subProjectId, int $annotationId): array {
+        $annotatorUserId = $this->annotationByIdQuery->getAnnotatorUserId($annotationId);
+        $stats = $this->fetchAnnotationStats($subProjectId, $annotatorUserId);
+
+        return [
+            'subProjectId' => $subProjectId,
+            'annotationId' => $annotationId,
+            'annotationProgressData' => $this->getAnnotationProgressData($stats, false, $subProjectId, $annotatorUserId, null),
+            'annotationTaskData' => $this->getAnnotationTaskData($annotationId, $subProjectId, $annotatorUserId),
+            ...$this->getSubProjectNames($subProjectId),
+        ];
+    }
+
+    /** @return array<string, mixed> */
     public function getAnnotationInstanceViewData(int $subProjectId, int $annotationId): array {
         $annotation = $this->annotationByIdQuery->get($annotationId);
         $taskContext = $this->resolveTaskContext($subProjectId);

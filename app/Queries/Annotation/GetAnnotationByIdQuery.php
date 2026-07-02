@@ -29,4 +29,12 @@ final readonly class GetAnnotationByIdQuery {
             ->select(['id', 'annotations', 'pending', 'confidence', 'flag_notification_thread_id'])
             ->findOrFail($id);
     }
+
+    public function getAnnotatorUserId(int $annotationId): int {
+        /** @var int */
+        return Annotation::query()
+            ->join('annotation_assignments', 'annotations.annotation_assignment_id', '=', 'annotation_assignments.id')
+            ->where('annotations.id', $annotationId)
+            ->value('annotation_assignments.user_id');
+    }
 }

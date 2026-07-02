@@ -1,4 +1,5 @@
 import { Input } from '@/components/ui/input';
+import { Link } from '@inertiajs/react';
 import {
     Select,
     SelectContent,
@@ -109,9 +110,10 @@ function AnnotationStatusBadge({ status }: { status: AnnotationStatus }) {
 
 interface AnnotationsTabProps {
     annotations: InstanceAnnotationRow[];
+    subProjectId: number;
 }
 
-export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
+export function AnnotationsTab({ annotations, subProjectId }: AnnotationsTabProps) {
     const { t, trans } = useTranslations();
 
     const [expandedIds, setExpandedIds] = useState<Set<number>>(new Set());
@@ -389,14 +391,17 @@ export function AnnotationsTab({ annotations }: AnnotationsTabProps) {
                                                             />
                                                         </span>
                                                         <span className="flex w-1/6 shrink-0 justify-center px-2">
-                                                            <button
-                                                                type="button"
-                                                                className="cursor-pointer text-sm font-semibold text-slate-800 underline underline-offset-2"
+                                                            <Link
+                                                                href={route('annotations.show', {
+                                                                    subProject: subProjectId,
+                                                                    annotationId: entry.id,
+                                                                })}
+                                                                className="text-sm font-semibold text-slate-800 underline underline-offset-2"
                                                             >
                                                                 {t(
                                                                     'sub-projects.annotations.go_to_instance'
                                                                 )}
-                                                            </button>
+                                                            </Link>
                                                         </span>
                                                     </div>
                                                 ))}

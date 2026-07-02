@@ -42,7 +42,15 @@ declare module 'ziggy-js' {
     "password.update": [],
     "appearance": [],
     "login": [],
-    "logout": []
+    "logout": [],
+    "annotation.instance.show": [
+        { "name": "subProject", "required": true },
+        { "name": "annotationId", "required": true }
+    ],
+    "annotations.show": [
+        { "name": "subProject", "required": true },
+        { "name": "annotationId", "required": true }
+    ]
 }
 }
 export {};

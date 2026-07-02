@@ -15,7 +15,6 @@ use App\Http\Requests\Annotation\SubmitPendingAnnotationRequest;
 use App\Services\Annotation\AnnotationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -90,7 +89,15 @@ class AnnotationController extends Controller {
         return Inertia::render('annotation/show', $data);
     }
 
-    public function showInstance(Request $request, int $subProject, int $annotationId): Response {
+    public function showAnnotation(int $subProject, int $annotationId): Response {
+        $data = $this->annotationService->getAnnotationShowData($subProject, $annotationId);
+
+        $this->dumpDebugJson($data, 'annotation-show-annotation-data.json');
+
+        return Inertia::render('annotations/show', $data);
+    }
+
+    public function showInstance(int $subProject, int $annotationId): Response {
         $this->authUser();
 
         $data = $this->annotationService->getAnnotationInstanceViewData($subProject, $annotationId);
