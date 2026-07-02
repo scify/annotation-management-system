@@ -140,8 +140,8 @@ exits. Create `/etc/supervisor/conf.d/annotrain-worker.conf`:
 ```ini
 [program:annotrain-worker]
 process_name=%(program_name)s_%(process_num)02d
-command=php /var/www/annotrain/artisan queue:work database --queue=default --sleep=3 --tries=3 --max-time=3600 --rest=0
-directory=/var/www/annotrain
+command=/usr/bin/php /home/project_annotrAIn/www/annotrAIn.scify.org/artisan queue:work database --queue=default --sleep=3 --tries=3 --max-time=3600 --rest=0
+directory=/home/project_annotrAIn/www/annotrAIn.scify.org
 autostart=true
 autorestart=true
 stopasgroup=true
@@ -149,11 +149,11 @@ killasgroup=true
 user=www-data
 numprocs=1
 redirect_stderr=true
-stdout_logfile=/var/www/annotrain/storage/logs/worker.log
+stdout_logfile=/home/project_annotrAIn/www/annotrAIn.scify.org/storage/logs/worker.log
 stopwaitsecs=3600
 ```
 
-Adjust the project path (`/var/www/annotrain`) and `user` to match your server. Then load and start
+Then load and start
 the program:
 
 ```shell
