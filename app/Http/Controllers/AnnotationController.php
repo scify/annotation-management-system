@@ -89,12 +89,12 @@ class AnnotationController extends Controller {
         return Inertia::render('annotation/show', $data);
     }
 
-    public function showAnnotation(int $subProject, int $annotationId): Response {
+    public function showAnnotationForManager(int $subProject, int $annotationId): Response {
         $data = $this->annotationService->getAnnotationShowData($subProject, $annotationId);
 
         $this->dumpDebugJson($data, 'annotation-show-annotation-data.json');
 
-        return Inertia::render('annotations/show', $data);
+        return Inertia::render('annotation/show-for-manager', $data);
     }
 
     public function showInstance(int $subProject, int $annotationId): Response {

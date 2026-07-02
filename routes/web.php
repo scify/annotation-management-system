@@ -101,7 +101,7 @@ Route::middleware(['auth'])->group(function (): void {
     Route::post('subprojects/{subProject}/annotation/send-to-manager', [AnnotationController::class, 'sendToManager'])->name('annotation.send-to-manager');
     Route::post('subprojects/{subProject}/annotation/exit', [AnnotationController::class, 'exitAnnotation'])->name('annotation.exit');
     Route::get('subprojects/{subProject}/annotation/{annotationId}', [AnnotationController::class, 'showInstance'])->name('annotation.instance.show');
-    Route::get('subprojects/{subProject}/annotations/{annotationId}', [AnnotationController::class, 'showAnnotation'])->name('annotations.show');
+    Route::get('subprojects/{subProject}/annotation/{annotationId}/for-manager', [AnnotationController::class, 'showAnnotationForManager'])->name('annotation.show-for-manager');
 });
 
 // NOSONAR - this comes from Laravel

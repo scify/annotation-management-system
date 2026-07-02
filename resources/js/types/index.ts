@@ -310,6 +310,18 @@ export interface AnnotationShowProps {
     instance_filters?: AnnotationInstanceFilterMap;
 }
 
+/**
+ * Props for the read-only single-instance preview (`AnnotationController@showInstance`).
+ * Reached from notification quick-links; carries no session, answer schema, or
+ * progress data, so — unlike `AnnotationShowProps` — `annotationTaskData` is required.
+ */
+export interface AnnotationInstanceShowProps {
+    subProjectId: number;
+    annotationTaskData: AnnotationItemData;
+    projectName: string;
+    subProjectName: string;
+}
+
 export interface PlatformStats {
     all_projects: number;
     all_annotators: number;
